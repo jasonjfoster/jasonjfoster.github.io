@@ -1,0 +1,78 @@
+---
+title: "Software development"
+author: "Jason Foster"
+date: "2023-10-23"
+categories: [software]
+execute:
+  eval: false
+---
+
+# System setup
+
+-   <https://r-pkgs.org/setup.html>
+
+```         
+# environment variable: PATH=c:\rtools40\usr\bin
+```
+
+# Development workflow
+
+-   <https://r-pkgs.org/workflows101.html>
+
+```{r}
+RcppArmadillo::RcppArmadillo.package.skeleton(name = "anRpackage",
+                                              path = ".",
+                                              example_code = FALSE)
+```
+
+# Object documentation
+
+-   <https://r-pkgs.org/man.html>
+
+```{r}
+roxygen2::roxygenize()
+```
+
+# Compiled code
+
+-   <https://r-pkgs.org/src.html>
+
+```{r}
+Rcpp::compileAttributes(verbose = TRUE)
+tools::package_native_routine_registration_skeleton(".", character_only = FALSE)
+```
+
+# Git and GitHub
+
+-   <https://r-pkgs.org/git.html>
+
+Tell Git your name and email address:
+
+```         
+git config --global user.name "YOUR FULL NAME"
+git config --global user.email "YOUR EMAIL ADDRESS"
+```
+
+If needed, generate an SSH key: RStudio \> Tools \> Git/SVN \> Create RSA Key...
+
+Then give GitHub your SSH public key: GitHub \> SSH and GPG Keys \> New SSH key
+
+```         
+git remote add origin git@github.com:hadley/r-pkgs.git
+git push -u origin master
+```
+
+Also, if needed, change the URL of remote 'origin':
+
+```         
+git remote set-url origin git@github.com:hadley/r-foo.git
+```
+
+# Automated checking
+
+-   <https://r-pkgs.org/r-cmd-check.html>
+
+```{r}
+usethis::use_github_action("check-standard")
+usethis::use_github_action("test-coverage")
+```
