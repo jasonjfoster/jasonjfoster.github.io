@@ -1,24 +1,24 @@
 ---
 title: "Cloud computing"
-author: "Jason Foster"
-date: "2023-10-23"
-categories: [software]
-
+author: "[Jason Foster](mailto:jason.j.foster@gmail.com)"
+date: today
+categories:
+  - software
+  - development
+  - cloud
+  - computing
 ---
 
 # Amazon Elastic Compute Cloud (EC2)
 
-* Instance Types: <https://aws.amazon.com/ec2/instance-types/>
-* Pricing: <https://aws.amazon.com/ec2/pricing/on-demand/>
-
 ## Secure Shell
 
-```
+```         
 # EC2 > Network & Security > Key Pairs > Create Key Pair > *.pem
 # PuTTYgen > Load an existing private key file > Save private key > *.ppk
 ```
 
-```
+```         
 # Host Name: ec2-user@ec2-1-23-456-789.us-east-2.compute.amazonaws.com 
 # Connection > SSH > Auth & WinSCP > Auth > Private key file for authentication
     
@@ -26,10 +26,8 @@ sudo yum update
 ```
 
 ## Jupyter Server
-    
-* Setup: <https://docs.aws.amazon.com/dlami/latest/devguide/setup-jupyter.html>
 
-```
+```         
 # Amazon Linux 2
 wget https://repo.anaconda.com/archive/Anaconda3-2023.03-Linux-x86_64.sh
 
@@ -37,15 +35,10 @@ bash Anaconda3-2023.03-Linux-x86_64.sh
 # then close and re-open current shell
 ```
 
-```
-# cd ~
-# mkdir ssl
-# cd ssl
-# sudo openssl req -x509 -nodes -days 365 -newkey rsa:1024 -keyout "cert.key" -out "cert.pem" -batch
-```
-
-```
+```         
 # https://pypi.org/project/ipython/#history
+# https://stackoverflow.com/a/76521018
+https://stackoverflow.com/a/77117477
 pip install 'ipython==7.34.0' --force-reinstall
 ipython
 from IPython.lib import passwd
@@ -54,7 +47,7 @@ passwd("12345")
 exit()
 ```
 
-```
+```         
 jupyter notebook --generate-config 
 vi ~/.jupyter/jupyter_notebook_config.py
 
@@ -63,18 +56,18 @@ c = get_config()  # Get the config object.
 # c.NotebookApp.certfile = u'/home/ubuntu/ssl/cert.pem' # path to the certificate we generated
 # c.NotebookApp.keyfile = u'/home/ubuntu/ssl/cert.key' # path to the certificate key we generated
 c.NotebookApp.ip = '0.0.0.0' # serve notebooks locally
-c.NotebookApp.open_browser = False  # do not open a browser window by default when using notebooks.
+c.NotebookApp.open_browser = False # do not open a browser window by default when using notebooks.
 c.NotebookApp.password = 'sha1:asdfasdf:asfasdfasdf'
 # [ESC][:wq][ENTER]
 ```
 
-```
+```         
 # nohup jupyter notebook
 nohup jupyter lab
 # then close and re-open current shell
 ```
 
-```
+```         
 jupyter nbconvert --to python <notebook>.ipynb
 sudo service crond start
 crontab -e
@@ -84,7 +77,7 @@ crontab -e
 # [ESC][:wq][ENTER]
 ```
 
-```
+```         
 # http://1.23.456.789:8888
 ```
 
@@ -92,7 +85,7 @@ crontab -e
 
 * Setup: <https://aws.amazon.com/blogs/big-data/running-r-on-aws/>
 
-```
+```         
 # install R
 sudo su
 # yum install -y R # Amazon Linux
@@ -100,14 +93,14 @@ sudo su
 sudo amazon-linux-extras install R3.4 # Amazon Linux 2
 ```
 
-```
-# https://www.rstudio.com/products/rstudio/download-server/
+```         
+# https://posit.co/download/rstudio-server/
 # install RStudio Server 1.2.5019 (2019-11-01)
 wget https://download2.rstudio.org/server/centos6/x86_64/rstudio-server-rhel-1.2.5019-x86_64.rpm
 yum install rstudio-server-rhel-1.2.5019-x86_64.rpm
 rm rstudio-server-rhel-1.2.5019-x86_64.rpm
 
-# https://www.rstudio.com/products/shiny/download-server/
+# https://posit.co/download/shiny-server/
 # install Shiny Server (2019-09-09)
 R -e "install.packages('shiny', repos = 'http://cran.rstudio.com/')"
 wget https://download3.rstudio.org/centos6.3/x86_64/shiny-server-1.5.12.933-x86_64.rpm
@@ -115,13 +108,13 @@ yum install --nogpgcheck shiny-server-1.5.12.933-x86_64.rpm
 rm shiny-server-1.5.12.933-x86_64.rpm
 ```
 
-```
+```         
 # add user(s)
 useradd -m jjf234
 sudo passwd jjf234 # prompt to enter password
 ```
 
-```
+```         
 # sudo /opt/shiny-server/bin/deploy-example user-dirs
 # mkdir ~/ShinyApps
 # sudo cp -R /opt/shiny-server/samples/sample-apps/hello ~/ShinyApps
@@ -130,7 +123,7 @@ sudo passwd jjf234 # prompt to enter password
 # e.g.: /home/ec2-user/ShinyApps/hello
 ```
 
-```
+```         
 # install devtools
 sudo yum install libcurl-devel
 sudo yum install openssl-devel
@@ -151,7 +144,7 @@ repos = 'http://cran.rstudio.com/')"
 R -e "devtools::install_github('jjf234/roll')"
 ```
 
-```
+```         
 # http://1.23.456.789:8787/
 # http://1.23.456.789:3838/ec2-user/hello/
 ```
@@ -161,25 +154,22 @@ R -e "devtools::install_github('jjf234/roll')"
 * <https://www.clickittech.com/aws/migrate-godaddy-to-aws-route53/>
 * <https://blog.shikisoft.com/transferring-domain-registrations-from-godaddy-to-amazon-route-53/>
 
-```
-# use Amazon Route 53 as the DNS service provider
-# - create Hosted Zone in AWS
-# - create Record Set in AWS: copy existing records from GoDaddy to AWS
-# - change nameserver types in GoDaddy
-```
+Use Amazon Route 53 as the DNS service provider:
 
-```
-# transfer registration for a domain to Amazon Route 53
-# - remove privacy and turn off Domain Lock in GoDaddy
-# - wait until email is received that the domain status changed
-# - get authorization code from GoDaddy
-# - go to Domains > Registered domains > Transfer Domain in AWS
-# - type the authorization codes and nameserver options
-# - select "Import name servers from a Route 53 hosted zone that has the same name as the domain"
-# - monitor Domains > Pending requests: "Domain transfer in progress"
-# - wait until email is received to authorize the transfer or status is changed
-# - "Domain transfer in progress: Waiting for the current registrar to approve the transfer.
-#   This can take up to 10 days depending on the TLD and the current registrar"
-# - go to My Domains > Pending transfer out > View details in GoDaddy
-# - click "Accept or decline" > "Accept transfer"
-```
+* Click "Create Hosted Zone" in AWS
+* Click "Create Record Set" in AWS: copy existing records from GoDaddy to AWS
+* Change nameserver types in GoDaddy
+
+Transfer registration for a domain to Amazon Route 53:
+
+* Remove privacy and turn off "Domain Lock" in GoDaddy
+* Wait until email is received that the domain status changed
+* Get authorization code from GoDaddy
+* Go to Domains > Registered domains > Transfer Domain in AWS
+* Type the authorization codes and nameserver options
+* Select "Import name servers from a Route 53 hosted zone that has the same name as the domain"
+* Monitor Domains > Pending requests: "Domain transfer in progress"
+* Wait until email is received to authorize the transfer or status is changed
+* "Domain transfer in progress: Waiting for the current registrar to approve the transfer. This can take up to 10 days depending on the TLD and the current registrar"
+* Go to My Domains > Pending transfer out > View details in GoDaddy
+* Click "Accept or decline" > "Accept transfer"

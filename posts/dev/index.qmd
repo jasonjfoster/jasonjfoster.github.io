@@ -1,23 +1,53 @@
 ---
 title: "Software development"
-author: "Jason Foster"
-date: "2023-10-23"
-categories: [software]
+author: "[Jason Foster](mailto:jason.j.foster@gmail.com)"
+date: today
+categories:
+  - software
+  - development
 execute:
   eval: false
 ---
 
 # System setup
 
--   <https://r-pkgs.org/setup.html>
-
 ```         
 # environment variable: PATH=c:\rtools40\usr\bin
 ```
 
-# Development workflow
+# Git and GitHub
 
--   <https://r-pkgs.org/workflows101.html>
+```         
+git config --global user.name "<NAME>"
+git config --global user.email "<EMAIL>"
+```
+
+If needed, generate an SSH key: RStudio \> Tools \> Git/SVN \> Create RSA Key...
+Then give GitHub your SSH public key: GitHub \> SSH and GPG Keys \> New SSH key
+
+```
+# ...or create a new repository on the command line
+echo "# <REPO>" >> README.md
+git init
+git add README.md
+git commit -m "first commit"
+git branch -M main
+git remote add origin git@github.com:<OWNER>/<REPO>.git
+git push -u origin main
+```
+
+```
+# ...or push an existing repository from the command line
+git remote add origin git@github.com:<OWNER>/<REPO>.git
+git branch -M main
+git push -u origin main
+```
+
+```         
+# git remote set-url origin git@github.com:<OWNER>/<REPO>.git
+```
+
+# Development workflow
 
 ```{r}
 RcppArmadillo::RcppArmadillo.package.skeleton(name = "anRpackage",
@@ -25,52 +55,20 @@ RcppArmadillo::RcppArmadillo.package.skeleton(name = "anRpackage",
                                               example_code = FALSE)
 ```
 
-# Object documentation
-
--   <https://r-pkgs.org/man.html>
-
-```{r}
-roxygen2::roxygenize()
-```
-
 # Compiled code
-
--   <https://r-pkgs.org/src.html>
 
 ```{r}
 Rcpp::compileAttributes(verbose = TRUE)
 tools::package_native_routine_registration_skeleton(".", character_only = FALSE)
 ```
 
-# Git and GitHub
+# Object documentation
 
--   <https://r-pkgs.org/git.html>
-
-Tell Git your name and email address:
-
-```         
-git config --global user.name "YOUR FULL NAME"
-git config --global user.email "YOUR EMAIL ADDRESS"
-```
-
-If needed, generate an SSH key: RStudio \> Tools \> Git/SVN \> Create RSA Key...
-
-Then give GitHub your SSH public key: GitHub \> SSH and GPG Keys \> New SSH key
-
-```         
-git remote add origin git@github.com:hadley/r-pkgs.git
-git push -u origin master
-```
-
-Also, if needed, change the URL of remote 'origin':
-
-```         
-git remote set-url origin git@github.com:hadley/r-foo.git
+```{r}
+roxygen2::roxygenize()
 ```
 
 # Automated checking
-
--   <https://r-pkgs.org/r-cmd-check.html>
 
 ```{r}
 usethis::use_github_action("check-standard")

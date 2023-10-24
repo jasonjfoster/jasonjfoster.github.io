@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Jason Foster">
-<meta name="dcterms.date" content="2023-10-23">
+<meta name="dcterms.date" content="2023-10-24">
 
 <title>jjf234.github.io - Software development</title>
 <style>
@@ -136,6 +136,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <h1 class="title">Software development</h1>
                                 <div class="quarto-categories">
                 <div class="quarto-category">software</div>
+                <div class="quarto-category">development</div>
               </div>
                   </div>
   </div>
@@ -146,14 +147,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <div>
       <div class="quarto-title-meta-heading">Author</div>
       <div class="quarto-title-meta-contents">
-               <p>Jason Foster </p>
+               <p><a href="mailto:jason.j.foster@gmail.com">Jason Foster</a> </p>
             </div>
     </div>
       
       <div>
       <div class="quarto-title-meta-heading">Published</div>
       <div class="quarto-title-meta-contents">
-        <p class="date">October 23, 2023</p>
+        <p class="date">October 24, 2023</p>
       </div>
     </div>
     
@@ -170,10 +171,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
    
   <ul>
   <li><a href="#system-setup" id="toc-system-setup" class="nav-link active" data-scroll-target="#system-setup">System setup</a></li>
-  <li><a href="#development-workflow" id="toc-development-workflow" class="nav-link" data-scroll-target="#development-workflow">Development workflow</a></li>
-  <li><a href="#object-documentation" id="toc-object-documentation" class="nav-link" data-scroll-target="#object-documentation">Object documentation</a></li>
-  <li><a href="#compiled-code" id="toc-compiled-code" class="nav-link" data-scroll-target="#compiled-code">Compiled code</a></li>
   <li><a href="#git-and-github" id="toc-git-and-github" class="nav-link" data-scroll-target="#git-and-github">Git and GitHub</a></li>
+  <li><a href="#development-workflow" id="toc-development-workflow" class="nav-link" data-scroll-target="#development-workflow">Development workflow</a></li>
+  <li><a href="#compiled-code" id="toc-compiled-code" class="nav-link" data-scroll-target="#compiled-code">Compiled code</a></li>
+  <li><a href="#object-documentation" id="toc-object-documentation" class="nav-link" data-scroll-target="#object-documentation">Object documentation</a></li>
   <li><a href="#automated-checking" id="toc-automated-checking" class="nav-link" data-scroll-target="#automated-checking">Automated checking</a></li>
   </ul>
 </nav>
@@ -186,64 +187,53 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <section id="system-setup" class="level1">
 <h1>System setup</h1>
-<ul>
-<li><a href="https://r-pkgs.org/setup.html" class="uri">https://r-pkgs.org/setup.html</a></li>
-</ul>
 <pre><code># environment variable: PATH=c:\rtools40\usr\bin</code></pre>
+</section>
+<section id="git-and-github" class="level1">
+<h1>Git and GitHub</h1>
+<pre><code>git config --global user.name "&lt;NAME&gt;"
+git config --global user.email "&lt;EMAIL&gt;"</code></pre>
+<p>If needed, generate an SSH key: RStudio &gt; Tools &gt; Git/SVN &gt; Create RSA Key… Then give GitHub your SSH public key: GitHub &gt; SSH and GPG Keys &gt; New SSH key</p>
+<pre><code># ...or create a new repository on the command line
+echo "# &lt;REPO&gt;" &gt;&gt; README.md
+git init
+git add README.md
+git commit -m "first commit"
+git branch -M main
+git remote add origin git@github.com:&lt;OWNER&gt;/&lt;REPO&gt;.git
+git push -u origin main</code></pre>
+<pre><code># ...or push an existing repository from the command line
+git remote add origin git@github.com:&lt;OWNER&gt;/&lt;REPO&gt;.git
+git branch -M main
+git push -u origin main</code></pre>
+<pre><code># git remote set-url origin git@github.com:&lt;OWNER&gt;/&lt;REPO&gt;.git</code></pre>
 </section>
 <section id="development-workflow" class="level1">
 <h1>Development workflow</h1>
-<ul>
-<li><a href="https://r-pkgs.org/workflows101.html" class="uri">https://r-pkgs.org/workflows101.html</a></li>
-</ul>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>RcppArmadillo<span class="sc">::</span><span class="fu">RcppArmadillo.package.skeleton</span>(<span class="at">name =</span> <span class="st">"anRpackage"</span>,</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>                                              <span class="at">path =</span> <span class="st">"."</span>,</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>                                              <span class="at">example_code =</span> <span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-</section>
-<section id="object-documentation" class="level1">
-<h1>Object documentation</h1>
-<ul>
-<li><a href="https://r-pkgs.org/man.html" class="uri">https://r-pkgs.org/man.html</a></li>
-</ul>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>roxygen2<span class="sc">::</span><span class="fu">roxygenize</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>RcppArmadillo<span class="sc">::</span><span class="fu">RcppArmadillo.package.skeleton</span>(<span class="at">name =</span> <span class="st">"anRpackage"</span>,</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>                                              <span class="at">path =</span> <span class="st">"."</span>,</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>                                              <span class="at">example_code =</span> <span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="compiled-code" class="level1">
 <h1>Compiled code</h1>
-<ul>
-<li><a href="https://r-pkgs.org/src.html" class="uri">https://r-pkgs.org/src.html</a></li>
-</ul>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>Rcpp<span class="sc">::</span><span class="fu">compileAttributes</span>(<span class="at">verbose =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>tools<span class="sc">::</span><span class="fu">package_native_routine_registration_skeleton</span>(<span class="st">"."</span>, <span class="at">character_only =</span> <span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>Rcpp<span class="sc">::</span><span class="fu">compileAttributes</span>(<span class="at">verbose =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>tools<span class="sc">::</span><span class="fu">package_native_routine_registration_skeleton</span>(<span class="st">"."</span>, <span class="at">character_only =</span> <span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
-<section id="git-and-github" class="level1">
-<h1>Git and GitHub</h1>
-<ul>
-<li><a href="https://r-pkgs.org/git.html" class="uri">https://r-pkgs.org/git.html</a></li>
-</ul>
-<p>Tell Git your name and email address:</p>
-<pre><code>git config --global user.name "YOUR FULL NAME"
-git config --global user.email "YOUR EMAIL ADDRESS"</code></pre>
-<p>If needed, generate an SSH key: RStudio &gt; Tools &gt; Git/SVN &gt; Create RSA Key…</p>
-<p>Then give GitHub your SSH public key: GitHub &gt; SSH and GPG Keys &gt; New SSH key</p>
-<pre><code>git remote add origin git@github.com:hadley/r-pkgs.git
-git push -u origin master</code></pre>
-<p>Also, if needed, change the URL of remote ‘origin’:</p>
-<pre><code>git remote set-url origin git@github.com:hadley/r-foo.git</code></pre>
+<section id="object-documentation" class="level1">
+<h1>Object documentation</h1>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>roxygen2<span class="sc">::</span><span class="fu">roxygenize</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
 </section>
 <section id="automated-checking" class="level1">
 <h1>Automated checking</h1>
-<ul>
-<li><a href="https://r-pkgs.org/r-cmd-check.html" class="uri">https://r-pkgs.org/r-cmd-check.html</a></li>
-</ul>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>usethis<span class="sc">::</span><span class="fu">use_github_action</span>(<span class="st">"check-standard"</span>)</span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>usethis<span class="sc">::</span><span class="fu">use_github_action</span>(<span class="st">"test-coverage"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>usethis<span class="sc">::</span><span class="fu">use_github_action</span>(<span class="st">"check-standard"</span>)</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>usethis<span class="sc">::</span><span class="fu">use_github_action</span>(<span class="st">"test-coverage"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 
 
