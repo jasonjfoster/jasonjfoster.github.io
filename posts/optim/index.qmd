@@ -34,7 +34,7 @@ sigma <- roll::roll_cov(x, width = 5)
 $$
 \begin{aligned}
 \begin{array}{rrcl}
-\displaystyle\min_{x}&\frac{1}{2}\mathbf{w}^T\Sigma\mathbf{w}\\
+\displaystyle\min&\frac{1}{2}\mathbf{w}^T\Sigma\mathbf{w}\\
 \textrm{s.t.}&\mathbf{w}^{T}e&=&1
 \end{array}
 \end{aligned}
@@ -100,7 +100,7 @@ roll_min_var(sigma)
 $$
 \begin{aligned}
 \begin{array}{rrcl}
-\displaystyle\min_{x}&-\mathbf{w}^{T}\mu\\
+\displaystyle\min&-\mathbf{w}^{T}\mu\\
 \textrm{s.t.}&\mathbf{w}^{T}e&=&1
 \end{array}
 \end{aligned}
@@ -166,14 +166,12 @@ roll_max_mean(mu)
 $$
 \begin{aligned}
 \begin{array}{rrcl}
-\displaystyle\min_{x}&\frac{1}{2}\delta(\mathbf{w}^T\Sigma\mathbf{w})-\mu^{T}\mathbf{w}\\
+\displaystyle\min&\frac{1}{2}\delta(\mathbf{w}^T\Sigma\mathbf{w})-\mu^{T}\mathbf{w}\\
 \textrm{s.t.}&e^T\mathbf{w}&=&1
 \end{array}
 \end{aligned}
 $$
 To incorporate these conditions into one equation, introduce new variables $\lambda_{i}$ that are the Lagrange multipliers and define a new function $\mathcal{L}$ as follows:
-
-START HERE!
 
 $$
 \begin{aligned}
