@@ -31,10 +31,6 @@ sigma <- roll::roll_cov(x, width = 5)
 
 # Minimize variance
 
-```{r}
-roll_min_var(sigma)
-```
-
 $$
 \begin{aligned}
 \begin{array}{rrcl}
@@ -95,27 +91,16 @@ e^{T} & 0
 \end{aligned}
 $$
 
-# Maximize mean
-
 ```{r}
-roll_max_mean(mu)
+roll_min_var(sigma)
 ```
 
-$$
-\begin{aligned}
-\begin{array}{rrcl}
-\displaystyle\max_{x}&\mathbf{w}^{T}\mu\\
-\textrm{s.t.}&\mathbf{w}^{T}e&=&1
-\end{array}
-\end{aligned}
-$$
-
-Then transform the quadratic constraint into a second-order cone constraint:
+# Maximize mean
 
 $$
 \begin{aligned}
 \begin{array}{rrcl}
-\displaystyle\max_{x}&\mathbf{w}^{T}\mu\\
+\displaystyle\min_{x}&-\mathbf{w}^{T}\mu\\
 \textrm{s.t.}&\mathbf{w}^{T}e&=&1
 \end{array}
 \end{aligned}
@@ -125,7 +110,7 @@ To incorporate these conditions into one equation, introduce new variables $\lam
 
 $$
 \begin{aligned}
-\mathcal{L}(\mathbf{w},\lambda)&=\mathbf{w}^{T}\mu-\lambda_{1}(\mathbf{w}^{T}e-1)
+\mathcal{L}(\mathbf{w},\lambda)&=-\mathbf{w}^{T}\mu-\lambda_{1}(\mathbf{w}^{T}e-1)
 \end{aligned}
 $$
 
@@ -133,7 +118,7 @@ Then, to minimize this function, take derivatives with respect to $w$ and Lagran
 
 $$
 \begin{aligned}
-\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial w}&=\mu-\lambda_{1}e=0\\
+\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial w}&=-\mu-\lambda_{1}e=0\\
 \frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial \lambda_{1}}&=\mathbf{w}e^T-1=0
 \end{aligned}
 $$
@@ -143,7 +128,7 @@ Simplify the equations above in matrix form and solve for the Lagrange multiplie
 $$
 \begin{aligned}
 \begin{bmatrix}
-\mu & e \\
+-\mu & e \\
 e^{T} & 0
 \end{bmatrix}
 \begin{bmatrix}
@@ -162,7 +147,7 @@ e^{T} & 0
 \end{bmatrix}
 &=
 \begin{bmatrix}
-\mu & e \\
+-\mu & e \\
 e^{T} & 0
 \end{bmatrix}^{-1}
 \begin{bmatrix}
@@ -171,6 +156,77 @@ e^{T} & 0
 \end{bmatrix}
 \end{aligned}
 $$
+
+```{r}
+roll_max_mean(mu)
+```
+
+# Maximize utility
+
+$$
+\begin{aligned}
+\begin{array}{rrcl}
+\displaystyle\min_{x}&\frac{1}{2}\delta(\mathbf{w}^T\Sigma\mathbf{w})-\mu^{T}\mathbf{w}\\
+\textrm{s.t.}&e^T\mathbf{w}&=&1
+\end{array}
+\end{aligned}
+$$
+To incorporate these conditions into one equation, introduce new variables $\lambda_{i}$ that are the Lagrange multipliers and define a new function $\mathcal{L}$ as follows:
+
+START HERE!
+
+$$
+\begin{aligned}
+\mathcal{L}(\mathbf{w},\lambda)&=\frac{1}{2}\mathbf{w}^{T}\Sigma\mathbf{w}-\mu^{T}\mathbf{w}-\lambda_{1}(\mathbf{w}^{T}e-1)
+\end{aligned}
+$$
+
+Then, to minimize this function, take derivatives with respect to $w$ and Lagrange multipliers $\lambda_{i}$:
+
+$$
+\begin{aligned}
+\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial w}&=\mathbf{w}\Sigma-\mu^{T}-\lambda_{1}e=0\\
+\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial \lambda_{1}}&=\mathbf{w}e^T-1=0
+\end{aligned}
+$$
+
+Simplify the equations above in matrix form and solve for the Lagrange multipliers $\lambda_{i}$:
+
+$$
+\begin{aligned}
+\begin{bmatrix}
+\Sigma & e \\
+e^{T} & 0
+\end{bmatrix}
+\begin{bmatrix}
+\mathbf{w} \\
+-\lambda_{1}
+\end{bmatrix}
+&=
+\begin{bmatrix}
+\mu^{T} \\
+1
+\end{bmatrix}
+\\
+\begin{bmatrix}
+\mathbf{w} \\
+-\lambda_{1}
+\end{bmatrix}
+&=
+\begin{bmatrix}
+\Sigma & e \\
+e^{T} & 0
+\end{bmatrix}^{-1}
+\begin{bmatrix}
+\mu^{T} \\
+1
+\end{bmatrix}
+\end{aligned}
+$$
+
+```{r}
+roll_max_utility(mu, sigma)
+```
 
 # References
 
