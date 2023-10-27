@@ -1,0 +1,179 @@
+---
+title: "Optimization"
+author: "[Jason Foster](mailto:jason.j.foster@gmail.com)"
+date: today
+categories:
+  - algorithms
+  - r
+execute:
+  eval: false
+default-image-extension: ""
+---
+
+<!---# https://github.com/quarto-dev/quarto-cli/issues/6092 -->
+[![](https://github.com/jjf234/rollport/actions/workflows/check-standard.yaml/badge.svg)](https://github.com/jjf234/rollport/actions/workflows/check-standard.yaml)
+[![](https://codecov.io/gh/jjf234/rollport/graph/badge.svg)](https://app.codecov.io/github/jjf234/rollport)
+
+# Usage
+
+```{r}
+library(rolloptim)
+```
+
+```{r}
+n_vars <- 3
+n_obs <- 15
+x <- matrix(rnorm(n_obs * n_vars), nrow = n_obs, ncol = n_vars)
+
+mu <- roll::roll_mean(x, 5)
+sigma <- roll::roll_cov(x, width = 5)
+```
+
+# Minimize variance
+
+```{r}
+roll_min_var(sigma)
+```
+
+$$
+\begin{aligned}
+\begin{array}{rrcl}
+\displaystyle\min_{x}&\frac{1}{2}\mathbf{w}^T\Sigma\mathbf{w}\\
+\textrm{s.t.}&\mathbf{w}^{T}e&=&1
+\end{array}
+\end{aligned}
+$$
+
+To incorporate these conditions into one equation, introduce new variables $\lambda_{i}$ that are the Lagrange multipliers and define a new function $\mathcal{L}$ as follows:
+
+$$
+\begin{aligned}
+\mathcal{L}(\mathbf{w},\lambda)&=\frac{1}{2}\mathbf{w}^{T}\Sigma\mathbf{w}-\lambda_{1}(\mathbf{w}^{T}e-1)
+\end{aligned}
+$$
+
+Then, to minimize this function, take derivatives with respect to $w$ and Lagrange multipliers $\lambda_{i}$:
+
+$$
+\begin{aligned}
+\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial w}&=\mathbf{w}\Sigma-\lambda_{1}e=0\\
+\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial \lambda_{1}}&=\mathbf{w}e^T-1=0
+\end{aligned}
+$$
+
+Simplify the equations above in matrix form and solve for the Lagrange multipliers $\lambda_{i}$:
+
+$$
+\begin{aligned}
+\begin{bmatrix}
+\Sigma & e \\
+e^{T} & 0
+\end{bmatrix}
+\begin{bmatrix}
+\mathbf{w} \\
+-\lambda_{1}
+\end{bmatrix}
+&=
+\begin{bmatrix}
+0 \\
+1
+\end{bmatrix}
+\\
+\begin{bmatrix}
+\mathbf{w} \\
+-\lambda_{1}
+\end{bmatrix}
+&=
+\begin{bmatrix}
+\Sigma & e \\
+e^{T} & 0
+\end{bmatrix}^{-1}
+\begin{bmatrix}
+0 \\
+1
+\end{bmatrix}
+\end{aligned}
+$$
+
+# Maximize mean
+
+```{r}
+roll_max_mean(mu)
+```
+
+$$
+\begin{aligned}
+\begin{array}{rrcl}
+\displaystyle\max_{x}&\mathbf{w}^{T}\mu\\
+\textrm{s.t.}&\mathbf{w}^{T}e&=&1
+\end{array}
+\end{aligned}
+$$
+
+Then transform the quadratic constraint into a second-order cone constraint:
+
+$$
+\begin{aligned}
+\begin{array}{rrcl}
+\displaystyle\max_{x}&\mathbf{w}^{T}\mu\\
+\textrm{s.t.}&\mathbf{w}^{T}e&=&1
+\end{array}
+\end{aligned}
+$$
+
+To incorporate these conditions into one equation, introduce new variables $\lambda_{i}$ that are the Lagrange multipliers and define a new function $\mathcal{L}$ as follows:
+
+$$
+\begin{aligned}
+\mathcal{L}(\mathbf{w},\lambda)&=\mathbf{w}^{T}\mu-\lambda_{1}(\mathbf{w}^{T}e-1)
+\end{aligned}
+$$
+
+Then, to minimize this function, take derivatives with respect to $w$ and Lagrange multipliers $\lambda_{i}$:
+
+$$
+\begin{aligned}
+\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial w}&=\mu-\lambda_{1}e=0\\
+\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial \lambda_{1}}&=\mathbf{w}e^T-1=0
+\end{aligned}
+$$
+
+Simplify the equations above in matrix form and solve for the Lagrange multipliers $\lambda_{i}$:
+
+$$
+\begin{aligned}
+\begin{bmatrix}
+\mu & e \\
+e^{T} & 0
+\end{bmatrix}
+\begin{bmatrix}
+\mathbf{w} \\
+-\lambda_{1}
+\end{bmatrix}
+&=
+\begin{bmatrix}
+0 \\
+1
+\end{bmatrix}
+\\
+\begin{bmatrix}
+\mathbf{w} \\
+-\lambda_{1}
+\end{bmatrix}
+&=
+\begin{bmatrix}
+\mu & e \\
+e^{T} & 0
+\end{bmatrix}^{-1}
+\begin{bmatrix}
+0 \\
+1
+\end{bmatrix}
+\end{aligned}
+$$
+
+# References
+
+* <https://www.adrian.idv.hk/2021-06-22-kkt/>
+* <https://or.stackexchange.com/a/3738>
+* <https://bookdown.org/compfinezbook/introFinRbook/Portfolio-Theory-with-Matrix-Algebra.html#algorithm-for-computing-efficient-frontier>

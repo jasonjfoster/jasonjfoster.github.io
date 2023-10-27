@@ -6,8 +6,10 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
+<meta name="author" content="Jason Foster">
+<meta name="dcterms.date" content="2023-10-27">
 
-<title>jjf234.github.io</title>
+<title>jjf234.github.io - Optimization</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -20,27 +22,59 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 </style>
 
 
-<script src="site_libs/quarto-nav/quarto-nav.js"></script>
-<script src="site_libs/quarto-nav/headroom.min.js"></script>
-<script src="site_libs/clipboard/clipboard.min.js"></script>
-<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
-<script src="site_libs/quarto-search/fuse.min.js"></script>
-<script src="site_libs/quarto-search/quarto-search.js"></script>
-<meta name="quarto:offset" content="./">
-<script src="site_libs/quarto-listing/list.min.js"></script>
-<script src="site_libs/quarto-listing/quarto-listing.js"></script>
-<script src="site_libs/quarto-html/quarto.js"></script>
-<script src="site_libs/quarto-html/popper.min.js"></script>
-<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
-<script src="site_libs/quarto-html/anchor.min.js"></script>
-<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
-<script src="site_libs/bootstrap/bootstrap.min.js"></script>
-<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -61,40 +95,11 @@ ul.task-list li input[type="checkbox"] {
     "search-label": "Search"
   }
 }</script>
-<script>
-
-  window.document.addEventListener("DOMContentLoaded", function (_event) {
-    const listingTargetEl = window.document.querySelector('#listing-listing .list');
-    if (!listingTargetEl) {
-      // No listing discovered, do not attach.
-      return; 
-    }
-
-    const options = {
-      valueNames: ['listing-date','listing-title','listing-author','listing-image','listing-description','listing-categories',{ data: ['index'] },{ data: ['categories'] },{ data: ['listing-date-sort'] },{ data: ['listing-file-modified-sort'] }],
-      
-      searchColumns: ["listing-date","listing-title","listing-author","listing-image","listing-description","listing-categories"],
-    };
-
-    window['quarto-listings'] = window['quarto-listings'] || {};
-    window['quarto-listings']['listing-listing'] = new List('listing-listing', options);
-
-    if (window['quarto-listing-loaded']) {
-      window['quarto-listing-loaded']();
-    }
-  });
-
-  window.addEventListener('hashchange',() => {
-    if (window['quarto-listing-loaded']) {
-      window['quarto-listing-loaded']();
-    }
-  })
-  </script>
 
   <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
   <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
 
-<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="../../styles.css">
 </head>
 
 <body class="nav-fixed">
@@ -104,7 +109,7 @@ ul.task-list li input[type="checkbox"] {
     <nav class="navbar navbar-expand-lg navbar-dark ">
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container">
-    <a class="navbar-brand" href="./index.html">
+    <a class="navbar-brand" href="../../index.html">
     <span class="navbar-title">jjf234.github.io</span>
     </a>
   </div>
@@ -129,198 +134,212 @@ ul.task-list li input[type="checkbox"] {
 <!-- content -->
 <header id="title-block-header" class="quarto-title-block default page-columns page-full">
   <div class="quarto-title-banner page-columns page-full">
-    <div class="quarto-title column-page-left">
-      <h1 class="title">jjf234.github.io</h1>
-                      </div>
+    <div class="quarto-title column-body">
+      <h1 class="title">Optimization</h1>
+                                <div class="quarto-categories">
+                <div class="quarto-category">algorithms</div>
+                <div class="quarto-category">r</div>
+              </div>
+                  </div>
   </div>
     
   
   <div class="quarto-title-meta">
 
+      <div>
+      <div class="quarto-title-meta-heading">Author</div>
+      <div class="quarto-title-meta-contents">
+               <p><a href="mailto:jason.j.foster@gmail.com">Jason Foster</a> </p>
+            </div>
+    </div>
       
+      <div>
+      <div class="quarto-title-meta-heading">Published</div>
+      <div class="quarto-title-meta-contents">
+        <p class="date">October 27, 2023</p>
+      </div>
+    </div>
     
       
     </div>
     
   
-  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-full page-navbar">
+  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        
-    <h5 class="quarto-listing-category-title">Categories</h5><div class="quarto-listing-category category-default"><div class="category" data-category="">All <span class="quarto-category-count">(4)</span></div><div class="category" data-category="algorithms">algorithms <span class="quarto-category-count">(2)</span></div><div class="category" data-category="computing">computing <span class="quarto-category-count">(1)</span></div><div class="category" data-category="development">development <span class="quarto-category-count">(1)</span></div><div class="category" data-category="python">python <span class="quarto-category-count">(1)</span></div><div class="category" data-category="r">r <span class="quarto-category-count">(4)</span></div></div></div>
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#usage" id="toc-usage" class="nav-link active" data-scroll-target="#usage">Usage</a></li>
+  <li><a href="#minimize-variance" id="toc-minimize-variance" class="nav-link" data-scroll-target="#minimize-variance">Minimize variance</a></li>
+  <li><a href="#maximize-mean" id="toc-maximize-mean" class="nav-link" data-scroll-target="#maximize-mean">Maximize mean</a></li>
+  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
+  </ul>
+</nav>
+    </div>
 <!-- main -->
-<main class="content quarto-banner-title-block column-page-left" id="quarto-document-content">
+<main class="content quarto-banner-title-block" id="quarto-document-content">
 
 
 
 
+<!---# https://github.com/quarto-dev/quarto-cli/issues/6092 -->
+<p><a href="https://github.com/jjf234/rollport/actions/workflows/check-standard.yaml"><img src="https://github.com/jjf234/rollport/actions/workflows/check-standard.yaml/badge.svg" class="img-fluid"></a> <a href="https://app.codecov.io/github/jjf234/rollport"><img src="https://codecov.io/gh/jjf234/rollport/graph/badge.svg" class="img-fluid"></a></p>
+<section id="usage" class="level1">
+<h1>Usage</h1>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(rolloptim)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>n_vars <span class="ot">&lt;-</span> <span class="dv">3</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>n_obs <span class="ot">&lt;-</span> <span class="dv">15</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">rnorm</span>(n_obs <span class="sc">*</span> n_vars), <span class="at">nrow =</span> n_obs, <span class="at">ncol =</span> n_vars)</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>mu <span class="ot">&lt;-</span> roll<span class="sc">::</span><span class="fu">roll_mean</span>(x, <span class="dv">5</span>)</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>sigma <span class="ot">&lt;-</span> roll<span class="sc">::</span><span class="fu">roll_cov</span>(x, <span class="at">width =</span> <span class="dv">5</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="minimize-variance" class="level1">
+<h1>Minimize variance</h1>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">roll_min_var</span>(sigma)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p><span class="math display">\[
+\begin{aligned}
+\begin{array}{rrcl}
+\displaystyle\min_{x}&amp;\frac{1}{2}\mathbf{w}^T\Sigma\mathbf{w}\\
+\textrm{s.t.}&amp;\mathbf{w}^{T}e&amp;=&amp;1
+\end{array}
+\end{aligned}
+\]</span></p>
+<p>To incorporate these conditions into one equation, introduce new variables <span class="math inline">\(\lambda_{i}\)</span> that are the Lagrange multipliers and define a new function <span class="math inline">\(\mathcal{L}\)</span> as follows:</p>
+<p><span class="math display">\[
+\begin{aligned}
+\mathcal{L}(\mathbf{w},\lambda)&amp;=\frac{1}{2}\mathbf{w}^{T}\Sigma\mathbf{w}-\lambda_{1}(\mathbf{w}^{T}e-1)
+\end{aligned}
+\]</span></p>
+<p>Then, to minimize this function, take derivatives with respect to <span class="math inline">\(w\)</span> and Lagrange multipliers <span class="math inline">\(\lambda_{i}\)</span>:</p>
+<p><span class="math display">\[
+\begin{aligned}
+\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial w}&amp;=\mathbf{w}\Sigma-\lambda_{1}e=0\\
+\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial \lambda_{1}}&amp;=\mathbf{w}e^T-1=0
+\end{aligned}
+\]</span></p>
+<p>Simplify the equations above in matrix form and solve for the Lagrange multipliers <span class="math inline">\(\lambda_{i}\)</span>:</p>
+<p><span class="math display">\[
+\begin{aligned}
+\begin{bmatrix}
+\Sigma &amp; e \\
+e^{T} &amp; 0
+\end{bmatrix}
+\begin{bmatrix}
+\mathbf{w} \\
+-\lambda_{1}
+\end{bmatrix}
+&amp;=
+\begin{bmatrix}
+0 \\
+1
+\end{bmatrix}
+\\
+\begin{bmatrix}
+\mathbf{w} \\
+-\lambda_{1}
+\end{bmatrix}
+&amp;=
+\begin{bmatrix}
+\Sigma &amp; e \\
+e^{T} &amp; 0
+\end{bmatrix}^{-1}
+\begin{bmatrix}
+0 \\
+1
+\end{bmatrix}
+\end{aligned}
+\]</span></p>
+</section>
+<section id="maximize-mean" class="level1">
+<h1>Maximize mean</h1>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">roll_max_mean</span>(mu)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p><span class="math display">\[
+\begin{aligned}
+\begin{array}{rrcl}
+\displaystyle\max_{x}&amp;\mathbf{w}^{T}\mu\\
+\textrm{s.t.}&amp;\mathbf{w}^{T}e&amp;=&amp;1
+\end{array}
+\end{aligned}
+\]</span></p>
+<p>Then transform the quadratic constraint into a second-order cone constraint:</p>
+<p><span class="math display">\[
+\begin{aligned}
+\begin{array}{rrcl}
+\displaystyle\max_{x}&amp;\mathbf{w}^{T}\mu\\
+\textrm{s.t.}&amp;\mathbf{w}^{T}e&amp;=&amp;1
+\end{array}
+\end{aligned}
+\]</span></p>
+<p>To incorporate these conditions into one equation, introduce new variables <span class="math inline">\(\lambda_{i}\)</span> that are the Lagrange multipliers and define a new function <span class="math inline">\(\mathcal{L}\)</span> as follows:</p>
+<p><span class="math display">\[
+\begin{aligned}
+\mathcal{L}(\mathbf{w},\lambda)&amp;=\mathbf{w}^{T}\mu-\lambda_{1}(\mathbf{w}^{T}e-1)
+\end{aligned}
+\]</span></p>
+<p>Then, to minimize this function, take derivatives with respect to <span class="math inline">\(w\)</span> and Lagrange multipliers <span class="math inline">\(\lambda_{i}\)</span>:</p>
+<p><span class="math display">\[
+\begin{aligned}
+\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial w}&amp;=\mu-\lambda_{1}e=0\\
+\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial \lambda_{1}}&amp;=\mathbf{w}e^T-1=0
+\end{aligned}
+\]</span></p>
+<p>Simplify the equations above in matrix form and solve for the Lagrange multipliers <span class="math inline">\(\lambda_{i}\)</span>:</p>
+<p><span class="math display">\[
+\begin{aligned}
+\begin{bmatrix}
+\mu &amp; e \\
+e^{T} &amp; 0
+\end{bmatrix}
+\begin{bmatrix}
+\mathbf{w} \\
+-\lambda_{1}
+\end{bmatrix}
+&amp;=
+\begin{bmatrix}
+0 \\
+1
+\end{bmatrix}
+\\
+\begin{bmatrix}
+\mathbf{w} \\
+-\lambda_{1}
+\end{bmatrix}
+&amp;=
+\begin{bmatrix}
+\mu &amp; e \\
+e^{T} &amp; 0
+\end{bmatrix}^{-1}
+\begin{bmatrix}
+0 \\
+1
+\end{bmatrix}
+\end{aligned}
+\]</span></p>
+</section>
+<section id="references" class="level1">
+<h1>References</h1>
+<ul>
+<li><a href="https://www.adrian.idv.hk/2021-06-22-kkt/" class="uri">https://www.adrian.idv.hk/2021-06-22-kkt/</a></li>
+<li><a href="https://or.stackexchange.com/a/3738" class="uri">https://or.stackexchange.com/a/3738</a></li>
+<li><a href="https://bookdown.org/compfinezbook/introFinRbook/Portfolio-Theory-with-Matrix-Algebra.html#algorithm-for-computing-efficient-frontier" class="uri">https://bookdown.org/compfinezbook/introFinRbook/Portfolio-Theory-with-Matrix-Algebra.html#algorithm-for-computing-efficient-frontier</a></li>
+</ul>
 
 
+</section>
 
-
-<div class="quarto-listing quarto-listing-container-default" id="listing-listing">
-<div class="list quarto-listing-default">
-<div class="quarto-post image-right" data-index="0" data-categories="computing,python,r" data-listing-date-sort="1698379200000" data-listing-file-modified-sort="1698407762367" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="4">
-<div class="thumbnail">
-<p><a href="./posts/cloud/index.html"> <div class="listing-item-img-placeholder card-img-top" style="height: 0px;">&nbsp;</div> </a></p>
-</div>
-<div class="body">
-<a href="./posts/cloud/index.html">
-<h3 class="no-anchor listing-title">
-Cloud
-</h3>
-<div class="listing-subtitle">
-
-</div>
-</a>
-<div class="listing-categories">
-<div class="listing-category" onclick="window.quartoListingCategory('computing'); return false;">
-computing
-</div>
-<div class="listing-category" onclick="window.quartoListingCategory('python'); return false;">
-python
-</div>
-<div class="listing-category" onclick="window.quartoListingCategory('r'); return false;">
-r
-</div>
-</div>
-<a href="./posts/cloud/index.html">
-<div class="listing-description">
-Use Amazon Route 53 as the DNS service provider:
-</div>
-</a>
-</div>
-<div class="metadata">
-<a href="./posts/cloud/index.html">
-<div class="listing-date">
-Oct 27, 2023
-</div>
-</a><div class="listing-author"><a href="./posts/cloud/index.html">
-</a><a href="mailto:jason.j.foster@gmail.com">Jason Foster</a>
-</div>
-
-</div>
-</div>
-<div class="quarto-post image-right" data-index="1" data-categories="development,r" data-listing-date-sort="1698379200000" data-listing-file-modified-sort="1698415649106" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="2">
-<div class="thumbnail">
-<p><a href="./posts/dev/index.html"> <div class="listing-item-img-placeholder card-img-top" style="height: 0px;">&nbsp;</div> </a></p>
-</div>
-<div class="body">
-<a href="./posts/dev/index.html">
-<h3 class="no-anchor listing-title">
-Software
-</h3>
-<div class="listing-subtitle">
-
-</div>
-</a>
-<div class="listing-categories">
-<div class="listing-category" onclick="window.quartoListingCategory('development'); return false;">
-development
-</div>
-<div class="listing-category" onclick="window.quartoListingCategory('r'); return false;">
-r
-</div>
-</div>
-<a href="./posts/dev/index.html">
-<div class="listing-description">
-If needed, generate an SSH key: RStudio &gt; Tools &gt; Git/SVN &gt; Create RSA Key…
-</div>
-</a>
-</div>
-<div class="metadata">
-<a href="./posts/dev/index.html">
-<div class="listing-date">
-Oct 27, 2023
-</div>
-</a><div class="listing-author"><a href="./posts/dev/index.html">
-</a><a href="mailto:jason.j.foster@gmail.com">Jason Foster</a>
-</div>
-
-</div>
-</div>
-<div class="quarto-post image-right" data-index="2" data-categories="algorithms,r" data-listing-date-sort="1698379200000" data-listing-file-modified-sort="1698417647241" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="1">
-<div class="thumbnail">
-<p><a href="./posts/optim/index.html"> <p class="card-img-top"><img src="https://github.com/jjf234/rollport/actions/workflows/check-standard.yaml/badge.svg" style="height: 0px;"  class="thumbnail-image card-img"/></p> </a></p>
-</div>
-<div class="body">
-<a href="./posts/optim/index.html">
-<h3 class="no-anchor listing-title">
-Optimization
-</h3>
-<div class="listing-subtitle">
-
-</div>
-</a>
-<div class="listing-categories">
-<div class="listing-category" onclick="window.quartoListingCategory('algorithms'); return false;">
-algorithms
-</div>
-<div class="listing-category" onclick="window.quartoListingCategory('r'); return false;">
-r
-</div>
-</div>
-<a href="./posts/optim/index.html">
-<div class="listing-description">
- 
-</div>
-</a>
-</div>
-<div class="metadata">
-<a href="./posts/optim/index.html">
-<div class="listing-date">
-Oct 27, 2023
-</div>
-</a><div class="listing-author"><a href="./posts/optim/index.html">
-</a><a href="mailto:jason.j.foster@gmail.com">Jason Foster</a>
-</div>
-
-</div>
-</div>
-<div class="quarto-post image-right" data-index="3" data-categories="algorithms,r" data-listing-date-sort="1698379200000" data-listing-file-modified-sort="1698414179734" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="11">
-<div class="thumbnail">
-<p><a href="./posts/roll/index.html"> <p class="card-img-top"><img src="https://github.com/jjf234/roll/workflows/R-CMD-check/badge.svg" style="height: 0px;"  class="thumbnail-image card-img"/></p> </a></p>
-</div>
-<div class="body">
-<a href="./posts/roll/index.html">
-<h3 class="no-anchor listing-title">
-Statistics
-</h3>
-<div class="listing-subtitle">
-
-</div>
-</a>
-<div class="listing-categories">
-<div class="listing-category" onclick="window.quartoListingCategory('algorithms'); return false;">
-algorithms
-</div>
-<div class="listing-category" onclick="window.quartoListingCategory('r'); return false;">
-r
-</div>
-</div>
-<a href="./posts/roll/index.html">
-<div class="listing-description">
-      
-</div>
-</a>
-</div>
-<div class="metadata">
-<a href="./posts/roll/index.html">
-<div class="listing-date">
-Oct 27, 2023
-</div>
-</a><div class="listing-author"><a href="./posts/roll/index.html">
-</a><a href="mailto:jason.j.foster@gmail.com">Jason Foster</a>
-</div>
-
-</div>
-</div>
-</div>
-<div class="listing-no-matching d-none">
-No matching items
-</div>
-</div></main> <!-- /main -->
+</main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {
   const toggleBodyColorMode = (bsSheetEl) => {
