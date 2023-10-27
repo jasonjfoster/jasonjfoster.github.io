@@ -1,0 +1,278 @@
+---
+title: "Statistics"
+author: "[Jason Foster](mailto:jason.j.foster@gmail.com)"
+date: today
+categories:
+  - statistics
+  - analysis
+  - r
+---
+
+[![](https://github.com/jjf234/roll/workflows/R-CMD-check/badge.svg)](https://github.com/jjf234/roll/actions) [![](http://www.r-pkg.org/badges/version/roll)](https://cran.r-project.org/package=roll) [![](https://codecov.io/gh/jjf234/roll/graph/badge.svg)](https://codecov.io/github/jjf234/roll) [![](http://cranlogs.r-pkg.org/badges/last-day/roll?color=brightgreen)](http://cranlogs.r-pkg.org/badges/last-day/roll) [![](http://cranlogs.r-pkg.org/badges/last-week/roll?color=brightgreen)](http://cranlogs.r-pkg.org/badges/last-week/roll) [![](http://cranlogs.r-pkg.org/badges/roll?color=brightgreen)](http://cranlogs.r-pkg.org/badges/roll) [![](http://cranlogs.r-pkg.org/badges/grand-total/roll?color=brightgreen)](http://cranlogs.r-pkg.org/badges/grand-total/roll)
+
+# Usage
+
+```{r}
+library(roll)
+library(microbenchmark)
+options(microbenchmark.unit = "us")
+```
+
+```{r}
+n_vars <- 10
+n_obs <- 1000
+weights <- 0.9 ^ (n_obs:1)
+
+x <- matrix(rnorm(n_obs * n_vars), nrow = n_obs, ncol = n_vars)
+y <- matrix(rnorm(n_obs), nrow = n_obs, ncol = 1)
+x_lgl <- x < 0
+```
+
+# Rolling any
+
+```{r}
+result <- microbenchmark("125" = roll_any(x_lgl, width = 125, min_obs = 1),
+                         "250" = roll_any(x_lgl, width = 250, min_obs = 1),
+                         "500" = roll_any(x_lgl, width = 500, min_obs = 1),
+                         "1000" = roll_any(x_lgl, width = 1000, min_obs = 1))
+print(result)
+```
+
+# Rolling all
+
+```{r}
+result <- microbenchmark("125" = roll_all(x_lgl, width = 125, min_obs = 1),
+                         "250" = roll_all(x_lgl, width = 250, min_obs = 1),
+                         "500" = roll_all(x_lgl, width = 500, min_obs = 1),
+                         "1000" = roll_all(x_lgl, width = 1000, min_obs = 1))
+print(result)
+```
+
+# Rolling sums
+
+$$
+\begin{aligned}
+&\text{Expanding window} \\
+&\bullet\text{sum}_{x}\leftarrow\lambda\times\text{sum}_{x}+\text{w}_{new}\times\text{x}_{new}\\
+&\text{Rolling window}\\
+&\bullet\text{sum}_{x}\leftarrow\lambda\times\text{sum}_{x}+\text{w}_{new}\times\text{x}_{new}-\lambda\times\text{w}_{old}\times\text{x}_{old}
+\end{aligned}
+$$
+
+```{r}
+result <- microbenchmark("125" = roll_sum(x, width = 125, min_obs = 1, weights = weights),
+                         "250" = roll_sum(x, width = 250, min_obs = 1, weights = weights),
+                         "500" = roll_sum(x, width = 500, min_obs = 1, weights = weights),
+                         "1000" = roll_sum(x, width = 1000, min_obs = 1, weights = weights))
+print(result)
+```
+
+# Rolling products
+
+$$
+\begin{aligned}
+&\text{Expanding window}\\
+&\bullet\text{prod}_{w}\leftarrow\text{prod}_{w}\times\text{w}_{new}\\
+&\bullet\text{prod}_{x}\leftarrow\text{prod}_{x}\times\text{x}_{new}\\
+&\text{Rolling window}\\
+&\bullet\text{prod}_{x}\leftarrow\text{prod}_{x}\times\text{x}_{new}/\text{x}_{old}
+\end{aligned}
+$$
+
+```{r}
+result <- microbenchmark("125" = roll_prod(x, width = 125, min_obs = 1, weights = weights),
+                         "250" = roll_prod(x, width = 250, min_obs = 1, weights = weights),
+                         "500" = roll_prod(x, width = 500, min_obs = 1, weights = weights),
+                         "1000" = roll_prod(x, width = 1000, min_obs = 1, weights = weights))
+print(result)
+```
+
+# Rolling means
+
+$$
+\begin{aligned}
+&\text{Expanding window}\\
+&\bullet\text{sum}_{w}\leftarrow\text{sum}_{w}+\text{w}_{new}\\
+&\bullet\text{sum}_{x}\leftarrow\lambda\times\text{sum}_{x}+\text{w}_{new}\times\text{x}_{new}\\
+&\text{Rolling window}\\
+&\bullet\text{sum}_{x}\leftarrow\lambda\times\text{sum}_{x}+\text{w}_{new}\times\text{x}_{new}-\lambda\times\text{w}_{old}\times \text{x}_{old}
+\end{aligned}
+$$
+
+```{r}
+result <- microbenchmark("125" = roll_mean(x, width = 125, min_obs = 1, weights = weights),
+                         "250" = roll_mean(x, width = 250, min_obs = 1, weights = weights),
+                         "500" = roll_mean(x, width = 500, min_obs = 1, weights = weights),
+                         "1000" = roll_mean(x, width = 1000, min_obs = 1, weights = weights))
+print(result)
+```
+
+# Rolling minimums
+
+```{r}
+result <- microbenchmark("125" = roll_min(x, width = 125, min_obs = 1, weights = weights),
+                         "250" = roll_min(x, width = 250, min_obs = 1, weights = weights),
+                         "500" = roll_min(x, width = 500, min_obs = 1, weights = weights),
+                         "1000" = roll_min(x, width = 1000, min_obs = 1, weights = weights))
+print(result)
+```
+
+# Rolling maximums
+
+```{r}
+result <- microbenchmark("125" = roll_max(x, width = 125, min_obs = 1, weights = weights),
+                         "250" = roll_max(x, width = 250, min_obs = 1, weights = weights),
+                         "500" = roll_max(x, width = 500, min_obs = 1, weights = weights),
+                         "1000" = roll_max(x, width = 1000, min_obs = 1, weights = weights))
+print(result)
+```
+
+# Rolling index of minimums
+
+```{r}
+result <- microbenchmark("125" = roll_idxmin(x, width = 125, min_obs = 1, weights = weights),
+                         "250" = roll_idxmin(x, width = 250, min_obs = 1, weights = weights),
+                         "500" = roll_idxmin(x, width = 500, min_obs = 1, weights = weights),
+                         "1000" = roll_idxmin(x, width = 1000, min_obs = 1, weights = weights))
+print(result)
+```
+
+# Rolling index of maximums
+
+```{r}
+result <- microbenchmark("125" = roll_idxmax(x, width = 125, min_obs = 1, weights = weights),
+                         "250" = roll_idxmax(x, width = 250, min_obs = 1, weights = weights),
+                         "500" = roll_idxmax(x, width = 500, min_obs = 1, weights = weights),
+                         "1000" = roll_idxmax(x, width = 1000, min_obs = 1, weights = weights))
+print(result)
+```
+
+# Rolling medians
+
+```{r}
+result <- microbenchmark("125" = roll_median(x, width = 125, min_obs = 1, weights = weights),
+                         "250" = roll_median(x, width = 250, min_obs = 1, weights = weights),
+                         "500" = roll_median(x, width = 500, min_obs = 1, weights = weights),
+                         "1000" = roll_median(x, width = 1000, min_obs = 1, weights = weights))
+print(result)
+```
+
+# Rolling quantiles
+
+```{r}
+result <- microbenchmark("125" = roll_quantile(x, width = 125, min_obs = 1, weights = weights),
+                         "250" = roll_quantile(x, width = 250, min_obs = 1, weights = weights),
+                         "500" = roll_quantile(x, width = 500, min_obs = 1, weights = weights),
+                         "1000" = roll_quantile(x, width = 1000, min_obs = 1, weights = weights))
+print(result)
+```
+
+# Rolling variances
+
+$$
+\begin{aligned}
+&\text{Expanding window}\\
+&\bullet\text{sum}_{w}\leftarrow\text{sum}_{w}+\text{w}_{new}\\
+&\bullet\text{sumsq}_{w}\leftarrow\text{sumsq}_{w}+\text{w}_{new}^{2}\\
+&\bullet\text{sumsq}_{x}\leftarrow\lambda\times\text{sumsq}_{x}+\text{w}_{new}\times (\text{x}_{new}-\text{mean}_{x})(\text{x}_{new}-\text{mean}_{prev_x})\\
+&\text{Rolling window}\\
+&\bullet\text{sumsq}_{x}\leftarrow\lambda\times\text{sumsq}_{x}+\text{w}_{new}\times (\text{x}_{new}-\text{mean}_{x})(\text{x}_{new}-\text{mean}_{prev_x})-\\
+&\lambda\times\text{w}_{old}\times (\text{x}_{old}-\text{mean}_{x})(\text{x}_{old}-\text{mean}_{prev_x})
+\end{aligned}
+$$
+
+```{r}
+result <- microbenchmark("125" = roll_var(x, width = 125, min_obs = 1, weights = weights),
+                         "250" = roll_var(x, width = 250, min_obs = 1, weights = weights),
+                         "500" = roll_var(x, width = 500, min_obs = 1, weights = weights),
+                         "1000" = roll_var(x, width = 1000, min_obs = 1, weights = weights))
+print(result)
+```
+
+# Rolling standard deviations
+
+```{r}
+result <- microbenchmark("125" = roll_sd(x, width = 125, min_obs = 1, weights = weights),
+                         "250" = roll_sd(x, width = 250, min_obs = 1, weights = weights),
+                         "500" = roll_sd(x, width = 500, min_obs = 1, weights = weights),
+                         "1000" = roll_sd(x, width = 1000, min_obs = 1, weights = weights))
+print(result)
+```
+
+# Rolling scaling and centering
+
+```{r}
+result <- microbenchmark("125" = roll_scale(x, width = 125, min_obs = 1, weights = weights),
+                         "250" = roll_scale(x, width = 250, min_obs = 1, weights = weights),
+                         "500" = roll_scale(x, width = 500, min_obs = 1, weights = weights),
+                         "1000" = roll_scale(x, width = 1000, min_obs = 1, weights = weights))
+print(result)
+```
+
+# Rolling covariances
+
+$$
+\begin{aligned}
+&\text{Expanding window}\\
+&\bullet\text{sum}_{w}\leftarrow\text{sum}_{w}+\text{w}_{new}\\
+&\bullet\text{sumsq}_{w}\leftarrow\text{sumsq}_{w}+\text{w}_{new}^{2}\\
+&\bullet\text{sumsq}_{xy}\leftarrow\lambda\times\text{sumsq}_{xy}+\text{w}_{new}\times (\text{x}_{new}-\text{mean}_{x})(\text{y}_{new}-\text{mean}_{prev_y})\\
+&\text{Rolling window}\\
+&\bullet\text{sumsq}_{xy}\leftarrow\lambda\times\text{sumsq}_{xy}+\text{w}_{new}\times (\text{x}_{new}-\text{mean}_{x})(\text{y}_{new}-\text{mean}_{prev_y})-\\
+&\lambda\times\text{w}_{old}\times (\text{x}_{old}-\text{mean}_{x})(\text{y}_{old}-\text{mean}_{prev_y})
+\end{aligned}
+$$
+
+```{r}
+result <- microbenchmark("125" = roll_cov(x, width = 125, min_obs = 1, weights = weights),
+                         "250" = roll_cov(x, width = 250, min_obs = 1, weights = weights),
+                         "500" = roll_cov(x, width = 500, min_obs = 1, weights = weights),
+                         "1000" = roll_cov(x, width = 1000, min_obs = 1, weights = weights))
+print(result)
+```
+
+# Rolling correlations
+
+```{r}
+result <- microbenchmark("125" = roll_cor(x, width = 125, min_obs = 1, weights = weights),
+                         "250" = roll_cor(x, width = 250, min_obs = 1, weights = weights),
+                         "500" = roll_cor(x, width = 500, min_obs = 1, weights = weights),
+                         "1000" = roll_cor(x, width = 1000, min_obs = 1, weights = weights))
+print(result)
+```
+
+# Rolling linear models
+
+$$
+\begin{aligned}
+&\text{coef}=\text{cov}_{xx}^{-1}\times\text{cov}_{xy}\\
+&\text{intercept}=\text{mean}_{y}-\text{coef}\times\text{mean}_{x}\\
+&\text{rsq}=\frac{\text{coef}^{T}\times\text{cov}_{xx}\times\text{coef}}{\text{var}_{y}}\\
+&\text{var}_{resid}=\frac{(1-\text{rsq})(\text{var}_{y})(\text{sum}_{w}-\text{sumsq}_{w}/\text{sum}_{w})}{\text{n}_{rows}-\text{n}_{cols}}\\
+&\text{xx}=\text{cov}_{xx}\times(\text{sum}_{w}-\text{sumsq}_{w}/\text{sum}_{w})\\
+&\text{se}_{coef}=\sqrt{\text{var}_{resid}\times\text{diag}(\text{xx}^{-1})}\\
+&\text{se}_{intercept}=\sqrt{\text{var}_{resid}\left(1/\text{sum}_{w}+\text{mean}_{x}^{T}\text{xx}^{-1}\text{mean}_{x}\right)}
+\end{aligned}
+$$
+
+```{r}
+result <- microbenchmark("125" = roll_lm(x, y, width = 125, min_obs = 1, weights = weights),
+                         "250" = roll_lm(x, y, width = 250, min_obs = 1, weights = weights),
+                         "500" = roll_lm(x, y, width = 500, min_obs = 1, weights = weights),
+                         "1000" = roll_lm(x, y, width = 1000, min_obs = 1, weights = weights))
+print(result)
+```
+
+# References
+
+- https://stackoverflow.com/a/9933794
+- https://stackoverflow.com/a/11316626
+- https://stackoverflow.com/a/34363187
+- https://stackoverflow.com/a/243342
+- https://stats.stackexchange.com/a/64217
+- https://stackoverflow.com/a/51992954
+- https://stackoverflow.com/a/25921772
+- https://stackoverflow.com/a/40416506
+- https://stackoverflow.com/a/5970314
+- https://gist.github.com/ashelly/5665911
+- https://stackoverflow.com/a/51992954

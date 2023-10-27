@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.450">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Jason Foster">
+<meta name="dcterms.date" content="2023-10-26">
+
+<title>jjf234.github.io - Statistics</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body class="nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">jjf234.github.io</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/jjf234" rel="" target=""><i class="bi bi-github" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+</ul>
+            <div class="quarto-navbar-tools">
+</div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<header id="title-block-header" class="quarto-title-block default page-columns page-full">
+  <div class="quarto-title-banner page-columns page-full">
+    <div class="quarto-title column-body">
+      <h1 class="title">Statistics</h1>
+                                <div class="quarto-categories">
+                <div class="quarto-category">statistics</div>
+                <div class="quarto-category">analysis</div>
+                <div class="quarto-category">r</div>
+              </div>
+                  </div>
+  </div>
+    
+  
+  <div class="quarto-title-meta">
+
+      <div>
+      <div class="quarto-title-meta-heading">Author</div>
+      <div class="quarto-title-meta-contents">
+               <p><a href="mailto:jason.j.foster@gmail.com">Jason Foster</a> </p>
+            </div>
+    </div>
+      
+      <div>
+      <div class="quarto-title-meta-heading">Published</div>
+      <div class="quarto-title-meta-contents">
+        <p class="date">October 26, 2023</p>
+      </div>
+    </div>
+    
+      
+    </div>
+    
+  
+  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#usage" id="toc-usage" class="nav-link active" data-scroll-target="#usage">Usage</a></li>
+  <li><a href="#rolling-any" id="toc-rolling-any" class="nav-link" data-scroll-target="#rolling-any">Rolling any</a></li>
+  <li><a href="#rolling-all" id="toc-rolling-all" class="nav-link" data-scroll-target="#rolling-all">Rolling all</a></li>
+  <li><a href="#rolling-sums" id="toc-rolling-sums" class="nav-link" data-scroll-target="#rolling-sums">Rolling sums</a></li>
+  <li><a href="#rolling-products" id="toc-rolling-products" class="nav-link" data-scroll-target="#rolling-products">Rolling products</a></li>
+  <li><a href="#rolling-means" id="toc-rolling-means" class="nav-link" data-scroll-target="#rolling-means">Rolling means</a></li>
+  <li><a href="#rolling-minimums" id="toc-rolling-minimums" class="nav-link" data-scroll-target="#rolling-minimums">Rolling minimums</a></li>
+  <li><a href="#rolling-maximums" id="toc-rolling-maximums" class="nav-link" data-scroll-target="#rolling-maximums">Rolling maximums</a></li>
+  <li><a href="#rolling-index-of-minimums" id="toc-rolling-index-of-minimums" class="nav-link" data-scroll-target="#rolling-index-of-minimums">Rolling index of minimums</a></li>
+  <li><a href="#rolling-index-of-maximums" id="toc-rolling-index-of-maximums" class="nav-link" data-scroll-target="#rolling-index-of-maximums">Rolling index of maximums</a></li>
+  <li><a href="#rolling-medians" id="toc-rolling-medians" class="nav-link" data-scroll-target="#rolling-medians">Rolling medians</a></li>
+  <li><a href="#rolling-quantiles" id="toc-rolling-quantiles" class="nav-link" data-scroll-target="#rolling-quantiles">Rolling quantiles</a></li>
+  <li><a href="#rolling-variances" id="toc-rolling-variances" class="nav-link" data-scroll-target="#rolling-variances">Rolling variances</a></li>
+  <li><a href="#rolling-standard-deviations" id="toc-rolling-standard-deviations" class="nav-link" data-scroll-target="#rolling-standard-deviations">Rolling standard deviations</a></li>
+  <li><a href="#rolling-scaling-and-centering" id="toc-rolling-scaling-and-centering" class="nav-link" data-scroll-target="#rolling-scaling-and-centering">Rolling scaling and centering</a></li>
+  <li><a href="#rolling-covariances" id="toc-rolling-covariances" class="nav-link" data-scroll-target="#rolling-covariances">Rolling covariances</a></li>
+  <li><a href="#rolling-correlations" id="toc-rolling-correlations" class="nav-link" data-scroll-target="#rolling-correlations">Rolling correlations</a></li>
+  <li><a href="#rolling-linear-models" id="toc-rolling-linear-models" class="nav-link" data-scroll-target="#rolling-linear-models">Rolling linear models</a></li>
+  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content quarto-banner-title-block" id="quarto-document-content">
+
+
+
+
+<p><a href="https://github.com/jjf234/roll/actions"><img src="https://github.com/jjf234/roll/workflows/R-CMD-check/badge.svg" class="img-fluid"></a> <a href="https://cran.r-project.org/package=roll"><img src="http://www.r-pkg.org/badges/version/roll.png" class="img-fluid"></a> <a href="https://codecov.io/github/jjf234/roll"><img src="https://codecov.io/gh/jjf234/roll/graph/badge.svg" class="img-fluid"></a> <a href="http://cranlogs.r-pkg.org/badges/last-day/roll"><img src="http://cranlogs.r-pkg.org/badges/last-day/roll?color=brightgreen.png" class="img-fluid"></a> <a href="http://cranlogs.r-pkg.org/badges/last-week/roll"><img src="http://cranlogs.r-pkg.org/badges/last-week/roll?color=brightgreen.png" class="img-fluid"></a> <a href="http://cranlogs.r-pkg.org/badges/roll"><img src="http://cranlogs.r-pkg.org/badges/roll?color=brightgreen.png" class="img-fluid"></a> <a href="http://cranlogs.r-pkg.org/badges/grand-total/roll"><img src="http://cranlogs.r-pkg.org/badges/grand-total/roll?color=brightgreen.png" class="img-fluid"></a></p>
+<section id="usage" class="level1">
+<h1>Usage</h1>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(roll)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(microbenchmark)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">options</span>(<span class="at">microbenchmark.unit =</span> <span class="st">"us"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>n_vars <span class="ot">&lt;-</span> <span class="dv">10</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>n_obs <span class="ot">&lt;-</span> <span class="dv">1000</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>weights <span class="ot">&lt;-</span> <span class="fl">0.9</span> <span class="sc">^</span> (n_obs<span class="sc">:</span><span class="dv">1</span>)</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">rnorm</span>(n_obs <span class="sc">*</span> n_vars), <span class="at">nrow =</span> n_obs, <span class="at">ncol =</span> n_vars)</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>y <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">rnorm</span>(n_obs), <span class="at">nrow =</span> n_obs, <span class="at">ncol =</span> <span class="dv">1</span>)</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>x_lgl <span class="ot">&lt;-</span> x <span class="sc">&lt;</span> <span class="dv">0</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="rolling-any" class="level1">
+<h1>Rolling any</h1>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>result <span class="ot">&lt;-</span> <span class="fu">microbenchmark</span>(<span class="st">"125"</span> <span class="ot">=</span> <span class="fu">roll_any</span>(x_lgl, <span class="at">width =</span> <span class="dv">125</span>, <span class="at">min_obs =</span> <span class="dv">1</span>),</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>                         <span class="st">"250"</span> <span class="ot">=</span> <span class="fu">roll_any</span>(x_lgl, <span class="at">width =</span> <span class="dv">250</span>, <span class="at">min_obs =</span> <span class="dv">1</span>),</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>                         <span class="st">"500"</span> <span class="ot">=</span> <span class="fu">roll_any</span>(x_lgl, <span class="at">width =</span> <span class="dv">500</span>, <span class="at">min_obs =</span> <span class="dv">1</span>),</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>                         <span class="st">"1000"</span> <span class="ot">=</span> <span class="fu">roll_any</span>(x_lgl, <span class="at">width =</span> <span class="dv">1000</span>, <span class="at">min_obs =</span> <span class="dv">1</span>))</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(result)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Unit: microseconds
+ expr   min     lq    mean median     uq   max neval
+  125 115.9 135.40 154.959 149.75 173.10 231.8   100
+  250 112.3 137.45 162.303 159.50 171.45 797.6   100
+  500 108.4 137.05 154.277 152.45 165.00 249.8   100
+ 1000  92.4 129.45 147.559 144.15 167.70 224.3   100</code></pre>
+</div>
+</div>
+</section>
+<section id="rolling-all" class="level1">
+<h1>Rolling all</h1>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>result <span class="ot">&lt;-</span> <span class="fu">microbenchmark</span>(<span class="st">"125"</span> <span class="ot">=</span> <span class="fu">roll_all</span>(x_lgl, <span class="at">width =</span> <span class="dv">125</span>, <span class="at">min_obs =</span> <span class="dv">1</span>),</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>                         <span class="st">"250"</span> <span class="ot">=</span> <span class="fu">roll_all</span>(x_lgl, <span class="at">width =</span> <span class="dv">250</span>, <span class="at">min_obs =</span> <span class="dv">1</span>),</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>                         <span class="st">"500"</span> <span class="ot">=</span> <span class="fu">roll_all</span>(x_lgl, <span class="at">width =</span> <span class="dv">500</span>, <span class="at">min_obs =</span> <span class="dv">1</span>),</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>                         <span class="st">"1000"</span> <span class="ot">=</span> <span class="fu">roll_all</span>(x_lgl, <span class="at">width =</span> <span class="dv">1000</span>, <span class="at">min_obs =</span> <span class="dv">1</span>))</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(result)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Unit: microseconds
+ expr   min    lq    mean median     uq   max neval
+  125 121.4 145.2 165.172 164.80 179.85 303.1   100
+  250 123.0 145.2 163.905 163.55 178.00 233.8   100
+  500 113.6 138.7 163.590 163.00 182.00 398.5   100
+ 1000 117.3 138.5 156.606 154.25 171.30 208.0   100</code></pre>
+</div>
+</div>
+</section>
+<section id="rolling-sums" class="level1">
+<h1>Rolling sums</h1>
+<p><span class="math display">\[
+\begin{aligned}
+&amp;\text{Expanding window} \\
+&amp;\bullet\text{sum}_{x}\leftarrow\lambda\times\text{sum}_{x}+\text{w}_{new}\times\text{x}_{new}\\
+&amp;\text{Rolling window}\\
+&amp;\bullet\text{sum}_{x}\leftarrow\lambda\times\text{sum}_{x}+\text{w}_{new}\times\text{x}_{new}-\lambda\times\text{w}_{old}\times\text{x}_{old}
+\end{aligned}
+\]</span></p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>result <span class="ot">&lt;-</span> <span class="fu">microbenchmark</span>(<span class="st">"125"</span> <span class="ot">=</span> <span class="fu">roll_sum</span>(x, <span class="at">width =</span> <span class="dv">125</span>, <span class="at">min_obs =</span> <span class="dv">1</span>, <span class="at">weights =</span> weights),</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>                         <span class="st">"250"</span> <span class="ot">=</span> <span class="fu">roll_sum</span>(x, <span class="at">width =</span> <span class="dv">250</span>, <span class="at">min_obs =</span> <span class="dv">1</span>, <span class="at">weights =</span> weights),</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>                         <span class="st">"500"</span> <span class="ot">=</span> <span class="fu">roll_sum</span>(x, <span class="at">width =</span> <span class="dv">500</span>, <span class="at">min_obs =</span> <span class="dv">1</span>, <span class="at">weights =</span> weights),</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>                         <span class="st">"1000"</span> <span class="ot">=</span> <span class="fu">roll_sum</span>(x, <span class="at">width =</span> <span class="dv">1000</span>, <span class="at">min_obs =</span> <span class="dv">1</span>, <span class="at">weights =</span> weights))</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(result)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Unit: microseconds
+ expr   min     lq    mean median     uq   max neval
+  125  99.2 115.85 127.267 122.80 134.80 200.7   100
+  250 100.6 113.25 125.246 118.45 130.80 251.1   100
+  500  90.2 113.45 123.926 119.40 130.75 206.5   100
+ 1000  91.1 111.05 122.297 116.25 128.25 318.3   100</code></pre>
+</div>
+</div>
+</section>
+<section id="rolling-products" class="level1">
+<h1>Rolling products</h1>
+<p><span class="math display">\[
+\begin{aligned}
+&amp;\text{Expanding window}\\
+&amp;\bullet\text{prod}_{w}\leftarrow\text{prod}_{w}\times\text{w}_{new}\\
+&amp;\bullet\text{prod}_{x}\leftarrow\text{prod}_{x}\times\text{x}_{new}\\
+&amp;\text{Rolling window}\\
+&amp;\bullet\text{prod}_{x}\leftarrow\text{prod}_{x}\times\text{x}_{new}/\text{x}_{old}
+\end{aligned}
+\]</span></p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>result <span class="ot">&lt;-</span> <span class="fu">microbenchmark</span>(<span class="st">"125"</span> <span class="ot">=</span> <span class="fu">roll_prod</span>(x, <span class="at">width =</span> <span class="dv">125</span>, <span class="at">min_obs =</span> <span class="dv">1</span>, <span class="at">weights =</span> weights),</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>                         <span class="st">"250"</span> <span class="ot">=</span> <span class="fu">roll_prod</span>(x, <span class="at">width =</span> <span class="dv">250</span>, <span class="at">min_obs =</span> <span class="dv">1</span>, <span class="at">weights =</span> weights),</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>                         <span class="st">"500"</span> <span class="ot">=</span> <span class="fu">roll_prod</span>(x, <span class="at">width =</span> <span class="dv">500</span>, <span class="at">min_obs =</span> <span class="dv">1</span>, <span class="at">weights =</span> weights),</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>                         <span class="st">"1000"</span> <span class="ot">=</span> <span class="fu">roll_prod</span>(x, <span class="at">width =</span> <span class="dv">1000</span>, <span class="at">min_obs =</span> <span class="dv">1</span>, <span class="at">weights =</span> weights))</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(result)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Unit: microseconds
+ expr   min     lq    mean median     uq   max neval
+  125 219.0 247.95 268.572 260.65 284.50 375.6   100
+  250 221.2 246.35 274.705 257.45 279.45 593.3   100
+  500 167.8 177.25 201.781 190.25 209.15 437.3   100
+ 1000 148.1 170.15 187.870 179.80 202.25 271.9   100</code></pre>
+</div>
+</div>
+</section>
+<section id="rolling-means" class="level1">
+<h1>Rolling means</h1>
+<p><span class="math display">\[
+\begin{aligned}
+&amp;\text{Expanding window}\\
+&amp;\bullet\text{sum}_{w}\leftarrow\text{sum}_{w}+\text{w}_{new}\\
+&amp;\bullet\text{sum}_{x}\leftarrow\lambda\times\text{sum}_{x}+\text{w}_{new}\times\text{x}_{new}\\
+&amp;\text{Rolling window}\\
+&amp;\bullet\text{sum}_{x}\leftarrow\lambda\times\text{sum}_{x}+\text{w}_{new}\times\text{x}_{new}-\lambda\times\text{w}_{old}\times \text{x}_{old}
+\end{aligned}
+\]</span></p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>result <span class="ot">&lt;-</span> <span class="fu">microbenchmark</span>(<span class="st">"125"</span> <span class="ot">=</span> <span class="fu">roll_mean</span>(x, <span class="at">width =</span> <span class="dv">125</span>, <span class="at">min_obs =</span> <span class="dv">1</span>, <span class="at">weights =</span> weights),</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>                         <span class="st">"250"</span> <span class="ot">=</span> <span class="fu">roll_mean</span>(x, <span class="at">width =</span> <span class="dv">250</span>, <span class="at">min_obs =</span> <span class="dv">1</span>, <span class="at">weights =</span> weights),</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>                         <span class="st">"500"</span> <span class="ot">=</span> <span class="fu">roll_mean</span>(x, <span class="at">width =</span> <span class="dv">500</span>, <span class="at">min_obs =</span> <span class="dv">1</span>, <span class="at">weights =</span> weights),</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>                         <span class="st">"1000"</span> <span class="ot">=</span> <span class="fu">roll_mean</span>(x, <span class="at">width =</span> <span class="dv">1000</span>, <span class="at">min_obs =</span> <span class="dv">1</span>, <span class="at">weights =</span> weights))</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(result)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Unit: microseconds
+ expr   min     lq    mean median     uq   max neval
+  125 112.5 123.35 139.701 131.45 144.55 269.1   100
+  250 107.5 122.65 146.559 129.15 159.90 335.0   100
+  500 112.1 122.50 138.988 129.10 149.05 242.0   100
+ 1000 101.5 116.65 134.377 122.15 141.30 258.2   100</code></pre>
+</div>
+</div>
+</section>
+<section id="rolling-minimums" class="level1">
+<h1>Rolling minimums</h1>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>result <span class="ot">&lt;-</span> <span class="fu">microbenchmark</span>(<span class="st">"125"</span> <span class="ot">=</span> <span class="fu">roll_min</span>(x, <span class="at">width =</span> <span class="dv">125</span>, <span class="at">min_obs =</span> <span class="dv">1</span>, <span class="at">weights =</span> weights),</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>                         <span class="st">"250"</span> <span class="ot">=</span> <span class="fu">roll_min</span>(x, <span class="at">width =</span> <span class="dv">250</span>, <span class="at">min_obs =</span> <span class="dv">1</span>, <span class="at">weights =</span> weights),</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>                         <span class="st">"500"</span> <span class="ot">=</span> <span class="fu">roll_min</span>(x, <span class="at">width =</span> <span class="dv">500</span>, <span class="at">min_obs =</span> <span class="dv">1</span>, <span class="at">weights =</span> weights),</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>                         <span class="st">"1000"</span> <span class="ot">=</span> <span class="fu">roll_min</span>(x, <span class="at">width =</span> <span class="dv">1000</span>, <span class="at">min_obs =</span> <span class="dv">1</span>, <span class="at">weights =</span> weights))</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(result)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Unit: microseconds
+ expr   min     lq    mean median     uq   max neval
+  125 108.6 141.95 163.239 151.10 179.55 339.3   100
+  250  93.9 140.15 156.887 152.80 166.20 282.7   100
+  500 108.6 141.25 160.178 154.75 168.65 285.3   100
+ 1000 114.5 140.65 167.044 157.35 180.10 436.1   100</code></pre>
+</div>
+</div>
+</section>
+<section id="rolling-maximums" class="level1">
+<h1>Rolling maximums</h1>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>result <span class="ot">&lt;-</span> <span class="fu">microbenchmark</span>(<span class="st">"125"</span> <span class="ot">=</span> <span class="fu">roll_max</span>(x, <span class="at">width =</span> <span class="dv">125</span>, <span class="at">min_obs =</span> <span class="dv">1</span>, <span class="at">weights =</span> weights),</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>                         <span class="st">"250"</span> <span class="ot">=</span> <span class="fu">roll_max</span>(x, <span class="at">width =</span> <span class="dv">250</span>, <span class="at">min_obs =</span> <span class="dv">1</span>, <span class="at">weights =</span> weights),</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>                         <span class="st">"500"</span> <span class="ot">=</span> <span class="fu">roll_max</span>(x, <span class="at">width =</span> <span class="dv">500</span>, <span class="at">min_obs =</span> <span class="dv">1</span>, <span class="at">weights =</span> weights),</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>                         <span class="st">"1000"</span> <span class="ot">=</span> <span class="fu">roll_max</span>(x, <span class="at">width =</span> <span class="dv">1000</span>, <span class="at">min_obs =</span> <span class="dv">1</span>, <span class="at">weights =</span> weights))</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(result)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Unit: microseconds
+ expr   min     lq    mean median     uq   max neval
+  125 107.8 124.95 142.167 134.65 148.05 471.4   100
+  250 110.0 126.55 140.650 138.25 149.50 200.1   100
+  500  99.8 126.50 144.583 139.55 156.70 316.9   100
+ 1000 106.9 129.65 144.226 142.90 154.95 211.3   100</code></pre>
+</div>
+</div>
+</section>
+<section id="rolling-index-of-minimums" class="level1">
+<h1>Rolling index of minimums</h1>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>result <span class="ot">&lt;-</span> <span class="fu">microbenchmark</span>(<span class="st">"125"</span> <span class="ot">=</span> <span class="fu">roll_idxmin</span>(x, <span class="at">width =</span> <span class="dv">125</span>, <span class="at">min_obs =</span> <span class="dv">1</span>, <span class="at">weights =</span> weights),</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>                         <span class="st">"250"</span> <span class="ot">=</span> <span class="fu">roll_idxmin</span>(x, <span class="at">width =</span> <span class="dv">250</span>, <span class="at">min_obs =</span> <span class="dv">1</span>, <span class="at">weights =</span> weights),</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>                         <span class="st">"500"</span> <span class="ot">=</span> <span class="fu">roll_idxmin</span>(x, <span class="at">width =</span> <span class="dv">500</span>, <span class="at">min_obs =</span> <span class="dv">1</span>, <span class="at">weights =</span> weights),</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>                         <span class="st">"1000"</span> <span class="ot">=</span> <span class="fu">roll_idxmin</span>(x, <span class="at">width =</span> <span class="dv">1000</span>, <span class="at">min_obs =</span> <span class="dv">1</span>, <span class="at">weights =</span> weights))</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(result)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Unit: microseconds
+ expr   min     lq    mean median     uq   max neval
+  125 101.4 116.85 137.319 126.65 139.20 297.7   100
+  250 101.7 117.50 131.449 122.80 130.40 364.5   100
+  500 104.5 118.60 140.364 126.65 148.00 410.9   100
+ 1000 105.1 122.45 139.048 130.75 144.95 269.9   100</code></pre>
+</div>
+</div>
+</section>
+<section id="rolling-index-of-maximums" class="level1">
+<h1>Rolling index of maximums</h1>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>result <span class="ot">&lt;-</span> <span class="fu">microbenchmark</span>(<span class="st">"125"</span> <span class="ot">=</span> <span class="fu">roll_idxmax</span>(x, <span class="at">width =</span> <span class="dv">125</span>, <span class="at">min_obs =</span> <span class="dv">1</span>, <span class="at">weights =</span> weights),</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>                         <span class="st">"250"</span> <span class="ot">=</span> <span class="fu">roll_idxmax</span>(x, <span class="at">width =</span> <span class="dv">250</span>, <span class="at">min_obs =</span> <span class="dv">1</span>, <span class="at">weights =</span> weights),</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>                         <span class="st">"500"</span> <span class="ot">=</span> <span class="fu">roll_idxmax</span>(x, <span class="at">width =</span> <span class="dv">500</span>, <span class="at">min_obs =</span> <span class="dv">1</span>, <span class="at">weights =</span> weights),</span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>                         <span class="st">"1000"</span> <span class="ot">=</span> <span class="fu">roll_idxmax</span>(x, <span class="at">width =</span> <span class="dv">1000</span>, <span class="at">min_obs =</span> <span class="dv">1</span>, <span class="at">weights =</span> weights))</span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(result)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Unit: microseconds
+ expr  min     lq    mean median     uq   max neval
+  125 98.6 115.25 139.598 122.10 134.70 295.7   100
+  250 95.2 115.60 135.641 122.95 139.45 347.6   100
+  500 94.5 115.55 141.160 127.10 150.80 326.1   100
+ 1000 93.3 117.40 139.866 123.95 144.95 304.3   100</code></pre>
+</div>
+</div>
+</section>
+<section id="rolling-medians" class="level1">
+<h1>Rolling medians</h1>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>result <span class="ot">&lt;-</span> <span class="fu">microbenchmark</span>(<span class="st">"125"</span> <span class="ot">=</span> <span class="fu">roll_median</span>(x, <span class="at">width =</span> <span class="dv">125</span>, <span class="at">min_obs =</span> <span class="dv">1</span>, <span class="at">weights =</span> weights),</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>                         <span class="st">"250"</span> <span class="ot">=</span> <span class="fu">roll_median</span>(x, <span class="at">width =</span> <span class="dv">250</span>, <span class="at">min_obs =</span> <span class="dv">1</span>, <span class="at">weights =</span> weights),</span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>                         <span class="st">"500"</span> <span class="ot">=</span> <span class="fu">roll_median</span>(x, <span class="at">width =</span> <span class="dv">500</span>, <span class="at">min_obs =</span> <span class="dv">1</span>, <span class="at">weights =</span> weights),</span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>                         <span class="st">"1000"</span> <span class="ot">=</span> <span class="fu">roll_median</span>(x, <span class="at">width =</span> <span class="dv">1000</span>, <span class="at">min_obs =</span> <span class="dv">1</span>, <span class="at">weights =</span> weights))</span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(result)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Unit: microseconds
+ expr     min       lq      mean  median       uq     max neval
+  125  5150.8  6186.55  9590.901  8158.8 11555.20 21904.0   100
+  250  9575.1 12801.10 17507.619 15964.3 22563.05 32051.7   100
+  500 18805.7 25644.75 31608.130 32638.2 37725.75 46514.8   100
+ 1000 24095.7 35539.65 43471.627 45041.2 50207.05 60347.9   100</code></pre>
+</div>
+</div>
+</section>
+<section id="rolling-quantiles" class="level1">
+<h1>Rolling quantiles</h1>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>result <span class="ot">&lt;-</span> <span class="fu">microbenchmark</span>(<span class="st">"125"</span> <span class="ot">=</span> <span class="fu">roll_quantile</span>(x, <span class="at">width =</span> <span class="dv">125</span>, <span class="at">min_obs =</span> <span class="dv">1</span>, <span class="at">weights =</span> weights),</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>                         <span class="st">"250"</span> <span class="ot">=</span> <span class="fu">roll_quantile</span>(x, <span class="at">width =</span> <span class="dv">250</span>, <span class="at">min_obs =</span> <span class="dv">1</span>, <span class="at">weights =</span> weights),</span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>                         <span class="st">"500"</span> <span class="ot">=</span> <span class="fu">roll_quantile</span>(x, <span class="at">width =</span> <span class="dv">500</span>, <span class="at">min_obs =</span> <span class="dv">1</span>, <span class="at">weights =</span> weights),</span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>                         <span class="st">"1000"</span> <span class="ot">=</span> <span class="fu">roll_quantile</span>(x, <span class="at">width =</span> <span class="dv">1000</span>, <span class="at">min_obs =</span> <span class="dv">1</span>, <span class="at">weights =</span> weights))</span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(result)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Unit: microseconds
+ expr     min       lq      mean   median       uq     max neval
+  125  4755.5  6039.35  9361.454  7867.55 11459.10 22137.4   100
+  250  9364.7 12753.30 18613.935 17492.10 25031.55 35136.4   100
+  500 18003.4 26979.00 32917.533 32386.55 38485.70 63617.2   100
+ 1000 28402.1 36385.60 44732.429 46574.50 49840.60 81582.4   100</code></pre>
+</div>
+</div>
+</section>
+<section id="rolling-variances" class="level1">
+<h1>Rolling variances</h1>
+<p><span class="math display">\[
+\begin{aligned}
+&amp;\text{Expanding window}\\
+&amp;\bullet\text{sum}_{w}\leftarrow\text{sum}_{w}+\text{w}_{new}\\
+&amp;\bullet\text{sumsq}_{w}\leftarrow\text{sumsq}_{w}+\text{w}_{new}^{2}\\
+&amp;\bullet\text{sumsq}_{x}\leftarrow\lambda\times\text{sumsq}_{x}+\text{w}_{new}\times (\text{x}_{new}-\text{mean}_{x})(\text{x}_{new}-\text{mean}_{prev_x})\\
+&amp;\text{Rolling window}\\
+&amp;\bullet\text{sumsq}_{x}\leftarrow\lambda\times\text{sumsq}_{x}+\text{w}_{new}\times (\text{x}_{new}-\text{mean}_{x})(\text{x}_{new}-\text{mean}_{prev_x})-\\
+&amp;\lambda\times\text{w}_{old}\times (\text{x}_{old}-\text{mean}_{x})(\text{x}_{old}-\text{mean}_{prev_x})
+\end{aligned}
+\]</span></p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>result <span class="ot">&lt;-</span> <span class="fu">microbenchmark</span>(<span class="st">"125"</span> <span class="ot">=</span> <span class="fu">roll_var</span>(x, <span class="at">width =</span> <span class="dv">125</span>, <span class="at">min_obs =</span> <span class="dv">1</span>, <span class="at">weights =</span> weights),</span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>                         <span class="st">"250"</span> <span class="ot">=</span> <span class="fu">roll_var</span>(x, <span class="at">width =</span> <span class="dv">250</span>, <span class="at">min_obs =</span> <span class="dv">1</span>, <span class="at">weights =</span> weights),</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>                         <span class="st">"500"</span> <span class="ot">=</span> <span class="fu">roll_var</span>(x, <span class="at">width =</span> <span class="dv">500</span>, <span class="at">min_obs =</span> <span class="dv">1</span>, <span class="at">weights =</span> weights),</span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>                         <span class="st">"1000"</span> <span class="ot">=</span> <span class="fu">roll_var</span>(x, <span class="at">width =</span> <span class="dv">1000</span>, <span class="at">min_obs =</span> <span class="dv">1</span>, <span class="at">weights =</span> weights))</span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(result)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Unit: microseconds
+ expr   min     lq    mean median     uq   max neval
+  125 128.4 155.75 182.052 180.05 195.30 419.0   100
+  250 129.2 154.70 181.915 175.15 202.80 285.5   100
+  500 115.6 153.30 178.855 173.55 194.85 316.9   100
+ 1000 103.3 148.45 173.415 168.45 191.90 279.2   100</code></pre>
+</div>
+</div>
+</section>
+<section id="rolling-standard-deviations" class="level1">
+<h1>Rolling standard deviations</h1>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>result <span class="ot">&lt;-</span> <span class="fu">microbenchmark</span>(<span class="st">"125"</span> <span class="ot">=</span> <span class="fu">roll_sd</span>(x, <span class="at">width =</span> <span class="dv">125</span>, <span class="at">min_obs =</span> <span class="dv">1</span>, <span class="at">weights =</span> weights),</span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>                         <span class="st">"250"</span> <span class="ot">=</span> <span class="fu">roll_sd</span>(x, <span class="at">width =</span> <span class="dv">250</span>, <span class="at">min_obs =</span> <span class="dv">1</span>, <span class="at">weights =</span> weights),</span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>                         <span class="st">"500"</span> <span class="ot">=</span> <span class="fu">roll_sd</span>(x, <span class="at">width =</span> <span class="dv">500</span>, <span class="at">min_obs =</span> <span class="dv">1</span>, <span class="at">weights =</span> weights),</span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>                         <span class="st">"1000"</span> <span class="ot">=</span> <span class="fu">roll_sd</span>(x, <span class="at">width =</span> <span class="dv">1000</span>, <span class="at">min_obs =</span> <span class="dv">1</span>, <span class="at">weights =</span> weights))</span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(result)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Unit: microseconds
+ expr   min     lq    mean median    uq   max neval
+  125 134.7 167.65 188.983  179.3 205.8 336.8   100
+  250 142.6 160.55 188.298  175.0 197.5 424.4   100
+  500 142.0 163.40 185.809  175.9 200.5 358.0   100
+ 1000 113.3 158.60 187.717  174.6 212.8 302.0   100</code></pre>
+</div>
+</div>
+</section>
+<section id="rolling-scaling-and-centering" class="level1">
+<h1>Rolling scaling and centering</h1>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>result <span class="ot">&lt;-</span> <span class="fu">microbenchmark</span>(<span class="st">"125"</span> <span class="ot">=</span> <span class="fu">roll_scale</span>(x, <span class="at">width =</span> <span class="dv">125</span>, <span class="at">min_obs =</span> <span class="dv">1</span>, <span class="at">weights =</span> weights),</span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>                         <span class="st">"250"</span> <span class="ot">=</span> <span class="fu">roll_scale</span>(x, <span class="at">width =</span> <span class="dv">250</span>, <span class="at">min_obs =</span> <span class="dv">1</span>, <span class="at">weights =</span> weights),</span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>                         <span class="st">"500"</span> <span class="ot">=</span> <span class="fu">roll_scale</span>(x, <span class="at">width =</span> <span class="dv">500</span>, <span class="at">min_obs =</span> <span class="dv">1</span>, <span class="at">weights =</span> weights),</span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>                         <span class="st">"1000"</span> <span class="ot">=</span> <span class="fu">roll_scale</span>(x, <span class="at">width =</span> <span class="dv">1000</span>, <span class="at">min_obs =</span> <span class="dv">1</span>, <span class="at">weights =</span> weights))</span>
+<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(result)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Unit: microseconds
+ expr   min     lq    mean median     uq    max neval
+  125 181.9 218.60 251.402 245.25 275.95  390.4   100
+  250 160.1 218.10 252.482 237.80 271.10  533.5   100
+  500 164.3 211.65 249.751 240.05 266.55 1054.5   100
+ 1000 165.1 209.45 235.390 228.20 253.15  495.1   100</code></pre>
+</div>
+</div>
+</section>
+<section id="rolling-covariances" class="level1">
+<h1>Rolling covariances</h1>
+<p><span class="math display">\[
+\begin{aligned}
+&amp;\text{Expanding window}\\
+&amp;\bullet\text{sum}_{w}\leftarrow\text{sum}_{w}+\text{w}_{new}\\
+&amp;\bullet\text{sumsq}_{w}\leftarrow\text{sumsq}_{w}+\text{w}_{new}^{2}\\
+&amp;\bullet\text{sumsq}_{xy}\leftarrow\lambda\times\text{sumsq}_{xy}+\text{w}_{new}\times (\text{x}_{new}-\text{mean}_{x})(\text{y}_{new}-\text{mean}_{prev_y})\\
+&amp;\text{Rolling window}\\
+&amp;\bullet\text{sumsq}_{xy}\leftarrow\lambda\times\text{sumsq}_{xy}+\text{w}_{new}\times (\text{x}_{new}-\text{mean}_{x})(\text{y}_{new}-\text{mean}_{prev_y})-\\
+&amp;\lambda\times\text{w}_{old}\times (\text{x}_{old}-\text{mean}_{x})(\text{y}_{old}-\text{mean}_{prev_y})
+\end{aligned}
+\]</span></p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>result <span class="ot">&lt;-</span> <span class="fu">microbenchmark</span>(<span class="st">"125"</span> <span class="ot">=</span> <span class="fu">roll_cov</span>(x, <span class="at">width =</span> <span class="dv">125</span>, <span class="at">min_obs =</span> <span class="dv">1</span>, <span class="at">weights =</span> weights),</span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>                         <span class="st">"250"</span> <span class="ot">=</span> <span class="fu">roll_cov</span>(x, <span class="at">width =</span> <span class="dv">250</span>, <span class="at">min_obs =</span> <span class="dv">1</span>, <span class="at">weights =</span> weights),</span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>                         <span class="st">"500"</span> <span class="ot">=</span> <span class="fu">roll_cov</span>(x, <span class="at">width =</span> <span class="dv">500</span>, <span class="at">min_obs =</span> <span class="dv">1</span>, <span class="at">weights =</span> weights),</span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a>                         <span class="st">"1000"</span> <span class="ot">=</span> <span class="fu">roll_cov</span>(x, <span class="at">width =</span> <span class="dv">1000</span>, <span class="at">min_obs =</span> <span class="dv">1</span>, <span class="at">weights =</span> weights))</span>
+<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(result)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Unit: microseconds
+ expr    min      lq     mean  median      uq    max neval
+  125  987.6 1198.85 1900.643 1282.65 1469.50 9750.1   100
+  250 1015.7 1189.00 1615.321 1290.50 1451.55 9055.2   100
+  500  987.7 1158.70 1475.664 1230.20 1347.90 7613.0   100
+ 1000  962.7 1102.15 1421.479 1176.40 1284.90 4656.9   100</code></pre>
+</div>
+</div>
+</section>
+<section id="rolling-correlations" class="level1">
+<h1>Rolling correlations</h1>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>result <span class="ot">&lt;-</span> <span class="fu">microbenchmark</span>(<span class="st">"125"</span> <span class="ot">=</span> <span class="fu">roll_cor</span>(x, <span class="at">width =</span> <span class="dv">125</span>, <span class="at">min_obs =</span> <span class="dv">1</span>, <span class="at">weights =</span> weights),</span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>                         <span class="st">"250"</span> <span class="ot">=</span> <span class="fu">roll_cor</span>(x, <span class="at">width =</span> <span class="dv">250</span>, <span class="at">min_obs =</span> <span class="dv">1</span>, <span class="at">weights =</span> weights),</span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>                         <span class="st">"500"</span> <span class="ot">=</span> <span class="fu">roll_cor</span>(x, <span class="at">width =</span> <span class="dv">500</span>, <span class="at">min_obs =</span> <span class="dv">1</span>, <span class="at">weights =</span> weights),</span>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>                         <span class="st">"1000"</span> <span class="ot">=</span> <span class="fu">roll_cor</span>(x, <span class="at">width =</span> <span class="dv">1000</span>, <span class="at">min_obs =</span> <span class="dv">1</span>, <span class="at">weights =</span> weights))</span>
+<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(result)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Unit: microseconds
+ expr    min      lq     mean  median     uq     max neval
+  125  977.9 1222.55 1417.275 1294.35 1383.8  5953.1   100
+  250 1027.8 1186.25 1442.641 1260.20 1362.2  6681.8   100
+  500 1032.6 1178.90 1423.558 1249.70 1330.0 11414.2   100
+ 1000  976.9 1145.30 1324.186 1200.05 1259.6  7715.9   100</code></pre>
+</div>
+</div>
+</section>
+<section id="rolling-linear-models" class="level1">
+<h1>Rolling linear models</h1>
+<p><span class="math display">\[
+\begin{aligned}
+&amp;\text{coef}=\text{cov}_{xx}^{-1}\times\text{cov}_{xy}\\
+&amp;\text{intercept}=\text{mean}_{y}-\text{coef}\times\text{mean}_{x}\\
+&amp;\text{rsq}=\frac{\text{coef}^{T}\times\text{cov}_{xx}\times\text{coef}}{\text{var}_{y}}\\
+&amp;\text{var}_{resid}=\frac{(1-\text{rsq})(\text{var}_{y})(\text{sum}_{w}-\text{sumsq}_{w}/\text{sum}_{w})}{\text{n}_{rows}-\text{n}_{cols}}\\
+&amp;\text{xx}=\text{cov}_{xx}\times(\text{sum}_{w}-\text{sumsq}_{w}/\text{sum}_{w})\\
+&amp;\text{se}_{coef}=\sqrt{\text{var}_{resid}\times\text{diag}(\text{xx}^{-1})}\\
+&amp;\text{se}_{intercept}=\sqrt{\text{var}_{resid}\left(1/\text{sum}_{w}+\text{mean}_{x}^{T}\text{xx}^{-1}\text{mean}_{x}\right)}
+\end{aligned}
+\]</span></p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>result <span class="ot">&lt;-</span> <span class="fu">microbenchmark</span>(<span class="st">"125"</span> <span class="ot">=</span> <span class="fu">roll_lm</span>(x, y, <span class="at">width =</span> <span class="dv">125</span>, <span class="at">min_obs =</span> <span class="dv">1</span>, <span class="at">weights =</span> weights),</span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>                         <span class="st">"250"</span> <span class="ot">=</span> <span class="fu">roll_lm</span>(x, y, <span class="at">width =</span> <span class="dv">250</span>, <span class="at">min_obs =</span> <span class="dv">1</span>, <span class="at">weights =</span> weights),</span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>                         <span class="st">"500"</span> <span class="ot">=</span> <span class="fu">roll_lm</span>(x, y, <span class="at">width =</span> <span class="dv">500</span>, <span class="at">min_obs =</span> <span class="dv">1</span>, <span class="at">weights =</span> weights),</span>
+<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a>                         <span class="st">"1000"</span> <span class="ot">=</span> <span class="fu">roll_lm</span>(x, y, <span class="at">width =</span> <span class="dv">1000</span>, <span class="at">min_obs =</span> <span class="dv">1</span>, <span class="at">weights =</span> weights))</span>
+<span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(result)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Unit: microseconds
+ expr    min      lq     mean  median      uq     max neval
+  125 3235.9 5508.00 7297.390 6138.90 9031.55 23427.4   100
+  250 3487.0 5464.80 6866.324 6005.35 7508.45 16909.4   100
+  500 3216.0 5029.50 6465.669 5662.10 7295.70 12724.0   100
+ 1000 3050.9 4700.25 6298.018 5364.55 6823.20 16044.2   100</code></pre>
+</div>
+</div>
+</section>
+<section id="references" class="level1">
+<h1>References</h1>
+<ul>
+<li>https://stackoverflow.com/a/9933794</li>
+<li>https://stackoverflow.com/a/11316626</li>
+<li>https://stackoverflow.com/a/34363187</li>
+<li>https://stackoverflow.com/a/243342</li>
+<li>https://stats.stackexchange.com/a/64217</li>
+<li>https://stackoverflow.com/a/51992954</li>
+<li>https://stackoverflow.com/a/25921772</li>
+<li>https://stackoverflow.com/a/40416506</li>
+<li>https://stackoverflow.com/a/5970314</li>
+<li>https://gist.github.com/ashelly/5665911</li>
+<li>https://stackoverflow.com/a/51992954</li>
+</ul>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>
