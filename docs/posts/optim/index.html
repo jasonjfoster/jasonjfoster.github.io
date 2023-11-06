@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Jason Foster">
-<meta name="dcterms.date" content="2023-10-27">
+<meta name="dcterms.date" content="2023-11-06">
 
 <title>jjf234.github.io - Optimization</title>
 <style>
@@ -156,7 +156,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <div>
       <div class="quarto-title-meta-heading">Published</div>
       <div class="quarto-title-meta-contents">
-        <p class="date">October 27, 2023</p>
+        <p class="date">November 6, 2023</p>
       </div>
     </div>
     
@@ -176,6 +176,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#minimize-variance" id="toc-minimize-variance" class="nav-link" data-scroll-target="#minimize-variance">Minimize variance</a></li>
   <li><a href="#maximize-mean" id="toc-maximize-mean" class="nav-link" data-scroll-target="#maximize-mean">Maximize mean</a></li>
   <li><a href="#maximize-utility" id="toc-maximize-utility" class="nav-link" data-scroll-target="#maximize-utility">Maximize utility</a></li>
+  <li><a href="#minimize-residual-sum-of-squares" id="toc-minimize-residual-sum-of-squares" class="nav-link" data-scroll-target="#minimize-residual-sum-of-squares">Minimize residual sum of squares</a></li>
   <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
   </ul>
 </nav>
@@ -186,8 +187,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 
 
-<!---# https://github.com/quarto-dev/quarto-cli/issues/6092 -->
-<p><a href="https://github.com/jjf234/rollport/actions/workflows/check-standard.yaml"><img src="https://github.com/jjf234/rollport/actions/workflows/check-standard.yaml/badge.svg" class="img-fluid"></a> <a href="https://app.codecov.io/github/jjf234/rollport"><img src="https://codecov.io/gh/jjf234/rollport/graph/badge.svg" class="img-fluid"></a></p>
 <section id="usage" class="level1">
 <h1>Usage</h1>
 <div class="cell">
@@ -377,6 +376,65 @@ e^{T} &amp; 0
 \]</span></p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">roll_max_utility</span>(mu, sigma)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="minimize-residual-sum-of-squares" class="level1">
+<h1>Minimize residual sum of squares</h1>
+<p><span class="math display">\[
+\begin{aligned}
+\begin{array}{rrcl}
+\displaystyle\min&amp;\frac{1}{2}\delta(\mathbf{w}^T\Sigma\mathbf{w})-\mu^{T}\mathbf{w}\\
+\textrm{s.t.}&amp;e^T\mathbf{w}&amp;=&amp;1
+\end{array}
+\end{aligned}
+\]</span></p>
+<p>To incorporate these conditions into one equation, introduce new variables <span class="math inline">\(\lambda_{i}\)</span> that are the Lagrange multipliers and define a new function <span class="math inline">\(\mathcal{L}\)</span> as follows:</p>
+<p><span class="math display">\[
+\begin{aligned}
+\mathcal{L}(\mathbf{w},\lambda)&amp;=\frac{1}{2}\mathbf{w}^{T}\Sigma\mathbf{w}-\mu^{T}\mathbf{w}-\lambda_{1}(\mathbf{w}^{T}e-1)
+\end{aligned}
+\]</span></p>
+<p>Then, to minimize this function, take derivatives with respect to <span class="math inline">\(w\)</span> and Lagrange multipliers <span class="math inline">\(\lambda_{i}\)</span>:</p>
+<p><span class="math display">\[
+\begin{aligned}
+\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial w}&amp;=\mathbf{w}\Sigma-\mu^{T}-\lambda_{1}e=0\\
+\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial \lambda_{1}}&amp;=\mathbf{w}e^T-1=0
+\end{aligned}
+\]</span></p>
+<p>Simplify the equations above in matrix form and solve for the Lagrange multipliers <span class="math inline">\(\lambda_{i}\)</span>:</p>
+<p><span class="math display">\[
+\begin{aligned}
+\begin{bmatrix}
+\Sigma &amp; e \\
+e^{T} &amp; 0
+\end{bmatrix}
+\begin{bmatrix}
+\mathbf{w} \\
+-\lambda_{1}
+\end{bmatrix}
+&amp;=
+\begin{bmatrix}
+\mu^{T} \\
+1
+\end{bmatrix}
+\\
+\begin{bmatrix}
+\mathbf{w} \\
+-\lambda_{1}
+\end{bmatrix}
+&amp;=
+\begin{bmatrix}
+\Sigma &amp; e \\
+e^{T} &amp; 0
+\end{bmatrix}^{-1}
+\begin{bmatrix}
+\mu^{T} \\
+1
+\end{bmatrix}
+\end{aligned}
+\]</span></p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">roll_min_rss</span>(xx, xy)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="references" class="level1">

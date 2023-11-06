@@ -7,12 +7,7 @@ categories:
   - r
 execute:
   eval: false
-default-image-extension: ""
 ---
-
-<!---# https://github.com/quarto-dev/quarto-cli/issues/6092 -->
-
-[![](https://github.com/jjf234/rollport/actions/workflows/check-standard.yaml/badge.svg)](https://github.com/jjf234/rollport/actions/workflows/check-standard.yaml) [![](https://codecov.io/gh/jjf234/rollport/graph/badge.svg)](https://app.codecov.io/github/jjf234/rollport)
 
 # Usage
 
@@ -225,6 +220,72 @@ $$
 
 ```{r}
 roll_max_utility(mu, sigma)
+```
+
+# Minimize residual sum of squares
+
+$$
+\begin{aligned}
+\begin{array}{rrcl}
+\displaystyle\min&\frac{1}{2}\delta(\mathbf{w}^T\Sigma\mathbf{w})-\mu^{T}\mathbf{w}\\
+\textrm{s.t.}&e^T\mathbf{w}&=&1
+\end{array}
+\end{aligned}
+$$
+
+To incorporate these conditions into one equation, introduce new variables $\lambda_{i}$ that are the Lagrange multipliers and define a new function $\mathcal{L}$ as follows:
+
+$$
+\begin{aligned}
+\mathcal{L}(\mathbf{w},\lambda)&=\frac{1}{2}\mathbf{w}^{T}\Sigma\mathbf{w}-\mu^{T}\mathbf{w}-\lambda_{1}(\mathbf{w}^{T}e-1)
+\end{aligned}
+$$
+
+Then, to minimize this function, take derivatives with respect to $w$ and Lagrange multipliers $\lambda_{i}$:
+
+$$
+\begin{aligned}
+\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial w}&=\mathbf{w}\Sigma-\mu^{T}-\lambda_{1}e=0\\
+\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial \lambda_{1}}&=\mathbf{w}e^T-1=0
+\end{aligned}
+$$
+
+Simplify the equations above in matrix form and solve for the Lagrange multipliers $\lambda_{i}$:
+
+$$
+\begin{aligned}
+\begin{bmatrix}
+\Sigma & e \\
+e^{T} & 0
+\end{bmatrix}
+\begin{bmatrix}
+\mathbf{w} \\
+-\lambda_{1}
+\end{bmatrix}
+&=
+\begin{bmatrix}
+\mu^{T} \\
+1
+\end{bmatrix}
+\\
+\begin{bmatrix}
+\mathbf{w} \\
+-\lambda_{1}
+\end{bmatrix}
+&=
+\begin{bmatrix}
+\Sigma & e \\
+e^{T} & 0
+\end{bmatrix}^{-1}
+\begin{bmatrix}
+\mu^{T} \\
+1
+\end{bmatrix}
+\end{aligned}
+$$
+
+```{r}
+roll_min_rss(xx, xy)
 ```
 
 # References
