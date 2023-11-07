@@ -161,7 +161,7 @@ roll_max_mean(mu)
 $$
 \begin{aligned}
 \begin{array}{rrcl}
-\displaystyle\min&\frac{1}{2}\delta(\mathbf{w}^T\Sigma\mathbf{w})-\mu^{T}\mathbf{w}\\
+\displaystyle\min&\frac{1}{2}\delta(\mathbf{w}^{T}\Sigma\mathbf{w})-\mu^{T}\mathbf{w}\\
 \textrm{s.t.}&e^T\mathbf{w}&=&1
 \end{array}
 \end{aligned}
@@ -227,7 +227,7 @@ roll_max_utility(mu, sigma)
 $$
 \begin{aligned}
 \begin{array}{rrcl}
-\displaystyle\min&\frac{1}{2}\delta(\mathbf{w}^T\Sigma\mathbf{w})-\mu^{T}\mathbf{w}\\
+\displaystyle\min&\frac{1}{2}\delta(\mathbf{w}^{T}X^{T}X\mathbf{w})-X^{T}y\mathbf{w}\\
 \textrm{s.t.}&e^T\mathbf{w}&=&1
 \end{array}
 \end{aligned}
@@ -237,7 +237,7 @@ To incorporate these conditions into one equation, introduce new variables $\lam
 
 $$
 \begin{aligned}
-\mathcal{L}(\mathbf{w},\lambda)&=\frac{1}{2}\mathbf{w}^{T}\Sigma\mathbf{w}-\mu^{T}\mathbf{w}-\lambda_{1}(\mathbf{w}^{T}e-1)
+\mathcal{L}(\mathbf{w},\lambda)&=\frac{1}{2}\mathbf{w}^{T}X^{T}X\mathbf{w}-X^{T}y\mathbf{w}-\lambda_{1}(\mathbf{w}^{T}e-1)
 \end{aligned}
 $$
 
@@ -245,7 +245,7 @@ Then, to minimize this function, take derivatives with respect to $w$ and Lagran
 
 $$
 \begin{aligned}
-\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial w}&=\mathbf{w}\Sigma-\mu^{T}-\lambda_{1}e=0\\
+\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial w}&=\mathbf{w}X^{T}X-X^{T}y-\lambda_{1}e=0\\
 \frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial \lambda_{1}}&=\mathbf{w}e^T-1=0
 \end{aligned}
 $$
@@ -255,7 +255,7 @@ Simplify the equations above in matrix form and solve for the Lagrange multiplie
 $$
 \begin{aligned}
 \begin{bmatrix}
-\Sigma & e \\
+X^{T}X & e \\
 e^{T} & 0
 \end{bmatrix}
 \begin{bmatrix}
@@ -264,7 +264,7 @@ e^{T} & 0
 \end{bmatrix}
 &=
 \begin{bmatrix}
-\mu^{T} \\
+X^{T}y \\
 1
 \end{bmatrix}
 \\
@@ -274,11 +274,11 @@ e^{T} & 0
 \end{bmatrix}
 &=
 \begin{bmatrix}
-\Sigma & e \\
+X^{T}X & e \\
 e^{T} & 0
 \end{bmatrix}^{-1}
 \begin{bmatrix}
-\mu^{T} \\
+X^{T}y \\
 1
 \end{bmatrix}
 \end{aligned}

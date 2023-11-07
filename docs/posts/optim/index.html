@@ -324,7 +324,7 @@ e^{T} &amp; 0
 <p><span class="math display">\[
 \begin{aligned}
 \begin{array}{rrcl}
-\displaystyle\min&amp;\frac{1}{2}\delta(\mathbf{w}^T\Sigma\mathbf{w})-\mu^{T}\mathbf{w}\\
+\displaystyle\min&amp;\frac{1}{2}\delta(\mathbf{w}^{T}\Sigma\mathbf{w})-\mu^{T}\mathbf{w}\\
 \textrm{s.t.}&amp;e^T\mathbf{w}&amp;=&amp;1
 \end{array}
 \end{aligned}
@@ -383,7 +383,7 @@ e^{T} &amp; 0
 <p><span class="math display">\[
 \begin{aligned}
 \begin{array}{rrcl}
-\displaystyle\min&amp;\frac{1}{2}\delta(\mathbf{w}^T\Sigma\mathbf{w})-\mu^{T}\mathbf{w}\\
+\displaystyle\min&amp;\frac{1}{2}\delta(\mathbf{w}^{T}X^{T}X\mathbf{w})-X^{T}y\mathbf{w}\\
 \textrm{s.t.}&amp;e^T\mathbf{w}&amp;=&amp;1
 \end{array}
 \end{aligned}
@@ -391,13 +391,13 @@ e^{T} &amp; 0
 <p>To incorporate these conditions into one equation, introduce new variables <span class="math inline">\(\lambda_{i}\)</span> that are the Lagrange multipliers and define a new function <span class="math inline">\(\mathcal{L}\)</span> as follows:</p>
 <p><span class="math display">\[
 \begin{aligned}
-\mathcal{L}(\mathbf{w},\lambda)&amp;=\frac{1}{2}\mathbf{w}^{T}\Sigma\mathbf{w}-\mu^{T}\mathbf{w}-\lambda_{1}(\mathbf{w}^{T}e-1)
+\mathcal{L}(\mathbf{w},\lambda)&amp;=\frac{1}{2}\mathbf{w}^{T}X^{T}X\mathbf{w}-X^{T}y\mathbf{w}-\lambda_{1}(\mathbf{w}^{T}e-1)
 \end{aligned}
 \]</span></p>
 <p>Then, to minimize this function, take derivatives with respect to <span class="math inline">\(w\)</span> and Lagrange multipliers <span class="math inline">\(\lambda_{i}\)</span>:</p>
 <p><span class="math display">\[
 \begin{aligned}
-\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial w}&amp;=\mathbf{w}\Sigma-\mu^{T}-\lambda_{1}e=0\\
+\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial w}&amp;=\mathbf{w}X^{T}X-X^{T}y-\lambda_{1}e=0\\
 \frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial \lambda_{1}}&amp;=\mathbf{w}e^T-1=0
 \end{aligned}
 \]</span></p>
@@ -405,7 +405,7 @@ e^{T} &amp; 0
 <p><span class="math display">\[
 \begin{aligned}
 \begin{bmatrix}
-\Sigma &amp; e \\
+X^{T}X &amp; e \\
 e^{T} &amp; 0
 \end{bmatrix}
 \begin{bmatrix}
@@ -414,7 +414,7 @@ e^{T} &amp; 0
 \end{bmatrix}
 &amp;=
 \begin{bmatrix}
-\mu^{T} \\
+X^{T}y \\
 1
 \end{bmatrix}
 \\
@@ -424,11 +424,11 @@ e^{T} &amp; 0
 \end{bmatrix}
 &amp;=
 \begin{bmatrix}
-\Sigma &amp; e \\
+X^{T}X &amp; e \\
 e^{T} &amp; 0
 \end{bmatrix}^{-1}
 \begin{bmatrix}
-\mu^{T} \\
+X^{T}y \\
 1
 \end{bmatrix}
 \end{aligned}
