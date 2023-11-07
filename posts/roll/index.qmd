@@ -9,6 +9,7 @@ default-image-extension: ""
 ---
 
 <!---# https://github.com/quarto-dev/quarto-cli/issues/6092 -->
+
 [![](https://github.com/jjf234/roll/workflows/R-CMD-check/badge.svg)](https://github.com/jjf234/roll/actions) [![](https://www.r-pkg.org/badges/version/roll)](https://cran.r-project.org/package=roll) [![](https://codecov.io/gh/jjf234/roll/graph/badge.svg)](https://codecov.io/github/jjf234/roll) [![](https://cranlogs.r-pkg.org/badges/last-day/roll?color=brightgreen)](https://cranlogs.r-pkg.org/badges/last-day/roll) [![](https://cranlogs.r-pkg.org/badges/last-week/roll?color=brightgreen)](https://cranlogs.r-pkg.org/badges/last-week/roll) [![](https://cranlogs.r-pkg.org/badges/roll?color=brightgreen)](https://cranlogs.r-pkg.org/badges/roll) [![](https://cranlogs.r-pkg.org/badges/grand-total/roll?color=brightgreen)](https://cranlogs.r-pkg.org/badges/grand-total/roll)
 
 # Usage
@@ -242,6 +243,16 @@ result <- microbenchmark("125" = roll_cor(x, width = 125, min_obs = 1, weights =
 print(result)
 ```
 
+# Rolling crossproducts
+
+```{r}
+result <- microbenchmark("125" = roll_crossprod(x, width = 125, min_obs = 1, weights = weights),
+                         "250" = roll_crossprod(x, width = 250, min_obs = 1, weights = weights),
+                         "500" = roll_crossprod(x, width = 500, min_obs = 1, weights = weights),
+                         "1000" = roll_crossprod(x, width = 1000, min_obs = 1, weights = weights))
+print(result)
+```
+
 # Rolling linear models
 
 $$
@@ -266,14 +277,14 @@ print(result)
 
 # References
 
-- <https://stackoverflow.com/a/9933794>
-- <https://stackoverflow.com/a/11316626>
-- <https://stackoverflow.com/a/34363187>
-- <https://stackoverflow.com/a/243342>
-- <https://stats.stackexchange.com/a/64217>
-- <https://stackoverflow.com/a/51992954>
-- <https://stackoverflow.com/a/25921772>
-- <https://stackoverflow.com/a/40416506>
-- <https://stackoverflow.com/a/5970314>
-- <https://gist.github.com/ashelly/5665911>
-- <https://stackoverflow.com/a/51992954>
+-   <https://stackoverflow.com/a/9933794>
+-   <https://stackoverflow.com/a/11316626>
+-   <https://stackoverflow.com/a/34363187>
+-   <https://stackoverflow.com/a/243342>
+-   <https://stats.stackexchange.com/a/64217>
+-   <https://stackoverflow.com/a/51992954>
+-   <https://stackoverflow.com/a/25921772>
+-   <https://stackoverflow.com/a/40416506>
+-   <https://stackoverflow.com/a/5970314>
+-   <https://gist.github.com/ashelly/5665911>
+-   <https://stackoverflow.com/a/51992954>
