@@ -12,32 +12,37 @@ categories:
 
 ## Secure Shell
 
-```         
-# EC2 > Network & Security > Key Pairs > Create Key Pair > *.pem
-# PuTTYgen > Load an existing private key file > Save private key > *.ppk
-```
+EC2 \> Network & Security \> Key Pairs \> Create Key Pair \> \*.pem
+
+PuTTYgen \> Load an existing private key file \> Save private key \> \*.ppk
+
+Host Name: ec2-user\@ec2-1-23-456-789.us-east-2.compute.amazonaws.com
+
+Connection \> SSH \> Auth & WinSCP \> Auth \> Private key file for authentication
 
 ```         
-# Host Name: ec2-user@ec2-1-23-456-789.us-east-2.compute.amazonaws.com 
-# Connection > SSH > Auth & WinSCP > Auth > Private key file for authentication
-    
 sudo yum update
 ```
 
 ## Jupyter Server
 
+Amazon Linux 2
+
 ```         
-# Amazon Linux 2
 wget https://repo.anaconda.com/archive/Anaconda3-2023.03-Linux-x86_64.sh
 
 bash Anaconda3-2023.03-Linux-x86_64.sh
-# then close and re-open current shell
 ```
 
+Then close and re-open current shell
+
+-   <https://pypi.org/project/ipython/#history>
+
+-   <https://stackoverflow.com/a/76521018>
+
+-   <https://stackoverflow.com/a/77117477>
+
 ```         
-# https://pypi.org/project/ipython/#history
-# https://stackoverflow.com/a/76521018
-# https://stackoverflow.com/a/77117477
 pip install 'ipython==7.34.0' --force-reinstall
 ipython
 from IPython.lib import passwd
@@ -63,8 +68,9 @@ c.NotebookApp.password = 'sha1:asdfasdf:asfasdfasdf'
 ```         
 # nohup jupyter notebook
 nohup jupyter lab
-# then close and re-open current shell
 ```
+
+Then close and re-open current shell
 
 ```         
 jupyter nbconvert --to python <notebook>.ipynb
@@ -76,77 +82,93 @@ crontab -e
 # [ESC][:wq][ENTER]
 ```
 
-```         
-# http://1.23.456.789:8888
-```
+-   <http://1.23.456.789:8888>
 
 ## RStudio Server
 
--   Setup: <https://aws.amazon.com/blogs/big-data/running-r-on-aws/>
+* <https://aws.amazon.com/blogs/big-data/running-r-on-aws/>
+
+Install R
 
 ```         
-# install R
 sudo su
 # yum install -y R # Amazon Linux
 # amazon-linux-extras list
 sudo amazon-linux-extras install R3.4 # Amazon Linux 2
 ```
 
+Install RStudio Server
+
+-   <https://posit.co/download/rstudio-server/>
+
 ```         
-# https://posit.co/download/rstudio-server/
-# install RStudio Server 1.2.5019 (2019-11-01)
 wget https://download2.rstudio.org/server/centos6/x86_64/rstudio-server-rhel-1.2.5019-x86_64.rpm
 yum install rstudio-server-rhel-1.2.5019-x86_64.rpm
 rm rstudio-server-rhel-1.2.5019-x86_64.rpm
+```
 
-# https://posit.co/download/shiny-server/
-# install Shiny Server (2019-09-09)
+Install Shiny Server
+
+-   <https://posit.co/download/shiny-server/>
+
+```         
 R -e "install.packages('shiny', repos = 'http://cran.rstudio.com/')"
 wget https://download3.rstudio.org/centos6.3/x86_64/shiny-server-1.5.12.933-x86_64.rpm
 yum install --nogpgcheck shiny-server-1.5.12.933-x86_64.rpm
 rm shiny-server-1.5.12.933-x86_64.rpm
 ```
 
+Add user(s)
+
 ```         
-# add user(s)
 useradd -m jjf234
 sudo passwd jjf234 # prompt to enter password
 ```
+
+Need to create '/ShinyApps' under '/ec2-user' and then subfolders with code, e.g. /home/ec2-user/ShinyApps/hello
 
 ```         
 # sudo /opt/shiny-server/bin/deploy-example user-dirs
 # mkdir ~/ShinyApps
 # sudo cp -R /opt/shiny-server/samples/sample-apps/hello ~/ShinyApps
-
-# need to create '/ShinyApps' under '/ec2-user' and then subfolders with code
-# e.g.: /home/ec2-user/ShinyApps/hello
 ```
 
+Install devtools
+
 ```         
-# install devtools
 sudo yum install libcurl-devel
 sudo yum install openssl-devel
 sudo yum install libxml2-devel
 R -e "install.packages('devtools', repos = 'http://cran.rstudio.com/')"
+```
 
-# install RcppParallel
+Install RcppParallel
+
+```         
 R -e "install.packages('RcppParallel', repos = 'http://cran.rstudio.com/')"
+```
 
-# install RcppArmadillo
+Install RcppArmadillo
+
+```         
 R -e "install.packages('RcppArmadillo', repos = 'http://cran.rstudio.com/')"
+```
 
-# install other packages
+Install other packages
+
+```         
 R -e "install.packages(c('data.table', 'xts', 'testthat', 'microbenchmark'),
 repos = 'http://cran.rstudio.com/')"
+```
 
-# install roll
+Install roll
+
+```         
 R -e "devtools::install_github('jjf234/roll')"
 ```
 
-```         
-# http://1.23.456.789:8787/
-# http://1.23.456.789:3838/ec2-user/hello/
-```
+-   <http://1.23.456.789:8787/>
+-   <http://1.23.456.789:3838/ec2-user/hello/>
 
 # Amazon Route 53
 

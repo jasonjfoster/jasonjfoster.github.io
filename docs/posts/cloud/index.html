@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Jason Foster">
-<meta name="dcterms.date" content="2023-11-07">
+<meta name="dcterms.date" content="2023-11-09">
 
 <title>jjf234.github.io - Cloud</title>
 <style>
@@ -121,7 +121,7 @@ ul.task-list li input[type="checkbox"] {
       <div>
       <div class="quarto-title-meta-heading">Published</div>
       <div class="quarto-title-meta-contents">
-        <p class="date">November 7, 2023</p>
+        <p class="date">November 9, 2023</p>
       </div>
     </div>
     
@@ -157,24 +157,25 @@ ul.task-list li input[type="checkbox"] {
 <h1>Amazon Elastic Compute Cloud (EC2)</h1>
 <section id="secure-shell" class="level2">
 <h2 class="anchored" data-anchor-id="secure-shell">Secure Shell</h2>
-<pre><code># EC2 &gt; Network &amp; Security &gt; Key Pairs &gt; Create Key Pair &gt; *.pem
-# PuTTYgen &gt; Load an existing private key file &gt; Save private key &gt; *.ppk</code></pre>
-<pre><code># Host Name: ec2-user@ec2-1-23-456-789.us-east-2.compute.amazonaws.com 
-# Connection &gt; SSH &gt; Auth &amp; WinSCP &gt; Auth &gt; Private key file for authentication
-    
-sudo yum update</code></pre>
+<p>EC2 &gt; Network &amp; Security &gt; Key Pairs &gt; Create Key Pair &gt; *.pem</p>
+<p>PuTTYgen &gt; Load an existing private key file &gt; Save private key &gt; *.ppk</p>
+<p>Host Name: ec2-user@ec2-1-23-456-789.us-east-2.compute.amazonaws.com</p>
+<p>Connection &gt; SSH &gt; Auth &amp; WinSCP &gt; Auth &gt; Private key file for authentication</p>
+<pre><code>sudo yum update</code></pre>
 </section>
 <section id="jupyter-server" class="level2">
 <h2 class="anchored" data-anchor-id="jupyter-server">Jupyter Server</h2>
-<pre><code># Amazon Linux 2
-wget https://repo.anaconda.com/archive/Anaconda3-2023.03-Linux-x86_64.sh
+<p>Amazon Linux 2</p>
+<pre><code>wget https://repo.anaconda.com/archive/Anaconda3-2023.03-Linux-x86_64.sh
 
-bash Anaconda3-2023.03-Linux-x86_64.sh
-# then close and re-open current shell</code></pre>
-<pre><code># https://pypi.org/project/ipython/#history
-# https://stackoverflow.com/a/76521018
-# https://stackoverflow.com/a/77117477
-pip install 'ipython==7.34.0' --force-reinstall
+bash Anaconda3-2023.03-Linux-x86_64.sh</code></pre>
+<p>Then close and re-open current shell</p>
+<ul>
+<li><p><a href="https://pypi.org/project/ipython/#history" class="uri">https://pypi.org/project/ipython/#history</a></p></li>
+<li><p><a href="https://stackoverflow.com/a/76521018" class="uri">https://stackoverflow.com/a/76521018</a></p></li>
+<li><p><a href="https://stackoverflow.com/a/77117477" class="uri">https://stackoverflow.com/a/77117477</a></p></li>
+</ul>
+<pre><code>pip install 'ipython==7.34.0' --force-reinstall
 ipython
 from IPython.lib import passwd
 passwd("12345")
@@ -192,8 +193,8 @@ c.NotebookApp.open_browser = False # do not open a browser window by default whe
 c.NotebookApp.password = 'sha1:asdfasdf:asfasdfasdf'
 # [ESC][:wq][ENTER]</code></pre>
 <pre><code># nohup jupyter notebook
-nohup jupyter lab
-# then close and re-open current shell</code></pre>
+nohup jupyter lab</code></pre>
+<p>Then close and re-open current shell</p>
 <pre><code>jupyter nbconvert --to python &lt;notebook&gt;.ipynb
 sudo service crond start
 crontab -e
@@ -201,59 +202,60 @@ crontab -e
 # https://crontab.guru/
 # * * * * * /home/ec2-user/anaconda3/bin/python /home/ec2-user/&lt;notebook&gt;.py
 # [ESC][:wq][ENTER]</code></pre>
-<pre><code># http://1.23.456.789:8888</code></pre>
+<ul>
+<li><a href="http://1.23.456.789:8888" class="uri">http://1.23.456.789:8888</a></li>
+</ul>
 </section>
 <section id="rstudio-server" class="level2">
 <h2 class="anchored" data-anchor-id="rstudio-server">RStudio Server</h2>
 <ul>
-<li>Setup: <a href="https://aws.amazon.com/blogs/big-data/running-r-on-aws/" class="uri">https://aws.amazon.com/blogs/big-data/running-r-on-aws/</a></li>
+<li><a href="https://aws.amazon.com/blogs/big-data/running-r-on-aws/" class="uri">https://aws.amazon.com/blogs/big-data/running-r-on-aws/</a></li>
 </ul>
-<pre><code># install R
-sudo su
+<p>Install R</p>
+<pre><code>sudo su
 # yum install -y R # Amazon Linux
 # amazon-linux-extras list
 sudo amazon-linux-extras install R3.4 # Amazon Linux 2</code></pre>
-<pre><code># https://posit.co/download/rstudio-server/
-# install RStudio Server 1.2.5019 (2019-11-01)
-wget https://download2.rstudio.org/server/centos6/x86_64/rstudio-server-rhel-1.2.5019-x86_64.rpm
+<p>Install RStudio Server</p>
+<ul>
+<li><a href="https://posit.co/download/rstudio-server/" class="uri">https://posit.co/download/rstudio-server/</a></li>
+</ul>
+<pre><code>wget https://download2.rstudio.org/server/centos6/x86_64/rstudio-server-rhel-1.2.5019-x86_64.rpm
 yum install rstudio-server-rhel-1.2.5019-x86_64.rpm
-rm rstudio-server-rhel-1.2.5019-x86_64.rpm
-
-# https://posit.co/download/shiny-server/
-# install Shiny Server (2019-09-09)
-R -e "install.packages('shiny', repos = 'http://cran.rstudio.com/')"
+rm rstudio-server-rhel-1.2.5019-x86_64.rpm</code></pre>
+<p>Install Shiny Server</p>
+<ul>
+<li><a href="https://posit.co/download/shiny-server/" class="uri">https://posit.co/download/shiny-server/</a></li>
+</ul>
+<pre><code>R -e "install.packages('shiny', repos = 'http://cran.rstudio.com/')"
 wget https://download3.rstudio.org/centos6.3/x86_64/shiny-server-1.5.12.933-x86_64.rpm
 yum install --nogpgcheck shiny-server-1.5.12.933-x86_64.rpm
 rm shiny-server-1.5.12.933-x86_64.rpm</code></pre>
-<pre><code># add user(s)
-useradd -m jjf234
+<p>Add user(s)</p>
+<pre><code>useradd -m jjf234
 sudo passwd jjf234 # prompt to enter password</code></pre>
+<p>Need to create ‘/ShinyApps’ under ‘/ec2-user’ and then subfolders with code, e.g.&nbsp;/home/ec2-user/ShinyApps/hello</p>
 <pre><code># sudo /opt/shiny-server/bin/deploy-example user-dirs
 # mkdir ~/ShinyApps
-# sudo cp -R /opt/shiny-server/samples/sample-apps/hello ~/ShinyApps
-
-# need to create '/ShinyApps' under '/ec2-user' and then subfolders with code
-# e.g.: /home/ec2-user/ShinyApps/hello</code></pre>
-<pre><code># install devtools
-sudo yum install libcurl-devel
+# sudo cp -R /opt/shiny-server/samples/sample-apps/hello ~/ShinyApps</code></pre>
+<p>Install devtools</p>
+<pre><code>sudo yum install libcurl-devel
 sudo yum install openssl-devel
 sudo yum install libxml2-devel
-R -e "install.packages('devtools', repos = 'http://cran.rstudio.com/')"
-
-# install RcppParallel
-R -e "install.packages('RcppParallel', repos = 'http://cran.rstudio.com/')"
-
-# install RcppArmadillo
-R -e "install.packages('RcppArmadillo', repos = 'http://cran.rstudio.com/')"
-
-# install other packages
-R -e "install.packages(c('data.table', 'xts', 'testthat', 'microbenchmark'),
-repos = 'http://cran.rstudio.com/')"
-
-# install roll
-R -e "devtools::install_github('jjf234/roll')"</code></pre>
-<pre><code># http://1.23.456.789:8787/
-# http://1.23.456.789:3838/ec2-user/hello/</code></pre>
+R -e "install.packages('devtools', repos = 'http://cran.rstudio.com/')"</code></pre>
+<p>Install RcppParallel</p>
+<pre><code>R -e "install.packages('RcppParallel', repos = 'http://cran.rstudio.com/')"</code></pre>
+<p>Install RcppArmadillo</p>
+<pre><code>R -e "install.packages('RcppArmadillo', repos = 'http://cran.rstudio.com/')"</code></pre>
+<p>Install other packages</p>
+<pre><code>R -e "install.packages(c('data.table', 'xts', 'testthat', 'microbenchmark'),
+repos = 'http://cran.rstudio.com/')"</code></pre>
+<p>Install roll</p>
+<pre><code>R -e "devtools::install_github('jjf234/roll')"</code></pre>
+<ul>
+<li><a href="http://1.23.456.789:8787/" class="uri">http://1.23.456.789:8787/</a></li>
+<li><a href="http://1.23.456.789:3838/ec2-user/hello/" class="uri">http://1.23.456.789:3838/ec2-user/hello/</a></li>
+</ul>
 </section>
 </section>
 <section id="amazon-route-53" class="level1">
