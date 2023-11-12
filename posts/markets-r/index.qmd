@@ -111,8 +111,9 @@ $$
 \end{aligned}
 $$
 
+* <http://scipp.ucsc.edu/~haber/ph116C/iid.pdf>
+
 ```{r}
-# http://scipp.ucsc.edu/~haber/ph116C/iid.pdf
 # volatility scale only
 score_xts <- na.omit(momentum_xts / roll_sd(momentum_xts, width, center = FALSE, min_obs = 1))
 ```
@@ -138,9 +139,10 @@ print(score_plt)
 
 Outliers are defined the regression residuals that fall below $Q_{1}−1.5\times IQR$ or above $Q_{3}+1.5\times IQR$:
 
+* <https://stats.stackexchange.com/a/1153>
+* <https://stats.stackexchange.com/a/108951>
+
 ```{r}
-# https://stats.stackexchange.com/a/1153
-# https://stats.stackexchange.com/a/108951
 outliers <- function(z) {
   
   n_cols <- ncol(z)
@@ -199,10 +201,11 @@ $$
 \end{aligned}
 $$
 
+* <https://github.com/cran/lmtest/blob/master/R/waldtest.R>
+* <https://en.wikipedia.org/wiki/Wald_test#Test(s)_on_multiple_parameters>
+* <https://math.stackexchange.com/a/1591946>
+
 ```{r}
-# https://github.com/cran/lmtest/blob/master/R/waldtest.R
-# https://en.wikipedia.org/wiki/Wald_test#Test(s)_on_multiple_parameters
-# https://math.stackexchange.com/a/1591946
 granger_test <- function(x, y, order) {
     
     # compute lagged observations

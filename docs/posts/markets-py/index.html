@@ -209,9 +209,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>width <span class="op">=</span> <span class="dv">252</span></span>
 <span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>scale <span class="op">=</span> {<span class="st">"periods"</span>: <span class="dv">252</span>, <span class="st">"overlap"</span>: <span class="dv">5</span>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
+<ul>
+<li><a href="https://pandas-datareader.readthedocs.io/en/latest/remote_data.html" class="uri">https://pandas-datareader.readthedocs.io/en/latest/remote_data.html</a></li>
+</ul>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># https://pandas-datareader.readthedocs.io/en/latest/remote_data.html</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>levels_df <span class="op">=</span> pdr.get_data_fred(factors, start <span class="op">=</span> <span class="st">"1900-01-01"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>levels_df <span class="op">=</span> pdr.get_data_fred(factors, start <span class="op">=</span> <span class="st">"1900-01-01"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>returns_df <span class="op">=</span> levels_df.<span class="bu">apply</span>(<span class="kw">lambda</span> x: np.log(x).diff() <span class="cf">if</span> x.name <span class="kw">in</span> factors_r <span class="cf">else</span> <span class="op">-</span>x.diff() <span class="op">/</span> <span class="dv">100</span>)</span>
@@ -284,18 +286,20 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 &amp;=\frac{\sigma^{2}}{n}
 \end{aligned}
 \]</span></p>
+<ul>
+<li><a href="http://scipp.ucsc.edu/~haber/ph116C/iid.pdf" class="uri">http://scipp.ucsc.edu/~haber/ph116C/iid.pdf</a></li>
+</ul>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># http://scipp.ucsc.edu/~haber/ph116C/iid.pdf</span></span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> risk(x):</span>
-<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>    n_rows <span class="op">=</span> <span class="bu">sum</span>(<span class="op">~</span>np.isnan(x))</span>
-<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> n_rows <span class="op">&gt;</span> <span class="dv">1</span>:</span>
-<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>        result <span class="op">=</span> np.sqrt(np.nansum(x <span class="op">**</span> <span class="dv">2</span>) <span class="op">/</span> (n_rows <span class="op">-</span> <span class="dv">1</span>))</span>
-<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
-<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>        result <span class="op">=</span> np.nan</span>
-<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> risk(x):</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>    n_rows <span class="op">=</span> <span class="bu">sum</span>(<span class="op">~</span>np.isnan(x))</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> n_rows <span class="op">&gt;</span> <span class="dv">1</span>:</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>        result <span class="op">=</span> np.sqrt(np.nansum(x <span class="op">**</span> <span class="dv">2</span>) <span class="op">/</span> (n_rows <span class="op">-</span> <span class="dv">1</span>))</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>        result <span class="op">=</span> np.nan</span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># volatility scale only</span></span>
@@ -324,44 +328,46 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="outlier-detection" class="level1">
 <h1>Outlier detection</h1>
 <p>Outliers are defined the regression residuals that fall below <span class="math inline">\(Q_{1}−1.5\times IQR\)</span> or above <span class="math inline">\(Q_{3}+1.5\times IQR\)</span>:</p>
+<ul>
+<li><a href="https://stats.stackexchange.com/a/1153" class="uri">https://stats.stackexchange.com/a/1153</a></li>
+<li><a href="https://stats.stackexchange.com/a/108951" class="uri">https://stats.stackexchange.com/a/108951</a></li>
+</ul>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co"># https://stats.stackexchange.com/a/1153</span></span>
-<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="co"># https://stats.stackexchange.com/a/108951</span></span>
-<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> outliers(z):</span>
-<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>    n_cols <span class="op">=</span> z.shape[<span class="dv">1</span>]</span>
-<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> pd.DataFrame()</span>
-<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> j <span class="kw">in</span> <span class="bu">range</span>(n_cols):</span>
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> outliers(z):</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>    n_cols <span class="op">=</span> z.shape[<span class="dv">1</span>]</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> pd.DataFrame()</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> j <span class="kw">in</span> <span class="bu">range</span>(n_cols):</span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>        y <span class="op">=</span> z.iloc[:, j]</span>
 <span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>        y <span class="op">=</span> z.iloc[:, j]</span>
-<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> (n_cols <span class="op">==</span> <span class="dv">0</span>):</span>
-<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a>          x <span class="op">=</span> <span class="bu">range</span>(<span class="bu">len</span>(y))</span>
-<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a>        <span class="cf">else</span>:</span>
-<span id="cb17-15"><a href="#cb17-15" aria-hidden="true" tabindex="-1"></a>          </span>
-<span id="cb17-16"><a href="#cb17-16" aria-hidden="true" tabindex="-1"></a>          t <span class="op">=</span> <span class="bu">range</span>(<span class="bu">len</span>(y))</span>
-<span id="cb17-17"><a href="#cb17-17" aria-hidden="true" tabindex="-1"></a>          x <span class="op">=</span> np.concatenate((np.matrix(t).T, z.drop(z.columns[j], axis <span class="op">=</span> <span class="dv">1</span>)), axis <span class="op">=</span> <span class="dv">1</span>)</span>
-<span id="cb17-18"><a href="#cb17-18" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb17-19"><a href="#cb17-19" aria-hidden="true" tabindex="-1"></a>        x <span class="op">=</span> sm.add_constant(x)</span>
-<span id="cb17-20"><a href="#cb17-20" aria-hidden="true" tabindex="-1"></a>        coef <span class="op">=</span> sm.WLS(y, x).fit().params</span>
-<span id="cb17-21"><a href="#cb17-21" aria-hidden="true" tabindex="-1"></a>        x <span class="op">=</span> x[:, <span class="dv">1</span>:]</span>
-<span id="cb17-22"><a href="#cb17-22" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb17-23"><a href="#cb17-23" aria-hidden="true" tabindex="-1"></a>        predict <span class="op">=</span> coef[<span class="dv">0</span>] <span class="op">+</span> np.matmul(coef[<span class="dv">1</span>:], x.T)</span>
-<span id="cb17-24"><a href="#cb17-24" aria-hidden="true" tabindex="-1"></a>        resid <span class="op">=</span> y <span class="op">-</span> np.ravel(predict)</span>
-<span id="cb17-25"><a href="#cb17-25" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb17-26"><a href="#cb17-26" aria-hidden="true" tabindex="-1"></a>        lower <span class="op">=</span> resid.quantile(<span class="fl">0.25</span>)</span>
-<span id="cb17-27"><a href="#cb17-27" aria-hidden="true" tabindex="-1"></a>        upper <span class="op">=</span> resid.quantile(<span class="fl">0.75</span>)</span>
-<span id="cb17-28"><a href="#cb17-28" aria-hidden="true" tabindex="-1"></a>        iqr <span class="op">=</span> upper <span class="op">-</span> lower</span>
-<span id="cb17-29"><a href="#cb17-29" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb17-30"><a href="#cb17-30" aria-hidden="true" tabindex="-1"></a>        total <span class="op">=</span> y[(resid <span class="op">&lt;</span> lower <span class="op">-</span> <span class="fl">1.5</span> <span class="op">*</span> iqr) <span class="op">|</span> (resid <span class="op">&gt;</span> upper <span class="op">+</span> <span class="fl">1.5</span> <span class="op">*</span> iqr)]</span>
-<span id="cb17-31"><a href="#cb17-31" aria-hidden="true" tabindex="-1"></a>        total <span class="op">=</span> pd.DataFrame({<span class="st">"date"</span>: total.index, <span class="st">"symbol"</span>: total.name, <span class="st">"values"</span>: total})</span>
-<span id="cb17-32"><a href="#cb17-32" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb17-33"><a href="#cb17-33" aria-hidden="true" tabindex="-1"></a>        result <span class="op">=</span> result.append(total, ignore_index <span class="op">=</span> <span class="va">True</span>)</span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> (n_cols <span class="op">==</span> <span class="dv">0</span>):</span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>          x <span class="op">=</span> <span class="bu">range</span>(<span class="bu">len</span>(y))</span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a>        <span class="cf">else</span>:</span>
+<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a>          </span>
+<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a>          t <span class="op">=</span> <span class="bu">range</span>(<span class="bu">len</span>(y))</span>
+<span id="cb17-15"><a href="#cb17-15" aria-hidden="true" tabindex="-1"></a>          x <span class="op">=</span> np.concatenate((np.matrix(t).T, z.drop(z.columns[j], axis <span class="op">=</span> <span class="dv">1</span>)), axis <span class="op">=</span> <span class="dv">1</span>)</span>
+<span id="cb17-16"><a href="#cb17-16" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb17-17"><a href="#cb17-17" aria-hidden="true" tabindex="-1"></a>        x <span class="op">=</span> sm.add_constant(x)</span>
+<span id="cb17-18"><a href="#cb17-18" aria-hidden="true" tabindex="-1"></a>        coef <span class="op">=</span> sm.WLS(y, x).fit().params</span>
+<span id="cb17-19"><a href="#cb17-19" aria-hidden="true" tabindex="-1"></a>        x <span class="op">=</span> x[:, <span class="dv">1</span>:]</span>
+<span id="cb17-20"><a href="#cb17-20" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb17-21"><a href="#cb17-21" aria-hidden="true" tabindex="-1"></a>        predict <span class="op">=</span> coef[<span class="dv">0</span>] <span class="op">+</span> np.matmul(coef[<span class="dv">1</span>:], x.T)</span>
+<span id="cb17-22"><a href="#cb17-22" aria-hidden="true" tabindex="-1"></a>        resid <span class="op">=</span> y <span class="op">-</span> np.ravel(predict)</span>
+<span id="cb17-23"><a href="#cb17-23" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb17-24"><a href="#cb17-24" aria-hidden="true" tabindex="-1"></a>        lower <span class="op">=</span> resid.quantile(<span class="fl">0.25</span>)</span>
+<span id="cb17-25"><a href="#cb17-25" aria-hidden="true" tabindex="-1"></a>        upper <span class="op">=</span> resid.quantile(<span class="fl">0.75</span>)</span>
+<span id="cb17-26"><a href="#cb17-26" aria-hidden="true" tabindex="-1"></a>        iqr <span class="op">=</span> upper <span class="op">-</span> lower</span>
+<span id="cb17-27"><a href="#cb17-27" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb17-28"><a href="#cb17-28" aria-hidden="true" tabindex="-1"></a>        total <span class="op">=</span> y[(resid <span class="op">&lt;</span> lower <span class="op">-</span> <span class="fl">1.5</span> <span class="op">*</span> iqr) <span class="op">|</span> (resid <span class="op">&gt;</span> upper <span class="op">+</span> <span class="fl">1.5</span> <span class="op">*</span> iqr)]</span>
+<span id="cb17-29"><a href="#cb17-29" aria-hidden="true" tabindex="-1"></a>        total <span class="op">=</span> pd.DataFrame({<span class="st">"date"</span>: total.index, <span class="st">"symbol"</span>: total.name, <span class="st">"values"</span>: total})</span>
+<span id="cb17-30"><a href="#cb17-30" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb17-31"><a href="#cb17-31" aria-hidden="true" tabindex="-1"></a>        result <span class="op">=</span> result.append(total, ignore_index <span class="op">=</span> <span class="va">True</span>)</span>
+<span id="cb17-32"><a href="#cb17-32" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb17-33"><a href="#cb17-33" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> result.pivot_table(index <span class="op">=</span> <span class="st">"date"</span>, columns <span class="op">=</span> <span class="st">"symbol"</span>, values <span class="op">=</span> <span class="st">"values"</span>)</span>
 <span id="cb17-34"><a href="#cb17-34" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb17-35"><a href="#cb17-35" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> result.pivot_table(index <span class="op">=</span> <span class="st">"date"</span>, columns <span class="op">=</span> <span class="st">"symbol"</span>, values <span class="op">=</span> <span class="st">"values"</span>)</span>
-<span id="cb17-36"><a href="#cb17-36" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb17-37"><a href="#cb17-37" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb17-35"><a href="#cb17-35" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>outliers_df <span class="op">=</span> outliers(score_df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -384,35 +390,37 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 \left(R\hat{\beta}-r\right)^\mathrm{T}\left(R\hat{V}R^\mathrm{T}\right)^{-1}\left(R\hat{\beta}-r\right)\xrightarrow\quad\chi_{Q}^{2}
 \end{aligned}
 \]</span></p>
+<ul>
+<li><a href="https://github.com/cran/lmtest/blob/master/R/waldtest.R" class="uri">https://github.com/cran/lmtest/blob/master/R/waldtest.R</a></li>
+<li><a href="https://en.wikipedia.org/wiki/Wald_test#Test(s)_on_multiple_parameters" class="uri">https://en.wikipedia.org/wiki/Wald_test#Test(s)_on_multiple_parameters</a></li>
+<li><a href="https://math.stackexchange.com/a/1591946" class="uri">https://math.stackexchange.com/a/1591946</a></li>
+</ul>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co"># https://github.com/cran/lmtest/blob/master/R/waldtest.R</span></span>
-<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="co"># https://en.wikipedia.org/wiki/Wald_test#Test(s)_on_multiple_parameters</span></span>
-<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a><span class="co"># https://math.stackexchange.com/a/1591946</span></span>
-<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> granger_test(x, y, order):</span>
-<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>    <span class="co"># compute lagged observations</span></span>
-<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>    lag_x <span class="op">=</span> x.shift(order)</span>
-<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a>    lag_y <span class="op">=</span> y.shift(order)</span>
-<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a>    <span class="co"># collect series</span></span>
-<span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a>    df <span class="op">=</span> pd.DataFrame({<span class="st">"x"</span>: x, <span class="st">"y"</span>: y, <span class="st">"lag_x"</span>: lag_x, <span class="st">"lag_y"</span>: lag_y})</span>
-<span id="cb20-12"><a href="#cb20-12" aria-hidden="true" tabindex="-1"></a>    x_mat <span class="op">=</span> sm.add_constant(np.matrix(df[[<span class="st">"lag_y"</span>, <span class="st">"lag_x"</span>]]))</span>
-<span id="cb20-13"><a href="#cb20-13" aria-hidden="true" tabindex="-1"></a>    y_mat <span class="op">=</span> np.matrix(df[<span class="st">"y"</span>]).T</span>
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> granger_test(x, y, order):</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>    <span class="co"># compute lagged observations</span></span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>    lag_x <span class="op">=</span> x.shift(order)</span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>    lag_y <span class="op">=</span> y.shift(order)</span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>    <span class="co"># collect series</span></span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a>    df <span class="op">=</span> pd.DataFrame({<span class="st">"x"</span>: x, <span class="st">"y"</span>: y, <span class="st">"lag_x"</span>: lag_x, <span class="st">"lag_y"</span>: lag_y})</span>
+<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a>    x_mat <span class="op">=</span> sm.add_constant(np.matrix(df[[<span class="st">"lag_y"</span>, <span class="st">"lag_x"</span>]]))</span>
+<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a>    y_mat <span class="op">=</span> np.matrix(df[<span class="st">"y"</span>]).T</span>
+<span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb20-12"><a href="#cb20-12" aria-hidden="true" tabindex="-1"></a>    <span class="co"># fit full model</span></span>
+<span id="cb20-13"><a href="#cb20-13" aria-hidden="true" tabindex="-1"></a>    fit <span class="op">=</span> sm.WLS(y_mat, x_mat, missing <span class="op">=</span> <span class="st">"drop"</span>).fit()</span>
 <span id="cb20-14"><a href="#cb20-14" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb20-15"><a href="#cb20-15" aria-hidden="true" tabindex="-1"></a>    <span class="co"># fit full model</span></span>
-<span id="cb20-16"><a href="#cb20-16" aria-hidden="true" tabindex="-1"></a>    fit <span class="op">=</span> sm.WLS(y_mat, x_mat, missing <span class="op">=</span> <span class="st">"drop"</span>).fit()</span>
-<span id="cb20-17"><a href="#cb20-17" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb20-18"><a href="#cb20-18" aria-hidden="true" tabindex="-1"></a>    R <span class="op">=</span> np.matrix([<span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>])</span>
-<span id="cb20-19"><a href="#cb20-19" aria-hidden="true" tabindex="-1"></a>    coef <span class="op">=</span> np.matrix(fit.params)</span>
-<span id="cb20-20"><a href="#cb20-20" aria-hidden="true" tabindex="-1"></a>    r <span class="op">=</span> <span class="dv">0</span> <span class="co"># technically a matrix (see Stack Exchange)</span></span>
-<span id="cb20-21"><a href="#cb20-21" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb20-22"><a href="#cb20-22" aria-hidden="true" tabindex="-1"></a>    matmul <span class="op">=</span> np.matmul(R, coef.T) <span class="op">-</span> r</span>
-<span id="cb20-23"><a href="#cb20-23" aria-hidden="true" tabindex="-1"></a>    maatmul_mid <span class="op">=</span> np.linalg.inv(np.matmul(R, np.matmul(np.matrix(fit.cov_params()), R.T)))</span>
-<span id="cb20-24"><a href="#cb20-24" aria-hidden="true" tabindex="-1"></a>    wald <span class="op">=</span> np.matmul(matmul.T, np.matmul(maatmul_mid, matmul))</span>
-<span id="cb20-25"><a href="#cb20-25" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb20-26"><a href="#cb20-26" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> <span class="dv">1</span> <span class="op">-</span> chi2.cdf(wald, <span class="dv">1</span>)</span>
-<span id="cb20-27"><a href="#cb20-27" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb20-28"><a href="#cb20-28" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb20-15"><a href="#cb20-15" aria-hidden="true" tabindex="-1"></a>    R <span class="op">=</span> np.matrix([<span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>])</span>
+<span id="cb20-16"><a href="#cb20-16" aria-hidden="true" tabindex="-1"></a>    coef <span class="op">=</span> np.matrix(fit.params)</span>
+<span id="cb20-17"><a href="#cb20-17" aria-hidden="true" tabindex="-1"></a>    r <span class="op">=</span> <span class="dv">0</span> <span class="co"># technically a matrix (see Stack Exchange)</span></span>
+<span id="cb20-18"><a href="#cb20-18" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb20-19"><a href="#cb20-19" aria-hidden="true" tabindex="-1"></a>    matmul <span class="op">=</span> np.matmul(R, coef.T) <span class="op">-</span> r</span>
+<span id="cb20-20"><a href="#cb20-20" aria-hidden="true" tabindex="-1"></a>    maatmul_mid <span class="op">=</span> np.linalg.inv(np.matmul(R, np.matmul(np.matrix(fit.cov_params()), R.T)))</span>
+<span id="cb20-21"><a href="#cb20-21" aria-hidden="true" tabindex="-1"></a>    wald <span class="op">=</span> np.matmul(matmul.T, np.matmul(maatmul_mid, matmul))</span>
+<span id="cb20-22"><a href="#cb20-22" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb20-23"><a href="#cb20-23" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> <span class="dv">1</span> <span class="op">-</span> chi2.cdf(wald, <span class="dv">1</span>)</span>
+<span id="cb20-24"><a href="#cb20-24" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb20-25"><a href="#cb20-25" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> roll_lead_lag(x, y, width, order, p_value):</span>

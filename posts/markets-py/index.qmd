@@ -35,8 +35,9 @@ palette <- c("black", palette_jjf(length(py$factors)))
 names(palette) <- c("Overall", py$factors)
 ```
 
+* <https://pandas-datareader.readthedocs.io/en/latest/remote_data.html>
+
 ```{python}
-# https://pandas-datareader.readthedocs.io/en/latest/remote_data.html
 levels_df = pdr.get_data_fred(factors, start = "1900-01-01")
 ```
 
@@ -115,8 +116,9 @@ $$
 \end{aligned}
 $$
 
+* <http://scipp.ucsc.edu/~haber/ph116C/iid.pdf>
+
 ```{python}
-# http://scipp.ucsc.edu/~haber/ph116C/iid.pdf
 def risk(x):
     
     n_rows = sum(~np.isnan(x))
@@ -156,9 +158,10 @@ print(score_plt)
 
 Outliers are defined the regression residuals that fall below $Q_{1}−1.5\times IQR$ or above $Q_{3}+1.5\times IQR$:
 
+* <https://stats.stackexchange.com/a/1153>
+* <https://stats.stackexchange.com/a/108951>
+
 ```{python}
-# https://stats.stackexchange.com/a/1153
-# https://stats.stackexchange.com/a/108951
 def outliers(z):
     
     n_cols = z.shape[1]
@@ -216,10 +219,11 @@ $$
 \end{aligned}
 $$
 
+* <https://github.com/cran/lmtest/blob/master/R/waldtest.R>
+* <https://en.wikipedia.org/wiki/Wald_test#Test(s)_on_multiple_parameters>
+* <https://math.stackexchange.com/a/1591946>
+
 ```{python}
-# https://github.com/cran/lmtest/blob/master/R/waldtest.R
-# https://en.wikipedia.org/wiki/Wald_test#Test(s)_on_multiple_parameters
-# https://math.stackexchange.com/a/1591946
 def granger_test(x, y, order):
     
     # compute lagged observations
