@@ -1,0 +1,940 @@
+---
+title: "Securities"
+author: "[Jason Foster](mailto:jason.j.foster@gmail.com)"
+date: last-modified
+categories:
+  - analysis
+  - finance
+  - r
+---
+
+```{r, message = FALSE}
+library(quantmod)
+library(roll)
+library(data.table)
+source("../plot/theme_jjf.R")
+```
+
+```{r, echo = FALSE}
+options("getSymbols.warning4.0" = FALSE)
+```
+
+```{r}
+factors_r <- c("SP500", "DTWEXAFEGS") # "SP500" does not contain dividends; note: "DTWEXM" discontinued as of Jan 2020
+factors_d <- c("DGS10", "BAMLH0A0HYM2")
+factors <- c(factors_r, factors_d)
+width <- 252
+scale <- list("periods" = 252, "overlap" = 5)
+```
+
+```{r, echo = FALSE}
+palette <- c("black", palette_jjf(length(factors)))
+names(palette) <- c("Overall", factors)
+```
+
+```{r, results = "hide"}
+getSymbols(factors, src = "FRED")
+levels_xts <- do.call(merge, c(lapply(factors, function(i) get(i)), all = TRUE))
+```
+
+```{r}
+returns_xts <- do.call(merge, lapply(factors, function(i) {
+    if (i %in% factors_r) {
+        diff(log((levels_xts[ , i])))
+    } else if (i %in% factors_d) {
+        -diff(levels_xts[ , i]) / 100
+    }    
+}))
+overlap_xts <- roll_mean(returns_xts, scale[["overlap"]], min_obs = 1, na_restore = TRUE)
+```
+
+```{r}
+sd_xts <- roll_sd(overlap_xts, width, min_obs = 1) * sqrt(scale[["periods"]]) * sqrt(scale[["overlap"]])
+```
+
+# Greeks
+
+```{r}
+level_shock <- function(shock, S, tau, sigma) {
+    
+    result <- S * (1 + shock * sigma * sqrt(tau))
+    
+    return(result)
+    
+}
+```
+
+```{r}
+# https://en.wikipedia.org/wiki/Greeks_(finance)
+# https://www.wolframalpha.com/input/?i=option+pricing+formula
+factor <- "SP500"
+types <- c("call", "put")
+S <- coredata(na.locf(levels_xts[nrow(levels_xts), factor]))
+K <- S
+r <- 0 # use "USD3MTD156N"
+q <- 0 # see https://stackoverflow.com/a/11286679 
+tau <- 1 # = 252 / 252
+sigma <- coredata(sd_xts[nrow(sd_xts), factor]) # use "VIXCLS"
+shocks <- seq(-3, 3, by = 0.5)
+```
+
+```{r}
+greeks_dt <- CJ(type = types, shock = shocks)
+greeks_dt[ , spot := level_shock(shock, S, tau, sigma), by = c("type", "shock")]
+```
+
+## Value
+
+For a given spot price $S$, strike price $K$, risk-free rate $r$,
+annual dividend yield $q$, time-to-maturity $\tau = T - t$, and volatility $\sigma$:
+
+$$
+\begin{aligned}
+V_{c}&=Se^{-q\tau}\Phi(d_{1})-e^{-r\tau}K\Phi(d_{2}) \\
+V_{p}&=e^{-r\tau}K\Phi(-d_{2})-Se^{-q\tau}\Phi(-d_{1})
+\end{aligned}
+$$
+
+```{r}
+bs_value <- function(type, S, K, r, q, tau, sigma, d1, d2) {
+    
+    if (type == "call") {
+        result <- S * exp(-q * tau) * Phi(d1) - exp(-r * tau) * K * Phi(d2)
+    } else if (type == "put") {
+        result <- exp(-r * tau) * K * Phi(-d2) - S * exp(-q * tau) * Phi(-d1)
+    }
+    
+    return(result)
+    
+} 
+```
+
+where
+
+$$
+\begin{aligned}
+d_{1}&={\frac{\ln(S/K)+(r-q+\sigma^{2}/2)\tau}{\sigma{\sqrt{\tau}}}} \\
+d_{2}&={\frac{\ln(S/K)+(r-q-\sigma^{2}/2)\tau}{\sigma{\sqrt{\tau}}}}=d_{1}-\sigma{\sqrt{\tau}} \\
+\phi(x)&={\frac{e^{-{\frac {x^{2}}{2}}}}{\sqrt{2\pi}}} \\
+\Phi(x)&={\frac{1}{\sqrt{2\pi}}}\int_{-\infty}^{x}e^{-{\frac{y^{2}}{2}}}dy=1-{\frac{1}{\sqrt{2\pi}}}\int_{x}^{\infty}e^{-{\frac{y^{2}}{2}}dy}
+\end{aligned}
+$$
+
+```{r}
+bs_d1 <- function(S, K, r, q, tau, sigma) {
+    
+    result <- (log(S / K) + (r - q + sigma ^ 2 / 2) * tau) / (sigma * sqrt(tau))
+    
+    return(result)
+    
+}
+
+bs_d2 <- function(S, K, r, q, tau, sigma) {
+    
+    result <- (log(S / K) + (r - q - sigma ^ 2 / 2) * tau) / (sigma * sqrt(tau))
+    
+    return(result)
+    
+}
+
+phi <- function(x) {
+    
+    result <- dnorm(x)
+    
+    return(result)
+    
+}
+
+Phi <- function(x) {
+    
+    result <- pnorm(x)
+    
+    return(result)
+    
+}
+```
+
+```{r}
+greeks_dt[ , d1 := bs_d1(spot, K, r, q, tau, sigma), by = c("type", "shock")]
+greeks_dt[ , d2 := bs_d2(spot, K, r, q, tau, sigma), by = c("type", "shock")]
+greeks_dt[ , value := bs_value(type, spot, K, r, q, tau, sigma, d1, d2), by = c("type", "shock")]
+```
+
+## First-order
+
+### Delta
+
+$$
+\begin{aligned}
+\Delta_{c}&={\frac{\partial V_{c}}{\partial S}}=e^{-q\tau}\Phi(d_{1}) \\
+\Delta_{p}&={\frac{\partial V_{p}}{\partial S}}=-e^{-q\tau}\Phi(-d_{1})
+\end{aligned}
+$$
+
+```{r}
+bs_delta <- function(type, S, K, r, q, tau, sigma, d1, d2) {
+    
+    if (type == "call") {
+        result <- exp(-q * tau) * Phi(d1)
+    } else if (type == "put") {
+        result <- -exp(-q * tau) * Phi(-d1)
+    }
+    
+    return(result)
+    
+} 
+```
+
+```{r}
+greeks_dt[ , delta := bs_delta(type, spot, K, r, q, tau, sigma, d1, d2), by = c("type", "shock")]
+```
+
+### Vega
+
+$$
+\begin{aligned}
+\nu_{c,p}&={\frac{\partial V_{c,p}}{\partial\sigma}}=Se^{-q\tau}\phi(d_{1}){\sqrt{\tau}}=Ke^{-r\tau}\phi(d_{2}){\sqrt{\tau}}
+\end{aligned}
+$$
+
+```{r}
+bs_vega <- function(type, S, K, r, q, tau, sigma, d1, d2) {
+    
+    result <- S * exp(-q * tau) * phi(d1) * sqrt(tau)
+    
+    return(result)
+    
+}
+```
+
+```{r}
+greeks_dt[ , vega := bs_vega(type, spot, K, r, q, tau, sigma, d1, d2), by = c("type", "shock")]
+```
+
+### Theta
+
+$$
+\begin{aligned}
+\Theta_{c}&=-{\frac{\partial V_{c}}{\partial \tau}}=-e^{-q\tau}{\frac{S\phi(d_{1})\sigma}{2{\sqrt{\tau}}}}-rKe^{-r\tau}\Phi(d_{2})+qSe^{-q\tau}\Phi(d_{1}) \\
+\Theta_{p}&=-{\frac{\partial V_{p}}{\partial \tau}}=-e^{-q\tau}{\frac{S\phi(d_{1})\sigma}{2{\sqrt{\tau}}}}+rKe^{-r\tau}\Phi(-d_{2})-qSe^{-q\tau}\Phi(-d_{1})
+\end{aligned}
+$$
+
+```{r}
+bs_theta <- function(type, S, K, r, q, tau, sigma, d1, d2) {
+    
+    if (type == "call") {
+        
+        result <- -exp(-q * tau) * S * phi(d1) * sigma / (2 * sqrt(tau)) -
+             r * K * exp(-r * tau) * Phi(d2) + q * S * exp(-q * tau) * Phi(d1)
+    
+    } else if (type == "put") {
+        
+        result <- -exp(-q * tau) * S * phi(d1) * sigma / (2 * sqrt(tau)) +
+             r * K * exp(-r * tau) * Phi(-d2) - q * S * exp(-q * tau) * Phi(-d1)
+        
+    }
+    
+    return(result)
+    
+}
+```
+
+```{r}
+greeks_dt[ , theta := bs_theta(type, spot, K, r, q, tau, sigma, d1, d2), by = c("type", "shock")]
+```
+
+### Nonlinear beta
+
+Notional market value is the market value of a leveraged position:
+
+$$
+\begin{aligned}
+\text{Equity options }=&\,\#\text{ contracts}\times\text{multiple}\times\text{spot price}\\
+\text{Delta-adjusted }=&\,\#\text{ contracts}\times\text{multiple}\times\text{spot price}\times\text{delta}
+\end{aligned}
+$$
+
+```{r}
+# https://en.wikipedia.org/wiki/Notional_amount
+beta_option <- function(type, S, K, r, q, tau, sigma, sec) {
+    
+    d1 <- bs_d1(S, K, r, q, tau, sigma)
+    d2 <- bs_d2(S, K, r, q, tau, sigma)
+    delta <- bs_delta(type, S, K, r, q, tau, sigma, d1, d2)
+    
+    notional_mv <- sec[["n"]] * sec[["multiple"]] * sec[["S"]] * delta
+    notional_mv0 <- sec[["n"]] * sec[["multiple"]] * sec[["S"]] * sec[["delta"]]
+    
+    if (type == "call") {
+        result <- sec[["beta"]] * (notional_mv - notional_mv0)
+    } else if (type == "put") {
+        result <- sec[["beta"]] * (notional_mv0 - notional_mv)
+    }        
+        
+    return(result)
+    
+}
+```
+
+```{r}
+beta <- 0.35
+type <- "call"
+n <- 200
+multiple <- 100
+nav <- 1000000000
+```
+
+```{r}
+d1 <- bs_d1(S, K, r, q, tau, sigma)
+d2 <- bs_d2(S, K, r, q, tau, sigma)
+delta <- bs_delta(type, S, K, r, q, tau, sigma, d1, d2)
+sec <- list(
+    "n" = n,
+    "multiple" = multiple,
+    "S" = S,
+    "delta" = delta,
+    "beta" = 1
+)
+```
+
+```{r}
+beta_dt <- CJ(type = type, shock = shocks)
+beta_dt[ , spot := level_shock(shock, S, tau, sigma), by = c("type", "shock")]
+beta_dt[ , static := beta]
+beta_dt[ , dynamic := beta + beta_option(type, spot, K, r, q, tau, sigma, sec) / nav, by = c("type", "shock")]
+```
+
+```{r, fig.width = 4, fig.height = 3}
+beta_mlt <- copy(beta_dt)[ , c("type", "spot") := NULL]
+beta_mlt <- melt(beta_mlt, id.vars = "shock")
+beta_plt <- plot_scen(beta_mlt, title = "Beta", xlab = "Shock")
+print(beta_plt)
+```
+
+For completeness, duration equivalent is defined as:
+
+$$
+\begin{aligned}
+\text{10-year equivalent }=\,&\frac{\text{security duration}}{\text{10-year OTR duration}}
+\end{aligned}
+$$
+
+## Second-order
+
+### Gamma
+
+$$
+\begin{aligned}
+\Gamma_{c,p}&={\frac{\partial\Delta_{c,p}}{\partial S}}={\frac{\partial^{2}V_{c,p}}{\partial S^{2}}}=e^{-q\tau}{\frac{\phi(d_{1})}{S\sigma{\sqrt{\tau}}}}=Ke^{-r\tau}{\frac{\phi(d_{2})}{S^{2}\sigma{\sqrt{\tau}}}}
+\end{aligned}
+$$
+
+```{r}
+bs_gamma <- function(type, S, K, r, q, tau, sigma, d1, d2) {
+    
+    result <- exp(-q * tau) * phi(d1) / (S * sigma * sqrt(tau))
+    
+    return(result)
+    
+}
+```
+
+```{r}
+greeks_dt[ , gamma := bs_gamma(type, spot, K, r, q, tau, sigma, d1, d2), by = c("type", "shock")]
+```
+
+```{r, fig.width = 10, fig.height = 3}
+greeks_mlt <- copy(greeks_dt)[ , c("spot", "d1", "d2") := NULL]
+greeks_mlt <- melt(greeks_mlt, id.vars = c("type", "shock"))
+greeks_plt <- plot_scen(greeks_mlt, z = "type", title = "Greeks", xlab = "Shock") +
+  facet_wrap(~ variable, nrow = 1, scales = "free", labeller = labeller(variable = capitalize))
+print(greeks_plt)
+```
+
+# Taylor series
+
+## Price-yield formula
+
+For a function of one variable, $f(x)$, the Taylor series formula is:
+
+$$
+\begin{aligned}
+f(x+\Delta x)&=f(x)+{\frac{f'(x)}{1!}}\Delta x+{\frac{f''(x)}{2!}}(\Delta x)^{2}+{\frac{f^{(3)}(x)}{3!}}(\Delta x)^{3}+\cdots+{\frac{f^{(n)}(x)}{n!}}(\Delta x)^{n}+\cdots\\
+f(x+\Delta x)-f(x)&={\frac{f'(x)}{1!}}\Delta x+{\frac{f''(x)}{2!}}(\Delta x)^{2}+{\frac{f^{(3)}(x)}{3!}}(\Delta x)^{3}+\cdots+{\frac{f^{(n)}(x)}{n!}}(\Delta x)^{n}+\cdots
+\end{aligned}
+$$
+
+Using the price-yield formula, the estimated percentage change in price for a change in yield is:
+
+$$
+\begin{aligned}
+P(y+\Delta y)-P(y)&\approx{\frac{P'(y)}{1!}}\Delta y+{\frac{P''(y)}{2!}}(\Delta y)^{2}\\
+&\approx -D\Delta y +{\frac{C}{2!}}(\Delta y)^{2}
+\end{aligned}
+$$
+
+```{r}
+pnl_bond <- function(duration, convexity, dy) {
+    
+    duration_pnl <- -duration * dy
+    convexity_pnl <- (convexity / 2) * dy ^ 2
+    
+    result <- list("duration_pnl" = duration_pnl,
+                   "convexity_pnl" = convexity_pnl)
+    
+    return(result)
+    
+} 
+```
+
+```{r}
+# https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781118267967.app1
+duration <- 6.5 * (2 / 3)
+convexity <- 0.65 * (2 / 3)
+dy <- 0.0025 # 25 bps
+```
+
+```{r}
+pnl_bond(duration, convexity, dy)
+```
+
+### Duration drift
+
+The derivative of duration with respect to interest rates gives:
+
+$$
+\begin{aligned}
+\text{Drift}&=-\frac{\partial D}{\partial y}\\
+&=\frac{1}{P}\frac{\partial^{2}P}{\partial y^{2}}-\frac{1}{P^{2}}\frac{\partial P}{\partial y}\frac{\partial P}{\partial y}\\
+&=C-D^{2}
+\end{aligned}
+$$
+
+Because of market conventions, use the following formula: $\text{Drift}=\frac{1}{100}\left(C\times 100-D^{2}\right)=C-\frac{D^{2}}{100}$
+
+```{r}
+yield_shock <- function(shock, tau, sigma) {
+    
+    result <- shock * sigma * sqrt(tau)
+    
+    return(result)
+    
+}
+```
+
+```{r}
+duration_drift <- function(duration, convexity, dy) {
+    
+    drift <- convexity - duration ^ 2 / 100
+    change <- -drift * dy * 100
+    
+    result <- list("drift" = drift,
+                   "change" = change)
+    
+    return(result)
+    
+}
+```
+
+```{r}
+# "Risk Management: Approaches for Fixed Income Markets" (page 45)
+factor <- "DGS10"
+sigma <- coredata(sd_xts[nrow(sd_xts), factor])
+```
+
+```{r}
+duration_dt <- CJ(shock = shocks)
+duration_dt[ , spot := yield_shock(shock, tau, sigma), by = "shock"]
+duration_dt[ , static := duration]
+duration_dt[ , dynamic := duration + duration_drift(duration, convexity, spot)[["change"]], by = "shock"]
+```
+
+```{r, fig.width = 4, fig.height = 3}
+duration_mlt <- copy(duration_dt)[ , "spot" := NULL]
+duration_mlt <- melt(duration_mlt, id.vars = "shock")
+duration_plt <- plot_scen(duration_mlt, title = "Duration", xlab = "Shock")
+print(duration_plt)
+```
+
+## Black's formula
+
+A similar formula holds for functions of several variables $f(x_{1},\ldots,x_{n})$. This
+is usually written as:
+
+$$
+\begin{aligned}
+f(x_{1}+\Delta x_{1},\ldots,x_{n}+\Delta x_{n})&=f(x_{1},\ldots, x_{n})+ \sum _{j=1}^{n}{\frac{\partial f(x_{1},\ldots,x_{n})}{\partial x_{j}}}(\Delta x_{j})\\
+&+{\frac {1}{2!}}\sum_{j=1}^{n}\sum_{k=1}^{n}{\frac{\partial^{2}f(x_{1},\ldots,x_{d})}{\partial x_{j}\partial x_{k}}}(\Delta x_{j})(\Delta x_{k})+\cdots
+\end{aligned}
+$$
+
+Using Black's formula, the estimated change of an option price is:
+
+$$
+\begin{aligned}
+V(S+\Delta S,\sigma+\Delta\sigma,t+\Delta t)-V(S,\sigma,t)&\approx{\frac{\partial V}{\partial S}}\Delta S+{\frac{1}{2!}}{\frac{\partial^{2}V}{\partial S^{2}}}(\Delta S)^{2}+{\frac{\partial V}{\partial \sigma}}\Delta\sigma+{\frac{\partial V}{\partial t}}\Delta t\\
+&\approx \Delta_{c,p}\Delta S+{\frac{1}{2!}}\Gamma_{c,p}(\Delta S)^{2}+\nu_{c,p}\Delta\sigma+\Theta_{c,p}\Delta t
+\end{aligned}
+$$
+
+```{r}
+# unable to verify the result
+pnl_option <- function(type, S, K, r, q, tau, sigma, dS, dt, dsigma) {
+    
+    d1 <- bs_d1(S, K, r, q, tau, sigma)
+    d2 <- bs_d2(S, K, r, q, tau, sigma)
+    value <- bs_value(type, S, K, r, q, tau, sigma, d1, d2)
+    delta <- bs_delta(type, S, K, r, q, tau, sigma, d1, d2)
+    vega <- bs_vega(type, S, K, r, q, tau, sigma, d1, d2)
+    theta <- bs_theta(type, S, K, r, q, tau, sigma, d1, d2)
+    gamma <- bs_gamma(type, S, K, r, q, tau, sigma, d1, d2)
+    
+    delta_pnl <- delta * dS / value
+    gamma_pnl <- gamma * dS ^ 2 / value
+    vega_pnl <- vega * dsigma / value
+    theta_pnl <- theta * dt / value
+    
+    result <- list("total" = delta_pnl + gamma_pnl + vega_pnl + theta_pnl,
+                   "delta" = delta_pnl,
+                   "gamma" = gamma_pnl,
+                   "vega" = vega_pnl,
+                   "theta" = theta_pnl)
+    
+    return(result)    
+    
+}
+```
+
+```{r}
+factor <- "SP500"
+type <- "call"
+S <- coredata(tail(na.locf(levels_xts[ , factor]), width)[1])
+K <- S * (1 + 0.05)
+tau <- 1 # = 252 / 252
+sigma <- coredata(tail(sd_xts[ , factor], width)[1])
+```
+
+```{r}
+options_dt <- data.table(index = index(tail(levels_xts, width)),
+                         spot = na.locf(tail(levels_xts[ , factor], width)),
+                         sigma = tail(sd_xts[ , factor], width))
+setnames(options_dt, c("index", "spot", "sigma"))
+options_dt[ , dS := spot - S, by = index]
+options_dt[ , dt := (index - index(tail(levels_xts, width))[1]) / 360, by = index]
+options_dt[ , dsigma := sigma - ..sigma, by = index]
+```
+
+```{r}
+attrib_dt <- options_dt[ , as.list(unlist(pnl_option(type, S, K, r, q, tau, ..sigma,
+                                                     dS, dt, dsigma))), by = index]
+```
+
+```{r, fig.width = 6, fig.height = 3}
+attrib_mlt <- melt(attrib_dt, id.vars = "index")
+attrib_plt <- plot_ts_decomp(attrib_mlt, decomp = "Total", title = "Attribution 1Y (%)")
+print(attrib_plt)
+```
+
+## Ito's lemma
+
+For a given diffiusion $X(t, w)$ driven by:
+
+$$
+\begin{aligned}
+dX_{t}&=\mu_{t}dt+\sigma_{t}dB_{t}
+\end{aligned}
+$$
+
+Then proceed with the Taylor series for a function of two variables $f(t,x)$:
+
+$$
+\begin{aligned}
+df&={\frac{\partial f}{\partial t}}dt+{\frac{\partial f}{\partial x}}dx+{\frac{1}{2}}{\frac{\partial^{2}f}{\partial x^{2}}}dx^{2}\\
+&={\frac{\partial f}{\partial t}}dt+{\frac{\partial f}{\partial x}}(\mu_{t}dt+\sigma_{t}dB_{t})+{\frac{1}{2}}{\frac{\partial^{2}f}{\partial x^{2}}}\left(\mu_{t}^{2}dt^{2}+2\mu_{t}\sigma _{t}dtdB_{t}+\sigma_{t}^{2}dB_{t}^{2}\right)\\
+&=\left({\frac{\partial f}{\partial t}}+\mu_{t}{\frac{\partial f}{\partial x}}+{\frac{\sigma _{t}^{2}}{2}}{\frac{\partial ^{2}f}{\partial x^{2}}}\right)dt+\sigma_{t}{\frac{\partial f}{\partial x}}dB_{t}
+\end{aligned}
+$$
+
+Note: set the $dt^{2}$ and $dtdB_{t}$ terms to zero and substitute $dt$ for $dB^{2}$.
+
+### Geometric Brownian motion
+
+The most common application of Ito's lemma in finance is to start with the percent change of an asset:
+
+$$
+\begin{aligned}
+\frac{dS}{S}&=\mu_{t}dt+\sigma_{t}dB_{t}
+\end{aligned}
+$$
+
+Then apply Ito's lemma with $f(S)=log(S)$:
+
+$$
+\begin{aligned}
+d\log(S)&=f^{\prime}(S)dS+{\frac{1}{2}}f^{\prime\prime}(S)S^{2}\sigma^{2}dt\\
+&={\frac {1}{S}}\left(\sigma SdB+\mu Sdt\right)-{\frac{1}{2}}\sigma^{2}dt\\
+&=\sigma dB+\left(\mu-{\tfrac{\sigma^{2}}{2}}\right)dt
+\end{aligned}
+$$
+
+It follows that:
+
+$$
+\begin{aligned}
+\log(S_{t})-\log(S_{0})=\sigma dB+\left(\mu-{\tfrac{\sigma^{2}}{2}}\right)dt
+\end{aligned}
+$$
+
+Exponentiating gives the expression for $S$:
+
+$$
+\begin{aligned}
+S_{t}=S_{0}\exp\left(\sigma B_{t}+\left(\mu-{\tfrac{\sigma^{2}}{2}}\right)t\right)
+\end{aligned}
+$$
+
+This provides a recursive procedure for simulating values of $S$ at $t_{0}<t_{1}<\cdots<t_{n}$:
+
+$$
+\begin{aligned}
+S(t_{i+1})&=S(t_{i})\exp\left(\sigma\sqrt{t_{i+1}-t_{i}}Z_{i+1}+\left[\mu-{\tfrac{\sigma^{2}}{2}}\right]\left(t_{i+1}-t_{i}\right)\right)
+\end{aligned}
+$$
+
+where $Z_{1},Z_{2},\ldots,Z_{n}$ are independent standard normals.
+
+```{r}
+sim_gbm <- function(n_sim, S, mu, sigma, dt) {
+    
+    result <- S * exp(cumsum(sigma * sqrt(dt) * rnorm(n_sim)) +
+                      (mu - 0.5 * sigma ^ 2) * dt)
+    
+    return(result)
+    
+}
+```
+
+This leads to an algorithm for simulating a multidimensional geometric Brownian motion:
+
+$$
+\begin{aligned}
+S_{k}(t_{i+1})&=S_{k}(t_{i})\exp\left(\sqrt{t_{i+1}-t_{i}}\sum_{j=1}^{d}{A_{kj}Z_{i+1,j}}+\left[\mu_{k}-{\tfrac{\sigma_{k}^{2}}{2}}\right]\left(t_{i+1}-t_{i}\right)\right)
+\end{aligned}
+$$
+
+where $A$ is the Cholesky factor of $\Sigma$, i.e. $A$ is any matrix for which $AA^\mathrm{T}=\Sigma$.
+
+```{r}
+sim_multi_gbm <- function(n_sim, S, mu, sigma, dt) {
+    
+    n_cols <- ncol(sigma)
+    
+    Z <- matrix(rnorm(n_sim * n_cols), nrow = n_sim, ncol = n_cols)
+    X <- sweep(sqrt(dt) * (Z %*% chol(sigma)), 2, (mu - 0.5 * diag(sigma)) * dt, "+")
+    
+    result <- sweep(apply(X, 2, function(x) exp(cumsum(x))), 2, S, "*")
+    
+    return(result)
+    
+}
+```
+
+```{r}
+# https://arxiv.org/pdf/0812.4210.pdf
+# https://quant.stackexchange.com/questions/15219/calibration-of-a-gbm-what-should-dt-be
+# https://stackoverflow.com/questions/36463227/geometrical-brownian-motion-simulation-in-r
+# https://quant.stackexchange.com/questions/25219/simulate-correlated-geometric-brownian-motion-in-the-r-programming-language
+# https://quant.stackexchange.com/questions/35194/estimating-the-historical-drift-and-volatility/
+S <- rep(1, length(factors))
+sigma <- cov(returns_xts, use = "complete.obs") * scale[["periods"]]
+mu <- colMeans(na.omit(returns_xts)) * scale[["periods"]]
+mu <- mu + diag(sigma) / 2 # drift
+dt <- 1 / scale[["periods"]]
+```
+
+```{r}
+mu_ls <- list()
+sigma_ls <- list()
+```
+
+```{r}
+for (i in 1:1000) {
+    
+    # assumes stock prices
+    levels_sim <- sim_multi_gbm(width + 1, S, mu, sigma, dt)
+    returns_sim <- diff(log(levels_sim))
+
+    mu_sim <- colMeans(returns_sim) * scale[["periods"]]
+    sigma_sim <- apply(returns_sim, 2, sd) * sqrt(scale[["periods"]])
+    
+    mu_ls <- append(mu_ls, list(mu_sim))
+    sigma_ls <- append(sigma_ls, list(sigma_sim))
+    
+}
+```
+
+```{r}
+data.frame("empirical" = colMeans(na.omit(returns_xts)) * scale[["periods"]],
+           "theoretical" = colMeans(do.call("rbind", mu_ls)))
+```
+
+```{r}
+data.frame("empirical" = sqrt(diag(sigma)),
+           "theoretical" = colMeans(do.call("rbind", sigma_ls)))
+```
+
+# Implied volatility
+
+## Newton's method
+
+Newton's method (main idea is also from a Taylor series) is a method for finding approximations to the roots of a function $f(x)$:
+
+$$
+\begin{aligned}
+x_{n+1}=x_{n}-{\frac{f(x_{n})}{f'(x_{n})}}
+\end{aligned}
+$$
+
+To solve $V(\sigma_{n})-V=0$ for $\sigma_{n}$, use Newton's method and repeat until $\left|\sigma_{n+1}-\sigma_{n}\right|<\varepsilon$:
+
+$$
+\begin{aligned}
+\sigma_{n+1}=\sigma_{n}-{\frac{V(\sigma_{n})-V}{V'(\sigma_{n})}}
+\end{aligned}
+$$
+
+```{r}
+implied_vol_newton <- function(params, type, S, K, r, q, tau) {
+    
+    target0 <- 0
+    sigma0 <- params[["sigma"]]
+    
+    while (abs(target0 - params[["target"]]) > params[["tol"]]) {
+        
+        d1 <- bs_d1(S, K, r, q, tau, sigma0)
+        d2 <- bs_d2(S, K, r, q, tau, sigma0)
+        
+        target0 <- bs_value(type, S, K, r, q, tau, sigma0, d1, d2)
+        vega0 <- bs_vega(type, S, K, r, q, tau, sigma0, d1, d2)
+        
+        sigma <- sigma0 - (target0 - params[["target"]]) / vega0
+        sigma0 <- sigma
+        
+    }
+    
+    return(sigma)
+    
+}
+```
+
+```{r}
+# http://www.aspenres.com/documents/help/userguide/help/bopthelp/bopt2Implied_Volatility_Formula.html
+# https://books.google.com/books?id=VLi61POD61IC&pg=PA104
+S <- coredata(na.locf(levels_xts)[nrow(levels_xts), factor])
+K <- S * (1 + 0.05)
+sigma <- coredata(sd_xts[nrow(sd_xts), factor]) # overrides matrix
+start <- 0.2
+```
+
+```{r}
+d1 <- bs_d1(S, K, r, q, tau, sigma)
+d2 <- bs_d2(S, K, r, q, tau, sigma)
+target <- bs_value(type, S, K, r, q, tau, sigma, d1, d2)
+params <- list(
+    "target" = target,
+    "sigma" = start,
+    "tol" = 1e-4 # .Machine$double.eps
+)
+```
+
+```{r}
+implied_vol_newton(params, type, S, K, r, q, tau)
+```
+
+## Optimization
+
+If the derivative is unknown, try optimization:
+
+```{r}
+implied_vol_obj <- function(param, type, S, K, r, q, tau, target) {
+    
+    d1 <- bs_d1(S, K, r, q, tau, param)
+    d2 <- bs_d2(S, K, r, q, tau, param)
+    target0 <- bs_value(type, S, K, r, q, tau, param, d1, d2)
+    
+    result <- abs(target0 - target)
+    
+    return(result)
+    
+}
+
+implied_vol_optim <- function(param, type, S, K, r, q, tau, target) {
+    
+    result <- optim(param, implied_vol_obj, type = type, S = S, K = K, r = r, q = q,
+                    tau = tau, target = target, method = "Brent", lower = 0, upper = 1)
+    
+    return(result$par)
+    
+}
+```
+
+```{r}
+implied_vol_optim(start, type, S, K, r, q, tau, target)
+```
+
+## Variance swaps
+
+A variance swap can be written as:
+
+$$
+\begin{aligned}
+K_{var}={\frac{2e^{rT}}{T}}\left(\int\limits_{0}^{F_{0}}{\frac{1}{K^{2}}}P(K)dK+\int\limits_{F_{0}}^{\infty}{\frac{1}{K^{2}}} C(K)dK\right)
+\end{aligned}
+$$
+
+The CBOE Volatility Index (VIX) is calculated as a variance swap on the 30-day variance of the S&P 500 with an adjustment term:
+
+$$
+\begin{aligned}
+\sigma^{2}={\frac{2e^{rT}}{T}}\left(\sum_{i=0}^{K_{0}}\frac{\Delta K_{i}}{K_{i}^{2}}P(K_{i})+\sum_{i=K_{0}}^{\infty}\frac{\Delta K_{i}}{K_{i}^{2}}C(K_{i})\right)-\frac{1}{T}\left(\frac{F}{K_{0}}-1\right)^{2}
+\end{aligned}
+$$
+
+```{r}
+# https://cdn.cboe.com/resources/vix/vixwhite.pdf
+# https://en.wikipedia.org/wiki/VIX
+# https://en.wikipedia.org/wiki/Variance_swap
+# https://www.ivolatility.com/doc/VarianceSwaps.pdf
+implied_vol_vix <- function(calls_df, puts_df, r, tau) {
+  
+  # time to expiration  
+  t <- as.numeric(difftime(tau[["exp_time"]], tau[["sys_time"]], units = "mins")) / (365 * 24 * 60)
+  
+  # midpoint of bid and ask
+  calls_df[["Mid"]] <- rowMeans(calls_df[ , c("Bid", "Ask")])
+  puts_df[["Mid"]] <- rowMeans(puts_df[ , c("Bid", "Ask")])
+  
+  options_df <- merge(calls_df[ , c("Strike", "Mid")],
+                      puts_df[ , c("Strike", "Mid")], by = "Strike")
+  colnames(options_df) <- c("Strike", "Call", "Put")
+  
+  options_df[["Diff"]] <- abs(options_df[["Call"]] - options_df[["Put"]])
+  
+  # minimum absolute difference is forward index level
+  forward_df <- options_df[options_df[["Diff"]] == min(options_df[["Diff"]]), ]
+  k <- forward_df[["Strike"]]
+  c <- forward_df[["Call"]]
+  p <- forward_df[["Put"]]
+  f <- k + exp(r * t) * (c - p)
+  
+  # strike price equal or below forward index level
+  k0 <- tail(options_df[options_df[["Strike"]] <= f, "Strike"], 1)
+  
+  # out-of-the-money options
+  puts_otm_df <- puts_df[puts_df[["Strike"]] < k0, ]
+  calls_otm_df <- calls_df[calls_df[["Strike"]] > k0, ]
+  
+  # stop after two consecutive strike prices with zero bid prices
+  # https://stackoverflow.com/a/50311890
+  puts_otm_rle <- rle(puts_otm_df[["Bid"]])
+  idx <- cumsum(puts_otm_rle$lengths) # end
+  idx <- idx[max(which(puts_otm_rle$lengths > 1 & puts_otm_rle$values == 0))]
+  puts_otm_df <- puts_otm_df[(idx + 1):nrow(puts_otm_df), ]
+  
+  calls_otm_rle <- rle(calls_otm_df[["Bid"]])
+  idx <- cumsum(calls_otm_rle$lengths) # end
+  idx <- idx - calls_otm_rle$lengths + 1 # start
+  idx <- idx[max(which(calls_otm_rle$lengths > 1 & calls_otm_rle$values == 0))]
+  calls_otm_df <- calls_otm_df[1:(idx - 1), ]
+  
+  # average put and call prices for k0
+  # note: exclude options with zero bid price
+  result_df <- rbind(puts_otm_df[puts_otm_df[["Bid"]] != 0, c("Strike", "Mid")],
+                     colMeans(rbind(puts_df[puts_df[["Strike"]] == k0, c("Strike", "Mid")],
+                                    calls_df[calls_df[["Strike"]] == k0, c("Strike", "Mid")])),
+                     calls_otm_df[calls_otm_df[["Bid"]] != 0, c("Strike", "Mid")])
+  
+  # differences between strike prices
+  n_rows <- nrow(result_df)
+  result_df[1, "Diff"] <- result_df[2, "Strike"] - result_df[1, "Strike"]
+  result_df[n_rows, "Diff"] <- result_df[n_rows, "Strike"] - result_df[n_rows - 1, "Strike"]
+  result_df[2:(n_rows - 1), "Diff"] <- (result_df[3:n_rows, "Strike"] -
+                                          result_df[1:(n_rows - 2), "Strike"]) / 2
+  
+  # variance
+  v <- sum(result_df[ , "Diff"] / result_df[ , "Strike"] ^ 2 * exp(r * t) *
+             result_df[ , "Mid"]) * (2 / t) - (1 / t) * (f / k0 - 1) ^ 2
+  
+  result <- list("t" = t,
+                 "v" = v)
+  
+  return(result)
+  
+}
+```
+
+```{r}
+sys_time <- format(Sys.Date(), paste0("%Y-%m-%d", "09:46:00"))
+```
+
+```{r}
+v1 <- implied_vol_vix(read.csv("../securities/near_calls.csv"), read.csv("../securities/near_puts.csv"), 0.000305,
+                      list("sys_time" = sys_time,
+                           "exp_time" = format(Sys.Date() + 25, paste0("%Y-%m-%d", "08:30:00"))))
+
+v2 <- implied_vol_vix(read.csv("../securities/next_calls.csv"), read.csv("../securities/next_puts.csv"), 0.000286,
+                      list("sys_time" = sys_time,
+                           "exp_time" = format(Sys.Date() + 32, paste0("%Y-%m-%d", "15:00:00"))))
+```
+
+```{r}
+nt1 <- v1$t * (365 * 24 * 60)
+nt2 <- v2$t * (365 * 24 * 60)
+n30 <- 30 * (24 * 60)
+n365 <- 365 * (24 * 60)
+```
+
+```{r}
+vix <- sqrt((v1$t * v1$v * ((nt2 - n30) / (nt2 - nt1)) +
+               v2$t * v2$v * ((n30 - nt1) / (nt2 - nt1))) * (n365 / n30))
+print(vix)
+```
+
+## Implied yield
+
+```{r}
+yield_option <- function(type, S, K, r, q, tau, sigma) {
+    
+    d1 <- bs_d1(S, K, r, q, tau, sigma)
+    d2 <- bs_d2(S, K, r, q, tau, sigma)
+    value <- bs_value(type, S, K, r, q, tau, sigma, d1, d2)
+    
+    if (type == "call") {
+        result <- (value / S) / tau
+    } else if (type == "put") {
+        result <- (value / K) / tau
+    }
+    
+    return(result)
+    
+}
+```
+
+```{r}
+sigmas <- seq(0.1, 0.3, by = 0.04)
+taus <- seq(20, 126, by = 20) / 252
+```
+
+```{r}
+yield_dt <- CJ(sigma = sigmas, tau = taus)
+yield_dt[ , yield := yield_option(type, S, K, r, q, tau, sigma), by = c("sigma", "tau")]
+yield_dt[ , sigma := sigma * 100]
+yield_dt[ , tau := tau * scale[["periods"]]]
+```
+
+```{r, fig.width = 4, fig.height = 3}
+yield_plt <- plot_heatmap(yield_dt, x = "tau", y = "sigma", z = "yield",
+                          title = "Yield (%)", xlab = "Tau", ylab = "Sigma")
+print(yield_plt)
+```

@@ -10,7 +10,7 @@ theme_jjf <- function(base_size = 11, base_family = "",
   theme_gray(base_size = base_size, base_family = base_family,
              base_line_size = base_line_size,
              base_rect_size = base_rect_size) %+replace%
-    theme(line = element_line(colour = rgb(217, 217, 217, max = 255), size = base_line_size,
+    theme(line = element_line(colour = rgb(217, 217, 217, max = 255), linewidth = base_line_size,
                               linetype = 1, lineend = "butt"),
           axis.text = element_text(size = rel(0.8), colour = "black"),
           axis.ticks = element_blank(),
