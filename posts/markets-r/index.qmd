@@ -111,7 +111,7 @@ $$
 \end{aligned}
 $$
 
-* <http://scipp.ucsc.edu/~haber/ph116C/iid.pdf>
+-   <http://scipp.ucsc.edu/~haber/ph116C/iid.pdf>
 
 ```{r}
 # volatility scale only
@@ -139,8 +139,8 @@ print(score_plt)
 
 Outliers are defined the regression residuals that fall below $Q_{1}−1.5\times IQR$ or above $Q_{3}+1.5\times IQR$:
 
-* <https://stats.stackexchange.com/a/1153>
-* <https://stats.stackexchange.com/a/108951>
+-   <https://stats.stackexchange.com/a/1153>
+-   <https://stats.stackexchange.com/a/108951>
 
 ```{r}
 outliers <- function(z) {
@@ -155,10 +155,7 @@ outliers <- function(z) {
     if (n_cols == 1) {
       x <- 1:length(y)
     } else {
-      
-      t <- 1:length(y)
-      x <- cbind(t, z[ , -j])
-      
+      x <- cbind(1:length(y), z[ , -j])
     }
     
     coef <- coef(lm(y ~ x))
@@ -201,9 +198,9 @@ $$
 \end{aligned}
 $$
 
-* <https://github.com/cran/lmtest/blob/master/R/waldtest.R>
-* <https://en.wikipedia.org/wiki/Wald_test#Test(s)_on_multiple_parameters>
-* <https://math.stackexchange.com/a/1591946>
+-   <https://github.com/cran/lmtest/blob/master/R/waldtest.R>
+-   <https://en.wikipedia.org/wiki/Wald_test#Test(s)_on_multiple_parameters>
+-   <https://math.stackexchange.com/a/1591946>
 
 ```{r}
 granger_test <- function(x, y, order) {
@@ -220,7 +217,7 @@ granger_test <- function(x, y, order) {
     fit <- lm(y ~ lag_y + lag_x, data = data)
     
     R <- matrix(c(0, 0, 1), nrow = 1)
-    beta <- matrix(fit$coefficients, ncol = 1)
+    beta <- fit$coefficients
     r <- 0 # technically a matrix (see Stack Exchange)
     
     wald <- t(R %*% beta - r) %*% solve(R %*% vcov(fit) %*% t(R)) %*% (R %*% beta - r)
@@ -242,19 +239,13 @@ roll_lead_lag <- function(x, y, width, order, p_value) {
     
     for (i in width:n_rows) {
         
-        x_y_status <- FALSE
-        y_x_status <- FALSE
-        
         idx <- max(i - width + 1, 1):i
         
         x_y <- granger_test(x[idx], y[idx], order)
         y_x <- granger_test(y[idx], x[idx], order)
         
-        if ((x_y < p_value) && (y_x > p_value)) {
-            x_y_status <- TRUE # x leads y 
-        } else if ((x_y > p_value) && (y_x < p_value)) {
-            y_x_status <- TRUE # y leads x
-        }
+        x_y_status <- (x_y < p_value) && (y_x > p_value)
+        y_x_status <- (x_y > p_value) && (y_x < p_value)
         
         total <- data.frame("x_y" = x_y_status,
                             "y_x" = y_x_status)
