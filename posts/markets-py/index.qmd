@@ -13,7 +13,7 @@ categories:
 # closed: https://github.com/rstudio/reticulate/issues/808
 # closed: https://github.com/rstudio/reticulate/issues/847
 # open: "run all chunks"
-knitr::opts_chunk$set(echo = TRUE)
+# knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ```{r, message = FALSE}
@@ -43,7 +43,7 @@ palette <- c("black", palette_jjf(length(py$factors)))
 names(palette) <- c("Overall", py$factors)
 ```
 
-* <https://pandas-datareader.readthedocs.io/en/latest/remote_data.html>
+-   <https://pandas-datareader.readthedocs.io/en/latest/remote_data.html>
 
 ```{python}
 levels_df = pdr.get_data_fred(factors, start = "1900-01-01")
@@ -124,7 +124,7 @@ $$
 \end{aligned}
 $$
 
-* <http://scipp.ucsc.edu/~haber/ph116C/iid.pdf>
+-   <http://scipp.ucsc.edu/~haber/ph116C/iid.pdf>
 
 ```{python}
 def risk(x):
@@ -166,44 +166,42 @@ print(score_plt)
 
 Outliers are defined the regression residuals that fall below $Q_{1}−1.5\times IQR$ or above $Q_{3}+1.5\times IQR$:
 
-* <https://stats.stackexchange.com/a/1153>
-* <https://stats.stackexchange.com/a/108951>
+-   <https://stats.stackexchange.com/a/1153>
+-   <https://stats.stackexchange.com/a/108951>
 
 ```{python}
 def outliers(z):
-    
+  
     n_cols = z.shape[1]
-    result = pd.DataFrame()
-    
+    result_ls = []
+
     for j in range(n_cols):
-        
+      
         y = z.iloc[:, j]
-        
+
         if (n_cols == 0):
-          x = range(len(y))
+            x = sm.add_constant(range(len(y)))
         else:
-          
-          t = range(len(y))
-          x = np.concatenate((np.matrix(t).T, z.drop(z.columns[j], axis = 1)), axis = 1)
-        
-        x = sm.add_constant(x)
+            x = sm.add_constant(z.drop(z.columns[j], axis = 1))
+
         coef = sm.WLS(y, x).fit().params
-        x = x[:, 1:]
-        
-        predict = coef[0] + np.matmul(coef[1:], x.T)
-        resid = y - np.ravel(predict)
-        
+        x = x.iloc[:, 1:]
+
+        predict = coef[0] + np.dot(x, coef[1:])
+        resid = y - predict
+
         lower = resid.quantile(0.25)
         upper = resid.quantile(0.75)
         iqr = upper - lower
-        
+
         total = y[(resid < lower - 1.5 * iqr) | (resid > upper + 1.5 * iqr)]
-        total = pd.DataFrame({"date": total.index, "symbol": total.name, "values": total})
         
-        result = result.append(total, ignore_index = True)
-    
+        total = pd.DataFrame({"date": total.index, "symbol": total.name, "values": total})
+        result_ls.append(total)
+
+    result = pd.concat(result_ls, ignore_index = True)
     result = result.pivot_table(index = "date", columns = "symbol", values = "values")
-    
+
     return result
 ```
 
@@ -227,9 +225,9 @@ $$
 \end{aligned}
 $$
 
-* <https://github.com/cran/lmtest/blob/master/R/waldtest.R>
-* <https://en.wikipedia.org/wiki/Wald_test#Test(s)_on_multiple_parameters>
-* <https://math.stackexchange.com/a/1591946>
+-   <https://github.com/cran/lmtest/blob/master/R/waldtest.R>
+-   <https://en.wikipedia.org/wiki/Wald_test#Test(s)_on_multiple_parameters>
+-   <https://math.stackexchange.com/a/1591946>
 
 ```{python}
 def granger_test(x, y, order):
@@ -240,53 +238,46 @@ def granger_test(x, y, order):
     
     # collect series
     df = pd.DataFrame({"x": x, "y": y, "lag_x": lag_x, "lag_y": lag_y})
-    x_mat = sm.add_constant(np.matrix(df[["lag_y", "lag_x"]]))
-    y_mat = np.matrix(df["y"]).T
+    x_mat = sm.add_constant(df[["lag_y", "lag_x"]])
+    y_mat = df["y"]
     
     # fit full model
     fit = sm.WLS(y_mat, x_mat, missing = "drop").fit()
     
-    R = np.matrix([0, 0, 1])
-    coef = np.matrix(fit.params)
+    R = np.array([0, 0, 1])
+    coef = fit.params
     r = 0 # technically a matrix (see Stack Exchange)
     
-    matmul = np.matmul(R, coef.T) - r
-    maatmul_mid = np.linalg.inv(np.matmul(R, np.matmul(np.matrix(fit.cov_params()), R.T)))
-    wald = np.matmul(matmul.T, np.matmul(maatmul_mid, matmul))
+    matmul = np.dot(R, coef) - r
+    matmul_mid = np.linalg.inv(np.atleast_2d(np.dot(R, np.dot(fit.cov_params(), R.T))))
+    wald = np.dot(matmul.T, np.dot(matmul_mid, matmul))
     
     result = 1 - chi2.cdf(wald, 1)
     
-    return result
+    return float(result)
 ```
 
 ```{python}
 def roll_lead_lag(x, y, width, order, p_value):
-
+  
     n_rows = len(x)
     x_name = x.name
     y_name = y.name
-    result = pd.DataFrame()
-    
+    result_ls = []
+
     for i in range(width - 1, n_rows):
-        
-        x_y_status = False
-        y_x_status = False
-        
+      
         idx = range(max(i - width + 1, 0), i + 1)
 
         x_y = granger_test(x.iloc[idx], y.iloc[idx], order)
         y_x = granger_test(y.iloc[idx], x.iloc[idx], order)
 
-        if (x_y < p_value) and (y_x > p_value):
-            x_y_status = True # x leads y
-        elif (x_y > p_value) and (y_x < p_value):
-            y_x_status = True # y leads x
-          
-        # dynamic column names
-        total = pd.DataFrame([[x_y_status, y_x_status]], columns = [x_name, y_name])
-        result = result.append(total, ignore_index = True)
+        x_y_status = (x_y < p_value) and (y_x > p_value)
+        y_x_status = (x_y > p_value) and (y_x < p_value)
 
-    result.index = x.index[(width - 1):]
+        result_ls.append({x_name: x_y_status, y_name: y_x_status})
+
+    result = pd.DataFrame(result_ls, index = x.index[(width - 1):])
 
     return result
 ```
