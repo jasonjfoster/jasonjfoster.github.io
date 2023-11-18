@@ -8,15 +8,14 @@ categories:
   - python
 ---
 
-```{r, echo = FALSE}
+```{python, echo = FALSE}
 # closed: https://github.com/rstudio/rstudio/issues/5945
 # closed: https://github.com/rstudio/reticulate/issues/808
 # closed: https://github.com/rstudio/reticulate/issues/847
 # open: "run all chunks"
-knitr::opts_chunk$set(echo = TRUE)
 ```
 
-```{r, message = FALSE}
+```{r, echo = FALSE, message = FALSE}
 library(reticulate)
 library(data.table)
 source("../plot/theme_jjf.R")
@@ -90,9 +89,9 @@ shocks = [x / 2 for x in range(-6, 7)]
 ```
 
 ```{python}
-greeks_df = pd.DataFrame([(x, y) for x in types for y in shocks]) \
-    .rename(columns = {0: "type", 1: "shock"})
-greeks_df["spot"] = greeks_df["shock"].apply(level_shock, args = (S, tau, sigma))
+greeks_df = pd.DataFrame([(x, y) for x in types for y in shocks], 
+    columns = ["type", "shock"])
+greeks_df["spot"] = level_shock(greeks_df["shock"], S, tau, sigma)
 ```
 
 ## Value
@@ -114,6 +113,19 @@ def bs_value(type, S, K, r, q, tau, sigma, d1, d2):
     elif (type == "put"):
         result = np.exp(-r * tau) * K * Phi(-d2) - S * np.exp(-q * tau) * Phi(-d1)
         
+    return result
+```
+
+```{python}
+def bs_value(type, S, K, r, q, tau, sigma, d1, d2):
+    
+    r_df = np.exp(-r * tau)
+    q_df = np.exp(-q * tau)
+    
+    call_value = S * q_df * Phi(d1) - r_df * K * Phi(d2)
+    put_value = r_df * K * Phi(-d2) - S * q_df * Phi(-d1)
+    result = np.where(type == "call", call_value, put_value)
+    
     return result
 ```
 
@@ -155,10 +167,10 @@ def Phi(x):
 ```
 
 ```{python}
-greeks_df["d1"] = greeks_df.apply(lambda x: bs_d1(x["spot"], K, r, q, tau, sigma), axis = 1)
-greeks_df["d2"] = greeks_df.apply(lambda x: bs_d2(x["spot"], K, r, q, tau, sigma), axis = 1)
-greeks_df["value"] = greeks_df.apply(lambda x: bs_value(x["type"], x["spot"], K, r, q, tau,
-                                                        sigma, x["d1"], x["d2"]), axis = 1)
+greeks_df["d1"] = bs_d1(greeks_df["spot"], K, r, q, tau, sigma)
+greeks_df["d2"] = bs_d2(greeks_df["spot"], K, r, q, tau, sigma)
+greeks_df["value"] = bs_value(greeks_df["type"], greeks_df["spot"], K, r, q, tau, sigma,
+                              greeks_df["d1"], greeks_df["d2"]) 
 ```
 
 ## First-order
@@ -174,18 +186,19 @@ $$
 
 ```{python}
 def bs_delta(type, S, K, r, q, tau, sigma, d1, d2):
+  
+    q_df = np.exp(-q * tau)
     
-    if (type == "call"):
-        result = np.exp(-q * tau) * Phi(d1)
-    elif (type == "put"):
-        result = -np.exp(-q * tau) * Phi(-d1)
+    call_value = q_df * Phi(d1)
+    put_value = -q_df * Phi(-d1)
+    result = np.where(type == "call", call_value, put_value)
     
     return result
 ```
 
 ```{python}
-greeks_df["delta"] = greeks_df.apply(lambda x: bs_delta(x["type"], x["spot"], K, r, q, tau,
-                                                        sigma, x["d1"], x["d2"]), axis = 1)
+greeks_df["delta"] = bs_delta(greeks_df["type"], greeks_df["spot"], K, r, q, tau, sigma,
+                              greeks_df["d1"], greeks_df["d2"]) 
 ```
 
 ### Vega
@@ -199,14 +212,15 @@ $$
 ```{python}
 def bs_vega(type, S, K, r, q, tau, sigma, d1, d2):
     
-    result = S * np.exp(-q * tau) * phi(d1) * np.sqrt(tau)
+    q_df = np.exp(-q * tau)
+    result = S * q_df * phi(d1) * np.sqrt(tau)
     
     return result
 ```
 
 ```{python}
-greeks_df["vega"] = greeks_df.apply(lambda x: bs_vega(x["type"], x["spot"], K, r, q, tau,
-                                                      sigma, x["d1"], x["d2"]), axis = 1)
+greeks_df["vega"] = bs_vega(greeks_df["type"], greeks_df["spot"], K, r, q, tau, sigma,
+                            greeks_df["d1"], greeks_df["d2"]) 
 ```
 
 ### Theta
@@ -221,25 +235,59 @@ $$
 ```{python}
 def bs_theta(type, S, K, r, q, tau, sigma, d1, d2):
     
-    if (type == "call"):
+    r_df = np.exp(-r * tau)
+    q_df = np.exp(-q * tau)
+    
+    call_value = -q_df * S * phi(d1) * sigma / (2 * np.sqrt(tau)) - \
+        r * K * r_df * Phi(d2) + q * S * q_df * Phi(d1)
         
-        result = -np.exp(-q * tau) * S * phi(d1) * sigma / (2 * np.sqrt(tau)) - \
-            r * K * np.exp(-r * tau) * Phi(d2) + q * S * np.exp(-q * tau) * Phi(d1)
+    put_value = -q_df * S * phi(d1) * sigma / (2 * np.sqrt(tau)) + \
+        r * K * r_df * Phi(-d2) - q * S * q_df * Phi(-d1)
         
-    elif (type == "put"):
-        
-        result = -np.exp(-q * tau) * S * phi(d1) * sigma / (2 * np.sqrt(tau)) + \
-            r * K * np.exp(-r * tau) * Phi(-d2) - q * S * np.exp(-q * tau) * Phi(-d1)
+    result = np.where(type == "call", call_value, put_value)
     
     return result
 ```
 
 ```{python}
-greeks_df["theta"] = greeks_df.apply(lambda x: bs_theta(x["type"], x["spot"], K, r, q, tau,
-                                                        sigma, x["d1"], x["d2"]), axis = 1)
+greeks_df["theta"] = bs_theta(greeks_df["type"], greeks_df["spot"], K, r, q, tau, sigma,
+                              greeks_df["d1"], greeks_df["d2"]) 
 ```
 
-### Nonlinear beta
+## Second-order
+
+### Gamma
+
+$$
+\begin{aligned}
+\Gamma_{c,p}&={\frac{\partial\Delta_{c,p}}{\partial S}}={\frac{\partial^{2}V_{c,p}}{\partial S^{2}}}=e^{-q\tau}{\frac{\phi(d_{1})}{S\sigma{\sqrt{\tau}}}}=Ke^{-r\tau}{\frac{\phi(d_{2})}{S^{2}\sigma{\sqrt{\tau}}}}
+\end{aligned}
+$$
+
+```{python}
+def bs_gamma(type, S, K, r, q, tau, sigma, d1, d2):
+  
+    q_df = np.exp(-q * tau)
+    
+    result = q_df * phi(d1) / (S * sigma * np.sqrt(tau))
+    
+    return result
+```
+
+```{python}
+greeks_df["gamma"] = bs_gamma(greeks_df["type"], greeks_df["spot"], K, r, q, tau, sigma,
+                              greeks_df["d1"], greeks_df["d2"]) 
+```
+
+```{r, echo = FALSE, fig.width = 10, fig.height = 3}
+greeks_mlt <- as.data.table(py$greeks_df)[ , c("spot", "d1", "d2") := NULL]
+greeks_mlt <- melt(greeks_mlt, id.vars = c("type", "shock"))
+greeks_plt <- plot_scen(greeks_mlt, z = "type", title = "Greeks", xlab = "Shock") +
+  facet_wrap(~ variable, nrow = 1, scales = "free", labeller = labeller(variable = capitalize))
+print(greeks_plt)
+```
+
+## Nonlinear beta
 
 Notional market value is the market value of a leveraged position:
 
@@ -261,10 +309,10 @@ def beta_option(type, S, K, r, q, tau, sigma, sec):
     notional_mv = sec["n"] * sec["multiple"] * sec["S"] * delta
     notional_mv0 = sec["n"] * sec["multiple"] * sec["S"] * sec["delta"]
     
-    if (type == "call"):
-        result = sec["beta"] * (notional_mv - notional_mv0)
-    elif (type == "put"):
-        result = sec["beta"] * (notional_mv0 - notional_mv)
+    call_value = sec["beta"] * (notional_mv - notional_mv0)
+    put_value = sec["beta"] * (notional_mv0 - notional_mv)
+    
+    result = np.where(type == "call", call_value, put_value)
         
     return result
 ```
@@ -291,16 +339,14 @@ sec = {
 ```
 
 ```{python}
-beta_df = pd.DataFrame([(x, y) for x in [type] for y in shocks]) \
-    .rename(columns = {0: "type", 1: "shock"})
-beta_df["spot"] = beta_df["shock"].apply(level_shock, args = (S, tau, sigma))
+beta_df = pd.DataFrame([(x, y) for x in types for y in shocks], 
+    columns = ["type", "shock"])
+beta_df["spot"] = level_shock(beta_df["shock"], S, tau, sigma)
 beta_df["static"] = beta
-beta_df["dynamic"] = beta_df \
-    .apply(lambda x:  beta + 
-           beta_option(type, x["spot"], K, r, q, tau, sigma, sec) / nav, axis = 1)
+beta_df["dynamic"] = beta + beta_option(type, beta_df["spot"], K, r, q, tau, sigma, sec) / nav
 ```
 
-```{r, fig.width = 4, fig.height = 3}
+```{r, echo = FALSE, fig.width = 4, fig.height = 3}
 beta_mlt <- as.data.table(py$beta_df)[ , c("type", "spot") := NULL]
 beta_mlt <- melt(beta_mlt, id.vars = "shock")
 beta_plt <- plot_scen(beta_mlt, title = "Beta", xlab = "Shock")
@@ -314,37 +360,6 @@ $$
 \text{10-year equivalent }=\,&\frac{\text{security duration}}{\text{10-year OTR duration}}
 \end{aligned}
 $$
-
-## Second-order
-
-### Gamma
-
-$$
-\begin{aligned}
-\Gamma_{c,p}&={\frac{\partial\Delta_{c,p}}{\partial S}}={\frac{\partial^{2}V_{c,p}}{\partial S^{2}}}=e^{-q\tau}{\frac{\phi(d_{1})}{S\sigma{\sqrt{\tau}}}}=Ke^{-r\tau}{\frac{\phi(d_{2})}{S^{2}\sigma{\sqrt{\tau}}}}
-\end{aligned}
-$$
-
-```{python}
-def bs_gamma(type, S, K, r, q, tau, sigma, d1, d2):
-    
-    result = np.exp(-q * tau) * phi(d1) / (S * sigma * np.sqrt(tau))
-    
-    return result
-```
-
-```{python}
-greeks_df["gamma"] = greeks_df.apply(lambda x: bs_gamma(x["type"], x["spot"], K, r, q, tau,
-                                                        sigma, x["d1"], x["d2"]), axis = 1)
-```
-
-```{r, fig.width = 10, fig.height = 3}
-greeks_mlt <- as.data.table(py$greeks_df)[ , c("spot", "d1", "d2") := NULL]
-greeks_mlt <- melt(greeks_mlt, id.vars = c("type", "shock"))
-greeks_plt <- plot_scen(greeks_mlt, z = "type", title = "Greeks", xlab = "Shock") +
-  facet_wrap(~ variable, nrow = 1, scales = "free", labeller = labeller(variable = capitalize))
-print(greeks_plt)
-```
 
 # Taylor series
 
@@ -374,8 +389,8 @@ def pnl_bond(duration, convexity, dy):
     duration_pnl = -duration * dy
     convexity_pnl = (convexity / 2) * dy ** 2
     
-    result = {"duration_pnl": duration_pnl,
-              "convexity_pnl": convexity_pnl}
+    result = pd.DataFrame({"duration": duration_pnl,
+                           "convexity": convexity_pnl})
     
     return result
 ```
@@ -384,11 +399,24 @@ def pnl_bond(duration, convexity, dy):
 # https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781118267967.app1
 duration = 6.5 * (2 / 3)
 convexity = 0.65 * (2 / 3)
-dy = 0.0025 # 25 bps
+# dy = 0.0025 # 25 bps
 ```
 
 ```{python}
-pnl_bond(duration, convexity, dy)
+bond_df = pd.DataFrame({"duration": duration, "convexity": convexity,
+    "dy": returns_df[("returns", "DGS10")]})
+```
+
+```{python}
+attrib_df = pnl_bond(bond_df["duration"], bond_df["convexity"], bond_df["dy"])
+```
+
+```{r, echo = FALSE, fig.width = 6, fig.height = 3}
+# START HERE
+attrib_mlt <- melt(as.data.table(py$attrib_df, keep.rownames = "index"), id.vars = "index")
+attrib_mlt[ , index := as.Date(index)]
+attrib_plt <- plot_ts_decomp(attrib_mlt, decomp = "Total", title = "Attribution 1Y (%)")
+print(attrib_plt)
 ```
 
 ### Duration drift
