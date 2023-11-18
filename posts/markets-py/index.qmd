@@ -73,7 +73,7 @@ order = 20
 momentum_df = returns_df["returns"].shift(order).rolling(width - order, min_periods = 1).apply(pnl, raw = False).dropna()
 ```
 
-```{r, echo = FALSE, fig.width = 8, fig.height = 4}
+```{r, fig.width = 8, fig.height = 4}
 momentum_mlt <- melt(as.data.table(py$momentum_df, keep.rownames = "index"), id.vars = "index")
 momentum_mlt[ , index := as.Date(index)]
 momentum_plt <- plot_ts_decomp(momentum_mlt, decomp = "Total", title = "Momentum 1Y (%)") +
@@ -127,7 +127,7 @@ $$
 -   <http://scipp.ucsc.edu/~haber/ph116C/iid.pdf>
 
 ```{python}
-def risk(x):
+def sd(x):
     
     n_rows = sum(~np.isnan(x))
         
@@ -141,7 +141,7 @@ def risk(x):
 
 ```{python}
 # volatility scale only
-score_df = (momentum_df / momentum_df.rolling(width, min_periods = 1).apply(risk, raw = False)).dropna()
+score_df = (momentum_df / momentum_df.rolling(width, min_periods = 1).apply(sd, raw = False)).dropna()
 ```
 
 ```{python}
@@ -154,7 +154,7 @@ score_df = (momentum_df / momentum_df.rolling(width, min_periods = 1).apply(risk
 # score_df = score_df.dropna()
 ```
 
-```{r, echo = FALSE, fig.width = 8, fig.height = 4}
+```{r, fig.width = 8, fig.height = 4}
 score_mlt <- melt(as.data.table(py$score_df, keep.rownames = "index"), id.vars = "index")
 score_mlt[ , index := as.Date(index)]
 score_plt <- plot_ts_decomp(score_mlt, decomp = "Overall", title = "Score 1Y", multiple = 1) +
@@ -185,9 +185,7 @@ def outliers(z):
             x = sm.add_constant(z.drop(z.columns[j], axis = 1))
 
         coef = sm.WLS(y, x).fit().params
-        x = x.iloc[:, 1:]
-
-        predict = coef[0] + np.dot(x, coef[1:])
+        predict = coef[0] + np.dot(x.iloc[:, 1:], coef[1:])
         resid = y - predict
 
         lower = resid.quantile(0.25)
@@ -209,7 +207,7 @@ def outliers(z):
 outliers_df = outliers(score_df)
 ```
 
-```{r, echo = FALSE, warning = FALSE, fig.width = 8, fig.height = 4}
+```{r, warning = FALSE, fig.width = 8, fig.height = 4}
 outliers_mlt <- melt(as.data.table(py$outliers_df, keep.rownames = "index"), id.vars = "index")
 outliers_mlt[ , index := as.Date(index)]
 outliers_plt <- score_plt +
@@ -238,11 +236,10 @@ def granger_test(x, y, order):
     
     # collect series
     df = pd.DataFrame({"x": x, "y": y, "lag_x": lag_x, "lag_y": lag_y})
-    x_mat = sm.add_constant(df[["lag_y", "lag_x"]])
-    y_mat = df["y"]
+    x = sm.add_constant(df[["lag_y", "lag_x"]])
     
     # fit full model
-    fit = sm.WLS(y_mat, x_mat, missing = "drop").fit()
+    fit = sm.WLS(df["y"], x, missing = "drop").fit()
     
     R = np.array([0, 0, 1])
     coef = fit.params
@@ -295,7 +292,7 @@ score_y_df = score_df.loc[:, "DGS10"]
 lead_lag_df = roll_lead_lag(score_x_df, score_y_df, width, order, p_value)
 ```
 
-```{r, echo = FALSE, fig.width = 6, fig.height = 3}
+```{r, fig.width = 6, fig.height = 3}
 lead_lag_mlt <- melt(as.data.table(py$lead_lag_df, keep.rownames = "index"), id.vars = "index")
 lead_lag_mlt[ , index := as.Date(index)]
 lead_lag_plt <- plot_ts_decomp(lead_lag_mlt, decomp = "Total", title = "Lead lag 1M", palette = palette) +
