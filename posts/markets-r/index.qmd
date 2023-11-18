@@ -61,7 +61,7 @@ order <- 20
 momentum_xts <- na.omit(lag(roll_prod(1 + returns_xts, width - order, min_obs = 1) - 1, order))
 ```
 
-```{r, fig.width = 8, fig.height = 4}
+```{r, echo = FALSE, fig.width = 8, fig.height = 4}
 momentum_mlt <- melt(as.data.table(momentum_xts), id.vars = "index")
 momentum_plt <- plot_ts_decomp(momentum_mlt, decomp = "Total", title = "Momentum 1Y (%)") +
   facet_wrap(~ variable, scales = "free")
@@ -128,7 +128,7 @@ score_xts <- na.omit(momentum_xts / roll_sd(momentum_xts, width, center = FALSE,
 # score_xts <- na.omit(merge(overall_xts, score_xts))
 ```
 
-```{r, fig.width = 8, fig.height = 4}
+```{r, echo = FALSE, fig.width = 8, fig.height = 4}
 score_mlt <- melt(as.data.table(score_xts), id.vars = "index")
 score_plt <- plot_ts_decomp(score_mlt, decomp = "Overall", title = "Score 1Y", multiple = 1) +
   facet_wrap(~ variable)
@@ -276,7 +276,7 @@ score_y_xts <- score_xts[ , "DGS10"]
 lead_lag_xts <- roll_lead_lag(score_x_xts, score_y_xts, width, order, p_value)
 ```
 
-```{r, fig.width = 6, fig.height = 3}
+```{r, echo = FALSE, fig.width = 6, fig.height = 3}
 lead_lag_mlt <- melt(as.data.table(lead_lag_xts), id.vars = "index")
 lead_lag_plt <- plot_ts_decomp(lead_lag_mlt, decomp = "Total", title = "Lead lag 1M", palette = palette) +
   theme(axis.text.y = element_blank())
