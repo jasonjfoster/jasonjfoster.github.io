@@ -383,28 +383,37 @@ P(y+\Delta y)-P(y)&\approx{\frac{P'(y)}{1!}}\Delta y+{\frac{P''(y)}{2!}}(\Delta 
 \end{aligned}
 $$
 
+<!-- https://analystprep.com/cfa-level-1-exam/fixed-income/percentage-price-change-bond-duration-convexity/ -->
+<!-- https://thismatter.com/money/bonds/duration-convexity.htm -->
+
+Because of market conventions, use the following formula: $P(y+\Delta y)-P(y)\approx -D\Delta y +{\frac{C\times 100}{2!}}(\Delta y)^{2}$
+
 ```{python}
 def pnl_bond(duration, convexity, dy):
     
     duration_pnl = -duration * dy
-    convexity_pnl = (convexity / 2) * dy ** 2
+    convexity_pnl = (convexity * 100 / 2) * dy ** 2
+    income_pnl = dy
     
-    result = pd.DataFrame({"duration": duration_pnl,
-                           "convexity": convexity_pnl})
+    result = pd.DataFrame({"total": duration_pnl + convexity_pnl + income_pnl,
+                           "duration": duration_pnl,
+                           "convexity": convexity_pnl,
+                           "income": income_pnl})
     
     return result
 ```
 
 ```{python}
 # https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781118267967.app1
-duration = 6.5 * (2 / 3)
-convexity = 0.65 * (2 / 3)
-# dy = 0.0025 # 25 bps
+factor = "DGS10"
+duration = 6.5
+convexity = 0.65
+y = levels_df.fillna(method = "ffill")[factor][-width]
 ```
 
 ```{python}
 bond_df = pd.DataFrame({"duration": duration, "convexity": convexity,
-    "dy": returns_df[("returns", "DGS10")]})
+    "dy": (levels_df.fillna(method = "ffill")[factor][-width:] - y) / 100})
 ```
 
 ```{python}
@@ -412,7 +421,6 @@ attrib_df = pnl_bond(bond_df["duration"], bond_df["convexity"], bond_df["dy"])
 ```
 
 ```{r, echo = FALSE, fig.width = 6, fig.height = 3}
-# START HERE
 attrib_mlt <- melt(as.data.table(py$attrib_df, keep.rownames = "index"), id.vars = "index")
 attrib_mlt[ , index := as.Date(index)]
 attrib_plt <- plot_ts_decomp(attrib_mlt, decomp = "Total", title = "Attribution 1Y (%)")
@@ -420,6 +428,8 @@ print(attrib_plt)
 ```
 
 ### Duration drift
+
+<!-- START HERE: https://riskprep.com/tutorials/understanding-convexity-first-and-second-derivatives-of-a-price-function/ -->
 
 The derivative of duration with respect to interest rates gives:
 

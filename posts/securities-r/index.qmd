@@ -380,14 +380,19 @@ P(y+\Delta y)-P(y)&\approx{\frac{P'(y)}{1!}}\Delta y+{\frac{P''(y)}{2!}}(\Delta 
 \end{aligned}
 $$
 
+Because of market conventions, use the following formula: $P(y+\Delta y)-P(y)\approx -D\Delta y +{\frac{C\times 100}{2!}}(\Delta y)^{2}$
+
 ```{r}
 pnl_bond <- function(duration, convexity, dy) {
     
     duration_pnl <- -duration * dy
-    convexity_pnl <- (convexity / 2) * dy ^ 2
+    convexity_pnl <- (convexity * 100 / 2) * dy ^ 2
+    income_pnl <- dy
     
-    result <- list("duration_pnl" = duration_pnl,
-                   "convexity_pnl" = convexity_pnl)
+    result <- list("total" = duration_pnl + convexity_pnl + income_pnl,
+                   "duration" = duration_pnl,
+                   "convexity" = convexity_pnl,
+                   "income" = income_pnl)
     
     return(result)
     
@@ -396,13 +401,28 @@ pnl_bond <- function(duration, convexity, dy) {
 
 ```{r}
 # https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781118267967.app1
-duration <- 6.5 * (2 / 3)
-convexity <- 0.65 * (2 / 3)
-dy <- 0.0025 # 25 bps
+factor <- "DGS10"
+duration <- 6.5
+convexity <- 0.65
+y <- coredata(tail(na.locf(levels_xts[ , factor]), width)[1])
 ```
 
-```{r, eval = FALSE}
-pnl_bond(duration, convexity, dy)
+```{r}
+bonds_dt <- data.table(index = index(tail(levels_xts, width)),
+                       duration = duration, convexity = convexity,
+                       dy = na.locf(tail(levels_xts[ , factor], width)))
+setnames(bonds_dt, c("index", "duration", "convexity", "dy"))
+bonds_dt[ , dy := (dy - y) / 100, by = index]
+```
+
+```{r}
+attrib_dt <- bonds_dt[ , as.list(unlist(pnl_bond(duration, convexity, dy))), by = index]
+```
+
+```{r, fig.width = 6, fig.height = 3}
+attrib_mlt <- melt(attrib_dt, id.vars = "index")
+attrib_plt <- plot_ts_decomp(attrib_mlt, decomp = "Total", title = "Attribution 1Y (%)")
+print(attrib_plt)
 ```
 
 ### Duration drift
