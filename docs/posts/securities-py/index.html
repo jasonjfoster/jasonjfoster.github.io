@@ -179,6 +179,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#first-order" id="toc-first-order" class="nav-link" data-scroll-target="#first-order">First-order</a>
   <ul class="collapse">
   <li><a href="#delta" id="toc-delta" class="nav-link" data-scroll-target="#delta">Delta</a></li>
+  <li><a href="#delta-beta" id="toc-delta-beta" class="nav-link" data-scroll-target="#delta-beta">Delta-beta</a></li>
   <li><a href="#vega" id="toc-vega" class="nav-link" data-scroll-target="#vega">Vega</a></li>
   <li><a href="#theta" id="toc-theta" class="nav-link" data-scroll-target="#theta">Theta</a></li>
   </ul></li>
@@ -375,8 +376,9 @@ d_{2}&amp;={\frac{\ln(S/K)+(r-q-\sigma^{2}/2)\tau}{\sigma{\sqrt{\tau}}}}=d_{1}-\
 <div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>greeks_df[<span class="st">"delta"</span>] <span class="op">=</span> bs_delta(greeks_df[<span class="st">"type"</span>], greeks_df[<span class="st">"spot"</span>], K, r, q, tau, sigma,</span>
 <span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>                              greeks_df[<span class="st">"d1"</span>], greeks_df[<span class="st">"d2"</span>]) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<section id="delta-beta" class="level4">
-<h4 class="anchored" data-anchor-id="delta-beta">Delta-beta</h4>
+</section>
+<section id="delta-beta" class="level3">
+<h3 class="anchored" data-anchor-id="delta-beta">Delta-beta</h3>
 <p>Notional market value is the market value of a leveraged position:</p>
 <p><span class="math display">\[
 \begin{aligned}
@@ -436,7 +438,6 @@ d_{2}&amp;={\frac{\ln(S/K)+(r-q-\sigma^{2}/2)\tau}{\sigma{\sqrt{\tau}}}}=d_{1}-\
 \text{10-year equivalent }=\,&amp;\frac{\text{security duration}}{\text{10-year OTR duration}}
 \end{aligned}
 \]</span></p>
-</section>
 </section>
 <section id="vega" class="level3">
 <h3 class="anchored" data-anchor-id="vega">Vega</h3>
@@ -577,7 +578,6 @@ P(y+\Delta y)-P(y)&amp;\approx{\frac{P'(y)}{1!}}\Delta y+{\frac{P''(y)}{2!}}(\De
 </section>
 <section id="duration-yield-formula" class="level3">
 <h3 class="anchored" data-anchor-id="duration-yield-formula">Duration-yield formula</h3>
-<!-- START HERE: https://riskprep.com/tutorials/understanding-convexity-first-and-second-derivatives-of-a-price-function/ -->
 <p>The derivative of duration with respect to interest rates gives:</p>
 <p><span class="math display">\[
 \begin{aligned}
@@ -820,10 +820,10 @@ S_{k}(t_{i+1})&amp;=S_{k}(t_{i})\exp\left(\sqrt{t_{i+1}-t_{i}}\sum_{j=1}^{d}{A_{
 <span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a>                        <span class="st">"theoretical"</span>: np.array(mu_df.mean())})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>   empirical  theoretical
-0   0.086458     0.076826
-1   0.018160     0.020283
-2  -0.000924    -0.001018
-3   0.000794     0.000616</code></pre>
+0   0.086458     0.099328
+1   0.018160     0.016693
+2  -0.000924    -0.001245
+3   0.000794     0.001185</code></pre>
 </div>
 </div>
 <div class="cell">
@@ -831,10 +831,10 @@ S_{k}(t_{i+1})&amp;=S_{k}(t_{i})\exp\left(\sqrt{t_{i+1}-t_{i}}\sum_{j=1}^{d}{A_{
 <span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a>                        <span class="st">"theoretical"</span>: np.array(sigma_df.mean())})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>   empirical  theoretical
-0   0.179752     0.179384
-1   0.062184     0.062224
-2   0.008186     0.008183
-3   0.016936     0.016917</code></pre>
+0   0.179752     0.179442
+1   0.062184     0.062116
+2   0.008186     0.008175
+3   0.016936     0.016907</code></pre>
 </div>
 </div>
 </section>
