@@ -504,7 +504,7 @@ V(S+\Delta S,\sigma+\Delta\sigma,t+\Delta t)-V(S,\sigma,t)&\approx{\frac{\partia
 $$
 
 ```{python}
-# unable to verify the result
+# https://quant-next.com/option-greeks-and-pl-decomposition-part-1/
 def pnl_option(type, S, K, r, q, tau, sigma, dS, dt, dsigma):
     
     d1 = bs_d1(S, K, r, q, tau, sigma)
@@ -516,7 +516,7 @@ def pnl_option(type, S, K, r, q, tau, sigma, dS, dt, dsigma):
     gamma = bs_gamma(type, S, K, r, q, tau, sigma, d1, d2)
     
     delta_pnl = delta * dS / value
-    gamma_pnl = gamma * dS ** 2 / value
+    gamma_pnl = gamma / 2 * dS ** 2 / value
     vega_pnl = vega * dsigma / value
     theta_pnl = theta * dt / value
     
@@ -533,7 +533,7 @@ def pnl_option(type, S, K, r, q, tau, sigma, dS, dt, dsigma):
 factor = "SP500"
 type = "call"
 S = levels_df.fillna(method = "ffill")[factor][-width]
-K = S * (1 + 0.05)
+K = S # * (1 + 0.05)
 tau = 1 # = 252 / 252
 sigma = sd_df[factor][-width]
 ```
@@ -542,7 +542,8 @@ sigma = sd_df[factor][-width]
 options_df = pd.concat(dict(spot = levels_df.fillna(method = "ffill")[factor][-width:],
                             sigma = sd_df[factor][-width:]), axis = 1)
 options_df["dS"] = options_df["spot"] - S
-options_df["dt"] = (options_df.index - options_df.index[0]).days / 360
+options_df["dt_diff"] = (options_df.index - options_df.index[0]).days
+options_df["dt"] = options_df["dt_diff"] / options_df["dt_diff"][-1]
 options_df["dsigma"] = options_df["sigma"] - sigma
 ```
 
