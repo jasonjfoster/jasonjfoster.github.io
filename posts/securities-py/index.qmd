@@ -474,7 +474,7 @@ duration_df["dynamic"] = duration_df \
            duration_drift(duration, convexity, x["spot"])["change"], axis = 1)
 ```
 
-```{r, fig.width = 4, fig.height = 3}
+```{r, echo = FALSE, fig.width = 4, fig.height = 3}
 duration_mlt <- as.data.table(py$duration_df)[ , "spot" := NULL]
 duration_mlt <- melt(duration_mlt, id.vars = "shock")
 duration_plt <- plot_scen(duration_mlt, title = "Duration", xlab = "Shock")
@@ -555,7 +555,7 @@ attrib_df = pd.DataFrame.from_records(attrib_df, index = attrib_df.index)
 attrib_df = attrib_df[attrib_cols]
 ```
 
-```{r, fig.width = 6, fig.height = 3}
+```{r, echo = FALSE, fig.width = 6, fig.height = 3}
 attrib_mlt <- melt(as.data.table(py$attrib_df, keep.rownames = "index"), id.vars = "index")
 attrib_mlt[ , index := as.Date(index)]
 attrib_plt <- plot_ts_decomp(attrib_mlt, decomp = "Total", title = "Attribution 1Y (%)")
@@ -968,7 +968,7 @@ implied_vol_optim(start, type, S, K, r, q, tau, target)
 <!-- yield_df["tau"] = yield_df["tau"] * scale["periods"] -->
 <!-- ``` -->
 
-<!-- ```{r, fig.width = 4, fig.height = 3} -->
+<!-- ```{r, echo = FALSE, fig.width = 4, fig.height = 3} -->
 <!-- yield_plt <- plot_heatmap(py$yield_df, x = "tau", y = "sigma", z = "yield", -->
 <!--                           title = "Yield (%)", xlab = "Tau", ylab = "Sigma") -->
 <!-- print(yield_plt) -->

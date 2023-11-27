@@ -419,7 +419,7 @@ bonds_dt[ , dy := (dy - y) / 100, by = index]
 attrib_dt <- bonds_dt[ , as.list(unlist(pnl_bond(duration, convexity, dy))), by = index]
 ```
 
-```{r, fig.width = 6, fig.height = 3}
+```{r, echo = FALSE, fig.width = 6, fig.height = 3}
 attrib_mlt <- melt(attrib_dt, id.vars = "index")
 attrib_plt <- plot_ts_decomp(attrib_mlt, decomp = "Total", title = "Attribution 1Y (%)")
 print(attrib_plt)
@@ -476,7 +476,7 @@ duration_dt[ , static := duration]
 duration_dt[ , dynamic := duration + duration_drift(duration, convexity, spot)[["change"]], by = "shock"]
 ```
 
-```{r, fig.width = 4, fig.height = 3}
+```{r, echo = FALSE, fig.width = 4, fig.height = 3}
 duration_mlt <- copy(duration_dt)[ , "spot" := NULL]
 duration_mlt <- melt(duration_mlt, id.vars = "shock")
 duration_plt <- plot_scen(duration_mlt, title = "Duration", xlab = "Shock")
@@ -549,7 +549,7 @@ options_dt <- data.table(index = index(tail(levels_xts, width)),
 setnames(options_dt, c("index", "spot", "sigma"))
 options_dt[ , dS := spot - S, by = index]
 options_dt[ , dt_diff := as.numeric(index - index[1])]
-options_dt[ , dt := dt_diff / tail(dt_diff, 1), by = index]
+options_dt[ , dt := dt_diff / tail(dt_diff, 1)]
 options_dt[ , dsigma := sigma - ..sigma, by = index]
 ```
 
@@ -558,7 +558,7 @@ attrib_dt <- options_dt[ , as.list(unlist(pnl_option(type, S, K, r, q, tau, ..si
                                                      dS, dt, dsigma))), by = index]
 ```
 
-```{r, fig.width = 6, fig.height = 3}
+```{r, echo = FALSE, fig.width = 6, fig.height = 3}
 attrib_mlt <- melt(attrib_dt, id.vars = "index")
 attrib_plt <- plot_ts_decomp(attrib_mlt, decomp = "Total", title = "Attribution 1Y (%)")
 print(attrib_plt)
@@ -963,7 +963,7 @@ implied_vol_optim(start, type, S, K, r, q, tau, target)
 <!-- yield_dt[ , tau := tau * scale[["periods"]]] -->
 <!-- ``` -->
 
-<!-- ```{r, fig.width = 4, fig.height = 3} -->
+<!-- ```{r, echo = FALSE, fig.width = 4, fig.height = 3} -->
 <!-- yield_plt <- plot_heatmap(yield_dt, x = "tau", y = "sigma", z = "yield", -->
 <!--                           title = "Yield (%)", xlab = "Tau", ylab = "Sigma") -->
 <!-- print(yield_plt) -->
