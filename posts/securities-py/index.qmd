@@ -655,10 +655,9 @@ def sim_multi_gbm(n_sim, S, mu, sigma, dt):
     n_cols = sigma.shape[1]
     
     Z = np.random.normal(size = n_sim * n_cols).reshape((n_sim, n_cols))
-    X = np.add(np.sqrt(dt) * np.matmul(np.matrix(Z), np.linalg.cholesky(sigma).T),
-               ((mu - 0.5 * np.diag(sigma)) * dt))
+    X = np.sqrt(dt) * Z @ np.linalg.cholesky(sigma).T + (mu - 0.5 * np.diag(sigma)) * dt
     
-    result = np.multiply(S, np.exp(X.cumsum(axis = 0)))
+    result = S * np.exp(X.cumsum(axis = 0))
     
     return np.asmatrix(result)
 ```
@@ -670,41 +669,56 @@ def sim_multi_gbm(n_sim, S, mu, sigma, dt):
 # https://quant.stackexchange.com/questions/25219/simulate-correlated-geometric-brownian-motion-in-the-r-programming-language
 # https://quant.stackexchange.com/questions/35194/estimating-the-historical-drift-and-volatility/
 S = [1] * len(factors)
+# returns_r_df = returns_df.loc[:, ("returns", factors_r)].dropna() # REVIEW
 sigma = np.cov(returns_df["returns"].dropna().T, ddof = 1) * scale["periods"]
-mu = returns_df["returns"].dropna().mean().tolist()
-mu = [x * scale["periods"] for x in mu]
+mu = np.array(returns_df["returns"].dropna().mean()) * scale["periods"]
 mu = mu + np.diag(sigma) / 2 # drift
 dt = 1 / scale["periods"]
+tol = 1e-4
 ```
 
 ```{python}
-mu_df = pd.DataFrame()
-sigma_df = pd.DataFrame()
+# mu_ls = [0] * len(factors)
+# sigma_ls = [0] * len(factors)
+mu_ls = []
+sigma_ls = []
 ```
 
 ```{python}
+# while np.all(np.abs(mu_ls[-1] - np.array(returns_df["returns"].dropna().mean()) * scale["periods"]) > tol) | \
+#     np.all(np.abs(np.sqrt(np.diag(sigma)) - sigma_df.mean()) > tol):
 for i in range(1000):
-    
-    # assumes stock prices
+  
+    # assumes underlying stock price follows geometric Brownian motion with constant volatility
     levels_sim = pd.DataFrame(sim_multi_gbm(width + 1, S, mu, sigma, dt))
     returns_sim = np.log(levels_sim).diff().dropna()
-    
+
     mu_sim = returns_sim.mean() * scale["periods"]
     sigma_sim = returns_sim.std() * np.sqrt(scale["periods"])
-    
-    mu_df = mu_df.append(pd.DataFrame(mu_sim).T)
-    sigma_df = sigma_df.append(pd.DataFrame(sigma_sim).T)
+
+    mu_ls.append(mu_sim)
+    sigma_ls.append(sigma_sim)
 ```
 
 ```{python}
-pd.DataFrame.from_dict({"empirical": np.array(returns_df["returns"].dropna().mean()) * scale["periods"],
-                        "theoretical": np.array(mu_df.mean())})
+mu_df = pd.DataFrame(mu_ls)
+sigma_df = pd.DataFrame(sigma_ls)
 ```
 
 ```{python}
-pd.DataFrame.from_dict({"empirical": np.sqrt(np.diag(sigma)),
-                        "theoretical": np.array(sigma_df.mean())})
+pd.DataFrame({"empirical": np.array(returns_df["returns"].dropna().mean()) * scale["periods"],
+              "theoretical": mu_df.mean()})
+```
 
+```{python}
+pd.DataFrame({"empirical": np.sqrt(np.diag(sigma)),
+              "theoretical": sigma_df.mean()})
+```
+
+### Vasicek model
+
+```{python}
+# assumes interest rate follows mean-reverting process with stochastic volatility
 ```
 
 # Newton's method
