@@ -676,7 +676,6 @@ def sim_multi_gbm(n_sim, S, mu, sigma, dt):
 # https://quant.stackexchange.com/questions/25219/simulate-correlated-geometric-brownian-motion-in-the-r-programming-language
 # https://quant.stackexchange.com/questions/35194/estimating-the-historical-drift-and-volatility/
 S = [1] * len(factors)
-# returns_r_df = returns_df.loc[:, ("returns", factors_r)].dropna() # REVIEW
 sigma = np.cov(returns_df["returns"].dropna().T, ddof = 1) * scale["periods"]
 mu = np.array(returns_df["returns"].dropna().mean()) * scale["periods"]
 mu = mu + np.diag(sigma) / 2 # drift
@@ -685,15 +684,11 @@ tol = 1e-4
 ```
 
 ```{python}
-# mu_ls = [0] * len(factors)
-# sigma_ls = [0] * len(factors)
 mu_ls = []
 sigma_ls = []
 ```
 
 ```{python}
-# while np.all(np.abs(mu_ls[-1] - np.array(returns_df["returns"].dropna().mean()) * scale["periods"]) > tol) | \
-#     np.all(np.abs(np.sqrt(np.diag(sigma)) - sigma_df.mean()) > tol):
 for i in range(1000):
   
     # assumes underlying stock price follows geometric Brownian motion with constant volatility
