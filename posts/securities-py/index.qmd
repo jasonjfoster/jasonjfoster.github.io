@@ -547,8 +547,10 @@ sigma = sd_df[factor][-width]
 ```
 
 ```{python}
-options_df = pd.concat(dict(spot = levels_df.fillna(method = "ffill")[factor][-width:],
-                            sigma = sd_df[factor][-width:]), axis = 1)
+options_df = pd.DataFrame({
+    "spot": levels_df.fillna(method = "ffill")[factor][-width:],
+    "sigma": sd_df[factor][-width:]
+})
 options_df["dS"] = options_df["spot"] - S
 options_df["dt_diff"] = (options_df.index - options_df.index[0]).days
 options_df["dt"] = options_df["dt_diff"] / options_df["dt_diff"][-1]
