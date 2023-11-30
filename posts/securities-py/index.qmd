@@ -391,10 +391,12 @@ def pnl_bond(duration, convexity, dy):
     convexity_pnl = (convexity * 100 / 2) * dy ** 2
     income_pnl = dy
     
-    result = pd.DataFrame({"total": duration_pnl + convexity_pnl + income_pnl,
-                           "duration": duration_pnl,
-                           "convexity": convexity_pnl,
-                           "income": income_pnl})
+    result = pd.DataFrame({
+        "total": duration_pnl + convexity_pnl + income_pnl,
+        "duration": duration_pnl,
+        "convexity": convexity_pnl,
+        "income": income_pnl
+    })
     
     return result
 ```
@@ -410,8 +412,11 @@ y = levels_df.fillna(method = "ffill")[factor][-width]
 ```
 
 ```{python}
-bond_df = pd.DataFrame({"duration": duration, "convexity": convexity,
-    "dy": (levels_df.fillna(method = "ffill")[factor][-width:] - y) / 100})
+bond_df = pd.DataFrame({
+    "duration": duration,
+    "convexity": convexity,
+    "dy": (levels_df.fillna(method = "ffill")[factor][-width:] - y) / 100
+})
 ```
 
 ```{python}
@@ -453,8 +458,10 @@ def duration_drift(duration, convexity, dy):
     drift = convexity - duration ** 2 / 100
     change = -drift * dy * 100
     
-    result = {"drift": drift,
-              "change": change}
+    result = {
+        "drift": drift,
+        "change": change
+    }
     
     return result
 ```
@@ -467,11 +474,10 @@ sigma = sd_df[factor][-1]
 
 ```{python}
 duration_df = pd.DataFrame(shocks).rename(columns = {0: "shock"})
-duration_df["spot"] = duration_df["shock"].apply(yield_shock, args = (tau, sigma))
+duration_df["spot"] = yield_shock(duration_df["shock"], tau, sigma)
 duration_df["static"] = duration
-duration_df["dynamic"] = duration_df \
-    .apply(lambda x: duration +
-           duration_drift(duration, convexity, x["spot"])["change"], axis = 1)
+duration_df["dynamic"] = duration + \
+    duration_drift(duration, convexity, duration_df["spot"])["change"]
 ```
 
 ```{r, echo = FALSE, fig.width = 4, fig.height = 3}
@@ -520,11 +526,13 @@ def pnl_option(type, S, K, r, q, tau, sigma, dS, dt, dsigma):
     vega_pnl = vega * dsigma / value
     theta_pnl = theta * dt / value
     
-    result = pd.DataFrame({"total": delta_pnl + gamma_pnl + vega_pnl + theta_pnl,
-                           "delta": delta_pnl,
-                           "gamma": gamma_pnl,
-                           "vega": vega_pnl,
-                           "theta": theta_pnl})
+    result = pd.DataFrame({
+        "total": delta_pnl + gamma_pnl + vega_pnl + theta_pnl,
+        "delta": delta_pnl,
+        "gamma": gamma_pnl,
+        "vega": vega_pnl,
+        "theta": theta_pnl
+    })
     
     return result
 ```
@@ -703,13 +711,17 @@ sigma_df = pd.DataFrame(sigma_ls)
 ```
 
 ```{python}
-pd.DataFrame({"empirical": np.array(returns_df["returns"].dropna().mean()) * scale["periods"],
-              "theoretical": mu_df.mean()})
+pd.DataFrame({
+    "empirical": np.array(returns_df["returns"].dropna().mean()) * scale["periods"],
+    "theoretical": mu_df.mean()
+})
 ```
 
 ```{python}
-pd.DataFrame({"empirical": np.sqrt(np.diag(sigma)),
-              "theoretical": sigma_df.mean()})
+pd.DataFrame({
+    "empirical": np.sqrt(np.diag(sigma)),
+    "theoretical": sigma_df.mean()
+})
 ```
 
 ### Vasicek model
