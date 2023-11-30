@@ -520,11 +520,11 @@ def pnl_option(type, S, K, r, q, tau, sigma, dS, dt, dsigma):
     vega_pnl = vega * dsigma / value
     theta_pnl = theta * dt / value
     
-    result = {"total": delta_pnl + gamma_pnl + vega_pnl + theta_pnl,
-              "delta": delta_pnl,
-              "gamma": gamma_pnl,
-              "vega": vega_pnl,
-              "theta": theta_pnl}
+    result = pd.DataFrame({"total": delta_pnl + gamma_pnl + vega_pnl + theta_pnl,
+                           "delta": delta_pnl,
+                           "gamma": gamma_pnl,
+                           "vega": vega_pnl,
+                           "theta": theta_pnl})
     
     return result
 ```
@@ -548,11 +548,8 @@ options_df["dsigma"] = options_df["sigma"] - sigma
 ```
 
 ```{python}
-attrib_cols = ["total", "delta", "gamma", "vega", "theta"]
-attrib_df = options_df.apply(lambda x: pnl_option(type, S, K, r, q, tau, sigma,
-                                                  x["dS"], x["dt"], x["dsigma"]), axis = 1)
-attrib_df = pd.DataFrame.from_records(attrib_df, index = attrib_df.index)
-attrib_df = attrib_df[attrib_cols]
+attrib_df = pnl_option(type, S, K, r, q, tau, sigma,
+                       options_df["dS"], options_df["dt"], options_df["dsigma"])
 ```
 
 ```{r, echo = FALSE, fig.width = 6, fig.height = 3}
@@ -691,7 +688,7 @@ for i in range(1000):
   
     # assumes underlying stock price follows geometric Brownian motion with constant volatility
     levels_sim = pd.DataFrame(sim_multi_gbm(width + 1, S, mu, sigma, dt))
-    returns_sim = np.log(levels_sim).diff().dropna()
+    returns_sim = np.log(levels_sim).diff()
 
     mu_sim = returns_sim.mean() * scale["periods"]
     sigma_sim = returns_sim.std() * np.sqrt(scale["periods"])
@@ -718,7 +715,7 @@ pd.DataFrame({"empirical": np.sqrt(np.diag(sigma)),
 ### Vasicek model
 
 ```{python}
-# assumes interest rate follows mean-reverting process with stochastic volatility
+# assumes interest rates follow mean-reverting process with stochastic volatility
 ```
 
 # Newton's method
