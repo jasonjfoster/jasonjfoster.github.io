@@ -814,7 +814,7 @@ S_{k}(t_{i+1})&amp;=S_{k}(t_{i})\exp\left(\sqrt{t_{i+1}-t_{i}}\sum_{j=1}^{d}{A_{
 <span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>sigma_ls <span class="op">=</span> []</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">10000</span>):</span>
+<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">10000</span>): <span class="co"># "TypeError: 'float' object cannot be interpreted as an integer"</span></span>
 <span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>  </span>
 <span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a>    <span class="co"># assumes underlying stock price follows geometric Brownian motion with constant volatility</span></span>
 <span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a>    levels_sim <span class="op">=</span> pd.DataFrame(sim_multi_gbm(width <span class="op">+</span> <span class="dv">1</span>, S, mu, sigma, dt))</span>
@@ -837,10 +837,10 @@ S_{k}(t_{i+1})&amp;=S_{k}(t_{i})\exp\left(\sqrt{t_{i+1}-t_{i}}\sum_{j=1}^{d}{A_{
 <span id="cb44-4"><a href="#cb44-4" aria-hidden="true" tabindex="-1"></a>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>   empirical  theoretical
-0   0.087331     0.086249
-1   0.017807     0.018243
-2  -0.000914    -0.000892
-3   0.000827     0.000884</code></pre>
+0   0.087331     0.086265
+1   0.017807     0.018659
+2  -0.000914    -0.000841
+3   0.000827     0.000509</code></pre>
 </div>
 </div>
 <div class="cell">
@@ -850,10 +850,10 @@ S_{k}(t_{i+1})&amp;=S_{k}(t_{i})\exp\left(\sqrt{t_{i+1}-t_{i}}\sum_{j=1}^{d}{A_{
 <span id="cb46-4"><a href="#cb46-4" aria-hidden="true" tabindex="-1"></a>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>   empirical  theoretical
-0   0.179770     0.179584
-1   0.062215     0.062117
-2   0.008185     0.008181
-3   0.016938     0.016912</code></pre>
+0   0.179770     0.179671
+1   0.062215     0.062109
+2   0.008185     0.008179
+3   0.016938     0.016922</code></pre>
 </div>
 </div>
 </section>
@@ -923,7 +923,7 @@ x_{n+1}=x_{n}-{\frac{f(x_{n})}{f'(x_{n})}}
 <div class="cell">
 <div class="sourceCode cell-code" id="cb52"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a>implied_vol_newton(params, <span class="bu">type</span>, S, K, r, q, tau) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>0.14065220831901082</code></pre>
+<pre><code>0.14021097526408025</code></pre>
 </div>
 </div>
 </section>
@@ -956,7 +956,7 @@ x_{n+1}=x_{n}-{\frac{f(x_{n})}{f'(x_{n})}}
 <div class="cell">
 <div class="sourceCode cell-code" id="cb55"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a>implied_vol_optim(start, <span class="bu">type</span>, S, K, r, q, tau, target)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>0.14065220352884353</code></pre>
+<pre><code>0.1402109678134997</code></pre>
 </div>
 </div>
 </section>
