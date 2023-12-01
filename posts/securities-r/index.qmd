@@ -67,9 +67,10 @@ level_shock <- function(shock, S, tau, sigma) {
 }
 ```
 
+* <https://en.wikipedia.org/wiki/Greeks_(finance)>
+* <https://www.wolframalpha.com/input/?i=option+pricing+formula>
+
 ```{r}
-# https://en.wikipedia.org/wiki/Greeks_(finance)
-# https://www.wolframalpha.com/input/?i=option+pricing+formula
 factor <- "SP500"
 types <- c("call", "put")
 S <- coredata(na.locf(levels_xts[nrow(levels_xts), factor]))
@@ -203,8 +204,9 @@ $$
 \end{aligned}
 $$
 
+* <https://en.wikipedia.org/wiki/Notional_amount>
+
 ```{r}
-# https://en.wikipedia.org/wiki/Notional_amount
 bs_delta_diff <- function(type, S, K, r, q, tau, sigma, delta0) {
     
     d1 <- bs_d1(S, K, r, q, tau, sigma)
@@ -397,10 +399,11 @@ pnl_bond <- function(duration, convexity, dy) {
 } 
 ```
 
+* <https://engineering.nyu.edu/sites/default/files/2021-07/CarWuRF2021.pdf>
+* <https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781118267967.app1>
+* <https://www.investopedia.com/terms/c/convexity-adjustment.asp>
+
 ```{r}
-# https://engineering.nyu.edu/sites/default/files/2021-07/CarWuRF2021.pdf
-# https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781118267967.app1
-# https://www.investopedia.com/terms/c/convexity-adjustment.asp
 factor <- "DGS10"
 duration <- 6.5
 convexity <- 0.65
@@ -505,8 +508,9 @@ V(S+\Delta S,\sigma+\Delta\sigma,t+\Delta t)-V(S,\sigma,t)&\approx{\frac{\partia
 \end{aligned}
 $$
 
+* <https://quant-next.com/option-greeks-and-pl-decomposition-part-1/>
+
 ```{r}
-# https://quant-next.com/option-greeks-and-pl-decomposition-part-1/
 pnl_option <- function(type, S, K, r, q, tau, sigma, dS, dt, dsigma) {
     
     d1 <- bs_d1(S, K, r, q, tau, sigma)
@@ -668,12 +672,13 @@ sim_multi_gbm <- function(n_sim, S, mu, sigma, dt) {
 }
 ```
 
+* <https://arxiv.org/pdf/0812.4210.pdf>
+* <https://quant.stackexchange.com/questions/15219/calibration-of-a-gbm-what-should-dt-be>
+* <https://stackoverflow.com/questions/36463227/geometrical-brownian-motion-simulation-in-r>
+* <https://quant.stackexchange.com/questions/25219/simulate-correlated-geometric-brownian-motion-in-the-r-programming-language>
+* <https://quant.stackexchange.com/questions/35194/estimating-the-historical-drift-and-volatility/>
+
 ```{r}
-# https://arxiv.org/pdf/0812.4210.pdf
-# https://quant.stackexchange.com/questions/15219/calibration-of-a-gbm-what-should-dt-be
-# https://stackoverflow.com/questions/36463227/geometrical-brownian-motion-simulation-in-r
-# https://quant.stackexchange.com/questions/25219/simulate-correlated-geometric-brownian-motion-in-the-r-programming-language
-# https://quant.stackexchange.com/questions/35194/estimating-the-historical-drift-and-volatility/
 S <- rep(1, length(factors))
 sigma <- cov(returns_xts, use = "complete.obs") * scale[["periods"]]
 mu <- colMeans(na.omit(returns_xts)) * scale[["periods"]]
@@ -687,7 +692,7 @@ sigma_ls <- list()
 ```
 
 ```{r}
-for (i in 1:100) {
+for (i in 1:1e4) {
     
     # assumes stock prices
     levels_sim <- sim_multi_gbm(width + 1, S, mu, sigma, dt)
@@ -762,9 +767,10 @@ implied_vol_newton <- function(params, type, S, K, r, q, tau) {
 }
 ```
 
+* <http://www.aspenres.com/documents/help/userguide/help/bopthelp/bopt2Implied_Volatility_Formula.html>
+* <https://books.google.com/books?id=VLi61POD61IC&pg=PA104>
+
 ```{r}
-# http://www.aspenres.com/documents/help/userguide/help/bopthelp/bopt2Implied_Volatility_Formula.html
-# https://books.google.com/books?id=VLi61POD61IC&pg=PA104
 S <- coredata(na.locf(levels_xts)[nrow(levels_xts), factor])
 K <- S # * (1 + 0.05)
 sigma <- coredata(sd_xts[nrow(sd_xts), factor]) # overrides matrix
