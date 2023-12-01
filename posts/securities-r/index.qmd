@@ -709,12 +709,12 @@ for (i in 1:1e4) {
 
 ```{r}
 data.frame("empirical" = colMeans(na.omit(returns_xts)) * scale[["periods"]],
-           "theoretical" = colMeans(do.call("rbind", mu_ls)))
+           "theoretical" = colMeans(do.call(rbind, mu_ls)))
 ```
 
 ```{r}
 data.frame("empirical" = sqrt(diag(sigma)),
-           "theoretical" = colMeans(do.call("rbind", sigma_ls)))
+           "theoretical" = colMeans(do.call(rbind, sigma_ls)))
 ```
 
 ### Vasicek model
