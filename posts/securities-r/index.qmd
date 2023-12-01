@@ -687,7 +687,7 @@ sigma_ls <- list()
 ```
 
 ```{r}
-for (i in 1:1000) {
+for (i in 1:100) {
     
     # assumes stock prices
     levels_sim <- sim_multi_gbm(width + 1, S, mu, sigma, dt)
@@ -710,6 +710,12 @@ data.frame("empirical" = colMeans(na.omit(returns_xts)) * scale[["periods"]],
 ```{r}
 data.frame("empirical" = sqrt(diag(sigma)),
            "theoretical" = colMeans(do.call("rbind", sigma_ls)))
+```
+
+### Vasicek model
+
+```{r}
+# assumes interest rates follow mean-reverting process with stochastic volatility
 ```
 
 # Newton's method
@@ -760,7 +766,7 @@ implied_vol_newton <- function(params, type, S, K, r, q, tau) {
 # http://www.aspenres.com/documents/help/userguide/help/bopthelp/bopt2Implied_Volatility_Formula.html
 # https://books.google.com/books?id=VLi61POD61IC&pg=PA104
 S <- coredata(na.locf(levels_xts)[nrow(levels_xts), factor])
-K <- S * (1 + 0.05)
+K <- S # * (1 + 0.05)
 sigma <- coredata(sd_xts[nrow(sd_xts), factor]) # overrides matrix
 start <- 0.2
 ```
@@ -779,6 +785,8 @@ params <- list(
 ```{r}
 implied_vol_newton(params, type, S, K, r, q, tau)
 ```
+
+## Yield-to-maturity
 
 # Optimization
 
@@ -812,6 +820,8 @@ implied_vol_optim <- function(param, type, S, K, r, q, tau, target) {
 ```{r}
 implied_vol_optim(start, type, S, K, r, q, tau, target)
 ```
+
+## Yield-to-maturity
 
 <!-- ## Variance swaps -->
 
