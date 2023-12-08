@@ -8,15 +8,14 @@ categories:
   - python
 ---
 
-```{r, echo = FALSE}
+```{python, echo = FALSE}
 # closed: https://github.com/rstudio/rstudio/issues/5945
 # closed: https://github.com/rstudio/reticulate/issues/808
 # closed: https://github.com/rstudio/reticulate/issues/847
 # open: "run all chunks"
-knitr::opts_chunk$set(echo = TRUE)
 ```
 
-```{r, message = FALSE}
+```{r, echo = FALSE, message = FALSE}
 library(reticulate)
 library(data.table)
 source("../plot/theme_jjf.R")
@@ -64,12 +63,13 @@ from scipy.optimize import minimize
 import os
 ```
 
+-   Open: <https://github.com/pydata/pandas-datareader/issues/965>
+
 ```{python}
-# open: https://github.com/pydata/pandas-datareader/issues/965
 tickers = ["BAICX"] # fund inception date is "2011-11-28"
 prices_df = pdr.get_data_tiingo(tickers, start = "1900-01-01", api_key = os.getenv("TIINGO_API_KEY"))
-prices_df = prices_df.pivot_table(index = "date", columns = "symbol", values = "adjClose")
-prices_df.index = prices_df.index.tz_localize(None)
+prices_df = prices_df.pivot_table(index = "date", columns = "symbol", values = "adjClose") \
+    .tz_localize(None)
 ```
 
 ```{python}
@@ -80,34 +80,9 @@ returns_df[overlap_cols] = returns_df[returns_cols].rolling(scale["overlap"], mi
 returns_df.sort_index(axis = 1, inplace = True)
 ```
 
-## Factor models
-
-### Ordinary least squares
-
-#### Coefficients
-
-$$
-\begin{aligned}
-\hat{\beta}=(X^\mathrm{T}WX)^{-1}X^\mathrm{T}Wy
-\end{aligned}
-$$
-
 ```{python}
-# https://faculty.washington.edu/ezivot/research/factormodellecture_handout.pdf
-def lm_coef(x, y, weights, intercept):
-    
-    if (intercept): x = sm.add_constant(x)
-        
-    result = np.matmul(np.linalg.inv(np.matmul(x.T, np.multiply(weights, x))),
-                       np.matmul(x.T, np.multiply(weights, y)))
-    
-    return np.ravel(result)
-```
-
-```{python}
-intercept = True
-# weights = np.matrix([0.9 ** i for i in range(width - 1, -1, -1)]).reshape((width, 1))
-weights = np.matrix([1] * width).reshape((width, 1))
+# weights = np.array([0.9 ** i for i in range(width - 1, -1, -1)]).reshape((width, 1))
+weights = np.array([1] * width).reshape((width, 1))
 ```
 
 ```{python}
@@ -117,236 +92,266 @@ overlap_x_mat = np.matrix(overlap_x_df[-width:])
 overlap_y_mat = np.matrix(overlap_y_df[-width:])
 ```
 
-```{python}
-lm_coef(overlap_x_mat, overlap_y_mat, weights, intercept)
-```
+<!-- ## Factor models -->
 
-```{python}
-if (intercept): overlap_x_mat = sm.add_constant(overlap_x_mat)
-    
-fit = sm.WLS(overlap_y_mat, overlap_x_mat, weights = weights).fit()
+<!-- ### Ordinary least squares -->
 
-if (intercept): overlap_x_mat = overlap_x_mat[:, 1:]
+<!-- #### Coefficients -->
 
-fit.params
-```
+<!-- $$ -->
+<!-- \begin{aligned} -->
+<!-- \hat{\beta}=(X^\mathrm{T}WX)^{-1}X^\mathrm{T}Wy -->
+<!-- \end{aligned} -->
+<!-- $$ -->
 
-#### R-squared
+<!-- -   <https://faculty.washington.edu/ezivot/research/factormodellecture_handout.pdf> -->
 
-$$
-\begin{aligned}
-R^{2}=\frac{\hat{\beta}^\mathrm{T}(X^\mathrm{T}WX)\hat{\beta}}{y^\mathrm{T}Wy}
-\end{aligned}
-$$
+<!-- ```{python} -->
+<!-- def lm_coef(x, y, weights, intercept): -->
 
-```{python}
-def lm_rsq(x, y, weights, intercept):
-            
-    coef = np.matrix(lm_coef(x, y, weights, intercept))
-    
-    if (intercept):
-        
-        weights_ls = np.array(weights).reshape(-1).tolist()
-        
-        x = sm.add_constant(x)
-        x = x - np.average(x, axis = 0, weights = weights_ls)
-        y = y - np.average(y, axis = 0, weights = weights_ls)
-        
-    result = np.matmul(coef, np.matmul(np.matmul(x.T, np.multiply(weights, x)), coef.T)) / \
-        (np.matmul(y.T, np.multiply(weights, y)))
-    
-    return result.item()
-```
+<!--     if (intercept): x = sm.add_constant(x) -->
 
-```{python}
-lm_rsq(overlap_x_mat, overlap_y_mat, weights, intercept)
-```
+<!--     result = np.dot(np.linalg.inv(np.dot(x.T, np.multiply(weights, x))), -->
+<!--                     np.dot(x.T, np.multiply(weights, y))) -->
 
-```{python}
-fit.rsquared
-```
+<!--     return np.ravel(result) -->
+<!-- ``` -->
 
-#### Standard errors
+<!-- ```{python} -->
+<!-- intercept = True -->
+<!-- ``` -->
 
-$$
-\begin{aligned}
-\sigma_{\hat{\beta}}^{2}&=\sigma_{\varepsilon}^{2}(X^\mathrm{T}WX)^{-1}\\
-&=\frac{(1-R^{2})}{n-p}(X^\mathrm{T}WX)^{-1}\\
-&=\frac{SSE}{df_{E}}(X^\mathrm{T}WX)^{-1}\\
-\sigma_{\hat{\alpha}}^{2}&=\sigma_{\varepsilon}^{2}\left(\frac{1}{n}+\mu^\mathrm{T}(X^\mathrm{T}WX)^{-1}\mu\right)
-\end{aligned}
-$$
+<!-- ```{python} -->
+<!-- lm_coef(overlap_x_df, overlap_y_df, weights, intercept) -->
+<!-- ``` -->
 
-```{python}
-# http://people.duke.edu/~rnau/mathreg.htm
-def lm_se(x, y, weights, intercept):
-    
-    n_rows = x.shape[0]
-    n_cols = x.shape[1]
-    
-    rsq = lm_rsq(x, y, weights, intercept)
-    
-    if (intercept):
-        
-        weights_ls = np.array(weights).reshape(-1).tolist()
-        
-        x = sm.add_constant(x)
-        y = y - np.average(y, axis = 0, weights = weights_ls)
-        
-        df_resid = n_rows - n_cols - 1 
-        
-    else:
-        df_resid = n_rows - n_cols        
-    
-    var_y = np.matmul(y.T, np.multiply(weights, y))
-    var_resid = (1 - rsq) * var_y / df_resid
-    
-    result = np.sqrt(var_resid * np.linalg.inv(np.matmul(x.T, np.multiply(weights, x))).diagonal())
-    
-    return np.ravel(result)
-```
+<!-- ```{python} -->
+<!-- # START HERE -->
+<!-- if (intercept): overlap_x_mat = sm.add_constant(overlap_x_mat) -->
 
-```{python}
-lm_se(overlap_x_mat, overlap_y_mat, weights, intercept)
-```
+<!-- fit = sm.WLS(overlap_y_mat, overlap_x_mat, weights = weights).fit() -->
 
-```{python}
-fit.bse
-```
+<!-- if (intercept): overlap_x_mat = overlap_x_mat[:, 1:] -->
 
-### Standalone risk
+<!-- fit.params -->
+<!-- ``` -->
 
-$$
-\begin{aligned}
-\text{SAR}_{k}&=\sqrt{w_{k}^{2}\sigma_{k}^{2}}\\
-\text{SAR}_{\varepsilon}&=\sqrt{(1-R^{2})\sigma_{y}^{2}}
-\end{aligned}
-$$
+<!-- #### R-squared -->
 
-```{python}
-def cov_wt(x, weights, center):
-    
-    sum_w = sum(weights)
-    sumsq_w = sum(np.power(weights, 2))
-    
-    if (center):
-    
-        weights_ls = np.array(weights).reshape(-1).tolist()
-        x = x - np.average(x, axis = 0, weights = weights_ls)
-    
-    result = np.matmul(x.T, np.multiply(weights, x)) / (sum_w - sumsq_w / sum_w)
-    
-    return result
-```
+<!-- $$ -->
+<!-- \begin{aligned} -->
+<!-- R^{2}=\frac{\hat{\beta}^\mathrm{T}(X^\mathrm{T}WX)\hat{\beta}}{y^\mathrm{T}Wy} -->
+<!-- \end{aligned} -->
+<!-- $$ -->
 
-```{python}
-def lm_sar(x, y, weights, intercept):
-    
-    coef = lm_coef(x, y, weights, intercept)
-    rsq = lm_rsq(x, y, weights, intercept)
-    
-    if (intercept): x = sm.add_constant(x)
-    
-#     weights_ls = np.array(weights).reshape(-1)
-#     sigma = np.cov(np.concatenate((x, y), axis = 1).T,
-#                    aweights = weights_ls)
-    sigma = cov_wt(np.concatenate((x, y), axis = 1), weights, intercept)
-    sar = np.multiply(np.power(coef, 2).T, sigma[:-1, :-1].diagonal())
-    sar_eps = (1 - rsq) * sigma[-1, -1]
-    
-    result = np.sqrt(np.concatenate((np.matrix(sigma[-1, -1]),
-                                     np.matrix(sar),
-                                     np.matrix(sar_eps)), axis = 1))
-    
-    return np.ravel(result)
-```
+<!-- ```{python} -->
+<!-- def lm_rsq(x, y, weights, intercept): -->
 
-```{python}
-lm_sar(overlap_x_mat, overlap_y_mat, weights, intercept) * np.sqrt(scale["periods"]) * np.sqrt(scale["overlap"])
-```
+<!--     coef = np.matrix(lm_coef(x, y, weights, intercept)) -->
 
-### Risk contribution
+<!--     if (intercept): -->
 
-$$
-\begin{aligned}
-\text{MCR}&=w^\mathrm{T}\frac{\partial\sigma_{y}}{\partial w}\\
-&=w^\mathrm{T}\frac{\Sigma w}{\sigma_{y}}\\
-\text{MCR}_{\varepsilon}&=\sigma_{y}-\sum_{k=1}^{n}\text{MCR}_{k}
-\end{aligned}
-$$
+<!--         weights_ls = np.array(weights).reshape(-1).tolist() -->
 
-```{python}
-# http://faculty.washington.edu/ezivot/research/factormodelrisklecture_handout.pdf
-def lm_mcr(x, y, weights, intercept):
-    
-    coef = np.matrix(lm_coef(x, y, weights, intercept)).T
-    rsq = lm_rsq(x, y, weights, intercept)
-        
-    if (intercept): x = sm.add_constant(x)
-    
-#     weights_ls = np.array(weights).reshape(-1)        
-#     sigma = np.cov(np.concatenate((x, y), axis = 1).T,
-#                    aweights = weights_ls)
-    sigma = cov_wt(np.concatenate((x, y), axis = 1), weights, intercept)
-    mcr = np.multiply(coef, np.matmul(sigma[:-1, :-1], coef)) / np.sqrt(sigma[-1, -1])
-    mcr_eps = np.sqrt(sigma[-1, -1]) - sum(mcr)
-    
-    result = np.concatenate((np.sqrt(np.matrix(sigma[-1, -1])),
-                             np.matrix(mcr).T,
-                             np.matrix(mcr_eps)), axis = 1)
-    
-    return np.ravel(result)
-```
+<!--         x = sm.add_constant(x) -->
+<!--         x = x - np.average(x, axis = 0, weights = weights_ls) -->
+<!--         y = y - np.average(y, axis = 0, weights = weights_ls) -->
 
-```{python}
-lm_mcr(overlap_x_mat, overlap_y_mat, weights, intercept) * np.sqrt(scale["periods"]) * np.sqrt(scale["overlap"])
-```
+<!--     result = np.matmul(coef, np.matmul(np.matmul(x.T, np.multiply(weights, x)), coef.T)) / \ -->
+<!--         (np.matmul(y.T, np.multiply(weights, y))) -->
 
-### Implied shocks
+<!--     return result.item() -->
+<!-- ``` -->
 
-$$
-\begin{aligned}
-\hat{\beta}&=(Z^\mathrm{T}WZ)^{-1}Z^\mathrm{T}WX
-\end{aligned}
-$$
+<!-- ```{python} -->
+<!-- lm_rsq(overlap_x_mat, overlap_y_mat, weights, intercept) -->
+<!-- ``` -->
 
-```{python}
-def implied_shocks(shocks, x, z, weights):
-    
-    beta = np.matmul(np.linalg.inv(np.matrix(np.matmul(z.T, np.multiply(weights, z)))),
-                     np.matrix(np.matmul(z.T, np.multiply(weights, x))))
-    
-    result = np.matmul(shocks, beta)
-    
-    return np.ravel(result)
-```
+<!-- ```{python} -->
+<!-- fit.rsquared -->
+<!-- ``` -->
 
-```{python}
-shocks = np.array([-0.1, 0.1])
-overlap_z_mat = overlap_x_mat[:, [0, 1]]
-```
+<!-- #### Standard errors -->
 
-```{python}
-implied_shocks(shocks, overlap_x_mat, overlap_z_mat, weights)
-```
+<!-- $$ -->
+<!-- \begin{aligned} -->
+<!-- \sigma_{\hat{\beta}}^{2}&=\sigma_{\varepsilon}^{2}(X^\mathrm{T}WX)^{-1}\\ -->
+<!-- &=\frac{(1-R^{2})}{n-p}(X^\mathrm{T}WX)^{-1}\\ -->
+<!-- &=\frac{SSE}{df_{E}}(X^\mathrm{T}WX)^{-1}\\ -->
+<!-- \sigma_{\hat{\alpha}}^{2}&=\sigma_{\varepsilon}^{2}\left(\frac{1}{n}+\mu^\mathrm{T}(X^\mathrm{T}WX)^{-1}\mu\right) -->
+<!-- \end{aligned} -->
+<!-- $$ -->
 
-### Stress P&L
+<!-- ```{python} -->
+<!-- # http://people.duke.edu/~rnau/mathreg.htm -->
+<!-- def lm_se(x, y, weights, intercept): -->
 
-```{python}
-def pnl_stress(shocks, x, y, z, weights, intercept):
-    
-    coef = lm_coef(x, y, weights, intercept)
-    
-    if (intercept): x = sm.add_constant(x)
-    
-    result = np.multiply(coef.T, implied_shocks(shocks, x, z, weights))
-    
-    return np.ravel(result)
-```
+<!--     n_rows = x.shape[0] -->
+<!--     n_cols = x.shape[1] -->
 
-```{python}
-pnl_stress(shocks, overlap_x_mat, overlap_y_mat, overlap_z_mat, weights, intercept)
-```
+<!--     rsq = lm_rsq(x, y, weights, intercept) -->
+
+<!--     if (intercept): -->
+
+<!--         weights_ls = np.array(weights).reshape(-1).tolist() -->
+
+<!--         x = sm.add_constant(x) -->
+<!--         y = y - np.average(y, axis = 0, weights = weights_ls) -->
+
+<!--         df_resid = n_rows - n_cols - 1  -->
+
+<!--     else: -->
+<!--         df_resid = n_rows - n_cols         -->
+
+<!--     var_y = np.matmul(y.T, np.multiply(weights, y)) -->
+<!--     var_resid = (1 - rsq) * var_y / df_resid -->
+
+<!--     result = np.sqrt(var_resid * np.linalg.inv(np.matmul(x.T, np.multiply(weights, x))).diagonal()) -->
+
+<!--     return np.ravel(result) -->
+<!-- ``` -->
+
+<!-- ```{python} -->
+<!-- lm_se(overlap_x_mat, overlap_y_mat, weights, intercept) -->
+<!-- ``` -->
+
+<!-- ```{python} -->
+<!-- fit.bse -->
+<!-- ``` -->
+
+<!-- ### Standalone risk -->
+
+<!-- $$ -->
+<!-- \begin{aligned} -->
+<!-- \text{SAR}_{k}&=\sqrt{w_{k}^{2}\sigma_{k}^{2}}\\ -->
+<!-- \text{SAR}_{\varepsilon}&=\sqrt{(1-R^{2})\sigma_{y}^{2}} -->
+<!-- \end{aligned} -->
+<!-- $$ -->
+
+<!-- ```{python} -->
+<!-- def cov_wt(x, weights, center): -->
+
+<!--     sum_w = sum(weights) -->
+<!--     sumsq_w = sum(np.power(weights, 2)) -->
+
+<!--     if (center): -->
+
+<!--         weights_ls = np.array(weights).reshape(-1).tolist() -->
+<!--         x = x - np.average(x, axis = 0, weights = weights_ls) -->
+
+<!--     result = np.matmul(x.T, np.multiply(weights, x)) / (sum_w - sumsq_w / sum_w) -->
+
+<!--     return result -->
+<!-- ``` -->
+
+<!-- ```{python} -->
+<!-- def lm_sar(x, y, weights, intercept): -->
+
+<!--     coef = lm_coef(x, y, weights, intercept) -->
+<!--     rsq = lm_rsq(x, y, weights, intercept) -->
+
+<!--     if (intercept): x = sm.add_constant(x) -->
+
+<!-- #     weights_ls = np.array(weights).reshape(-1) -->
+<!-- #     sigma = np.cov(np.concatenate((x, y), axis = 1).T, -->
+<!-- #                    aweights = weights_ls) -->
+<!--     sigma = cov_wt(np.concatenate((x, y), axis = 1), weights, intercept) -->
+<!--     sar = np.multiply(np.power(coef, 2).T, sigma[:-1, :-1].diagonal()) -->
+<!--     sar_eps = (1 - rsq) * sigma[-1, -1] -->
+
+<!--     result = np.sqrt(np.concatenate((np.matrix(sigma[-1, -1]), -->
+<!--                                      np.matrix(sar), -->
+<!--                                      np.matrix(sar_eps)), axis = 1)) -->
+
+<!--     return np.ravel(result) -->
+<!-- ``` -->
+
+<!-- ```{python} -->
+<!-- lm_sar(overlap_x_mat, overlap_y_mat, weights, intercept) * np.sqrt(scale["periods"]) * np.sqrt(scale["overlap"]) -->
+<!-- ``` -->
+
+<!-- ### Risk contribution -->
+
+<!-- $$ -->
+<!-- \begin{aligned} -->
+<!-- \text{MCR}&=w^\mathrm{T}\frac{\partial\sigma_{y}}{\partial w}\\ -->
+<!-- &=w^\mathrm{T}\frac{\Sigma w}{\sigma_{y}}\\ -->
+<!-- \text{MCR}_{\varepsilon}&=\sigma_{y}-\sum_{k=1}^{n}\text{MCR}_{k} -->
+<!-- \end{aligned} -->
+<!-- $$ -->
+
+<!-- ```{python} -->
+<!-- # http://faculty.washington.edu/ezivot/research/factormodelrisklecture_handout.pdf -->
+<!-- def lm_mcr(x, y, weights, intercept): -->
+
+<!--     coef = np.matrix(lm_coef(x, y, weights, intercept)).T -->
+<!--     rsq = lm_rsq(x, y, weights, intercept) -->
+
+<!--     if (intercept): x = sm.add_constant(x) -->
+
+<!-- #     weights_ls = np.array(weights).reshape(-1)         -->
+<!-- #     sigma = np.cov(np.concatenate((x, y), axis = 1).T, -->
+<!-- #                    aweights = weights_ls) -->
+<!--     sigma = cov_wt(np.concatenate((x, y), axis = 1), weights, intercept) -->
+<!--     mcr = np.multiply(coef, np.matmul(sigma[:-1, :-1], coef)) / np.sqrt(sigma[-1, -1]) -->
+<!--     mcr_eps = np.sqrt(sigma[-1, -1]) - sum(mcr) -->
+
+<!--     result = np.concatenate((np.sqrt(np.matrix(sigma[-1, -1])), -->
+<!--                              np.matrix(mcr).T, -->
+<!--                              np.matrix(mcr_eps)), axis = 1) -->
+
+<!--     return np.ravel(result) -->
+<!-- ``` -->
+
+<!-- ```{python} -->
+<!-- lm_mcr(overlap_x_mat, overlap_y_mat, weights, intercept) * np.sqrt(scale["periods"]) * np.sqrt(scale["overlap"]) -->
+<!-- ``` -->
+
+<!-- ### Implied shocks -->
+
+<!-- $$ -->
+<!-- \begin{aligned} -->
+<!-- \hat{\beta}&=(Z^\mathrm{T}WZ)^{-1}Z^\mathrm{T}WX -->
+<!-- \end{aligned} -->
+<!-- $$ -->
+
+<!-- ```{python} -->
+<!-- def implied_shocks(shocks, x, z, weights): -->
+
+<!--     beta = np.matmul(np.linalg.inv(np.matrix(np.matmul(z.T, np.multiply(weights, z)))), -->
+<!--                      np.matrix(np.matmul(z.T, np.multiply(weights, x)))) -->
+
+<!--     result = np.matmul(shocks, beta) -->
+
+<!--     return np.ravel(result) -->
+<!-- ``` -->
+
+<!-- ```{python} -->
+<!-- shocks = np.array([-0.1, 0.1]) -->
+<!-- overlap_z_mat = overlap_x_mat[:, [0, 1]] -->
+<!-- ``` -->
+
+<!-- ```{python} -->
+<!-- implied_shocks(shocks, overlap_x_mat, overlap_z_mat, weights) -->
+<!-- ``` -->
+
+<!-- ### Stress P&L -->
+
+<!-- ```{python} -->
+<!-- def pnl_stress(shocks, x, y, z, weights, intercept): -->
+
+<!--     coef = lm_coef(x, y, weights, intercept) -->
+
+<!--     if (intercept): x = sm.add_constant(x) -->
+
+<!--     result = np.multiply(coef.T, implied_shocks(shocks, x, z, weights)) -->
+
+<!--     return np.ravel(result) -->
+<!-- ``` -->
+
+<!-- ```{python} -->
+<!-- pnl_stress(shocks, overlap_x_mat, overlap_y_mat, overlap_z_mat, weights, intercept) -->
+<!-- ``` -->
 
 ## Principal component analysis
 
@@ -1085,157 +1090,157 @@ np.matmul(mu, params3)
 np.sqrt(np.matmul(np.transpose(params3), np.matmul(sigma, params3)))
 ```
 
-## Black-Litterman
+<!-- ## Black-Litterman -->
 
-### Prior distribution
+<!-- ### Prior distribution -->
 
-$$
-\begin{aligned}
-\text{Risk aversion: } &\lambda=\frac{E(r)-r_{f}}{\sigma^{2}}=\frac{IR}{\sigma}\\
-\text{Implied returns: } &\Pi=\lambda\Sigma w\\
-\text{Distribution: } &N\sim(\Pi,\tau\Sigma)
-\end{aligned}
-$$
+<!-- $$ -->
+<!-- \begin{aligned} -->
+<!-- \text{Risk aversion: } &\lambda=\frac{E(r)-r_{f}}{\sigma^{2}}=\frac{IR}{\sigma}\\ -->
+<!-- \text{Implied returns: } &\Pi=\lambda\Sigma w\\ -->
+<!-- \text{Distribution: } &N\sim(\Pi,\tau\Sigma) -->
+<!-- \end{aligned} -->
+<!-- $$ -->
 
-```{python}
-def implied_pnl(params, ir, sigma):
-    
-    lmbda = ir / np.sqrt(np.matmul(np.transpose(params), np.matmul(sigma, params)))
-    
-    result = np.matmul(lmbda * sigma, params)
-    
-    return result
-```
+<!-- ```{python} -->
+<!-- def implied_pnl(params, ir, sigma): -->
 
-```{python}
-implied_pnl(params3, ir, sigma)
-```
+<!--     lmbda = ir / np.sqrt(np.matmul(np.transpose(params), np.matmul(sigma, params))) -->
 
-### Conditional distribution
+<!--     result = np.matmul(lmbda * sigma, params) -->
 
-$$
-\begin{aligned}
-\text{Prior mean variance: } &\tau\in(0.01, 0.05)\approx(0.025)\\
-\text{Asset views: } &\mathbf{P}={\begin{bmatrix}
-p_{11}&\cdots&p_{1n}\\
-\vdots&\ddots&\vdots\\
-p_{k1}&\cdots&p_{kn}
-\end{bmatrix}}=
-{\begin{bmatrix}
-0&0&0&0&0&0&1&0\\
--1&1&0&0&0&0&0&0\\
-0&0&0.5&-0.5&0.5&-0.5&0&0
-\end{bmatrix}}\\
-\text{View returns: } &\mathbf{Q}={\begin{bmatrix}
-q_{1}\\
-\vdots\\
-q_{k}
-\end{bmatrix}}=
-{\begin{bmatrix}
-0.0525\\
-0.0025\\
-0.0200
-\end{bmatrix}}\\
-\text{View confidence: } &\mathbf{C}={\begin{bmatrix}
-c_{1}\\
-\vdots\\
-c_{k}
-\end{bmatrix}}=
-{\begin{bmatrix}
-0.2500\\
-0.5000\\
-0.6500
-\end{bmatrix}}\\
-\text{View covariance: } &\mathbf{\Omega}={\begin{bmatrix}
-\tau\left(\frac{1-c_{1}}{c_{1}}\right)\left(p_{1}\Sigma p_{1}^{T}\right)&0&0\\
-0&\ddots&0\\
-0&0&\tau\left(\frac{1-c_{k}}{c_{k}}\right)\left(p_{k}\Sigma p_{k}^{T}\right)
-\end{bmatrix}}\\
-\text{Distribution: } &N\sim(\mathbf{Q}, \mathbf{\Omega})
-\end{aligned}
-$$
+<!--     return result -->
+<!-- ``` -->
 
-### Posterior distribution
+<!-- ```{python} -->
+<!-- implied_pnl(params3, ir, sigma) -->
+<!-- ``` -->
 
-$$
-\begin{aligned}
-\text{Implied returns: } &\hat{\Pi}=\Pi+\tau\Sigma \mathbf{P}^{T}\left(\tau \mathbf{P}\Sigma \mathbf{P}^{T}+\mathbf{\Omega}\right)^{-1}\left(\mathbf{Q}-\mathbf{P}\Pi^{T}\right)\\
-\text{Covariance: } &\hat{\Sigma}=\Sigma+\tau\left[\Sigma-\Sigma\mathbf{P}^{T}\left(\tau\mathbf{P}\Sigma\mathbf{P}^{T}+\mathbf{\Omega}\right)^{-1}\tau\mathbf{P}\Sigma\right]\\
-\text{Weights: } &\hat{w}=\hat{\Pi}\left(\lambda\Sigma\right)^{-1}\\
-\text{Distribution: } &N\sim\left(\left[\left(\tau\Sigma\right)^{-1}+\mathbf{P}^{T}\Omega^{-1}\mathbf{P}\right]^{-1}\left[\left(\tau\Sigma\right)^{-1}\Pi+\mathbf{P}^{T}\Omega^{-1}\mathbf{Q}\right],\left[\left(\tau\Sigma\right)^{-1}+\mathbf{P}^{T}\Omega^{-1}\mathbf{P}\right]^{-1}\right)
-\end{aligned}
-$$
+<!-- ### Conditional distribution -->
 
-```{python}
-def black_litterman(params, ir, sigma, views):
-    
-    # prior distribution
-    weights_prior = params
-    sigma_prior = sigma
-    lmbda = ir / np.sqrt(np.matmul(np.transpose(weights_prior), np.matmul(sigma_prior, weights_prior)))
-    pi_prior = np.transpose(np.matrix(np.matmul(lmbda * sigma_prior, weights_prior)))
-    
-    # matrix calculations
-    matmul_left = np.multiply(views["tau"], np.matmul(sigma_prior, views["P"].T))
-    matmul_mid = np.multiply(views["tau"], np.matmul(views["P"], np.matmul(sigma_prior, views["P"].T)))
-    matmul_right = views["Q"] - np.matmul(views["P"], pi_prior)
-    
-    # conditional distribution
-    omega = np.diag(np.diag(np.matmul(np.diag([(1 - x) / x for x in views["C"]]), matmul_mid)))
-    
-    # posterior distribution
-    pi_posterior = pi_prior + np.matmul(matmul_left, np.matmul(np.linalg.inv(matmul_mid + omega), matmul_right))
-    
-    sigma_posterior = sigma_prior + np.multiply(views["tau"], sigma_prior) - \
-        np.matmul(matmul_left, np.matmul(np.linalg.inv(matmul_mid + omega),
-                                         np.multiply(views["tau"], np.matmul(views["P"], sigma_prior))))
-    
-    weights_posterior = np.matmul(pi_posterior.T, np.linalg.inv(lmbda * sigma_prior))
-    
-    # implied confidence
-    pi_posterior_100 = pi_prior + np.matmul(matmul_left, np.matmul(np.linalg.inv(matmul_mid), matmul_right))
-    
-    weights_posterior_100 = np.matmul(pi_posterior_100.T, np.linalg.inv(lmbda * sigma_prior))
-    
-    implied_confidence = (weights_posterior - weights_prior) / (weights_posterior_100 - weights_prior)
-    
-    result = {"implied_confidence": implied_confidence,
-              "weights_prior": np.matrix(weights_prior),
-              "weights_posterior": weights_posterior,
-              "pi_prior": np.transpose(pi_prior),
-              "pi_posterior": np.transpose(pi_posterior),
-              "sigma_prior": sigma_prior,
-              "sigma_posterior": sigma_posterior}
-        
-    return result
-```
+<!-- $$ -->
+<!-- \begin{aligned} -->
+<!-- \text{Prior mean variance: } &\tau\in(0.01, 0.05)\approx(0.025)\\ -->
+<!-- \text{Asset views: } &\mathbf{P}={\begin{bmatrix} -->
+<!-- p_{11}&\cdots&p_{1n}\\ -->
+<!-- \vdots&\ddots&\vdots\\ -->
+<!-- p_{k1}&\cdots&p_{kn} -->
+<!-- \end{bmatrix}}= -->
+<!-- {\begin{bmatrix} -->
+<!-- 0&0&0&0&0&0&1&0\\ -->
+<!-- -1&1&0&0&0&0&0&0\\ -->
+<!-- 0&0&0.5&-0.5&0.5&-0.5&0&0 -->
+<!-- \end{bmatrix}}\\ -->
+<!-- \text{View returns: } &\mathbf{Q}={\begin{bmatrix} -->
+<!-- q_{1}\\ -->
+<!-- \vdots\\ -->
+<!-- q_{k} -->
+<!-- \end{bmatrix}}= -->
+<!-- {\begin{bmatrix} -->
+<!-- 0.0525\\ -->
+<!-- 0.0025\\ -->
+<!-- 0.0200 -->
+<!-- \end{bmatrix}}\\ -->
+<!-- \text{View confidence: } &\mathbf{C}={\begin{bmatrix} -->
+<!-- c_{1}\\ -->
+<!-- \vdots\\ -->
+<!-- c_{k} -->
+<!-- \end{bmatrix}}= -->
+<!-- {\begin{bmatrix} -->
+<!-- 0.2500\\ -->
+<!-- 0.5000\\ -->
+<!-- 0.6500 -->
+<!-- \end{bmatrix}}\\ -->
+<!-- \text{View covariance: } &\mathbf{\Omega}={\begin{bmatrix} -->
+<!-- \tau\left(\frac{1-c_{1}}{c_{1}}\right)\left(p_{1}\Sigma p_{1}^{T}\right)&0&0\\ -->
+<!-- 0&\ddots&0\\ -->
+<!-- 0&0&\tau\left(\frac{1-c_{k}}{c_{k}}\right)\left(p_{k}\Sigma p_{k}^{T}\right) -->
+<!-- \end{bmatrix}}\\ -->
+<!-- \text{Distribution: } &N\sim(\mathbf{Q}, \mathbf{\Omega}) -->
+<!-- \end{aligned} -->
+<!-- $$ -->
 
-```{python}
-tau = 0.025
-P = np.diag([1] * len(factors))
-Q = np.transpose(np.matrix(implied_shocks([0.1], overlap_x_mat, overlap_x_mat[:, 0], 1)))
-C = [0.95] * len(factors)
-views = {"tau": tau, "P": P, "Q": Q, "C": C}
-```
+<!-- ### Posterior distribution -->
 
-```{python}
-bl = black_litterman(params3, ir, sigma, views)
-bl
-```
+<!-- $$ -->
+<!-- \begin{aligned} -->
+<!-- \text{Implied returns: } &\hat{\Pi}=\Pi+\tau\Sigma \mathbf{P}^{T}\left(\tau \mathbf{P}\Sigma \mathbf{P}^{T}+\mathbf{\Omega}\right)^{-1}\left(\mathbf{Q}-\mathbf{P}\Pi^{T}\right)\\ -->
+<!-- \text{Covariance: } &\hat{\Sigma}=\Sigma+\tau\left[\Sigma-\Sigma\mathbf{P}^{T}\left(\tau\mathbf{P}\Sigma\mathbf{P}^{T}+\mathbf{\Omega}\right)^{-1}\tau\mathbf{P}\Sigma\right]\\ -->
+<!-- \text{Weights: } &\hat{w}=\hat{\Pi}\left(\lambda\Sigma\right)^{-1}\\ -->
+<!-- \text{Distribution: } &N\sim\left(\left[\left(\tau\Sigma\right)^{-1}+\mathbf{P}^{T}\Omega^{-1}\mathbf{P}\right]^{-1}\left[\left(\tau\Sigma\right)^{-1}\Pi+\mathbf{P}^{T}\Omega^{-1}\mathbf{Q}\right],\left[\left(\tau\Sigma\right)^{-1}+\mathbf{P}^{T}\Omega^{-1}\mathbf{P}\right]^{-1}\right) -->
+<!-- \end{aligned} -->
+<!-- $$ -->
 
-```{python}
-params4 = np.array(bl["weights_posterior"])[0]
-params4 = params4 / sum(params4) # no leverage
-params4
-```
+<!-- ```{python} -->
+<!-- def black_litterman(params, ir, sigma, views): -->
 
-```{python}
-np.matmul(mu, params4)
-```
+<!--     # prior distribution -->
+<!--     weights_prior = params -->
+<!--     sigma_prior = sigma -->
+<!--     lmbda = ir / np.sqrt(np.matmul(np.transpose(weights_prior), np.matmul(sigma_prior, weights_prior))) -->
+<!--     pi_prior = np.transpose(np.matrix(np.matmul(lmbda * sigma_prior, weights_prior))) -->
 
-```{python}
-np.sqrt(np.matmul(np.transpose(params4), np.matmul(sigma, params4)))
-```
+<!--     # matrix calculations -->
+<!--     matmul_left = np.multiply(views["tau"], np.matmul(sigma_prior, views["P"].T)) -->
+<!--     matmul_mid = np.multiply(views["tau"], np.matmul(views["P"], np.matmul(sigma_prior, views["P"].T))) -->
+<!--     matmul_right = views["Q"] - np.matmul(views["P"], pi_prior) -->
+
+<!--     # conditional distribution -->
+<!--     omega = np.diag(np.diag(np.matmul(np.diag([(1 - x) / x for x in views["C"]]), matmul_mid))) -->
+
+<!--     # posterior distribution -->
+<!--     pi_posterior = pi_prior + np.matmul(matmul_left, np.matmul(np.linalg.inv(matmul_mid + omega), matmul_right)) -->
+
+<!--     sigma_posterior = sigma_prior + np.multiply(views["tau"], sigma_prior) - \ -->
+<!--         np.matmul(matmul_left, np.matmul(np.linalg.inv(matmul_mid + omega), -->
+<!--                                          np.multiply(views["tau"], np.matmul(views["P"], sigma_prior)))) -->
+
+<!--     weights_posterior = np.matmul(pi_posterior.T, np.linalg.inv(lmbda * sigma_prior)) -->
+
+<!--     # implied confidence -->
+<!--     pi_posterior_100 = pi_prior + np.matmul(matmul_left, np.matmul(np.linalg.inv(matmul_mid), matmul_right)) -->
+
+<!--     weights_posterior_100 = np.matmul(pi_posterior_100.T, np.linalg.inv(lmbda * sigma_prior)) -->
+
+<!--     implied_confidence = (weights_posterior - weights_prior) / (weights_posterior_100 - weights_prior) -->
+
+<!--     result = {"implied_confidence": implied_confidence, -->
+<!--               "weights_prior": np.matrix(weights_prior), -->
+<!--               "weights_posterior": weights_posterior, -->
+<!--               "pi_prior": np.transpose(pi_prior), -->
+<!--               "pi_posterior": np.transpose(pi_posterior), -->
+<!--               "sigma_prior": sigma_prior, -->
+<!--               "sigma_posterior": sigma_posterior} -->
+
+<!--     return result -->
+<!-- ``` -->
+
+<!-- ```{python} -->
+<!-- tau = 0.025 -->
+<!-- P = np.diag([1] * len(factors)) -->
+<!-- Q = np.transpose(np.matrix(implied_shocks([0.1], overlap_x_mat, overlap_x_mat[:, 0], 1))) -->
+<!-- C = [0.95] * len(factors) -->
+<!-- views = {"tau": tau, "P": P, "Q": Q, "C": C} -->
+<!-- ``` -->
+
+<!-- ```{python} -->
+<!-- bl = black_litterman(params3, ir, sigma, views) -->
+<!-- bl -->
+<!-- ``` -->
+
+<!-- ```{python} -->
+<!-- params4 = np.array(bl["weights_posterior"])[0] -->
+<!-- params4 = params4 / sum(params4) # no leverage -->
+<!-- params4 -->
+<!-- ``` -->
+
+<!-- ```{python} -->
+<!-- np.matmul(mu, params4) -->
+<!-- ``` -->
+
+<!-- ```{python} -->
+<!-- np.sqrt(np.matmul(np.transpose(params4), np.matmul(sigma, params4))) -->
+<!-- ``` -->
 
 ## Risk parity
 
@@ -1329,7 +1334,7 @@ np.sqrt(np.matmul(np.transpose(params5), np.matmul(sigma, params5)))
 pd.DataFrame.from_dict({"max_pnl": params1,
                         "min_risk": params2,
                         "max_ratio": params3,
-                        "black_litterman": params4,
+                        # "black_litterman": params4,
                         "risk_parity": params5})
 ```
 
@@ -1376,9 +1381,9 @@ def pnl_attrib(params, x):
 ```
 
 ```{python}
-attrib_mat = np.multiply(params4, np.matrix(returns_x_df)[-width:])
+attrib_mat = np.multiply(params1, np.matrix(returns_x_df)[-width:])
 ```
 
 ```{python}
-pnl_attrib(params4, attrib_mat)
+pnl_attrib(params1, attrib_mat)
 ```

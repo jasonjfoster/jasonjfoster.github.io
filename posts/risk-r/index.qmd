@@ -1,0 +1,329 @@
+---
+title: "Risk"
+author: "[Jason Foster](mailto:jason.j.foster@gmail.com)"
+date: last-modified
+categories:
+  - analysis
+  - finance
+  - r
+---
+
+```{r, echo = FALSE, message = FALSE}
+source("../plot/theme_jjf.R")
+```
+
+```{r, message = FALSE}
+library(quantmod)
+library(roll)
+library(data.table)
+```
+
+```{r, echo = FALSE}
+options("getSymbols.warning4.0" = FALSE)
+```
+
+```{r}
+factors_r <- c("SP500", "DTWEXAFEGS") # "SP500" does not contain dividends; note: "DTWEXM" discontinued as of Jan 2020
+factors_d <- c("DGS10", "BAMLH0A0HYM2")
+factors <- c(factors_r, factors_d)
+width <- 252
+scale <- list("periods" = 252, "overlap" = 5)
+```
+
+```{r, echo = FALSE}
+palette <- c("black", palette_jjf(length(factors)))
+names(palette) <- c("Overall", factors)
+```
+
+```{r, results = "hide"}
+getSymbols(factors, src = "FRED")
+levels_xts <- do.call(merge, c(lapply(factors, function(i) get(i)), all = TRUE))
+```
+
+```{r}
+returns_xts <- do.call(merge, lapply(factors, function(i) {
+    if (i %in% factors_r) {
+        diff(log((levels_xts[ , i])))
+    } else if (i %in% factors_d) {
+        -diff(levels_xts[ , i]) / 100
+    }    
+}))
+overlap_xts <- roll_mean(returns_xts, scale[["overlap"]], min_obs = 1, na_restore = TRUE)
+```
+
+```{r, message = FALSE}
+# library(pls)
+# library(CVXR)
+```
+
+```{r}
+tickers <- "BAICX" # fund inception date is "2011-11-28" 
+invisible(getSymbols(tickers, src = "tiingo", api.key = Sys.getenv("TIINGO_API_KEY"), adjust = TRUE))
+prices_xts <- do.call(merge, c(lapply(tickers, function(i) Cl(get(i))), all = TRUE))
+colnames(prices_xts) <- tickers
+index(prices_xts) <- as.Date(index(prices_xts))
+```
+
+```{r}
+returns_xts <- merge(returns_xts, diff(log(prices_xts)))
+overlap_xts <- merge(overlap_xts, roll_mean(returns_xts[ , tickers], scale[["overlap"]], min_obs = 1))
+```
+
+```{r}
+# weights <- 0.9 ^ ((width - 1):0)
+weights <- rep(1, width)
+```
+
+```{r}
+overlap_xts <- na.omit(overlap_xts)
+# overlap_x_df <- na.omit(overlap_xts)[ , factors]
+# overlap_y_df <- na.omit(overlap_xts)[ , tickers]
+overlap_x_xts <- tail(overlap_xts[ , factors], width)
+overlap_y_xts <- tail(overlap_xts[ , tickers], width)
+```
+
+# Ordinary least squares
+
+## Coefficients
+
+$$
+\begin{aligned}
+\hat{\beta}=(X^\mathrm{T}WX)^{-1}X^\mathrm{T}Wy
+\end{aligned}
+$$
+
+* <https://faculty.washington.edu/ezivot/research/factormodellecture_handout.pdf>
+
+```{r}
+lm_coef <- function(x, y, weights, intercept) {
+    
+    if (intercept) x <- model.matrix(~ x)
+    
+    # result <- solve(t(x) %*% sweep(x, 1, weights, "*")) %*% t(x) %*% sweep(y, 1, weights, "*")
+    result <- solve(crossprod(x, diag(weights)) %*% x) %*% crossprod(x, diag(weights) %*% y)
+    
+    return(result)
+    
+}
+```
+
+```{r}
+intercept <- TRUE
+```
+
+```{r}
+lm_coef(overlap_x_xts, overlap_y_xts, weights, intercept)
+```
+
+```{r}
+if (intercept) {
+    fit <- lm(overlap_y_xts ~ overlap_x_xts, weights = weights)
+} else {
+    fit <- lm(overlap_y_xts ~ overlap_x_xts - 1, weights = weights)
+}
+    
+coef(fit)
+```
+
+## R-squared
+
+$$
+\begin{aligned}
+R^{2}=\frac{\hat{\beta}^\mathrm{T}(X^\mathrm{T}WX)\hat{\beta}}{y^\mathrm{T}Wy}
+\end{aligned}
+$$
+
+```{r}
+lm_rsq <- function(x, y, weights, intercept) {
+        
+    coef <- lm_coef(x, y, weights, intercept)
+    
+    if (intercept) {
+        
+        x <- model.matrix(~ x)
+        x <- sweep(x, 2, apply(x, 2, weighted.mean, w = weights), "-")
+        y <- sweep(y, 2, apply(y, 2, weighted.mean, w = weights), "-")
+        
+    }
+    
+    result <- (t(coef) %*% (t(x) %*% sweep(x, 1, weights, "*")) %*% coef) / (t(y) %*% sweep(y, 1, weights, "*"))
+    
+    return(result)
+    
+}
+```
+
+```{r}
+lm_rsq(overlap_x_xts, overlap_y_xts, weights, intercept)
+```
+
+```{r}
+summary(fit)$r.squared
+```
+
+## Standard errors
+
+$$
+\begin{aligned}
+\sigma_{\hat{\beta}}^{2}&=\sigma_{\varepsilon}^{2}(X^\mathrm{T}WX)^{-1}\\
+&=\frac{(1-R^{2})}{n-p}(X^\mathrm{T}WX)^{-1}\\
+&=\frac{SSE}{df_{E}}(X^\mathrm{T}WX)^{-1}\\
+\sigma_{\hat{\alpha}}^{2}&=\sigma_{\varepsilon}^{2}\left(\frac{1}{n}+\mu^\mathrm{T}(X^\mathrm{T}WX)^{-1}\mu\right)
+\end{aligned}
+$$
+
+```{r}
+# http://people.duke.edu/~rnau/mathreg.htm
+lm_se <- function(x, y, weights, intercept) {
+    
+    n_rows <- nrow(x)
+    n_cols <- ncol(x)
+    
+    rsq <- lm_rsq(x, y, weights, intercept)
+    
+    if (intercept) {
+        
+        x <- model.matrix(~ x)
+        y <- sweep(y, 2, apply(y, 2, weighted.mean, w = weights), "-")
+        
+        df_resid <- n_rows - n_cols - 1
+        
+    } else {
+        df_resid <- n_rows - n_cols
+    }
+    
+    var_y <- t(y) %*% sweep(y, 1, weights, "*")
+    var_resid <- as.vector((1 - rsq) * var_y / df_resid)
+    
+    result <- sqrt(var_resid * diag(solve(t(x) %*% sweep(x, 1, weights, "*"))))
+    
+    return(result)
+}
+```
+
+```{r}
+lm_se(overlap_x_xts, overlap_y_xts, weights, intercept)
+```
+
+```{r}
+coef(summary(fit))[ , "Std. Error"]
+```
+
+# Standalone risk
+
+$$
+\begin{aligned}
+\text{SAR}_{k}&=\sqrt{w_{k}^{2}\sigma_{k}^{2}}\\
+\text{SAR}_{\varepsilon}&=\sqrt{(1-R^{2})\sigma_{y}^{2}}
+\end{aligned}
+$$
+
+```{r}
+lm_sar <- function(x, y, weights, intercept) {
+    
+    coef <- lm_coef(x, y, weights, intercept)
+    rsq <- lm_rsq(x, y, weights, intercept)
+    
+    if (intercept) x <- model.matrix(~ x)
+    
+    sigma <- cov.wt(cbind(x, y), wt = weights, center = intercept)$cov
+    sar <- coef ^ 2 * diag(sigma[-ncol(sigma), -ncol(sigma)])
+    sar_eps <- (1 - rsq) * sigma[ncol(sigma), ncol(sigma)]
+    
+    result <- sqrt(c(sigma[ncol(sigma), ncol(sigma)],
+                     sar,
+                     sar_eps))
+    
+    return(result)
+    
+}
+```
+
+```{r}
+lm_sar(overlap_x_xts, overlap_y_xts, weights, intercept) * sqrt(scale[["periods"]]) * sqrt(scale[["overlap"]])
+```
+
+# Risk contribution
+
+$$
+\begin{aligned}
+\text{MCR}&=w^\mathrm{T}\frac{\partial\sigma_{y}}{\partial w}\\
+&=w^\mathrm{T}\frac{\Sigma w}{\sigma_{y}}\\
+\text{MCR}_{\varepsilon}&=\sigma_{y}-\sum_{k=1}^{n}\text{MCR}_{k}
+\end{aligned}
+$$
+
+```{r}
+# http://faculty.washington.edu/ezivot/research/factormodelrisklecture_handout.pdf
+lm_mcr <- function(x, y, weights, intercept) {
+    
+    coef <- lm_coef(x, y, weights, intercept)
+    rsq <- lm_rsq(x, y, weights, intercept)
+    
+    if (intercept) x <- model.matrix(~ x)
+    
+    sigma <- cov.wt(cbind(x, y), wt = weights, center = intercept)$cov
+    mcr <- coef * sigma[-ncol(sigma), -ncol(sigma)] %*% coef / sqrt(sigma[ncol(sigma), ncol(sigma)])
+    mcr_eps <- sqrt(sigma[ncol(sigma), ncol(sigma)]) - sum(mcr)
+    
+    result <- c(sqrt(sigma[ncol(sigma), ncol(sigma)]),
+                mcr,
+                mcr_eps)
+    
+    return(result)
+    
+}
+```
+
+```{r}
+lm_mcr(overlap_x_xts, overlap_y_xts, weights, intercept) * sqrt(scale[["periods"]]) * sqrt(scale[["overlap"]])
+```
+
+# Implied shocks
+
+$$
+\begin{aligned}
+\hat{\beta}&=(Z^\mathrm{T}WZ)^{-1}Z^\mathrm{T}WX
+\end{aligned}
+$$
+
+```{r}
+implied_shocks <- function(shocks, x, z, weights) {
+    
+    beta <- solve(t(z) %*% sweep(z, 1, weights, "*")) %*% t(z) %*% sweep(x, 1, weights, "*")
+    
+    result <- shocks %*% beta
+    
+    return(result)
+    
+}
+```
+
+```{r}
+shocks <- c(-0.1, 0.1)
+overlap_z_xts <- overlap_x_xts[ , 1:2]
+```
+
+```{r}
+implied_shocks(shocks, overlap_x_xts, overlap_z_xts, weights)
+```
+
+# Stress P&L
+
+```{r}
+pnl_stress <- function(shocks, x, y, z, weights, intercept) {
+    
+    coef <- lm_coef(x, y, weights, intercept)
+    
+    if (intercept) x <- model.matrix(~ x)
+    
+    result <- t(coef) * implied_shocks(shocks, x, z, weights)
+    
+    return(result)    
+    
+}
+```
+
+```{r}
+pnl_stress(shocks, overlap_x_xts, overlap_y_xts, overlap_z_xts, weights, intercept)
+```

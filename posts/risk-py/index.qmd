@@ -1,0 +1,342 @@
+---
+title: "Risk"
+author: "[Jason Foster](mailto:jason.j.foster@gmail.com)"
+date: last-modified
+categories:
+  - analysis
+  - finance
+  - python
+---
+
+```{python, echo = FALSE}
+# closed: https://github.com/rstudio/rstudio/issues/5945
+# closed: https://github.com/rstudio/reticulate/issues/808
+# closed: https://github.com/rstudio/reticulate/issues/847
+# open: "run all chunks"
+```
+
+```{r, echo = FALSE, message = FALSE}
+library(reticulate)
+library(data.table)
+source("../plot/theme_jjf.R")
+```
+
+```{python}
+import pandas as pd
+import numpy as np
+import statsmodels.api as sm
+import pandas_datareader as pdr
+from scipy.stats import norm, chi2
+```
+
+```{python}
+factors_r = ["SP500", "DTWEXAFEGS"] # "SP500" does not contain dividends; note: "DTWEXM" discontinued as of Jan 2020
+factors_d = ["DGS10", "BAMLH0A0HYM2"]
+factors = factors_r + factors_d
+width = 252
+scale = {"periods": 252, "overlap": 5}
+```
+
+```{r, echo = FALSE}
+palette <- c("black", palette_jjf(length(py$factors)))
+names(palette) <- c("Overall", py$factors)
+```
+
+-   <https://pandas-datareader.readthedocs.io/en/latest/remote_data.html>
+
+```{python}
+levels_df = pdr.get_data_fred(factors, start = "1900-01-01")
+```
+
+```{python}
+returns_df = levels_df.apply(lambda x: np.log(x).diff() if x.name in factors_r else -x.diff() / 100)
+overlap_df = returns_df.rolling(scale["overlap"], min_periods = 1).mean()
+returns_df = pd.concat([returns_df, overlap_df], keys = ["returns", "overlap"], axis = 1)
+```
+
+```{python}
+# import datetime
+# from scipy.optimize import minimize
+```
+
+```{python}
+import os
+```
+
+* Open: <https://github.com/pydata/pandas-datareader/issues/965>
+
+```{python}
+tickers = ["BAICX"] # fund inception date is "2011-11-28"
+prices_df = pdr.get_data_tiingo(tickers, start = "1900-01-01", api_key = os.getenv("TIINGO_API_KEY"))
+prices_df = prices_df.pivot_table(index = "date", columns = "symbol", values = "adjClose") \
+    .tz_localize(None)
+```
+
+```{python}
+returns_cols = list(zip(["returns"], tickers))
+overlap_cols = list(zip(["overlap"], tickers))
+returns_df[returns_cols] = np.log(prices_df).diff()
+returns_df[overlap_cols] = returns_df[returns_cols].rolling(scale["overlap"], min_periods = 1).mean()
+returns_df.sort_index(axis = 1, inplace = True)
+```
+
+```{python}
+# weights = np.array([0.9 ** i for i in range(width - 1, -1, -1)]).reshape((width, 1))
+weights = np.array([1] * width).reshape((width, 1))
+```
+
+```{python}
+overlap_df = returns_df.dropna()["overlap"]
+overlap_x_df = returns_df.dropna()["overlap"][factors][-width:]
+overlap_y_df = returns_df.dropna()["overlap"][tickers][-width:]
+```
+
+# Ordinary least squares
+
+## Coefficients
+
+$$
+\begin{aligned}
+\hat{\beta}=(X^\mathrm{T}WX)^{-1}X^\mathrm{T}Wy
+\end{aligned}
+$$
+
+* <https://faculty.washington.edu/ezivot/research/factormodellecture_handout.pdf>
+
+```{python}
+def lm_coef(x, y, weights, intercept):
+    
+    if (intercept): x = sm.add_constant(x)
+        
+    result = np.dot(np.linalg.inv(np.dot(x.T, np.multiply(weights, x))),
+                    np.dot(x.T, np.multiply(weights, y)))
+    
+    return np.ravel(result)
+```
+
+```{python}
+intercept = True
+```
+
+```{python}
+lm_coef(overlap_x_df, overlap_y_df, weights, intercept)
+```
+
+```{python}
+if (intercept): overlap_x_df = sm.add_constant(overlap_x_df)
+    
+fit = sm.WLS(overlap_y_df, overlap_x_df, weights = weights).fit()
+
+if (intercept): overlap_x_df = overlap_x_df.iloc[:, 1:]
+
+np.array(fit.params)
+```
+
+## R-squared
+
+$$
+\begin{aligned}
+R^{2}=\frac{\hat{\beta}^\mathrm{T}(X^\mathrm{T}WX)\hat{\beta}}{y^\mathrm{T}Wy}
+\end{aligned}
+$$
+
+```{python}
+def lm_rsq(x, y, weights, intercept):
+            
+    coef = np.matrix(lm_coef(x, y, weights, intercept))
+    
+    if (intercept):
+        
+        x = sm.add_constant(x)
+        x = x - np.average(x, axis = 0, weights = weights.reshape(-1))
+        y = y - np.average(y, axis = 0, weights = weights.reshape(-1))
+        
+    result = np.dot(coef, np.dot(np.dot(x.T, np.multiply(weights, x)), coef.T)) / \
+        (np.dot(y.T, np.multiply(weights, y)))
+    
+    return result.item()
+```
+
+```{python}
+lm_rsq(overlap_x_df, overlap_y_df, weights, intercept)
+```
+
+```{python}
+fit.rsquared
+```
+
+## Standard errors
+
+$$
+\begin{aligned}
+\sigma_{\hat{\beta}}^{2}&=\sigma_{\varepsilon}^{2}(X^\mathrm{T}WX)^{-1}\\
+&=\frac{(1-R^{2})}{n-p}(X^\mathrm{T}WX)^{-1}\\
+&=\frac{SSE}{df_{E}}(X^\mathrm{T}WX)^{-1}\\
+\sigma_{\hat{\alpha}}^{2}&=\sigma_{\varepsilon}^{2}\left(\frac{1}{n}+\mu^\mathrm{T}(X^\mathrm{T}WX)^{-1}\mu\right)
+\end{aligned}
+$$
+
+```{python}
+# http://people.duke.edu/~rnau/mathreg.htm
+def lm_se(x, y, weights, intercept):
+    
+    n_rows = x.shape[0]
+    n_cols = x.shape[1]
+    
+    rsq = lm_rsq(x, y, weights, intercept)
+    
+    if (intercept):
+        
+        x = sm.add_constant(x)
+        y = y - np.average(y, axis = 0, weights = weights.reshape(-1))
+        
+        df_resid = n_rows - n_cols - 1 
+        
+    else:
+        df_resid = n_rows - n_cols        
+    
+    var_y = np.dot(y.T, np.multiply(weights, y))
+    var_resid = (1 - rsq) * var_y / df_resid
+    
+    result = np.sqrt(var_resid * np.linalg.inv(np.dot(x.T, np.multiply(weights, x))).diagonal())
+    
+    return np.ravel(result)
+```
+
+```{python}
+lm_se(overlap_x_df, overlap_y_df, weights, intercept)
+```
+
+```{python}
+np.array(fit.bse)
+```
+
+# Standalone risk
+
+$$
+\begin{aligned}
+\text{SAR}_{k}&=\sqrt{w_{k}^{2}\sigma_{k}^{2}}\\
+\text{SAR}_{\varepsilon}&=\sqrt{(1-R^{2})\sigma_{y}^{2}}
+\end{aligned}
+$$
+
+```{python}
+def cov_wt(x, weights, center):
+    
+    sum_w = sum(weights)
+    sumsq_w = sum(np.power(weights, 2))
+    
+    if (center):
+    
+        x = x - np.average(x, axis = 0, weights = weights.reshape(-1))
+    
+    result = np.dot(x.T, np.multiply(weights, x)) / (sum_w - sumsq_w / sum_w)
+    
+    return result
+```
+
+```{python}
+def lm_sar(x, y, weights, intercept):
+    
+    coef = lm_coef(x, y, weights, intercept)
+    rsq = lm_rsq(x, y, weights, intercept)
+    
+    if (intercept): x = sm.add_constant(x)
+    
+    # sigma = np.cov(np.concatenate((x, y), axis = 1).T,
+    #                aweights = weights.reshape(-1))
+    sigma = cov_wt(np.concatenate((x, y), axis = 1), weights, intercept)
+    sar = np.multiply(np.power(coef, 2).T, sigma[:-1, :-1].diagonal())
+    sar_eps = (1 - rsq) * sigma[-1, -1]
+    
+    result = np.sqrt(np.concatenate((np.matrix(sigma[-1, -1]),
+                                     np.matrix(sar),
+                                     np.matrix(sar_eps)), axis = 1))
+    
+    return np.ravel(result)
+```
+
+```{python}
+lm_sar(overlap_x_df, overlap_y_df, weights, intercept) * np.sqrt(scale["periods"]) * np.sqrt(scale["overlap"])
+```
+
+# Risk contribution
+
+$$
+\begin{aligned}
+\text{MCR}&=w^\mathrm{T}\frac{\partial\sigma_{y}}{\partial w}\\
+&=w^\mathrm{T}\frac{\Sigma w}{\sigma_{y}}\\
+\text{MCR}_{\varepsilon}&=\sigma_{y}-\sum_{k=1}^{n}\text{MCR}_{k}
+\end{aligned}
+$$
+
+```{python}
+# http://faculty.washington.edu/ezivot/research/factormodelrisklecture_handout.pdf
+def lm_mcr(x, y, weights, intercept):
+    
+    coef = np.matrix(lm_coef(x, y, weights, intercept)).T
+    rsq = lm_rsq(x, y, weights, intercept)
+        
+    if (intercept): x = sm.add_constant(x)
+    
+#     sigma = np.cov(np.concatenate((x, y), axis = 1).T,
+#                    aweights = weights.reshape(-1))
+    sigma = cov_wt(np.concatenate((x, y), axis = 1), weights, intercept)
+    mcr = np.multiply(coef, np.dot(sigma[:-1, :-1], coef)) / np.sqrt(sigma[-1, -1])
+    mcr_eps = np.sqrt(sigma[-1, -1]) - sum(mcr)
+    
+    result = np.concatenate((np.sqrt(np.matrix(sigma[-1, -1])),
+                             np.matrix(mcr).T,
+                             np.matrix(mcr_eps)), axis = 1)
+    
+    return np.ravel(result)
+```
+
+```{python}
+lm_mcr(overlap_x_df, overlap_y_df, weights, intercept) * np.sqrt(scale["periods"]) * np.sqrt(scale["overlap"])
+```
+
+# Implied shocks
+
+$$
+\begin{aligned}
+\hat{\beta}&=(Z^\mathrm{T}WZ)^{-1}Z^\mathrm{T}WX
+\end{aligned}
+$$
+
+```{python}
+def implied_shocks(shocks, x, z, weights):
+
+    beta = np.linalg.lstsq(np.multiply(weights, z), np.multiply(weights, x), rcond = None)[0]
+                     
+    result = np.dot(shocks, beta)
+    
+    return np.ravel(result)
+```
+
+```{python}
+shocks = np.array([-0.1, 0.1])
+overlap_z_df = overlap_x_df.iloc[:, [0, 1]]
+```
+
+```{python}
+implied_shocks(shocks, overlap_x_df, overlap_z_df, weights)
+```
+
+# Stress P&L
+
+```{python}
+def pnl_stress(shocks, x, y, z, weights, intercept):
+    
+    coef = lm_coef(x, y, weights, intercept)
+    
+    if (intercept): x = sm.add_constant(x)
+    
+    result = np.multiply(coef.T, implied_shocks(shocks, x, z, weights))
+    
+    return np.ravel(result)
+```
+
+```{python}
+pnl_stress(shocks, overlap_x_df, overlap_y_df, overlap_z_df, weights, intercept)
+```
