@@ -52,7 +52,7 @@ overlap_xts <- roll_mean(returns_xts, scale[["overlap"]], min_obs = 1, na_restor
 ```
 
 ```{r, message = FALSE}
-# library(pls)
+library(pls)
 # library(CVXR)
 ```
 
@@ -82,6 +82,10 @@ overlap_y_xts <- tail(overlap_xts[ , tickers], width)
 
 # Ordinary least squares
 
+```{r}
+intercept <- TRUE
+```
+
 ## Coefficients
 
 $$
@@ -102,10 +106,6 @@ lm_coef <- function(x, y, weights, intercept) {
     return(result)
     
 }
-```
-
-```{r}
-intercept <- TRUE
 ```
 
 ```{r}
@@ -204,6 +204,133 @@ lm_se(overlap_x_xts, overlap_y_xts, weights, intercept)
 
 ```{r}
 coef(summary(fit))[ , "Std. Error"]
+```
+
+# Principal component regression
+
+```{r}
+comps <- 1
+```
+
+## Coefficients
+
+$$
+\begin{aligned}
+W_{k}&=\mathbf{X}V_{k}=[\mathbf{X}\mathbf{v}_{1},\ldots,\mathbf{X}\mathbf{v}_{k}]\\
+{\widehat{\gamma}}_{k}&=\left(W_{k}^\mathrm{T}W_{k}\right)^{-1}W_{k}^\mathrm{T}\mathbf{Y}\\
+{\widehat{\boldsymbol{\beta}}}_{k}&=V_{k}{\widehat{\gamma}}_{k}
+\end{aligned}
+$$
+
+```{r}
+# https://en.wikipedia.org/wiki/Principal_component_regression
+pcr_coef <- function(x, y, comps) {
+    
+    x <- sweep(x, 2, colMeans(x), "-")
+    LV <- eigen(cov(x))
+    V <- LV$vectors
+    
+    W <- x %*% V
+    # gamma <- solve(t(W) %*% W) %*% (t(W) %*% y)
+    gamma <- solve(crossprod(W)) %*% (crossprod(W, y))
+    
+    result <- V[ , 1:comps] %*% as.matrix(gamma[1:comps])
+    
+    return(result)
+    
+}
+```
+
+```{r}
+scale_x_xts <- scale(overlap_x_xts)
+```
+
+```{r}
+t(pcr_coef(scale_x_xts, overlap_y_xts, comps))
+```
+
+```{r}
+t(pcr_coef(overlap_x_xts, overlap_y_xts, comps))
+```
+
+```{r}
+fit <- pcr(reformulate(termlabels = ".", response = tickers), 
+           data = merge(scale_x_xts, overlap_y_xts), ncomp = comps)
+coef(fit)[ , , 1]
+```
+
+## R-squared
+
+```{r}
+pcr_rsq <- function(x, y, comps) {
+    
+    coef <- pcr_coef(x, y, comps)
+    
+    x <- sweep(x, 2, colMeans(x), "-")
+    y <- sweep(y, 2, colMeans(y), "-")
+    
+    result <- (t(coef) %*% crossprod(x) %*% coef) / crossprod(y)
+    
+    return(result)
+    
+}
+```
+
+```{r}
+pcr_rsq(scale_x_xts, overlap_y_xts, comps)
+```
+
+```{r}
+pcr_rsq(overlap_x_xts, overlap_y_xts, comps)
+```
+
+```{r}
+R2(fit)$val[comps + 1]
+```
+
+## Standard errors
+
+$$
+\begin{aligned}
+\text{Var}({\widehat{\boldsymbol{\beta}}}_{k})&=\sigma^{2}V_{k}(W_{k}^\mathrm{T}W_{k})^{-1}V_{k}^\mathrm{T}\\
+&=\sigma^{2}V_{k}\text{diag}\left(\lambda_{1}^{-1},\ldots,\lambda_{k}^{-1}\right)V_{k}^\mathrm{T}\\
+&=\sigma^{2}\sum_{j=1}^{k}{\frac{\mathbf{v}_{j}\mathbf{v}_{j}^\mathrm{T}}{\lambda_{j}}}
+\end{aligned}
+$$
+
+```{r}
+# unable to verify the result
+pcr_se <- function(x, y, comps) {
+    
+    n_rows <- nrow(x)
+    n_cols <- ncol(x)
+    
+    rsq <- pcr_rsq(x, y, comps)
+    
+    y <- sweep(y, 2, colMeans(y), "-")
+    
+    df_resid <- n_rows - n_cols - 1
+    
+    var_y <- crossprod(y)
+    var_resid <- as.vector((1 - rsq) * var_y / df_resid)
+    
+    LV <- eigen(cov(x))
+    L <- LV$values[1:comps] * (n_rows - 1)
+    V <- LV$vectors[ , 1:comps]
+    
+    result <- sqrt(var_resid * diag(V %*% sweep(t(V), 1, 1 / L, "*")))
+    
+    return(result)
+    
+}
+```
+
+```{r}
+pcr_se(scale_x_xts, overlap_y_xts, comps)
+```
+
+```{r}
+pcr_se(overlap_x_xts, overlap_y_xts, comps)
 ```
 
 # Standalone risk
