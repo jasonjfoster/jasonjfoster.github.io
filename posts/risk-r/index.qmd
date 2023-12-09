@@ -76,8 +76,6 @@ weights <- rep(1, width)
 
 ```{r}
 overlap_xts <- na.omit(overlap_xts)
-# overlap_x_df <- na.omit(overlap_xts)[ , factors]
-# overlap_y_df <- na.omit(overlap_xts)[ , tickers]
 overlap_x_xts <- tail(overlap_xts[ , factors], width)
 overlap_y_xts <- tail(overlap_xts[ , tickers], width)
 ```
@@ -99,7 +97,6 @@ lm_coef <- function(x, y, weights, intercept) {
     
     if (intercept) x <- model.matrix(~ x)
     
-    # result <- solve(t(x) %*% sweep(x, 1, weights, "*")) %*% t(x) %*% sweep(y, 1, weights, "*")
     result <- solve(crossprod(x, diag(weights)) %*% x) %*% crossprod(x, diag(weights) %*% y)
     
     return(result)
@@ -112,7 +109,7 @@ intercept <- TRUE
 ```
 
 ```{r}
-lm_coef(overlap_x_xts, overlap_y_xts, weights, intercept)
+t(lm_coef(overlap_x_xts, overlap_y_xts, weights, intercept))
 ```
 
 ```{r}
@@ -145,8 +142,8 @@ lm_rsq <- function(x, y, weights, intercept) {
         y <- sweep(y, 2, apply(y, 2, weighted.mean, w = weights), "-")
         
     }
-    
-    result <- (t(coef) %*% (t(x) %*% sweep(x, 1, weights, "*")) %*% coef) / (t(y) %*% sweep(y, 1, weights, "*"))
+  
+  result <- (t(coef) %*% (crossprod(x, diag(weights)) %*% x) %*% coef) / (t(y) %*% diag(weights) %*% y)
     
     return(result)
     
@@ -192,10 +189,10 @@ lm_se <- function(x, y, weights, intercept) {
         df_resid <- n_rows - n_cols
     }
     
-    var_y <- t(y) %*% sweep(y, 1, weights, "*")
+    var_y <- t(y) %*% diag(weights) %*% y
     var_resid <- as.vector((1 - rsq) * var_y / df_resid)
     
-    result <- sqrt(var_resid * diag(solve(t(x) %*% sweep(x, 1, weights, "*"))))
+    result <- sqrt(var_resid * diag(solve(crossprod(x, diag(weights)) %*% x)))
     
     return(result)
 }
@@ -290,7 +287,7 @@ $$
 ```{r}
 implied_shocks <- function(shocks, x, z, weights) {
     
-    beta <- solve(t(z) %*% sweep(z, 1, weights, "*")) %*% t(z) %*% sweep(x, 1, weights, "*")
+    beta <- solve(crossprod(z, diag(weights) %*% z)) %*% crossprod(z, diag(weights) %*% x)
     
     result <- shocks %*% beta
     
