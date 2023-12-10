@@ -57,6 +57,9 @@ returns_df = pd.concat([returns_df, overlap_df], keys = ["returns", "overlap"], 
 ```{python}
 # import datetime
 # from scipy.optimize import minimize
+from sklearn.decomposition import PCA
+from sklearn.linear_model import LinearRegression
+from sklearn.preprocessing import StandardScaler
 ```
 
 ```{python}
@@ -255,6 +258,20 @@ pcr_coef(scale_x_df, overlap_y_df, comps)
 
 ```{python}
 pcr_coef(overlap_x_df, overlap_y_df, comps)
+```
+
+```{python}
+scaler = StandardScaler(with_std = False)
+scaled_x_df = scaler.fit_transform(scale_x_df)
+
+pca = PCA(n_components = len(factors))
+pca_x_df = pca.fit_transform(scaled_x_df)
+
+model = LinearRegression(fit_intercept = False)
+model.fit(pca_x_df, overlap_y_df)
+
+gamma = model.coef_
+np.dot(pca.components_.T[:, :comps], gamma.T[:comps]).ravel()
 ```
 
 ## R-squared

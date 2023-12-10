@@ -92,267 +92,6 @@ overlap_x_mat = np.matrix(overlap_x_df[-width:])
 overlap_y_mat = np.matrix(overlap_y_df[-width:])
 ```
 
-<!-- ## Factor models -->
-
-<!-- ### Ordinary least squares -->
-
-<!-- #### Coefficients -->
-
-<!-- $$ -->
-<!-- \begin{aligned} -->
-<!-- \hat{\beta}=(X^\mathrm{T}WX)^{-1}X^\mathrm{T}Wy -->
-<!-- \end{aligned} -->
-<!-- $$ -->
-
-<!-- -   <https://faculty.washington.edu/ezivot/research/factormodellecture_handout.pdf> -->
-
-<!-- ```{python} -->
-<!-- def lm_coef(x, y, weights, intercept): -->
-
-<!--     if (intercept): x = sm.add_constant(x) -->
-
-<!--     result = np.dot(np.linalg.inv(np.dot(x.T, np.multiply(weights, x))), -->
-<!--                     np.dot(x.T, np.multiply(weights, y))) -->
-
-<!--     return np.ravel(result) -->
-<!-- ``` -->
-
-<!-- ```{python} -->
-<!-- intercept = True -->
-<!-- ``` -->
-
-<!-- ```{python} -->
-<!-- lm_coef(overlap_x_df, overlap_y_df, weights, intercept) -->
-<!-- ``` -->
-
-<!-- ```{python} -->
-<!-- # START HERE -->
-<!-- if (intercept): overlap_x_mat = sm.add_constant(overlap_x_mat) -->
-
-<!-- fit = sm.WLS(overlap_y_mat, overlap_x_mat, weights = weights).fit() -->
-
-<!-- if (intercept): overlap_x_mat = overlap_x_mat[:, 1:] -->
-
-<!-- fit.params -->
-<!-- ``` -->
-
-<!-- #### R-squared -->
-
-<!-- $$ -->
-<!-- \begin{aligned} -->
-<!-- R^{2}=\frac{\hat{\beta}^\mathrm{T}(X^\mathrm{T}WX)\hat{\beta}}{y^\mathrm{T}Wy} -->
-<!-- \end{aligned} -->
-<!-- $$ -->
-
-<!-- ```{python} -->
-<!-- def lm_rsq(x, y, weights, intercept): -->
-
-<!--     coef = np.matrix(lm_coef(x, y, weights, intercept)) -->
-
-<!--     if (intercept): -->
-
-<!--         weights_ls = np.array(weights).reshape(-1).tolist() -->
-
-<!--         x = sm.add_constant(x) -->
-<!--         x = x - np.average(x, axis = 0, weights = weights_ls) -->
-<!--         y = y - np.average(y, axis = 0, weights = weights_ls) -->
-
-<!--     result = np.matmul(coef, np.matmul(np.matmul(x.T, np.multiply(weights, x)), coef.T)) / \ -->
-<!--         (np.matmul(y.T, np.multiply(weights, y))) -->
-
-<!--     return result.item() -->
-<!-- ``` -->
-
-<!-- ```{python} -->
-<!-- lm_rsq(overlap_x_mat, overlap_y_mat, weights, intercept) -->
-<!-- ``` -->
-
-<!-- ```{python} -->
-<!-- fit.rsquared -->
-<!-- ``` -->
-
-<!-- #### Standard errors -->
-
-<!-- $$ -->
-<!-- \begin{aligned} -->
-<!-- \sigma_{\hat{\beta}}^{2}&=\sigma_{\varepsilon}^{2}(X^\mathrm{T}WX)^{-1}\\ -->
-<!-- &=\frac{(1-R^{2})}{n-p}(X^\mathrm{T}WX)^{-1}\\ -->
-<!-- &=\frac{SSE}{df_{E}}(X^\mathrm{T}WX)^{-1}\\ -->
-<!-- \sigma_{\hat{\alpha}}^{2}&=\sigma_{\varepsilon}^{2}\left(\frac{1}{n}+\mu^\mathrm{T}(X^\mathrm{T}WX)^{-1}\mu\right) -->
-<!-- \end{aligned} -->
-<!-- $$ -->
-
-<!-- ```{python} -->
-<!-- # http://people.duke.edu/~rnau/mathreg.htm -->
-<!-- def lm_se(x, y, weights, intercept): -->
-
-<!--     n_rows = x.shape[0] -->
-<!--     n_cols = x.shape[1] -->
-
-<!--     rsq = lm_rsq(x, y, weights, intercept) -->
-
-<!--     if (intercept): -->
-
-<!--         weights_ls = np.array(weights).reshape(-1).tolist() -->
-
-<!--         x = sm.add_constant(x) -->
-<!--         y = y - np.average(y, axis = 0, weights = weights_ls) -->
-
-<!--         df_resid = n_rows - n_cols - 1  -->
-
-<!--     else: -->
-<!--         df_resid = n_rows - n_cols         -->
-
-<!--     var_y = np.matmul(y.T, np.multiply(weights, y)) -->
-<!--     var_resid = (1 - rsq) * var_y / df_resid -->
-
-<!--     result = np.sqrt(var_resid * np.linalg.inv(np.matmul(x.T, np.multiply(weights, x))).diagonal()) -->
-
-<!--     return np.ravel(result) -->
-<!-- ``` -->
-
-<!-- ```{python} -->
-<!-- lm_se(overlap_x_mat, overlap_y_mat, weights, intercept) -->
-<!-- ``` -->
-
-<!-- ```{python} -->
-<!-- fit.bse -->
-<!-- ``` -->
-
-<!-- ### Standalone risk -->
-
-<!-- $$ -->
-<!-- \begin{aligned} -->
-<!-- \text{SAR}_{k}&=\sqrt{w_{k}^{2}\sigma_{k}^{2}}\\ -->
-<!-- \text{SAR}_{\varepsilon}&=\sqrt{(1-R^{2})\sigma_{y}^{2}} -->
-<!-- \end{aligned} -->
-<!-- $$ -->
-
-<!-- ```{python} -->
-<!-- def cov_wt(x, weights, center): -->
-
-<!--     sum_w = sum(weights) -->
-<!--     sumsq_w = sum(np.power(weights, 2)) -->
-
-<!--     if (center): -->
-
-<!--         weights_ls = np.array(weights).reshape(-1).tolist() -->
-<!--         x = x - np.average(x, axis = 0, weights = weights_ls) -->
-
-<!--     result = np.matmul(x.T, np.multiply(weights, x)) / (sum_w - sumsq_w / sum_w) -->
-
-<!--     return result -->
-<!-- ``` -->
-
-<!-- ```{python} -->
-<!-- def lm_sar(x, y, weights, intercept): -->
-
-<!--     coef = lm_coef(x, y, weights, intercept) -->
-<!--     rsq = lm_rsq(x, y, weights, intercept) -->
-
-<!--     if (intercept): x = sm.add_constant(x) -->
-
-<!-- #     weights_ls = np.array(weights).reshape(-1) -->
-<!-- #     sigma = np.cov(np.concatenate((x, y), axis = 1).T, -->
-<!-- #                    aweights = weights_ls) -->
-<!--     sigma = cov_wt(np.concatenate((x, y), axis = 1), weights, intercept) -->
-<!--     sar = np.multiply(np.power(coef, 2).T, sigma[:-1, :-1].diagonal()) -->
-<!--     sar_eps = (1 - rsq) * sigma[-1, -1] -->
-
-<!--     result = np.sqrt(np.concatenate((np.matrix(sigma[-1, -1]), -->
-<!--                                      np.matrix(sar), -->
-<!--                                      np.matrix(sar_eps)), axis = 1)) -->
-
-<!--     return np.ravel(result) -->
-<!-- ``` -->
-
-<!-- ```{python} -->
-<!-- lm_sar(overlap_x_mat, overlap_y_mat, weights, intercept) * np.sqrt(scale["periods"]) * np.sqrt(scale["overlap"]) -->
-<!-- ``` -->
-
-<!-- ### Risk contribution -->
-
-<!-- $$ -->
-<!-- \begin{aligned} -->
-<!-- \text{MCR}&=w^\mathrm{T}\frac{\partial\sigma_{y}}{\partial w}\\ -->
-<!-- &=w^\mathrm{T}\frac{\Sigma w}{\sigma_{y}}\\ -->
-<!-- \text{MCR}_{\varepsilon}&=\sigma_{y}-\sum_{k=1}^{n}\text{MCR}_{k} -->
-<!-- \end{aligned} -->
-<!-- $$ -->
-
-<!-- ```{python} -->
-<!-- # http://faculty.washington.edu/ezivot/research/factormodelrisklecture_handout.pdf -->
-<!-- def lm_mcr(x, y, weights, intercept): -->
-
-<!--     coef = np.matrix(lm_coef(x, y, weights, intercept)).T -->
-<!--     rsq = lm_rsq(x, y, weights, intercept) -->
-
-<!--     if (intercept): x = sm.add_constant(x) -->
-
-<!-- #     weights_ls = np.array(weights).reshape(-1)         -->
-<!-- #     sigma = np.cov(np.concatenate((x, y), axis = 1).T, -->
-<!-- #                    aweights = weights_ls) -->
-<!--     sigma = cov_wt(np.concatenate((x, y), axis = 1), weights, intercept) -->
-<!--     mcr = np.multiply(coef, np.matmul(sigma[:-1, :-1], coef)) / np.sqrt(sigma[-1, -1]) -->
-<!--     mcr_eps = np.sqrt(sigma[-1, -1]) - sum(mcr) -->
-
-<!--     result = np.concatenate((np.sqrt(np.matrix(sigma[-1, -1])), -->
-<!--                              np.matrix(mcr).T, -->
-<!--                              np.matrix(mcr_eps)), axis = 1) -->
-
-<!--     return np.ravel(result) -->
-<!-- ``` -->
-
-<!-- ```{python} -->
-<!-- lm_mcr(overlap_x_mat, overlap_y_mat, weights, intercept) * np.sqrt(scale["periods"]) * np.sqrt(scale["overlap"]) -->
-<!-- ``` -->
-
-<!-- ### Implied shocks -->
-
-<!-- $$ -->
-<!-- \begin{aligned} -->
-<!-- \hat{\beta}&=(Z^\mathrm{T}WZ)^{-1}Z^\mathrm{T}WX -->
-<!-- \end{aligned} -->
-<!-- $$ -->
-
-<!-- ```{python} -->
-<!-- def implied_shocks(shocks, x, z, weights): -->
-
-<!--     beta = np.matmul(np.linalg.inv(np.matrix(np.matmul(z.T, np.multiply(weights, z)))), -->
-<!--                      np.matrix(np.matmul(z.T, np.multiply(weights, x)))) -->
-
-<!--     result = np.matmul(shocks, beta) -->
-
-<!--     return np.ravel(result) -->
-<!-- ``` -->
-
-<!-- ```{python} -->
-<!-- shocks = np.array([-0.1, 0.1]) -->
-<!-- overlap_z_mat = overlap_x_mat[:, [0, 1]] -->
-<!-- ``` -->
-
-<!-- ```{python} -->
-<!-- implied_shocks(shocks, overlap_x_mat, overlap_z_mat, weights) -->
-<!-- ``` -->
-
-<!-- ### Stress P&L -->
-
-<!-- ```{python} -->
-<!-- def pnl_stress(shocks, x, y, z, weights, intercept): -->
-
-<!--     coef = lm_coef(x, y, weights, intercept) -->
-
-<!--     if (intercept): x = sm.add_constant(x) -->
-
-<!--     result = np.multiply(coef.T, implied_shocks(shocks, x, z, weights)) -->
-
-<!--     return np.ravel(result) -->
-<!-- ``` -->
-
-<!-- ```{python} -->
-<!-- pnl_stress(shocks, overlap_x_mat, overlap_y_mat, overlap_z_mat, weights, intercept) -->
-<!-- ``` -->
-
 ## Principal component analysis
 
 Underlying returns are structural bets that can be analyzed through dimension reduction techniques such as principal components analysis (PCA). Most empirical studies apply PCA to a covariance matrix (*note: for multi-asset portfolios, use the correlation matrix because asset-class variances are on different scales*) of equity returns (yield changes) and find that movements in the equity markets (yield curve) can be explained by a subset of principal components. For example, the yield curve can be decomposed in terms of shift, twist, and butterfly, respectively.
@@ -521,137 +260,137 @@ clean_plt <- plot_ts(clean_mlt, title = "Eigenvector 1Y")
 print(clean_plt)
 ```
 
-### Contour ellipsoid
+<!-- ### Contour ellipsoid -->
 
-The contours of a multivariate normal (MVN) distribution are ellipsoids centered at the mean. The directions of the axes are given by the eigenvectors of the covariance matrix and squared lengths are given by the eigenvalues:
+<!-- The contours of a multivariate normal (MVN) distribution are ellipsoids centered at the mean. The directions of the axes are given by the eigenvectors of the covariance matrix and squared lengths are given by the eigenvalues: -->
 
-$$
-\begin{aligned}
-({\mathbf{x}}-{\boldsymbol{\mu}})^{\mathrm{T}}{\boldsymbol{\Sigma}}^{-1}({\mathbf{x}}-{\boldsymbol{\mu}})=c^{2}
-\end{aligned}
-$$
+<!-- $$ -->
+<!-- \begin{aligned} -->
+<!-- ({\mathbf{x}}-{\boldsymbol{\mu}})^{\mathrm{T}}{\boldsymbol{\Sigma}}^{-1}({\mathbf{x}}-{\boldsymbol{\mu}})=c^{2} -->
+<!-- \end{aligned} -->
+<!-- $$ -->
 
-Or, in general parametric form:
+<!-- Or, in general parametric form: -->
 
-$$
-\begin{aligned}
-X(t)&=X_{c}+a\,\cos t\,\cos \varphi -b\,\sin t\,\sin \varphi\\
-Y(t)&=Y_{c}+a\,\cos t\,\sin \varphi +b\,\sin t\,\cos \varphi
-\end{aligned}
-$$ where $t$ varies from $0,\ldots,2\pi$. Here $(X_{c},Y_{c})$ is the center of the ellipse and $\varphi$ is the angle between the x-axis and the major axis of the ellipse.
+<!-- $$ -->
+<!-- \begin{aligned} -->
+<!-- X(t)&=X_{c}+a\,\cos t\,\cos \varphi -b\,\sin t\,\sin \varphi\\ -->
+<!-- Y(t)&=Y_{c}+a\,\cos t\,\sin \varphi +b\,\sin t\,\cos \varphi -->
+<!-- \end{aligned} -->
+<!-- $$ where $t$ varies from $0,\ldots,2\pi$. Here $(X_{c},Y_{c})$ is the center of the ellipse and $\varphi$ is the angle between the x-axis and the major axis of the ellipse. -->
 
-Specifically:
+<!-- Specifically: -->
 
-$$
-\begin{aligned}
-&\text{Center: }\boldsymbol{\mu}=(X_{c},Y_{c})\\
-&\text{Radius: }c^{2}= \chi_{\alpha}^{2}(df)\\
-&\text{Length: }a=c\sqrt{\lambda_{k}}\\
-&\text{Angle of rotation: }\varphi=\text{atan2}\left(\frac{V_{k}(2)}{V_{k}(1)}\right)
-\end{aligned}
-$$
+<!-- $$ -->
+<!-- \begin{aligned} -->
+<!-- &\text{Center: }\boldsymbol{\mu}=(X_{c},Y_{c})\\ -->
+<!-- &\text{Radius: }c^{2}= \chi_{\alpha}^{2}(df)\\ -->
+<!-- &\text{Length: }a=c\sqrt{\lambda_{k}}\\ -->
+<!-- &\text{Angle of rotation: }\varphi=\text{atan2}\left(\frac{V_{k}(2)}{V_{k}(1)}\right) -->
+<!-- \end{aligned} -->
+<!-- $$ -->
 
-```{python}
-# https://www.visiondummy.com/2014/04/draw-error-ellipse-representing-covariance-matrix/
-# https://maitra.public.iastate.edu/stat501/lectures/MultivariateNormalDistribution-I.pdf
-# https://en.wikipedia.org/wiki/Multivariate_normal_distribution
-# https://en.wikipedia.org/wiki/Ellipse#General_parametric_form
-def ellipse(n_sim, x, y, sigma):
-    
-    data = np.concatenate((x, y), axis = 1)
-    L, V = np.linalg.eig(np.cov(data.T, ddof = 1))
-    idx = L.argsort()[::-1]
-    L = L[idx]
-    V = V[:, idx]
-    
-    c = np.sqrt(chi2.ppf(norm.cdf(sigma), 2))
-    t = np.linspace(0, 2 * np.pi, n_sim)
-    phi = np.arctan2(V[1, 0], V[0, 0])
-    a = c * np.sqrt(L[0]) * np.cos(t)
-    b = c * np.sqrt(L[1]) * np.sin(t)
-    R = np.matrix([[np.cos(phi), np.sin(phi)], [-np.sin(phi), np.cos(phi)]])
-    r = np.matmul(np.matrix([a, b]).T, R)
-    
-    result = np.add(r, np.mean(data, axis = 0)) # 2D only
-    
-    return result
-```
+<!-- ```{python} -->
+<!-- # https://www.visiondummy.com/2014/04/draw-error-ellipse-representing-covariance-matrix/ -->
+<!-- # https://maitra.public.iastate.edu/stat501/lectures/MultivariateNormalDistribution-I.pdf -->
+<!-- # https://en.wikipedia.org/wiki/Multivariate_normal_distribution -->
+<!-- # https://en.wikipedia.org/wiki/Ellipse#General_parametric_form -->
+<!-- def ellipse(n_sim, x, y, sigma): -->
 
-```{python}
-returns_x_df = returns_df.dropna()["returns"][factors] 
-returns_x_mat = np.matrix(returns_x_df) # extended history
-ellipse_x_mat = ellipse(1000, returns_x_mat[:, [0]], returns_x_mat[:, [2]], 1)
-```
+<!--     data = np.concatenate((x, y), axis = 1) -->
+<!--     L, V = np.linalg.eig(np.cov(data.T, ddof = 1)) -->
+<!--     idx = L.argsort()[::-1] -->
+<!--     L = L[idx] -->
+<!--     V = V[:, idx] -->
 
-```{r, fig.width = 3, fig.height = 3}
-ellipse_plt <- plot_scatter(data.table(py$returns_x_mat[ , c(1, 3)]), x = "V1", y = "V2",
-                            title = "Return 1D (%)", xlab = "SP500", ylab = "DGS10") +
-  geom_point(data = data.table(py$ellipse_x_mat), aes(x = V1 * 100, y = V2 * 100))
-print(ellipse_plt)
-```
+<!--     c = np.sqrt(chi2.ppf(norm.cdf(sigma), 2)) -->
+<!--     t = np.linspace(0, 2 * np.pi, n_sim) -->
+<!--     phi = np.arctan2(V[1, 0], V[0, 0]) -->
+<!--     a = c * np.sqrt(L[0]) * np.cos(t) -->
+<!--     b = c * np.sqrt(L[1]) * np.sin(t) -->
+<!--     R = np.matrix([[np.cos(phi), np.sin(phi)], [-np.sin(phi), np.cos(phi)]]) -->
+<!--     r = np.matmul(np.matrix([a, b]).T, R) -->
 
-### Marchenko--Pastur distribution
+<!--     result = np.add(r, np.mean(data, axis = 0)) # 2D only -->
 
-Marchenko--Pastur distribution is the limiting distribution of eigenvalues of Wishart matrices as the matrix dimension $m$ and degrees of freedom $n$ both tend to infinity with ratio $m/n\,\to \,\lambda\in(0,+\infty)$:
+<!--     return result -->
+<!-- ``` -->
 
-$$
-\begin{aligned}
-d\nu(x)&={\frac {1}{2\pi\sigma ^{2}}}{\frac{\sqrt{(\lambda_{+}-x)(x-\lambda_{-})}}{\lambda x}}\,\mathbf{1}_{x\in[\lambda_{-},\lambda _{+}]}\,dx
-\end{aligned}
-$$
+<!-- ```{python} -->
+<!-- returns_x_df = returns_df.dropna()["returns"][factors]  -->
+<!-- returns_x_mat = np.matrix(returns_x_df) # extended history -->
+<!-- ellipse_x_mat = ellipse(1000, returns_x_mat[:, [0]], returns_x_mat[:, [2]], 1) -->
+<!-- ``` -->
 
-with
+<!-- ```{r, fig.width = 3, fig.height = 3} -->
+<!-- ellipse_plt <- plot_scatter(data.table(py$returns_x_mat[ , c(1, 3)]), x = "V1", y = "V2", -->
+<!--                             title = "Return 1D (%)", xlab = "SP500", ylab = "DGS10") + -->
+<!--   geom_point(data = data.table(py$ellipse_x_mat), aes(x = V1 * 100, y = V2 * 100)) -->
+<!-- print(ellipse_plt) -->
+<!-- ``` -->
 
-$$
-\begin{aligned}
-\lambda_{\pm}&=\sigma^{2}(1\pm{\sqrt{\lambda }})^{2}
-\end{aligned}
-$$
+<!-- ### Marchenko--Pastur distribution -->
 
-```{python}
-# https://en.wikipedia.org/wiki/Marchenko%E2%80%93Pastur_distribution
-# https://faculty.baruch.cuny.edu/jgatheral/RandomMatrixCovariance2008.pdf
-def dmp(x, sigma = 1):
-    
-    L, V = np.linalg.eig(np.cov(x.T, ddof = 1))
-    idx = L.argsort()[::-1]
-    L = L[idx]
-    
-    lmbda = x.shape[1] / x.shape[0]
-    lower = sigma * (1 - np.sqrt(lmbda)) ** 2
-    upper = sigma * (1 + np.sqrt(lmbda)) ** 2
-    
-    d = np.where((L <= lower) | (L >= upper), 0,
-                 1 / (2 * np.pi * sigma * lmbda * L) * np.sqrt((upper - L) * (L - lower)))
-    
-    return d
-```
+<!-- Marchenko--Pastur distribution is the limiting distribution of eigenvalues of Wishart matrices as the matrix dimension $m$ and degrees of freedom $n$ both tend to infinity with ratio $m/n\,\to \,\lambda\in(0,+\infty)$: -->
 
-```{python}
-n_sim = 5000
-n_cols = 1000
-```
+<!-- $$ -->
+<!-- \begin{aligned} -->
+<!-- d\nu(x)&={\frac {1}{2\pi\sigma ^{2}}}{\frac{\sqrt{(\lambda_{+}-x)(x-\lambda_{-})}}{\lambda x}}\,\mathbf{1}_{x\in[\lambda_{-},\lambda _{+}]}\,dx -->
+<!-- \end{aligned} -->
+<!-- $$ -->
 
-```{python}
-data_sim = np.random.normal(size = n_sim * n_cols).reshape((n_sim, n_cols))
-```
+<!-- with -->
 
-```{python}
-L, V = np.linalg.eig(np.cov(data_sim.T, ddof = 1))
-idx = L.argsort()[::-1]
-L = L[idx]
-```
+<!-- $$ -->
+<!-- \begin{aligned} -->
+<!-- \lambda_{\pm}&=\sigma^{2}(1\pm{\sqrt{\lambda }})^{2} -->
+<!-- \end{aligned} -->
+<!-- $$ -->
 
-```{python}
-dmp_df = pd.DataFrame.from_dict({"evals": L,
-                                 "dmp": dmp(data_sim)})
-```
+<!-- ```{python} -->
+<!-- # https://en.wikipedia.org/wiki/Marchenko%E2%80%93Pastur_distribution -->
+<!-- # https://faculty.baruch.cuny.edu/jgatheral/RandomMatrixCovariance2008.pdf -->
+<!-- def dmp(x, sigma = 1): -->
 
-```{r, fig.width = 4, fig.height = 3}
-dmp_plt <- plot_density(py$dmp_df, x = "evals", y = "dmp",
-                        title = "Marchenko-Pastur distribution", xlab = "Eigenvalues", ylab = "Density")
-print(dmp_plt)
-```
+<!--     L, V = np.linalg.eig(np.cov(x.T, ddof = 1)) -->
+<!--     idx = L.argsort()[::-1] -->
+<!--     L = L[idx] -->
+
+<!--     lmbda = x.shape[1] / x.shape[0] -->
+<!--     lower = sigma * (1 - np.sqrt(lmbda)) ** 2 -->
+<!--     upper = sigma * (1 + np.sqrt(lmbda)) ** 2 -->
+
+<!--     d = np.where((L <= lower) | (L >= upper), 0, -->
+<!--                  1 / (2 * np.pi * sigma * lmbda * L) * np.sqrt((upper - L) * (L - lower))) -->
+
+<!--     return d -->
+<!-- ``` -->
+
+<!-- ```{python} -->
+<!-- n_sim = 5000 -->
+<!-- n_cols = 1000 -->
+<!-- ``` -->
+
+<!-- ```{python} -->
+<!-- data_sim = np.random.normal(size = n_sim * n_cols).reshape((n_sim, n_cols)) -->
+<!-- ``` -->
+
+<!-- ```{python} -->
+<!-- L, V = np.linalg.eig(np.cov(data_sim.T, ddof = 1)) -->
+<!-- idx = L.argsort()[::-1] -->
+<!-- L = L[idx] -->
+<!-- ``` -->
+
+<!-- ```{python} -->
+<!-- dmp_df = pd.DataFrame.from_dict({"evals": L, -->
+<!--                                  "dmp": dmp(data_sim)}) -->
+<!-- ``` -->
+
+<!-- ```{r, fig.width = 4, fig.height = 3} -->
+<!-- dmp_plt <- plot_density(py$dmp_df, x = "evals", y = "dmp", -->
+<!--                         title = "Marchenko-Pastur distribution", xlab = "Eigenvalues", ylab = "Density") -->
+<!-- print(dmp_plt) -->
+<!-- ``` -->
 
 ## Random portfolios
 
