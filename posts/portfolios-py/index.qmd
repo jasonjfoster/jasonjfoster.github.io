@@ -550,8 +550,10 @@ def geometric_mean(x, scale):
 ```
 
 ```{python}
+returns_x_df = returns_df.dropna()["returns"][factors] # REMOVE LATER
+returns_x_mat = np.matrix(returns_x_df) # extended history # REMOVE LATER
 mu = np.apply_along_axis(geometric_mean, 0, returns_x_mat, scale["periods"])
-sigma = np.cov(overlap_x_mat.T, ddof = 1) * scale["periods"] * scale["overlap"]
+sigma = np.cov(overlap_x_df.T, ddof = 1) * scale["periods"] * scale["overlap"]
 ```
 
 ### Maximum return

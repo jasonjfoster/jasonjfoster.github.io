@@ -178,8 +178,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#eigendecomposition" id="toc-eigendecomposition" class="nav-link" data-scroll-target="#eigendecomposition">Eigendecomposition</a></li>
   <li><a href="#variance-explained" id="toc-variance-explained" class="nav-link" data-scroll-target="#variance-explained">Variance explained</a></li>
   <li><a href="#cosine-similarity" id="toc-cosine-similarity" class="nav-link" data-scroll-target="#cosine-similarity">Cosine similarity</a></li>
-  <li><a href="#contour-ellipsoid" id="toc-contour-ellipsoid" class="nav-link" data-scroll-target="#contour-ellipsoid">Contour ellipsoid</a></li>
-  <li><a href="#marchenkopastur-distribution" id="toc-marchenkopastur-distribution" class="nav-link" data-scroll-target="#marchenkopastur-distribution">Marchenko–Pastur distribution</a></li>
   </ul></li>
   <li><a href="#random-portfolios" id="toc-random-portfolios" class="nav-link" data-scroll-target="#random-portfolios">Random portfolios</a>
   <ul class="collapse">
@@ -258,178 +256,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>overlap_x_xts <span class="ot">&lt;-</span> <span class="fu">tail</span>(overlap_x_df, width)</span>
 <span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>overlap_y_xts <span class="ot">&lt;-</span> <span class="fu">tail</span>(overlap_y_df, width)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<!-- # Factor models -->
-<!-- ## Ordinary least squares -->
-<!-- ### Coefficients -->
-<!-- $$ -->
-<!-- \begin{aligned} -->
-<!-- \hat{\beta}=(X^\mathrm{T}WX)^{-1}X^\mathrm{T}Wy -->
-<!-- \end{aligned} -->
-<!-- $$ -->
-<!-- -   <https://faculty.washington.edu/ezivot/research/factormodellecture_handout.pdf> -->
-<!-- ```{r} -->
-<!-- lm_coef <- function(x, y, weights, intercept) { -->
-<!--     if (intercept) x <- model.matrix(~ x) -->
-<!--     # result <- solve(t(x) %*% sweep(x, 1, weights, "*")) %*% t(x) %*% sweep(y, 1, weights, "*") -->
-<!--     result <- solve(crossprod(x, diag(weights)) %*% x) %*% crossprod(x, diag(weights) %*% y) -->
-<!--     return(result) -->
-<!-- } -->
-<!-- ``` -->
-<!-- ```{r} -->
-<!-- intercept <- TRUE -->
-<!-- ``` -->
-<!-- ```{r} -->
-<!-- lm_coef(overlap_x_xts, overlap_y_xts, weights, intercept) -->
-<!-- ``` -->
-<!-- ```{r} -->
-<!-- # START HERE -->
-<!-- if (intercept) { -->
-<!--     fit <- lm(overlap_y_xts ~ overlap_x_xts, weights = weights) -->
-<!-- } else { -->
-<!--     fit <- lm(overlap_y_xts ~ overlap_x_xts - 1, weights = weights) -->
-<!-- } -->
-<!-- coef(fit) -->
-<!-- ``` -->
-<!-- ### R-squared -->
-<!-- $$ -->
-<!-- \begin{aligned} -->
-<!-- R^{2}=\frac{\hat{\beta}^\mathrm{T}(X^\mathrm{T}WX)\hat{\beta}}{y^\mathrm{T}Wy} -->
-<!-- \end{aligned} -->
-<!-- $$ -->
-<!-- ```{r} -->
-<!-- lm_rsq <- function(x, y, weights, intercept) { -->
-<!--     coef <- lm_coef(x, y, weights, intercept) -->
-<!--     if (intercept) { -->
-<!--         x <- model.matrix(~ x) -->
-<!--         x <- sweep(x, 2, apply(x, 2, weighted.mean, w = weights), "-") -->
-<!--         y <- sweep(y, 2, apply(y, 2, weighted.mean, w = weights), "-") -->
-<!--     } -->
-<!--     result <- (t(coef) %*% (t(x) %*% sweep(x, 1, weights, "*")) %*% coef) / (t(y) %*% sweep(y, 1, weights, "*")) -->
-<!--     return(result) -->
-<!-- } -->
-<!-- ``` -->
-<!-- ```{r} -->
-<!-- lm_rsq(overlap_x_xts, overlap_y_xts, weights, intercept) -->
-<!-- ``` -->
-<!-- ```{r} -->
-<!-- summary(fit)$r.squared -->
-<!-- ``` -->
-<!-- ### Standard errors -->
-<!-- $$ -->
-<!-- \begin{aligned} -->
-<!-- \sigma_{\hat{\beta}}^{2}&=\sigma_{\varepsilon}^{2}(X^\mathrm{T}WX)^{-1}\\ -->
-<!-- &=\frac{(1-R^{2})}{n-p}(X^\mathrm{T}WX)^{-1}\\ -->
-<!-- &=\frac{SSE}{df_{E}}(X^\mathrm{T}WX)^{-1}\\ -->
-<!-- \sigma_{\hat{\alpha}}^{2}&=\sigma_{\varepsilon}^{2}\left(\frac{1}{n}+\mu^\mathrm{T}(X^\mathrm{T}WX)^{-1}\mu\right) -->
-<!-- \end{aligned} -->
-<!-- $$ -->
-<!-- ```{r} -->
-<!-- # http://people.duke.edu/~rnau/mathreg.htm -->
-<!-- lm_se <- function(x, y, weights, intercept) { -->
-<!--     n_rows <- nrow(x) -->
-<!--     n_cols <- ncol(x) -->
-<!--     rsq <- lm_rsq(x, y, weights, intercept) -->
-<!--     if (intercept) { -->
-<!--         x <- model.matrix(~ x) -->
-<!--         y <- sweep(y, 2, apply(y, 2, weighted.mean, w = weights), "-") -->
-<!--         df_resid <- n_rows - n_cols - 1 -->
-<!--     } else { -->
-<!--         df_resid <- n_rows - n_cols -->
-<!--     } -->
-<!--     var_y <- t(y) %*% sweep(y, 1, weights, "*") -->
-<!--     var_resid <- as.vector((1 - rsq) * var_y / df_resid) -->
-<!--     result <- sqrt(var_resid * diag(solve(t(x) %*% sweep(x, 1, weights, "*")))) -->
-<!--     return(result) -->
-<!-- } -->
-<!-- ``` -->
-<!-- ```{r} -->
-<!-- lm_se(overlap_x_xts, overlap_y_xts, weights, intercept) -->
-<!-- ``` -->
-<!-- ```{r} -->
-<!-- coef(summary(fit))[ , "Std. Error"] -->
-<!-- ``` -->
-<!-- ## Standalone risk -->
-<!-- $$ -->
-<!-- \begin{aligned} -->
-<!-- \text{SAR}_{k}&=\sqrt{w_{k}^{2}\sigma_{k}^{2}}\\ -->
-<!-- \text{SAR}_{\varepsilon}&=\sqrt{(1-R^{2})\sigma_{y}^{2}} -->
-<!-- \end{aligned} -->
-<!-- $$ -->
-<!-- ```{r} -->
-<!-- lm_sar <- function(x, y, weights, intercept) { -->
-<!--     coef <- lm_coef(x, y, weights, intercept) -->
-<!--     rsq <- lm_rsq(x, y, weights, intercept) -->
-<!--     if (intercept) x <- model.matrix(~ x) -->
-<!--     sigma <- cov.wt(cbind(x, y), wt = weights, center = intercept)$cov -->
-<!--     sar <- coef ^ 2 * diag(sigma[-ncol(sigma), -ncol(sigma)]) -->
-<!--     sar_eps <- (1 - rsq) * sigma[ncol(sigma), ncol(sigma)] -->
-<!--     result <- sqrt(c(sigma[ncol(sigma), ncol(sigma)], -->
-<!--                      sar, -->
-<!--                      sar_eps)) -->
-<!--     return(result) -->
-<!-- } -->
-<!-- ``` -->
-<!-- ```{r} -->
-<!-- lm_sar(overlap_x_xts, overlap_y_xts, weights, intercept) * sqrt(scale[["periods"]]) * sqrt(scale[["overlap"]]) -->
-<!-- ``` -->
-<!-- ## Risk contribution -->
-<!-- $$ -->
-<!-- \begin{aligned} -->
-<!-- \text{MCR}&=w^\mathrm{T}\frac{\partial\sigma_{y}}{\partial w}\\ -->
-<!-- &=w^\mathrm{T}\frac{\Sigma w}{\sigma_{y}}\\ -->
-<!-- \text{MCR}_{\varepsilon}&=\sigma_{y}-\sum_{k=1}^{n}\text{MCR}_{k} -->
-<!-- \end{aligned} -->
-<!-- $$ -->
-<!-- ```{r} -->
-<!-- # http://faculty.washington.edu/ezivot/research/factormodelrisklecture_handout.pdf -->
-<!-- lm_mcr <- function(x, y, weights, intercept) { -->
-<!--     coef <- lm_coef(x, y, weights, intercept) -->
-<!--     rsq <- lm_rsq(x, y, weights, intercept) -->
-<!--     if (intercept) x <- model.matrix(~ x) -->
-<!--     sigma <- cov.wt(cbind(x, y), wt = weights, center = intercept)$cov -->
-<!--     mcr <- coef * sigma[-ncol(sigma), -ncol(sigma)] %*% coef / sqrt(sigma[ncol(sigma), ncol(sigma)]) -->
-<!--     mcr_eps <- sqrt(sigma[ncol(sigma), ncol(sigma)]) - sum(mcr) -->
-<!--     result <- c(sqrt(sigma[ncol(sigma), ncol(sigma)]), -->
-<!--                 mcr, -->
-<!--                 mcr_eps) -->
-<!--     return(result) -->
-<!-- } -->
-<!-- ``` -->
-<!-- ```{r} -->
-<!-- lm_mcr(overlap_x_xts, overlap_y_xts, weights, intercept) * sqrt(scale[["periods"]]) * sqrt(scale[["overlap"]]) -->
-<!-- ``` -->
-<!-- ## Implied shocks -->
-<!-- $$ -->
-<!-- \begin{aligned} -->
-<!-- \hat{\beta}&=(Z^\mathrm{T}WZ)^{-1}Z^\mathrm{T}WX -->
-<!-- \end{aligned} -->
-<!-- $$ -->
-<!-- ```{r} -->
-<!-- implied_shocks <- function(shocks, x, z, weights) { -->
-<!--     beta <- solve(t(z) %*% sweep(z, 1, weights, "*")) %*% t(z) %*% sweep(x, 1, weights, "*") -->
-<!--     result <- shocks %*% beta -->
-<!--     return(result) -->
-<!-- } -->
-<!-- ``` -->
-<!-- ```{r} -->
-<!-- shocks <- c(-0.1, 0.1) -->
-<!-- overlap_z_xts <- overlap_x_xts[ , 1:2] -->
-<!-- ``` -->
-<!-- ```{r} -->
-<!-- implied_shocks(shocks, overlap_x_xts, overlap_z_xts, weights) -->
-<!-- ``` -->
-<!-- ## Stress P&L -->
-<!-- ```{r} -->
-<!-- pnl_stress <- function(shocks, x, y, z, weights, intercept) { -->
-<!--     coef <- lm_coef(x, y, weights, intercept) -->
-<!--     if (intercept) x <- model.matrix(~ x) -->
-<!--     result <- t(coef) * implied_shocks(shocks, x, z, weights) -->
-<!--     return(result)     -->
-<!-- } -->
-<!-- ``` -->
-<!-- ```{r} -->
-<!-- pnl_stress(shocks, overlap_x_xts, overlap_y_xts, overlap_z_xts, weights, intercept) -->
-<!-- ``` -->
 <section id="principal-component-analysis" class="level1">
 <h1>Principal component analysis</h1>
 <p>Underlying returns are structural bets that can be analyzed through dimension reduction techniques such as principal components analysis (PCA). Most empirical studies apply PCA to a covariance matrix (<em>note: for multi-asset portfolios, use the correlation matrix because asset-class variances are on different scales</em>) of equity returns (yield changes) and find that movements in the equity markets (yield curve) can be explained by a subset of principal components. For example, the yield curve can be decomposed in terms of shift, twist, and butterfly, respectively.</p>
@@ -603,127 +429,106 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p><img src="index_files/figure-html/unnamed-chunk-26-1.png" class="img-fluid" width="576"></p>
 </div>
 </div>
-</section>
-<section id="contour-ellipsoid" class="level2">
-<h2 class="anchored" data-anchor-id="contour-ellipsoid">Contour ellipsoid</h2>
-<p>The contours of a multivariate normal (MVN) distribution are ellipsoids centered at the mean. The directions of the axes are given by the eigenvectors of the covariance matrix and squared lengths are given by the eigenvalues:</p>
-<p><span class="math display">\[
-\begin{aligned}
-({\mathbf{x}}-{\boldsymbol{\mu}})^{\mathrm{T}}{\boldsymbol{\Sigma}}^{-1}({\mathbf{x}}-{\boldsymbol{\mu}})=c^{2}
-\end{aligned}
-\]</span></p>
-<p>Or, in general parametric form:</p>
-<p><span class="math display">\[
-\begin{aligned}
-X(t)&amp;=X_{c}+a\,\cos t\,\cos \varphi -b\,\sin t\,\sin \varphi\\
-Y(t)&amp;=Y_{c}+a\,\cos t\,\sin \varphi +b\,\sin t\,\cos \varphi
-\end{aligned}
-\]</span> where <span class="math inline">\(t\)</span> varies from <span class="math inline">\(0,\ldots,2\pi\)</span>. Here <span class="math inline">\((X_{c},Y_{c})\)</span> is the center of the ellipse and <span class="math inline">\(\varphi\)</span> is the angle between the x-axis and the major axis of the ellipse.</p>
-<p>Specifically:</p>
-<p><span class="math display">\[
-\begin{aligned}
-&amp;\text{Center: }\boldsymbol{\mu}=(X_{c},Y_{c})\\
-&amp;\text{Radius: }c^{2}= \chi_{\alpha}^{2}(df)\\
-&amp;\text{Length: }a=c\sqrt{\lambda_{k}}\\
-&amp;\text{Angle of rotation: }\varphi=\text{atan2}\left(\frac{V_{k}(2)}{V_{k}(1)}\right)
-\end{aligned}
-\]</span></p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="co"># https://www.visiondummy.com/2014/04/draw-error-ellipse-representing-covariance-matrix/</span></span>
-<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a><span class="co"># https://maitra.public.iastate.edu/stat501/lectures/MultivariateNormalDistribution-I.pdf</span></span>
-<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a><span class="co"># https://en.wikipedia.org/wiki/Multivariate_normal_distribution</span></span>
-<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a><span class="co"># https://en.wikipedia.org/wiki/Ellipse#General_parametric_form</span></span>
-<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a>ellipse <span class="ot">&lt;-</span> <span class="cf">function</span>(n_sim, x, y, sigma) {</span>
-<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a>    data <span class="ot">&lt;-</span> <span class="fu">cbind</span>(x, y)</span>
-<span id="cb26-8"><a href="#cb26-8" aria-hidden="true" tabindex="-1"></a>    LV <span class="ot">&lt;-</span> <span class="fu">eigen</span>(<span class="fu">cov</span>(data))</span>
-<span id="cb26-9"><a href="#cb26-9" aria-hidden="true" tabindex="-1"></a>    L <span class="ot">&lt;-</span> LV<span class="sc">$</span>values</span>
-<span id="cb26-10"><a href="#cb26-10" aria-hidden="true" tabindex="-1"></a>    V <span class="ot">&lt;-</span> LV<span class="sc">$</span>vectors</span>
-<span id="cb26-11"><a href="#cb26-11" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb26-12"><a href="#cb26-12" aria-hidden="true" tabindex="-1"></a>    c <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(<span class="fu">qchisq</span>(<span class="fu">pnorm</span>(sigma), <span class="dv">2</span>))</span>
-<span id="cb26-13"><a href="#cb26-13" aria-hidden="true" tabindex="-1"></a>    t <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">2</span> <span class="sc">*</span> pi, <span class="at">len =</span> n_sim)</span>
-<span id="cb26-14"><a href="#cb26-14" aria-hidden="true" tabindex="-1"></a>    phi <span class="ot">&lt;-</span> <span class="fu">atan2</span>(V[<span class="dv">2</span>, <span class="dv">1</span>], V[<span class="dv">1</span>, <span class="dv">1</span>])</span>
-<span id="cb26-15"><a href="#cb26-15" aria-hidden="true" tabindex="-1"></a>    a <span class="ot">&lt;-</span> c <span class="sc">*</span> <span class="fu">sqrt</span>(L[<span class="dv">1</span>]) <span class="sc">*</span> <span class="fu">cos</span>(t)</span>
-<span id="cb26-16"><a href="#cb26-16" aria-hidden="true" tabindex="-1"></a>    b <span class="ot">&lt;-</span> c <span class="sc">*</span> <span class="fu">sqrt</span>(L[<span class="dv">2</span>]) <span class="sc">*</span> <span class="fu">sin</span>(t)</span>
-<span id="cb26-17"><a href="#cb26-17" aria-hidden="true" tabindex="-1"></a>    R <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="fu">cos</span>(phi), <span class="sc">-</span><span class="fu">sin</span>(phi), <span class="fu">sin</span>(phi), <span class="fu">cos</span>(phi)), <span class="at">nrow =</span> <span class="dv">2</span>, <span class="at">ncol =</span> <span class="dv">2</span>)</span>
-<span id="cb26-18"><a href="#cb26-18" aria-hidden="true" tabindex="-1"></a>    r <span class="ot">&lt;-</span> <span class="fu">t</span>(<span class="fu">rbind</span>(a, b)) <span class="sc">%*%</span> R</span>
-<span id="cb26-19"><a href="#cb26-19" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb26-20"><a href="#cb26-20" aria-hidden="true" tabindex="-1"></a>    result <span class="ot">&lt;-</span> <span class="fu">sweep</span>(r, <span class="dv">2</span>, <span class="fu">colMeans</span>(data), <span class="st">"+"</span>) <span class="co"># 2D only</span></span>
-<span id="cb26-21"><a href="#cb26-21" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb26-22"><a href="#cb26-22" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(result)</span>
-<span id="cb26-23"><a href="#cb26-23" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb26-24"><a href="#cb26-24" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>returns_x_xts <span class="ot">&lt;-</span> <span class="fu">na.omit</span>(returns_xts)[ , factors] <span class="co"># extended history</span></span>
-<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>ellipse_x_xts <span class="ot">&lt;-</span> <span class="fu">ellipse</span>(<span class="dv">1000</span>, returns_x_xts[ , <span class="dv">1</span>], returns_x_xts[ , <span class="dv">3</span>], <span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>ellipse_plt <span class="ot">&lt;-</span> <span class="fu">plot_scatter</span>(<span class="fu">data.table</span>(returns_x_xts[ , <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">3</span>)]), <span class="at">x =</span> <span class="st">"SP500"</span>, <span class="at">y =</span> <span class="st">"DGS10"</span>,</span>
-<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>                            <span class="at">title =</span> <span class="st">"Return 1D (%)"</span>) <span class="sc">+</span></span>
-<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">data =</span> <span class="fu">data.table</span>(ellipse_x_xts), <span class="fu">aes</span>(<span class="at">x =</span> V1 <span class="sc">*</span> <span class="dv">100</span>, <span class="at">y =</span> V2 <span class="sc">*</span> <span class="dv">100</span>))</span>
-<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(ellipse_plt)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output-display">
-<p><img src="index_files/figure-html/unnamed-chunk-29-1.png" class="img-fluid" width="288"></p>
-</div>
-</div>
-</section>
-<section id="marchenkopastur-distribution" class="level2">
-<h2 class="anchored" data-anchor-id="marchenkopastur-distribution">Marchenko–Pastur distribution</h2>
-<p>Marchenko–Pastur distribution is the limiting distribution of eigenvalues of Wishart matrices as the matrix dimension <span class="math inline">\(m\)</span> and degrees of freedom <span class="math inline">\(n\)</span> both tend to infinity with ratio <span class="math inline">\(m/n\,\to \,\lambda\in(0,+\infty)\)</span>:</p>
-<p><span class="math display">\[
-\begin{aligned}
-d\nu(x)&amp;={\frac {1}{2\pi\sigma ^{2}}}{\frac{\sqrt{(\lambda_{+}-x)(x-\lambda_{-})}}{\lambda x}}\,\mathbf{1}_{x\in[\lambda_{-},\lambda _{+}]}\,dx
-\end{aligned}
-\]</span></p>
-<p>with</p>
-<p><span class="math display">\[
-\begin{aligned}
-\lambda_{\pm}&amp;=\sigma^{2}(1\pm{\sqrt{\lambda }})^{2}
-\end{aligned}
-\]</span></p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="co"># https://en.wikipedia.org/wiki/Marchenko%E2%80%93Pastur_distribution</span></span>
-<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a><span class="co"># https://faculty.baruch.cuny.edu/jgatheral/RandomMatrixCovariance2008.pdf</span></span>
-<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>dmp <span class="ot">&lt;-</span> <span class="cf">function</span>(x, <span class="at">sigma =</span> <span class="dv">1</span>) {</span>
-<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a>  LV <span class="ot">&lt;-</span> <span class="fu">eigen</span>(<span class="fu">cov</span>(x))</span>
-<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a>  L <span class="ot">&lt;-</span> LV<span class="sc">$</span>values</span>
-<span id="cb29-7"><a href="#cb29-7" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb29-8"><a href="#cb29-8" aria-hidden="true" tabindex="-1"></a>  lmbda <span class="ot">&lt;-</span> <span class="fu">ncol</span>(x) <span class="sc">/</span> <span class="fu">nrow</span>(x)</span>
-<span id="cb29-9"><a href="#cb29-9" aria-hidden="true" tabindex="-1"></a>  lower <span class="ot">&lt;-</span> sigma <span class="sc">*</span> (<span class="dv">1</span> <span class="sc">-</span> <span class="fu">sqrt</span>(lmbda)) <span class="sc">^</span> <span class="dv">2</span></span>
-<span id="cb29-10"><a href="#cb29-10" aria-hidden="true" tabindex="-1"></a>  upper <span class="ot">&lt;-</span> sigma <span class="sc">*</span> (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">sqrt</span>(lmbda)) <span class="sc">^</span> <span class="dv">2</span></span>
-<span id="cb29-11"><a href="#cb29-11" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb29-12"><a href="#cb29-12" aria-hidden="true" tabindex="-1"></a>  d <span class="ot">&lt;-</span> <span class="fu">ifelse</span>((L <span class="sc">&lt;=</span> lower) <span class="sc">|</span> (L <span class="sc">&gt;=</span> upper), <span class="dv">0</span>,</span>
-<span id="cb29-13"><a href="#cb29-13" aria-hidden="true" tabindex="-1"></a>              <span class="dv">1</span> <span class="sc">/</span> (<span class="dv">2</span> <span class="sc">*</span> pi <span class="sc">*</span> sigma <span class="sc">*</span> lmbda <span class="sc">*</span> L) <span class="sc">*</span> <span class="fu">sqrt</span>((upper <span class="sc">-</span> L) <span class="sc">*</span> (L <span class="sc">-</span> lower)))</span>
-<span id="cb29-14"><a href="#cb29-14" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb29-15"><a href="#cb29-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(d)</span>
-<span id="cb29-16"><a href="#cb29-16" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb29-17"><a href="#cb29-17" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>n_sim <span class="ot">&lt;-</span> <span class="dv">5000</span></span>
-<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>n_cols <span class="ot">&lt;-</span> <span class="dv">1000</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>data_sim <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">rnorm</span>(n_sim <span class="sc">*</span> n_cols), <span class="at">nrow =</span> n_sim, <span class="at">ncol =</span> n_cols)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>dmp_dt <span class="ot">&lt;-</span> <span class="fu">data.table</span>(<span class="at">evals =</span> <span class="fu">eigen</span>(<span class="fu">cov</span>(data_sim))<span class="sc">$</span>values,</span>
-<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>                     <span class="at">dmp =</span> <span class="fu">dmp</span>(data_sim))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>dmp_plt <span class="ot">&lt;-</span> <span class="fu">plot_density</span>(dmp_dt, <span class="at">x =</span> <span class="st">"evals"</span>, <span class="at">y =</span> <span class="st">"dmp"</span>,</span>
-<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>                        <span class="at">title =</span> <span class="st">"Marchenko-Pastur distribution"</span>, <span class="at">xlab =</span> <span class="st">"Eigenvalues"</span>, <span class="at">ylab =</span> <span class="st">"Density"</span>)</span>
-<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(dmp_plt)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning: The dot-dot notation (`..density..`) was deprecated in ggplot2 3.4.0.
-ℹ Please use `after_stat(density)` instead.</code></pre>
-</div>
-<div class="cell-output-display">
-<p><img src="index_files/figure-html/unnamed-chunk-34-1.png" class="img-fluid" width="384"></p>
-</div>
-</div>
+<!-- ## Contour ellipsoid -->
+<!-- The contours of a multivariate normal (MVN) distribution are ellipsoids centered at the mean. The directions of the axes are given by the eigenvectors of the covariance matrix and squared lengths are given by the eigenvalues: -->
+<!-- $$ -->
+<!-- \begin{aligned} -->
+<!-- ({\mathbf{x}}-{\boldsymbol{\mu}})^{\mathrm{T}}{\boldsymbol{\Sigma}}^{-1}({\mathbf{x}}-{\boldsymbol{\mu}})=c^{2} -->
+<!-- \end{aligned} -->
+<!-- $$ -->
+<!-- Or, in general parametric form: -->
+<!-- $$ -->
+<!-- \begin{aligned} -->
+<!-- X(t)&=X_{c}+a\,\cos t\,\cos \varphi -b\,\sin t\,\sin \varphi\\ -->
+<!-- Y(t)&=Y_{c}+a\,\cos t\,\sin \varphi +b\,\sin t\,\cos \varphi -->
+<!-- \end{aligned} -->
+<!-- $$ where $t$ varies from $0,\ldots,2\pi$. Here $(X_{c},Y_{c})$ is the center of the ellipse and $\varphi$ is the angle between the x-axis and the major axis of the ellipse. -->
+<!-- Specifically: -->
+<!-- $$ -->
+<!-- \begin{aligned} -->
+<!-- &\text{Center: }\boldsymbol{\mu}=(X_{c},Y_{c})\\ -->
+<!-- &\text{Radius: }c^{2}= \chi_{\alpha}^{2}(df)\\ -->
+<!-- &\text{Length: }a=c\sqrt{\lambda_{k}}\\ -->
+<!-- &\text{Angle of rotation: }\varphi=\text{atan2}\left(\frac{V_{k}(2)}{V_{k}(1)}\right) -->
+<!-- \end{aligned} -->
+<!-- $$ -->
+<!-- ```{r} -->
+<!-- # https://www.visiondummy.com/2014/04/draw-error-ellipse-representing-covariance-matrix/ -->
+<!-- # https://maitra.public.iastate.edu/stat501/lectures/MultivariateNormalDistribution-I.pdf -->
+<!-- # https://en.wikipedia.org/wiki/Multivariate_normal_distribution -->
+<!-- # https://en.wikipedia.org/wiki/Ellipse#General_parametric_form -->
+<!-- ellipse <- function(n_sim, x, y, sigma) { -->
+<!--     data <- cbind(x, y) -->
+<!--     LV <- eigen(cov(data)) -->
+<!--     L <- LV$values -->
+<!--     V <- LV$vectors -->
+<!--     c <- sqrt(qchisq(pnorm(sigma), 2)) -->
+<!--     t <- seq(0, 2 * pi, len = n_sim) -->
+<!--     phi <- atan2(V[2, 1], V[1, 1]) -->
+<!--     a <- c * sqrt(L[1]) * cos(t) -->
+<!--     b <- c * sqrt(L[2]) * sin(t) -->
+<!--     R <- matrix(c(cos(phi), -sin(phi), sin(phi), cos(phi)), nrow = 2, ncol = 2) -->
+<!--     r <- t(rbind(a, b)) %*% R -->
+<!--     result <- sweep(r, 2, colMeans(data), "+") # 2D only -->
+<!--     return(result) -->
+<!-- } -->
+<!-- ``` -->
+<!-- ```{r} -->
+<!-- returns_x_xts <- na.omit(returns_xts)[ , factors] # extended history -->
+<!-- ellipse_x_xts <- ellipse(1000, returns_x_xts[ , 1], returns_x_xts[ , 3], 1) -->
+<!-- ``` -->
+<!-- ```{r, fig.width = 3, fig.height = 3} -->
+
+<!-- ellipse_plt <- plot_scatter(data.table(returns_x_xts[ , c(1, 3)]), x = "SP500", y = "DGS10", -->
+<!--                             title = "Return 1D (%)") + -->
+
+<!--   geom_point(data = data.table(ellipse_x_xts), aes(x = V1 * 100, y = V2 * 100)) -->
+<!-- print(ellipse_plt) -->
+<!-- ``` -->
+<!-- ## Marchenko--Pastur distribution -->
+<!-- Marchenko--Pastur distribution is the limiting distribution of eigenvalues of Wishart matrices as the matrix dimension $m$ and degrees of freedom $n$ both tend to infinity with ratio $m/n\,\to \,\lambda\in(0,+\infty)$: -->
+<!-- $$ -->
+<!-- \begin{aligned} -->
+<!-- d\nu(x)&={\frac {1}{2\pi\sigma ^{2}}}{\frac{\sqrt{(\lambda_{+}-x)(x-\lambda_{-})}}{\lambda x}}\,\mathbf{1}_{x\in[\lambda_{-},\lambda _{+}]}\,dx -->
+<!-- \end{aligned} -->
+<!-- $$ -->
+<!-- with -->
+<!-- $$ -->
+<!-- \begin{aligned} -->
+<!-- \lambda_{\pm}&=\sigma^{2}(1\pm{\sqrt{\lambda }})^{2} -->
+<!-- \end{aligned} -->
+<!-- $$ -->
+<!-- ```{r} -->
+<!-- # https://en.wikipedia.org/wiki/Marchenko%E2%80%93Pastur_distribution -->
+<!-- # https://faculty.baruch.cuny.edu/jgatheral/RandomMatrixCovariance2008.pdf -->
+<!-- dmp <- function(x, sigma = 1) { -->
+<!--   LV <- eigen(cov(x)) -->
+<!--   L <- LV$values -->
+<!--   lmbda <- ncol(x) / nrow(x) -->
+<!--   lower <- sigma * (1 - sqrt(lmbda)) ^ 2 -->
+<!--   upper <- sigma * (1 + sqrt(lmbda)) ^ 2 -->
+<!--   d <- ifelse((L <= lower) | (L >= upper), 0, -->
+<!--               1 / (2 * pi * sigma * lmbda * L) * sqrt((upper - L) * (L - lower))) -->
+<!--   return(d) -->
+<!-- } -->
+<!-- ``` -->
+<!-- ```{r} -->
+<!-- n_sim <- 5000 -->
+<!-- n_cols <- 1000 -->
+<!-- ``` -->
+<!-- ```{r} -->
+<!-- data_sim <- matrix(rnorm(n_sim * n_cols), nrow = n_sim, ncol = n_cols) -->
+<!-- ``` -->
+<!-- ```{r, warning = FALSE} -->
+
+<!-- dmp_dt <- data.table(evals = eigen(cov(data_sim))$values, -->
+<!--                      dmp = dmp(data_sim)) -->
+<!-- ``` -->
+<!-- ```{r, fig.width = 4, fig.height = 3} -->
+<!-- dmp_plt <- plot_density(dmp_dt, x = "evals", y = "dmp", -->
+<!--                         title = "Marchenko-Pastur distribution", xlab = "Eigenvalues", ylab = "Density") -->
+<!-- print(dmp_plt) -->
+<!-- ``` -->
 </section>
 </section>
 <section id="random-portfolios" class="level1">
@@ -735,66 +540,66 @@ d\nu(x)&amp;={\frac {1}{2\pi\sigma ^{2}}}{\frac{\sqrt{(\lambda_{+}-x)(x-\lambda_
 </ul>
 <p>Can also scale random weights by <span class="math inline">\(M\)</span>, e.g.&nbsp;if sum of weights must be 10% then multiply weights by 10%.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>rand_weights1 <span class="ot">&lt;-</span> <span class="cf">function</span>(n_sim, n_assets, lmbda) {</span>
-<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>    rand_exp <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">runif</span>(n_sim <span class="sc">*</span> n_assets), <span class="at">nrow =</span> n_sim, <span class="at">ncol =</span> n_assets)</span>
-<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a>    result <span class="ot">&lt;-</span> <span class="fu">sweep</span>(rand_exp, <span class="dv">1</span>, <span class="fu">rowSums</span>(rand_exp), <span class="st">"/"</span>)</span>
-<span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb35-6"><a href="#cb35-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(result)</span>
-<span id="cb35-7"><a href="#cb35-7" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb35-8"><a href="#cb35-8" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>rand_weights1 <span class="ot">&lt;-</span> <span class="cf">function</span>(n_sim, n_assets, lmbda) {</span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>    rand_exp <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">runif</span>(n_sim <span class="sc">*</span> n_assets), <span class="at">nrow =</span> n_sim, <span class="at">ncol =</span> n_assets)</span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>    result <span class="ot">&lt;-</span> <span class="fu">sweep</span>(rand_exp, <span class="dv">1</span>, <span class="fu">rowSums</span>(rand_exp), <span class="st">"/"</span>)</span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(result)</span>
+<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb26-8"><a href="#cb26-8" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Methodology: uniform sampling from the simplex (http://mathoverflow.net/a/76258)</span></span>
-<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a><span class="co"># z ~ U(0, 1) then -ln(z) is an exponential(1) distribution</span></span>
-<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a><span class="co"># This is also known as generating a random vector from the symmetric Dirichlet distribution</span></span>
-<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a>rand_weights2 <span class="ot">&lt;-</span> <span class="cf">function</span>(n_sim, n_assets, lmbda) {</span>
-<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb36-6"><a href="#cb36-6" aria-hidden="true" tabindex="-1"></a>    rand_exp <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="sc">-</span><span class="fu">log</span>(<span class="dv">1</span> <span class="sc">-</span> <span class="fu">runif</span>(n_sim <span class="sc">*</span> n_assets)) <span class="sc">/</span> lmbda, <span class="at">nrow =</span> n_sim, <span class="at">ncol =</span> n_assets)</span>
-<span id="cb36-7"><a href="#cb36-7" aria-hidden="true" tabindex="-1"></a>    result <span class="ot">&lt;-</span> <span class="fu">sweep</span>(rand_exp, <span class="dv">1</span>, <span class="fu">rowSums</span>(rand_exp), <span class="st">"/"</span>)</span>
-<span id="cb36-8"><a href="#cb36-8" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb36-9"><a href="#cb36-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(result)</span>
-<span id="cb36-10"><a href="#cb36-10" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb36-11"><a href="#cb36-11" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Methodology: uniform sampling from the simplex (http://mathoverflow.net/a/76258)</span></span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a><span class="co"># z ~ U(0, 1) then -ln(z) is an exponential(1) distribution</span></span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a><span class="co"># This is also known as generating a random vector from the symmetric Dirichlet distribution</span></span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>rand_weights2 <span class="ot">&lt;-</span> <span class="cf">function</span>(n_sim, n_assets, lmbda) {</span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a>    rand_exp <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="sc">-</span><span class="fu">log</span>(<span class="dv">1</span> <span class="sc">-</span> <span class="fu">runif</span>(n_sim <span class="sc">*</span> n_assets)) <span class="sc">/</span> lmbda, <span class="at">nrow =</span> n_sim, <span class="at">ncol =</span> n_assets)</span>
+<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a>    result <span class="ot">&lt;-</span> <span class="fu">sweep</span>(rand_exp, <span class="dv">1</span>, <span class="fu">rowSums</span>(rand_exp), <span class="st">"/"</span>)</span>
+<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(result)</span>
+<span id="cb27-10"><a href="#cb27-10" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb27-11"><a href="#cb27-11" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 1. Generate n exponential(1) random variables x_1, x_2, ..., x_n</span></span>
-<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a><span class="co"># 2. Let y_i = x_i / (sum_{i = 1}^{n} x_i)</span></span>
-<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a>rand_weights3 <span class="ot">&lt;-</span> <span class="cf">function</span>(n_sim, n_assets, lmbda) {</span>
-<span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb37-5"><a href="#cb37-5" aria-hidden="true" tabindex="-1"></a>    rand_exp <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">rexp</span>(n_sim <span class="sc">*</span> n_assets), <span class="at">nrow =</span> n_sim, <span class="at">ncol =</span> n_assets)</span>
-<span id="cb37-6"><a href="#cb37-6" aria-hidden="true" tabindex="-1"></a>    result <span class="ot">&lt;-</span> <span class="fu">sweep</span>(rand_exp, <span class="dv">1</span>, <span class="fu">rowSums</span>(rand_exp), <span class="st">"/"</span>)</span>
-<span id="cb37-7"><a href="#cb37-7" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb37-8"><a href="#cb37-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(result)</span>
-<span id="cb37-9"><a href="#cb37-9" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb37-10"><a href="#cb37-10" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 1. Generate n exponential(1) random variables x_1, x_2, ..., x_n</span></span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a><span class="co"># 2. Let y_i = x_i / (sum_{i = 1}^{n} x_i)</span></span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>rand_weights3 <span class="ot">&lt;-</span> <span class="cf">function</span>(n_sim, n_assets, lmbda) {</span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>    rand_exp <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">rexp</span>(n_sim <span class="sc">*</span> n_assets), <span class="at">nrow =</span> n_sim, <span class="at">ncol =</span> n_assets)</span>
+<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a>    result <span class="ot">&lt;-</span> <span class="fu">sweep</span>(rand_exp, <span class="dv">1</span>, <span class="fu">rowSums</span>(rand_exp), <span class="st">"/"</span>)</span>
+<span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb28-8"><a href="#cb28-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(result)</span>
+<span id="cb28-9"><a href="#cb28-9" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb28-10"><a href="#cb28-10" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>lmbda <span class="ot">&lt;-</span> <span class="dv">1</span></span>
-<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>n_assets <span class="ot">&lt;-</span> <span class="dv">3</span></span>
-<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>n_sim <span class="ot">&lt;-</span> <span class="dv">10000</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>lmbda <span class="ot">&lt;-</span> <span class="dv">1</span></span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>n_assets <span class="ot">&lt;-</span> <span class="dv">3</span></span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>n_sim <span class="ot">&lt;-</span> <span class="dv">10000</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>approach1 <span class="ot">&lt;-</span> <span class="fu">rand_weights1</span>(n_sim, n_assets, lmbda)</span>
-<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>approach2 <span class="ot">&lt;-</span> <span class="fu">rand_weights2</span>(n_sim, n_assets, lmbda)</span>
-<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>approach3 <span class="ot">&lt;-</span> <span class="fu">rand_weights2</span>(n_sim, n_assets, lmbda)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>approach1 <span class="ot">&lt;-</span> <span class="fu">rand_weights1</span>(n_sim, n_assets, lmbda)</span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>approach2 <span class="ot">&lt;-</span> <span class="fu">rand_weights2</span>(n_sim, n_assets, lmbda)</span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>approach3 <span class="ot">&lt;-</span> <span class="fu">rand_weights2</span>(n_sim, n_assets, lmbda)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_pairs</span>(<span class="fu">as.data.table</span>(approach1), <span class="at">title =</span> <span class="st">"Weight (%)"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_pairs</span>(<span class="fu">as.data.table</span>(approach1), <span class="at">title =</span> <span class="st">"Weight (%)"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="index_files/figure-html/unnamed-chunk-40-1.png" class="img-fluid" width="384"></p>
+<p><img src="index_files/figure-html/unnamed-chunk-32-1.png" class="img-fluid" width="384"></p>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_pairs</span>(<span class="fu">as.data.table</span>(approach2), <span class="at">title =</span> <span class="st">"Weight (%)"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_pairs</span>(<span class="fu">as.data.table</span>(approach2), <span class="at">title =</span> <span class="st">"Weight (%)"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="index_files/figure-html/unnamed-chunk-41-1.png" class="img-fluid" width="384"></p>
+<p><img src="index_files/figure-html/unnamed-chunk-33-1.png" class="img-fluid" width="384"></p>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_pairs</span>(<span class="fu">as.data.table</span>(approach3), <span class="at">title =</span> <span class="st">"Weight (%)"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_pairs</span>(<span class="fu">as.data.table</span>(approach3), <span class="at">title =</span> <span class="st">"Weight (%)"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="index_files/figure-html/unnamed-chunk-42-1.png" class="img-fluid" width="384"></p>
+<p><img src="index_files/figure-html/unnamed-chunk-34-1.png" class="img-fluid" width="384"></p>
 </div>
 </div>
 <section id="random-turnover" class="level2">
@@ -811,74 +616,74 @@ d\nu(x)&amp;={\frac {1}{2\pi\sigma ^{2}}}{\frac{\sqrt{(\lambda_{+}-x)(x-\lambda_
 </ul>
 <p>Then add random turnover to previous period’s random weights.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>rand_iterative <span class="ot">&lt;-</span> <span class="cf">function</span>(n_assets, lower, upper, target) {</span>
-<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a>    plug <span class="ot">&lt;-</span> <span class="cn">FALSE</span></span>
-<span id="cb43-4"><a href="#cb43-4" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb43-5"><a href="#cb43-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">while</span> (<span class="sc">!</span>plug) {</span>
-<span id="cb43-6"><a href="#cb43-6" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb43-7"><a href="#cb43-7" aria-hidden="true" tabindex="-1"></a>        result <span class="ot">&lt;-</span> <span class="fu">as.matrix</span>(<span class="fu">runif</span>(n_assets <span class="sc">-</span> <span class="dv">1</span>, <span class="at">min =</span> lower, <span class="at">max =</span> upper))</span>
-<span id="cb43-8"><a href="#cb43-8" aria-hidden="true" tabindex="-1"></a>        temp <span class="ot">&lt;-</span> target <span class="sc">-</span> <span class="fu">sum</span>(result)</span>
-<span id="cb43-9"><a href="#cb43-9" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb43-10"><a href="#cb43-10" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> ((temp <span class="sc">&lt;=</span> upper) <span class="sc">&amp;&amp;</span> (temp <span class="sc">&gt;=</span> lower)) {</span>
-<span id="cb43-11"><a href="#cb43-11" aria-hidden="true" tabindex="-1"></a>            plug <span class="ot">&lt;-</span> <span class="cn">TRUE</span>            </span>
-<span id="cb43-12"><a href="#cb43-12" aria-hidden="true" tabindex="-1"></a>        }</span>
-<span id="cb43-13"><a href="#cb43-13" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb43-14"><a href="#cb43-14" aria-hidden="true" tabindex="-1"></a>    }</span>
-<span id="cb43-15"><a href="#cb43-15" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb43-16"><a href="#cb43-16" aria-hidden="true" tabindex="-1"></a>    result <span class="ot">&lt;-</span> <span class="fu">append</span>(result, temp)</span>
-<span id="cb43-17"><a href="#cb43-17" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb43-18"><a href="#cb43-18" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(result)</span>
-<span id="cb43-19"><a href="#cb43-19" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb43-20"><a href="#cb43-20" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>rand_iterative <span class="ot">&lt;-</span> <span class="cf">function</span>(n_assets, lower, upper, target) {</span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>    plug <span class="ot">&lt;-</span> <span class="cn">FALSE</span></span>
+<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">while</span> (<span class="sc">!</span>plug) {</span>
+<span id="cb34-6"><a href="#cb34-6" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb34-7"><a href="#cb34-7" aria-hidden="true" tabindex="-1"></a>        result <span class="ot">&lt;-</span> <span class="fu">as.matrix</span>(<span class="fu">runif</span>(n_assets <span class="sc">-</span> <span class="dv">1</span>, <span class="at">min =</span> lower, <span class="at">max =</span> upper))</span>
+<span id="cb34-8"><a href="#cb34-8" aria-hidden="true" tabindex="-1"></a>        temp <span class="ot">&lt;-</span> target <span class="sc">-</span> <span class="fu">sum</span>(result)</span>
+<span id="cb34-9"><a href="#cb34-9" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb34-10"><a href="#cb34-10" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> ((temp <span class="sc">&lt;=</span> upper) <span class="sc">&amp;&amp;</span> (temp <span class="sc">&gt;=</span> lower)) {</span>
+<span id="cb34-11"><a href="#cb34-11" aria-hidden="true" tabindex="-1"></a>            plug <span class="ot">&lt;-</span> <span class="cn">TRUE</span>            </span>
+<span id="cb34-12"><a href="#cb34-12" aria-hidden="true" tabindex="-1"></a>        }</span>
+<span id="cb34-13"><a href="#cb34-13" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb34-14"><a href="#cb34-14" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb34-15"><a href="#cb34-15" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb34-16"><a href="#cb34-16" aria-hidden="true" tabindex="-1"></a>    result <span class="ot">&lt;-</span> <span class="fu">append</span>(result, temp)</span>
+<span id="cb34-17"><a href="#cb34-17" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb34-18"><a href="#cb34-18" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(result)</span>
+<span id="cb34-19"><a href="#cb34-19" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb34-20"><a href="#cb34-20" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>rand_turnover1 <span class="ot">&lt;-</span> <span class="cf">function</span>(n_sim, n_assets, lower, upper, target) {</span>
-<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a>    rng <span class="ot">&lt;-</span> upper <span class="sc">-</span> lower</span>
-<span id="cb44-4"><a href="#cb44-4" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb44-5"><a href="#cb44-5" aria-hidden="true" tabindex="-1"></a>    result <span class="ot">&lt;-</span> <span class="fu">rand_weights3</span>(n_sim, n_assets, lmbda) <span class="sc">*</span> rng</span>
-<span id="cb44-6"><a href="#cb44-6" aria-hidden="true" tabindex="-1"></a>    result <span class="ot">&lt;-</span> result <span class="sc">-</span> rng <span class="sc">/</span> n_assets</span>
-<span id="cb44-7"><a href="#cb44-7" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb44-8"><a href="#cb44-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(result)</span>
-<span id="cb44-9"><a href="#cb44-9" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb44-10"><a href="#cb44-10" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>rand_turnover1 <span class="ot">&lt;-</span> <span class="cf">function</span>(n_sim, n_assets, lower, upper, target) {</span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>    rng <span class="ot">&lt;-</span> upper <span class="sc">-</span> lower</span>
+<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a>    result <span class="ot">&lt;-</span> <span class="fu">rand_weights3</span>(n_sim, n_assets, lmbda) <span class="sc">*</span> rng</span>
+<span id="cb35-6"><a href="#cb35-6" aria-hidden="true" tabindex="-1"></a>    result <span class="ot">&lt;-</span> result <span class="sc">-</span> rng <span class="sc">/</span> n_assets</span>
+<span id="cb35-7"><a href="#cb35-7" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb35-8"><a href="#cb35-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(result)</span>
+<span id="cb35-9"><a href="#cb35-9" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb35-10"><a href="#cb35-10" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>rand_turnover2 <span class="ot">&lt;-</span> <span class="cf">function</span>(n_sim, n_assets, lower, upper, target) {</span>
-<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a>    result <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">rand_iterative</span>(n_assets, lower, upper, target), <span class="at">nrow =</span> <span class="dv">1</span>, <span class="at">ncol =</span> n_assets)</span>
-<span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb45-5"><a href="#cb45-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">while</span> (<span class="fu">nrow</span>(result) <span class="sc">&lt;</span> n_sim) {</span>
-<span id="cb45-6"><a href="#cb45-6" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb45-7"><a href="#cb45-7" aria-hidden="true" tabindex="-1"></a>        temp <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">rand_iterative</span>(n_assets, lower, upper, target), <span class="at">nrow =</span> <span class="dv">1</span>, <span class="at">ncol =</span> n_assets)</span>
-<span id="cb45-8"><a href="#cb45-8" aria-hidden="true" tabindex="-1"></a>        result <span class="ot">&lt;-</span> <span class="fu">rbind</span>(result, temp)</span>
-<span id="cb45-9"><a href="#cb45-9" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb45-10"><a href="#cb45-10" aria-hidden="true" tabindex="-1"></a>    }</span>
-<span id="cb45-11"><a href="#cb45-11" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb45-12"><a href="#cb45-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(result)</span>
-<span id="cb45-13"><a href="#cb45-13" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb45-14"><a href="#cb45-14" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>rand_turnover2 <span class="ot">&lt;-</span> <span class="cf">function</span>(n_sim, n_assets, lower, upper, target) {</span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>    result <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">rand_iterative</span>(n_assets, lower, upper, target), <span class="at">nrow =</span> <span class="dv">1</span>, <span class="at">ncol =</span> n_assets)</span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">while</span> (<span class="fu">nrow</span>(result) <span class="sc">&lt;</span> n_sim) {</span>
+<span id="cb36-6"><a href="#cb36-6" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb36-7"><a href="#cb36-7" aria-hidden="true" tabindex="-1"></a>        temp <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">rand_iterative</span>(n_assets, lower, upper, target), <span class="at">nrow =</span> <span class="dv">1</span>, <span class="at">ncol =</span> n_assets)</span>
+<span id="cb36-8"><a href="#cb36-8" aria-hidden="true" tabindex="-1"></a>        result <span class="ot">&lt;-</span> <span class="fu">rbind</span>(result, temp)</span>
+<span id="cb36-9"><a href="#cb36-9" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb36-10"><a href="#cb36-10" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb36-11"><a href="#cb36-11" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb36-12"><a href="#cb36-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(result)</span>
+<span id="cb36-13"><a href="#cb36-13" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb36-14"><a href="#cb36-14" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>lower <span class="ot">&lt;-</span> <span class="sc">-</span><span class="fl">0.05</span></span>
-<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a>upper <span class="ot">&lt;-</span> <span class="fl">0.05</span></span>
-<span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a>target <span class="ot">&lt;-</span> <span class="dv">0</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>lower <span class="ot">&lt;-</span> <span class="sc">-</span><span class="fl">0.05</span></span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>upper <span class="ot">&lt;-</span> <span class="fl">0.05</span></span>
+<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a>target <span class="ot">&lt;-</span> <span class="dv">0</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb47"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a>approach1 <span class="ot">&lt;-</span> <span class="fu">rand_turnover1</span>(n_sim, n_assets, lower, upper, target)</span>
-<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a>approach2 <span class="ot">&lt;-</span> <span class="fu">rand_turnover2</span>(n_sim, n_assets, lower, upper, target)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>approach1 <span class="ot">&lt;-</span> <span class="fu">rand_turnover1</span>(n_sim, n_assets, lower, upper, target)</span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>approach2 <span class="ot">&lt;-</span> <span class="fu">rand_turnover2</span>(n_sim, n_assets, lower, upper, target)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb48"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_pairs</span>(<span class="fu">as.data.table</span>(approach1), <span class="at">title =</span> <span class="st">"Weight (%)"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_pairs</span>(<span class="fu">as.data.table</span>(approach1), <span class="at">title =</span> <span class="st">"Weight (%)"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="index_files/figure-html/unnamed-chunk-48-1.png" class="img-fluid" width="384"></p>
+<p><img src="index_files/figure-html/unnamed-chunk-40-1.png" class="img-fluid" width="384"></p>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb49"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_pairs</span>(<span class="fu">as.data.table</span>(approach2), <span class="at">title =</span> <span class="st">"Weight (%)"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_pairs</span>(<span class="fu">as.data.table</span>(approach2), <span class="at">title =</span> <span class="st">"Weight (%)"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="index_files/figure-html/unnamed-chunk-49-1.png" class="img-fluid" width="384"></p>
+<p><img src="index_files/figure-html/unnamed-chunk-41-1.png" class="img-fluid" width="384"></p>
 </div>
 </div>
 </section>
@@ -886,17 +691,18 @@ d\nu(x)&amp;={\frac {1}{2\pi\sigma ^{2}}}{\frac{\sqrt{(\lambda_{+}-x)(x-\lambda_
 <section id="mean-variance" class="level1">
 <h1>Mean-variance</h1>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb50"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>geometric_mean <span class="ot">&lt;-</span> <span class="cf">function</span>(x, scale) {</span>
-<span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb50-3"><a href="#cb50-3" aria-hidden="true" tabindex="-1"></a>    result <span class="ot">&lt;-</span> <span class="fu">prod</span>(<span class="dv">1</span> <span class="sc">+</span> x) <span class="sc">^</span> (scale <span class="sc">/</span> <span class="fu">length</span>(x)) <span class="sc">-</span> <span class="dv">1</span></span>
-<span id="cb50-4"><a href="#cb50-4" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb50-5"><a href="#cb50-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(result)</span>
-<span id="cb50-6"><a href="#cb50-6" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb50-7"><a href="#cb50-7" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>geometric_mean <span class="ot">&lt;-</span> <span class="cf">function</span>(x, scale) {</span>
+<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a>    result <span class="ot">&lt;-</span> <span class="fu">prod</span>(<span class="dv">1</span> <span class="sc">+</span> x) <span class="sc">^</span> (scale <span class="sc">/</span> <span class="fu">length</span>(x)) <span class="sc">-</span> <span class="dv">1</span></span>
+<span id="cb41-4"><a href="#cb41-4" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb41-5"><a href="#cb41-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(result)</span>
+<span id="cb41-6"><a href="#cb41-6" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb41-7"><a href="#cb41-7" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb51"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a>mu <span class="ot">&lt;-</span> <span class="fu">apply</span>(returns_x_xts, <span class="dv">2</span>, geometric_mean, <span class="at">scale =</span> scale[[<span class="st">"periods"</span>]])</span>
-<span id="cb51-2"><a href="#cb51-2" aria-hidden="true" tabindex="-1"></a>sigma <span class="ot">&lt;-</span> <span class="fu">cov</span>(overlap_x_xts) <span class="sc">*</span> scale[[<span class="st">"periods"</span>]] <span class="sc">*</span> scale[[<span class="st">"overlap"</span>]]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>returns_x_xts <span class="ot">&lt;-</span> <span class="fu">na.omit</span>(returns_xts)[ , factors] <span class="co"># extended history # REMOVE LATER</span></span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>mu <span class="ot">&lt;-</span> <span class="fu">apply</span>(returns_x_xts, <span class="dv">2</span>, geometric_mean, <span class="at">scale =</span> scale[[<span class="st">"periods"</span>]])</span>
+<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a>sigma <span class="ot">&lt;-</span> <span class="fu">cov</span>(overlap_x_xts) <span class="sc">*</span> scale[[<span class="st">"periods"</span>]] <span class="sc">*</span> scale[[<span class="st">"overlap"</span>]]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <section id="maximum-return" class="level2">
 <h2 class="anchored" data-anchor-id="maximum-return">Maximum return</h2>
@@ -910,28 +716,28 @@ d\nu(x)&amp;={\frac {1}{2\pi\sigma ^{2}}}{\frac{\sqrt{(\lambda_{+}-x)(x-\lambda_
 \end{aligned}
 \]</span></p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb52"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a>target <span class="ot">&lt;-</span> <span class="fl">0.06</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>target <span class="ot">&lt;-</span> <span class="fl">0.06</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb53"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a><span class="co"># https://palomar.home.ece.ust.hk/MAFS6010R_lectures/slides_robust_portfolio.html</span></span>
-<span id="cb53-2"><a href="#cb53-2" aria-hidden="true" tabindex="-1"></a>max_pnl_optim <span class="ot">&lt;-</span> <span class="cf">function</span>(mu, sigma, target) {</span>
-<span id="cb53-3"><a href="#cb53-3" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb53-4"><a href="#cb53-4" aria-hidden="true" tabindex="-1"></a>    params <span class="ot">&lt;-</span> <span class="fu">Variable</span>(<span class="fu">length</span>(mu))</span>
-<span id="cb53-5"><a href="#cb53-5" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb53-6"><a href="#cb53-6" aria-hidden="true" tabindex="-1"></a>    cons <span class="ot">&lt;-</span> <span class="fu">list</span>(params <span class="sc">&gt;=</span> <span class="dv">0</span>, <span class="fu">sum</span>(params) <span class="sc">==</span> <span class="dv">1</span>,</span>
-<span id="cb53-7"><a href="#cb53-7" aria-hidden="true" tabindex="-1"></a>                 <span class="fu">quad_form</span>(params, sigma) <span class="sc">&lt;=</span> target <span class="sc">^</span> <span class="dv">2</span>)</span>
-<span id="cb53-8"><a href="#cb53-8" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb53-9"><a href="#cb53-9" aria-hidden="true" tabindex="-1"></a>    obj <span class="ot">&lt;-</span> <span class="fu">Maximize</span>(<span class="fu">t</span>(params) <span class="sc">%*%</span> mu)</span>
-<span id="cb53-10"><a href="#cb53-10" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb53-11"><a href="#cb53-11" aria-hidden="true" tabindex="-1"></a>    result <span class="ot">&lt;-</span> <span class="fu">solve</span>(<span class="fu">Problem</span>(obj, cons))<span class="sc">$</span><span class="fu">getValue</span>(params)</span>
-<span id="cb53-12"><a href="#cb53-12" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb53-13"><a href="#cb53-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(result)</span>
-<span id="cb53-14"><a href="#cb53-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb53-15"><a href="#cb53-15" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a><span class="co"># https://palomar.home.ece.ust.hk/MAFS6010R_lectures/slides_robust_portfolio.html</span></span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>max_pnl_optim <span class="ot">&lt;-</span> <span class="cf">function</span>(mu, sigma, target) {</span>
+<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb44-4"><a href="#cb44-4" aria-hidden="true" tabindex="-1"></a>    params <span class="ot">&lt;-</span> <span class="fu">Variable</span>(<span class="fu">length</span>(mu))</span>
+<span id="cb44-5"><a href="#cb44-5" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb44-6"><a href="#cb44-6" aria-hidden="true" tabindex="-1"></a>    cons <span class="ot">&lt;-</span> <span class="fu">list</span>(params <span class="sc">&gt;=</span> <span class="dv">0</span>, <span class="fu">sum</span>(params) <span class="sc">==</span> <span class="dv">1</span>,</span>
+<span id="cb44-7"><a href="#cb44-7" aria-hidden="true" tabindex="-1"></a>                 <span class="fu">quad_form</span>(params, sigma) <span class="sc">&lt;=</span> target <span class="sc">^</span> <span class="dv">2</span>)</span>
+<span id="cb44-8"><a href="#cb44-8" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb44-9"><a href="#cb44-9" aria-hidden="true" tabindex="-1"></a>    obj <span class="ot">&lt;-</span> <span class="fu">Maximize</span>(<span class="fu">t</span>(params) <span class="sc">%*%</span> mu)</span>
+<span id="cb44-10"><a href="#cb44-10" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb44-11"><a href="#cb44-11" aria-hidden="true" tabindex="-1"></a>    result <span class="ot">&lt;-</span> <span class="fu">solve</span>(<span class="fu">Problem</span>(obj, cons))<span class="sc">$</span><span class="fu">getValue</span>(params)</span>
+<span id="cb44-12"><a href="#cb44-12" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb44-13"><a href="#cb44-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(result)</span>
+<span id="cb44-14"><a href="#cb44-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb44-15"><a href="#cb44-15" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb54"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a>params1 <span class="ot">&lt;-</span> <span class="fu">max_pnl_optim</span>(mu, sigma, target)</span>
-<span id="cb54-2"><a href="#cb54-2" aria-hidden="true" tabindex="-1"></a>params1</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>params1 <span class="ot">&lt;-</span> <span class="fu">max_pnl_optim</span>(mu, sigma, target)</span>
+<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a>params1</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>             [,1]
 [1,] 4.496723e-01
@@ -941,14 +747,14 @@ d\nu(x)&amp;={\frac {1}{2\pi\sigma ^{2}}}{\frac{\sqrt{(\lambda_{+}-x)(x-\lambda_
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb56"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a>mu <span class="sc">%*%</span> params1</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb47"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a>mu <span class="sc">%*%</span> params1</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>           [,1]
 [1,] 0.04216773</code></pre>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb58"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sqrt</span>(<span class="fu">t</span>(params1) <span class="sc">%*%</span> sigma <span class="sc">%*%</span> params1)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb49"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sqrt</span>(<span class="fu">t</span>(params1) <span class="sc">%*%</span> sigma <span class="sc">%*%</span> params1)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>     [,1]
 [1,] 0.06</code></pre>
@@ -967,27 +773,27 @@ d\nu(x)&amp;={\frac {1}{2\pi\sigma ^{2}}}{\frac{\sqrt{(\lambda_{+}-x)(x-\lambda_
 \end{aligned}
 \]</span></p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb60"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a>target <span class="ot">&lt;-</span> <span class="fl">0.03</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb51"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a>target <span class="ot">&lt;-</span> <span class="fl">0.03</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb61"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb61-1"><a href="#cb61-1" aria-hidden="true" tabindex="-1"></a>min_risk_optim <span class="ot">&lt;-</span> <span class="cf">function</span>(mu, sigma, target) {</span>
-<span id="cb61-2"><a href="#cb61-2" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb61-3"><a href="#cb61-3" aria-hidden="true" tabindex="-1"></a>    params <span class="ot">&lt;-</span> <span class="fu">Variable</span>(<span class="fu">length</span>(mu))</span>
-<span id="cb61-4"><a href="#cb61-4" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb61-5"><a href="#cb61-5" aria-hidden="true" tabindex="-1"></a>    cons <span class="ot">&lt;-</span> <span class="fu">list</span>(params <span class="sc">&gt;=</span> <span class="dv">0</span>, <span class="fu">sum</span>(params) <span class="sc">==</span> <span class="dv">1</span>,</span>
-<span id="cb61-6"><a href="#cb61-6" aria-hidden="true" tabindex="-1"></a>                 <span class="fu">sum</span>(mu <span class="sc">*</span> params) <span class="sc">&gt;=</span> target)</span>
-<span id="cb61-7"><a href="#cb61-7" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb61-8"><a href="#cb61-8" aria-hidden="true" tabindex="-1"></a>    obj <span class="ot">&lt;-</span> <span class="fu">Minimize</span>(<span class="fu">quad_form</span>(params, sigma))</span>
-<span id="cb61-9"><a href="#cb61-9" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb61-10"><a href="#cb61-10" aria-hidden="true" tabindex="-1"></a>    result <span class="ot">&lt;-</span> <span class="fu">solve</span>(<span class="fu">Problem</span>(obj, cons))<span class="sc">$</span><span class="fu">getValue</span>(params)</span>
-<span id="cb61-11"><a href="#cb61-11" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb61-12"><a href="#cb61-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(result)</span>
-<span id="cb61-13"><a href="#cb61-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb61-14"><a href="#cb61-14" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb52"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a>min_risk_optim <span class="ot">&lt;-</span> <span class="cf">function</span>(mu, sigma, target) {</span>
+<span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb52-3"><a href="#cb52-3" aria-hidden="true" tabindex="-1"></a>    params <span class="ot">&lt;-</span> <span class="fu">Variable</span>(<span class="fu">length</span>(mu))</span>
+<span id="cb52-4"><a href="#cb52-4" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb52-5"><a href="#cb52-5" aria-hidden="true" tabindex="-1"></a>    cons <span class="ot">&lt;-</span> <span class="fu">list</span>(params <span class="sc">&gt;=</span> <span class="dv">0</span>, <span class="fu">sum</span>(params) <span class="sc">==</span> <span class="dv">1</span>,</span>
+<span id="cb52-6"><a href="#cb52-6" aria-hidden="true" tabindex="-1"></a>                 <span class="fu">sum</span>(mu <span class="sc">*</span> params) <span class="sc">&gt;=</span> target)</span>
+<span id="cb52-7"><a href="#cb52-7" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb52-8"><a href="#cb52-8" aria-hidden="true" tabindex="-1"></a>    obj <span class="ot">&lt;-</span> <span class="fu">Minimize</span>(<span class="fu">quad_form</span>(params, sigma))</span>
+<span id="cb52-9"><a href="#cb52-9" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb52-10"><a href="#cb52-10" aria-hidden="true" tabindex="-1"></a>    result <span class="ot">&lt;-</span> <span class="fu">solve</span>(<span class="fu">Problem</span>(obj, cons))<span class="sc">$</span><span class="fu">getValue</span>(params)</span>
+<span id="cb52-11"><a href="#cb52-11" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb52-12"><a href="#cb52-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(result)</span>
+<span id="cb52-13"><a href="#cb52-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-14"><a href="#cb52-14" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb62"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a>params2 <span class="ot">&lt;-</span> <span class="fu">min_risk_optim</span>(mu, sigma, target)</span>
-<span id="cb62-2"><a href="#cb62-2" aria-hidden="true" tabindex="-1"></a>params2</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb53"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a>params2 <span class="ot">&lt;-</span> <span class="fu">min_risk_optim</span>(mu, sigma, target)</span>
+<span id="cb53-2"><a href="#cb53-2" aria-hidden="true" tabindex="-1"></a>params2</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>             [,1]
 [1,] 2.958446e-01
@@ -997,14 +803,14 @@ d\nu(x)&amp;={\frac {1}{2\pi\sigma ^{2}}}{\frac{\sqrt{(\lambda_{+}-x)(x-\lambda_
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb64"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb64-1"><a href="#cb64-1" aria-hidden="true" tabindex="-1"></a>mu <span class="sc">%*%</span> params2</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb55"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a>mu <span class="sc">%*%</span> params2</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>     [,1]
 [1,] 0.03</code></pre>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb66"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb66-1"><a href="#cb66-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sqrt</span>(<span class="fu">t</span>(params2) <span class="sc">%*%</span> sigma <span class="sc">%*%</span> params2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb57"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sqrt</span>(<span class="fu">t</span>(params2) <span class="sc">%*%</span> sigma <span class="sc">%*%</span> params2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>           [,1]
 [1,] 0.04174501</code></pre>
@@ -1022,27 +828,27 @@ d\nu(x)&amp;={\frac {1}{2\pi\sigma ^{2}}}{\frac{\sqrt{(\lambda_{+}-x)(x-\lambda_
 \end{aligned}
 \]</span></p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb68"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb68-1"><a href="#cb68-1" aria-hidden="true" tabindex="-1"></a>ir <span class="ot">&lt;-</span> <span class="fl">0.5</span></span>
-<span id="cb68-2"><a href="#cb68-2" aria-hidden="true" tabindex="-1"></a>target <span class="ot">&lt;-</span> ir <span class="sc">/</span> <span class="fl">0.06</span> <span class="co"># ir / std (see Black-Litterman)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb59"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a>ir <span class="ot">&lt;-</span> <span class="fl">0.5</span></span>
+<span id="cb59-2"><a href="#cb59-2" aria-hidden="true" tabindex="-1"></a>target <span class="ot">&lt;-</span> ir <span class="sc">/</span> <span class="fl">0.06</span> <span class="co"># ir / std (see Black-Litterman)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb69"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb69-1"><a href="#cb69-1" aria-hidden="true" tabindex="-1"></a>max_ratio_optim <span class="ot">&lt;-</span> <span class="cf">function</span>(mu, sigma, target) {</span>
-<span id="cb69-2"><a href="#cb69-2" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb69-3"><a href="#cb69-3" aria-hidden="true" tabindex="-1"></a>    params <span class="ot">&lt;-</span> <span class="fu">Variable</span>(<span class="fu">length</span>(mu))</span>
-<span id="cb69-4"><a href="#cb69-4" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb69-5"><a href="#cb69-5" aria-hidden="true" tabindex="-1"></a>    cons <span class="ot">&lt;-</span> <span class="fu">list</span>(params <span class="sc">&gt;=</span> <span class="dv">0</span>, <span class="fu">sum</span>(params) <span class="sc">==</span> <span class="dv">1</span>)</span>
-<span id="cb69-6"><a href="#cb69-6" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb69-7"><a href="#cb69-7" aria-hidden="true" tabindex="-1"></a>    obj <span class="ot">&lt;-</span> <span class="fu">Maximize</span>(<span class="fu">t</span>(mu) <span class="sc">%*%</span> params <span class="sc">-</span> <span class="fl">0.5</span> <span class="sc">*</span> target <span class="sc">*</span> <span class="fu">quad_form</span>(params, sigma))</span>
-<span id="cb69-8"><a href="#cb69-8" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb69-9"><a href="#cb69-9" aria-hidden="true" tabindex="-1"></a>    result <span class="ot">&lt;-</span> <span class="fu">solve</span>(<span class="fu">Problem</span>(obj, cons))<span class="sc">$</span><span class="fu">getValue</span>(params)</span>
-<span id="cb69-10"><a href="#cb69-10" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb69-11"><a href="#cb69-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(result)</span>
-<span id="cb69-12"><a href="#cb69-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb69-13"><a href="#cb69-13" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb60"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a>max_ratio_optim <span class="ot">&lt;-</span> <span class="cf">function</span>(mu, sigma, target) {</span>
+<span id="cb60-2"><a href="#cb60-2" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb60-3"><a href="#cb60-3" aria-hidden="true" tabindex="-1"></a>    params <span class="ot">&lt;-</span> <span class="fu">Variable</span>(<span class="fu">length</span>(mu))</span>
+<span id="cb60-4"><a href="#cb60-4" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb60-5"><a href="#cb60-5" aria-hidden="true" tabindex="-1"></a>    cons <span class="ot">&lt;-</span> <span class="fu">list</span>(params <span class="sc">&gt;=</span> <span class="dv">0</span>, <span class="fu">sum</span>(params) <span class="sc">==</span> <span class="dv">1</span>)</span>
+<span id="cb60-6"><a href="#cb60-6" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb60-7"><a href="#cb60-7" aria-hidden="true" tabindex="-1"></a>    obj <span class="ot">&lt;-</span> <span class="fu">Maximize</span>(<span class="fu">t</span>(mu) <span class="sc">%*%</span> params <span class="sc">-</span> <span class="fl">0.5</span> <span class="sc">*</span> target <span class="sc">*</span> <span class="fu">quad_form</span>(params, sigma))</span>
+<span id="cb60-8"><a href="#cb60-8" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb60-9"><a href="#cb60-9" aria-hidden="true" tabindex="-1"></a>    result <span class="ot">&lt;-</span> <span class="fu">solve</span>(<span class="fu">Problem</span>(obj, cons))<span class="sc">$</span><span class="fu">getValue</span>(params)</span>
+<span id="cb60-10"><a href="#cb60-10" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb60-11"><a href="#cb60-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(result)</span>
+<span id="cb60-12"><a href="#cb60-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-13"><a href="#cb60-13" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb70"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb70-1"><a href="#cb70-1" aria-hidden="true" tabindex="-1"></a>params3 <span class="ot">&lt;-</span> <span class="fu">max_ratio_optim</span>(mu, sigma, target)</span>
-<span id="cb70-2"><a href="#cb70-2" aria-hidden="true" tabindex="-1"></a>params3</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb61"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb61-1"><a href="#cb61-1" aria-hidden="true" tabindex="-1"></a>params3 <span class="ot">&lt;-</span> <span class="fu">max_ratio_optim</span>(mu, sigma, target)</span>
+<span id="cb61-2"><a href="#cb61-2" aria-hidden="true" tabindex="-1"></a>params3</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>              [,1]
 [1,]  4.563530e-01
@@ -1052,14 +858,14 @@ d\nu(x)&amp;={\frac {1}{2\pi\sigma ^{2}}}{\frac{\sqrt{(\lambda_{+}-x)(x-\lambda_
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb72"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb72-1"><a href="#cb72-1" aria-hidden="true" tabindex="-1"></a>mu <span class="sc">%*%</span> params3</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb63"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb63-1"><a href="#cb63-1" aria-hidden="true" tabindex="-1"></a>mu <span class="sc">%*%</span> params3</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>          [,1]
 [1,] 0.0425548</code></pre>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb74"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb74-1"><a href="#cb74-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sqrt</span>(<span class="fu">t</span>(params3) <span class="sc">%*%</span> sigma <span class="sc">%*%</span> params3)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb65"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb65-1"><a href="#cb65-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sqrt</span>(<span class="fu">t</span>(params3) <span class="sc">%*%</span> sigma <span class="sc">%*%</span> params3)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>           [,1]
 [1,] 0.06075687</code></pre>
@@ -1225,32 +1031,32 @@ w_{i}\frac{\partial\sigma_{P}}{\partial w_{i}}=\frac{1}{\lambda}
 \]</span></p>
 <p>Notice that <span class="math inline">\(1/\lambda\)</span> is the risk contribution of the <span class="math inline">\(i^{th}\)</span> asset. Now use <code>R</code> to maximize the Lagrangian numerically:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb76"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb76-1"><a href="#cb76-1" aria-hidden="true" tabindex="-1"></a><span class="co"># http://faculty.washington.edu/ezivot/econ424/riskbudgetingslides.pdf</span></span>
-<span id="cb76-2"><a href="#cb76-2" aria-hidden="true" tabindex="-1"></a><span class="co"># https://systematicinvestor.wordpress.com/2011/11/16/black-litterman-model/</span></span>
-<span id="cb76-3"><a href="#cb76-3" aria-hidden="true" tabindex="-1"></a><span class="co"># https://cran.r-project.org/web/packages/BLCOP/vignettes/BLCOP.pdf</span></span>
-<span id="cb76-4"><a href="#cb76-4" aria-hidden="true" tabindex="-1"></a><span class="co"># http://math.stackexchange.com/questions/17776/inverse-of-the-sum-of-matrices</span></span>
-<span id="cb76-5"><a href="#cb76-5" aria-hidden="true" tabindex="-1"></a>risk_parity_optim <span class="ot">&lt;-</span> <span class="cf">function</span>(sigma, target) {</span>
-<span id="cb76-6"><a href="#cb76-6" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb76-7"><a href="#cb76-7" aria-hidden="true" tabindex="-1"></a>    params <span class="ot">&lt;-</span> <span class="fu">Variable</span>(<span class="fu">nrow</span>(sigma))</span>
-<span id="cb76-8"><a href="#cb76-8" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb76-9"><a href="#cb76-9" aria-hidden="true" tabindex="-1"></a>    risk <span class="ot">&lt;-</span> <span class="fu">quad_form</span>(params, sigma)</span>
-<span id="cb76-10"><a href="#cb76-10" aria-hidden="true" tabindex="-1"></a>    risk_contrib <span class="ot">&lt;-</span> target <span class="sc">^</span> <span class="dv">2</span> <span class="sc">/</span> <span class="fu">nrow</span>(sigma)</span>
-<span id="cb76-11"><a href="#cb76-11" aria-hidden="true" tabindex="-1"></a>            </span>
-<span id="cb76-12"><a href="#cb76-12" aria-hidden="true" tabindex="-1"></a>    obj <span class="ot">&lt;-</span> <span class="fu">Maximize</span>((<span class="fu">sum</span>(<span class="fu">log</span>(params)) <span class="sc">-</span> (<span class="dv">1</span> <span class="sc">/</span> risk_contrib) <span class="sc">*</span> (risk <span class="sc">-</span> target <span class="sc">^</span> <span class="dv">2</span>)))</span>
-<span id="cb76-13"><a href="#cb76-13" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb76-14"><a href="#cb76-14" aria-hidden="true" tabindex="-1"></a>    result <span class="ot">&lt;-</span> <span class="fu">solve</span>(<span class="fu">Problem</span>(obj))<span class="sc">$</span><span class="fu">getValue</span>(params)</span>
-<span id="cb76-15"><a href="#cb76-15" aria-hidden="true" tabindex="-1"></a>    result <span class="ot">&lt;-</span> result <span class="sc">/</span> <span class="fu">sum</span>(result) <span class="co"># no leverage</span></span>
-<span id="cb76-16"><a href="#cb76-16" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb76-17"><a href="#cb76-17" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(result)</span>
-<span id="cb76-18"><a href="#cb76-18" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb76-19"><a href="#cb76-19" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb67"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb67-1"><a href="#cb67-1" aria-hidden="true" tabindex="-1"></a><span class="co"># http://faculty.washington.edu/ezivot/econ424/riskbudgetingslides.pdf</span></span>
+<span id="cb67-2"><a href="#cb67-2" aria-hidden="true" tabindex="-1"></a><span class="co"># https://systematicinvestor.wordpress.com/2011/11/16/black-litterman-model/</span></span>
+<span id="cb67-3"><a href="#cb67-3" aria-hidden="true" tabindex="-1"></a><span class="co"># https://cran.r-project.org/web/packages/BLCOP/vignettes/BLCOP.pdf</span></span>
+<span id="cb67-4"><a href="#cb67-4" aria-hidden="true" tabindex="-1"></a><span class="co"># http://math.stackexchange.com/questions/17776/inverse-of-the-sum-of-matrices</span></span>
+<span id="cb67-5"><a href="#cb67-5" aria-hidden="true" tabindex="-1"></a>risk_parity_optim <span class="ot">&lt;-</span> <span class="cf">function</span>(sigma, target) {</span>
+<span id="cb67-6"><a href="#cb67-6" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb67-7"><a href="#cb67-7" aria-hidden="true" tabindex="-1"></a>    params <span class="ot">&lt;-</span> <span class="fu">Variable</span>(<span class="fu">nrow</span>(sigma))</span>
+<span id="cb67-8"><a href="#cb67-8" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb67-9"><a href="#cb67-9" aria-hidden="true" tabindex="-1"></a>    risk <span class="ot">&lt;-</span> <span class="fu">quad_form</span>(params, sigma)</span>
+<span id="cb67-10"><a href="#cb67-10" aria-hidden="true" tabindex="-1"></a>    risk_contrib <span class="ot">&lt;-</span> target <span class="sc">^</span> <span class="dv">2</span> <span class="sc">/</span> <span class="fu">nrow</span>(sigma)</span>
+<span id="cb67-11"><a href="#cb67-11" aria-hidden="true" tabindex="-1"></a>            </span>
+<span id="cb67-12"><a href="#cb67-12" aria-hidden="true" tabindex="-1"></a>    obj <span class="ot">&lt;-</span> <span class="fu">Maximize</span>((<span class="fu">sum</span>(<span class="fu">log</span>(params)) <span class="sc">-</span> (<span class="dv">1</span> <span class="sc">/</span> risk_contrib) <span class="sc">*</span> (risk <span class="sc">-</span> target <span class="sc">^</span> <span class="dv">2</span>)))</span>
+<span id="cb67-13"><a href="#cb67-13" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb67-14"><a href="#cb67-14" aria-hidden="true" tabindex="-1"></a>    result <span class="ot">&lt;-</span> <span class="fu">solve</span>(<span class="fu">Problem</span>(obj))<span class="sc">$</span><span class="fu">getValue</span>(params)</span>
+<span id="cb67-15"><a href="#cb67-15" aria-hidden="true" tabindex="-1"></a>    result <span class="ot">&lt;-</span> result <span class="sc">/</span> <span class="fu">sum</span>(result) <span class="co"># no leverage</span></span>
+<span id="cb67-16"><a href="#cb67-16" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb67-17"><a href="#cb67-17" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(result)</span>
+<span id="cb67-18"><a href="#cb67-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb67-19"><a href="#cb67-19" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb77"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb77-1"><a href="#cb77-1" aria-hidden="true" tabindex="-1"></a>target <span class="ot">&lt;-</span> <span class="dv">1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb68"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb68-1"><a href="#cb68-1" aria-hidden="true" tabindex="-1"></a>target <span class="ot">&lt;-</span> <span class="dv">1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb78"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb78-1"><a href="#cb78-1" aria-hidden="true" tabindex="-1"></a>params5 <span class="ot">&lt;-</span> <span class="fu">risk_parity_optim</span>(sigma, target)</span>
-<span id="cb78-2"><a href="#cb78-2" aria-hidden="true" tabindex="-1"></a>params5</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb69"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb69-1"><a href="#cb69-1" aria-hidden="true" tabindex="-1"></a>params5 <span class="ot">&lt;-</span> <span class="fu">risk_parity_optim</span>(sigma, target)</span>
+<span id="cb69-2"><a href="#cb69-2" aria-hidden="true" tabindex="-1"></a>params5</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>           [,1]
 [1,] 0.02997364
@@ -1260,9 +1066,9 @@ w_{i}\frac{\partial\sigma_{P}}{\partial w_{i}}=\frac{1}{\lambda}
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb80"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb80-1"><a href="#cb80-1" aria-hidden="true" tabindex="-1"></a>risk <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(<span class="fu">sqrt</span>(<span class="fu">t</span>(params5) <span class="sc">%*%</span> sigma <span class="sc">%*%</span> params5))</span>
-<span id="cb80-2"><a href="#cb80-2" aria-hidden="true" tabindex="-1"></a>risk_contrib <span class="ot">&lt;-</span> params5 <span class="sc">*</span> sigma <span class="sc">%*%</span> params5 <span class="sc">/</span> risk</span>
-<span id="cb80-3"><a href="#cb80-3" aria-hidden="true" tabindex="-1"></a>risk_contrib</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb71"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb71-1"><a href="#cb71-1" aria-hidden="true" tabindex="-1"></a>risk <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(<span class="fu">sqrt</span>(<span class="fu">t</span>(params5) <span class="sc">%*%</span> sigma <span class="sc">%*%</span> params5))</span>
+<span id="cb71-2"><a href="#cb71-2" aria-hidden="true" tabindex="-1"></a>risk_contrib <span class="ot">&lt;-</span> params5 <span class="sc">*</span> sigma <span class="sc">%*%</span> params5 <span class="sc">/</span> risk</span>
+<span id="cb71-3"><a href="#cb71-3" aria-hidden="true" tabindex="-1"></a>risk_contrib</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>                    [,1]
 SP500        0.002420125
@@ -1272,25 +1078,25 @@ BAMLH0A0HYM2 0.002420124</code></pre>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb82"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb82-1"><a href="#cb82-1" aria-hidden="true" tabindex="-1"></a>mu <span class="sc">%*%</span> params5</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb73"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb73-1"><a href="#cb73-1" aria-hidden="true" tabindex="-1"></a>mu <span class="sc">%*%</span> params5</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>            [,1]
 [1,] 0.004171147</code></pre>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb84"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb84-1"><a href="#cb84-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sqrt</span>(<span class="fu">t</span>(params5) <span class="sc">%*%</span> sigma <span class="sc">%*%</span> params5)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb75"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb75-1"><a href="#cb75-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sqrt</span>(<span class="fu">t</span>(params5) <span class="sc">%*%</span> sigma <span class="sc">%*%</span> params5)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>            [,1]
 [1,] 0.009680495</code></pre>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb86"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb86-1"><a href="#cb86-1" aria-hidden="true" tabindex="-1"></a><span class="fu">data.frame</span>(<span class="st">"max_pnl"</span> <span class="ot">=</span> params1,</span>
-<span id="cb86-2"><a href="#cb86-2" aria-hidden="true" tabindex="-1"></a>           <span class="st">"min_risk"</span> <span class="ot">=</span> params2,</span>
-<span id="cb86-3"><a href="#cb86-3" aria-hidden="true" tabindex="-1"></a>           <span class="st">"max_ratio"</span> <span class="ot">=</span> params3,</span>
-<span id="cb86-4"><a href="#cb86-4" aria-hidden="true" tabindex="-1"></a>           <span class="co"># "black_litterman" = params4,</span></span>
-<span id="cb86-5"><a href="#cb86-5" aria-hidden="true" tabindex="-1"></a>           <span class="st">"risk_parity"</span> <span class="ot">=</span> params5)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb77"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb77-1"><a href="#cb77-1" aria-hidden="true" tabindex="-1"></a><span class="fu">data.frame</span>(<span class="st">"max_pnl"</span> <span class="ot">=</span> params1,</span>
+<span id="cb77-2"><a href="#cb77-2" aria-hidden="true" tabindex="-1"></a>           <span class="st">"min_risk"</span> <span class="ot">=</span> params2,</span>
+<span id="cb77-3"><a href="#cb77-3" aria-hidden="true" tabindex="-1"></a>           <span class="st">"max_ratio"</span> <span class="ot">=</span> params3,</span>
+<span id="cb77-4"><a href="#cb77-4" aria-hidden="true" tabindex="-1"></a>           <span class="co"># "black_litterman" = params4,</span></span>
+<span id="cb77-5"><a href="#cb77-5" aria-hidden="true" tabindex="-1"></a>           <span class="st">"risk_parity"</span> <span class="ot">=</span> params5)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>       max_pnl     min_risk     max_ratio risk_parity
 1 4.496723e-01 2.958446e-01  4.563530e-01  0.02997364
@@ -1323,26 +1129,26 @@ BAMLH0A0HYM2 0.002420124</code></pre>
 \]</span></p>
 <p>where <span class="math inline">\(t=1,\ldots,n\)</span> is each period.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb88"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb88-1"><a href="#cb88-1" aria-hidden="true" tabindex="-1"></a><span class="co"># http://www.frongello.com/support/Works/Chap20RiskBook.pdf</span></span>
-<span id="cb88-2"><a href="#cb88-2" aria-hidden="true" tabindex="-1"></a><span class="co"># https://github.com/R-Finance/PortfolioAttribution/blob/master/R/Carino.R</span></span>
-<span id="cb88-3"><a href="#cb88-3" aria-hidden="true" tabindex="-1"></a>pnl_attrib <span class="ot">&lt;-</span> <span class="cf">function</span>(params, x) {</span>
-<span id="cb88-4"><a href="#cb88-4" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb88-5"><a href="#cb88-5" aria-hidden="true" tabindex="-1"></a>    total_i <span class="ot">&lt;-</span> <span class="fu">rowSums</span>(x)</span>
-<span id="cb88-6"><a href="#cb88-6" aria-hidden="true" tabindex="-1"></a>    total <span class="ot">&lt;-</span> <span class="fu">prod</span>(<span class="dv">1</span> <span class="sc">+</span> total_i) <span class="sc">-</span> <span class="dv">1</span></span>
-<span id="cb88-7"><a href="#cb88-7" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb88-8"><a href="#cb88-8" aria-hidden="true" tabindex="-1"></a>    coef <span class="ot">&lt;-</span> (<span class="fu">log</span>(<span class="dv">1</span> <span class="sc">+</span> total_i) <span class="sc">/</span> total_i) <span class="sc">/</span> (<span class="fu">log</span>(<span class="dv">1</span> <span class="sc">+</span> total) <span class="sc">/</span> total)</span>
-<span id="cb88-9"><a href="#cb88-9" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb88-10"><a href="#cb88-10" aria-hidden="true" tabindex="-1"></a>    result <span class="ot">&lt;-</span> <span class="fu">colSums</span>(x <span class="sc">*</span> coef)</span>
-<span id="cb88-11"><a href="#cb88-11" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb88-12"><a href="#cb88-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(result)</span>
-<span id="cb88-13"><a href="#cb88-13" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb88-14"><a href="#cb88-14" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb79"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb79-1"><a href="#cb79-1" aria-hidden="true" tabindex="-1"></a><span class="co"># http://www.frongello.com/support/Works/Chap20RiskBook.pdf</span></span>
+<span id="cb79-2"><a href="#cb79-2" aria-hidden="true" tabindex="-1"></a><span class="co"># https://github.com/R-Finance/PortfolioAttribution/blob/master/R/Carino.R</span></span>
+<span id="cb79-3"><a href="#cb79-3" aria-hidden="true" tabindex="-1"></a>pnl_attrib <span class="ot">&lt;-</span> <span class="cf">function</span>(params, x) {</span>
+<span id="cb79-4"><a href="#cb79-4" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb79-5"><a href="#cb79-5" aria-hidden="true" tabindex="-1"></a>    total_i <span class="ot">&lt;-</span> <span class="fu">rowSums</span>(x)</span>
+<span id="cb79-6"><a href="#cb79-6" aria-hidden="true" tabindex="-1"></a>    total <span class="ot">&lt;-</span> <span class="fu">prod</span>(<span class="dv">1</span> <span class="sc">+</span> total_i) <span class="sc">-</span> <span class="dv">1</span></span>
+<span id="cb79-7"><a href="#cb79-7" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb79-8"><a href="#cb79-8" aria-hidden="true" tabindex="-1"></a>    coef <span class="ot">&lt;-</span> (<span class="fu">log</span>(<span class="dv">1</span> <span class="sc">+</span> total_i) <span class="sc">/</span> total_i) <span class="sc">/</span> (<span class="fu">log</span>(<span class="dv">1</span> <span class="sc">+</span> total) <span class="sc">/</span> total)</span>
+<span id="cb79-9"><a href="#cb79-9" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb79-10"><a href="#cb79-10" aria-hidden="true" tabindex="-1"></a>    result <span class="ot">&lt;-</span> <span class="fu">colSums</span>(x <span class="sc">*</span> coef)</span>
+<span id="cb79-11"><a href="#cb79-11" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb79-12"><a href="#cb79-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(result)</span>
+<span id="cb79-13"><a href="#cb79-13" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb79-14"><a href="#cb79-14" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb89"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb89-1"><a href="#cb89-1" aria-hidden="true" tabindex="-1"></a>attrib_mat <span class="ot">&lt;-</span> <span class="fu">sweep</span>(<span class="fu">tail</span>(<span class="fu">na.omit</span>(returns_xts)[ , factors], width), <span class="dv">2</span>, params1, <span class="st">"*"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb80"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb80-1"><a href="#cb80-1" aria-hidden="true" tabindex="-1"></a>attrib_mat <span class="ot">&lt;-</span> <span class="fu">sweep</span>(<span class="fu">tail</span>(<span class="fu">na.omit</span>(returns_xts)[ , factors], width), <span class="dv">2</span>, params1, <span class="st">"*"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb90"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb90-1"><a href="#cb90-1" aria-hidden="true" tabindex="-1"></a><span class="fu">pnl_attrib</span>(params1, attrib_mat)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb81"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb81-1"><a href="#cb81-1" aria-hidden="true" tabindex="-1"></a><span class="fu">pnl_attrib</span>(params1, attrib_mat)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>        SP500    DTWEXAFEGS         DGS10  BAMLH0A0HYM2 
  9.715323e-02 -4.220013e-02  3.077217e-10  2.148297e-10 </code></pre>
