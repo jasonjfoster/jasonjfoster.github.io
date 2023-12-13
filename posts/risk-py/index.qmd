@@ -55,14 +55,6 @@ returns_df = pd.concat([returns_df, overlap_df], keys = ["returns", "overlap"], 
 ```
 
 ```{python}
-# import datetime
-# from scipy.optimize import minimize
-from sklearn.decomposition import PCA
-from sklearn.linear_model import LinearRegression
-from sklearn.preprocessing import StandardScaler
-```
-
-```{python}
 import os
 ```
 
@@ -216,6 +208,13 @@ np.array(fit.bse)
 
 # Principal component regression
 
+
+```{python}
+from sklearn.decomposition import PCA
+from sklearn.linear_model import LinearRegression
+from sklearn.preprocessing import StandardScaler
+```
+
 ```{python}
 comps = 1
 ```
@@ -261,16 +260,12 @@ pcr_coef(overlap_x_df, overlap_y_df, comps)
 ```
 
 ```{python}
-scaler = StandardScaler(with_std = False)
-scaled_x_df = scaler.fit_transform(scale_x_df)
-
 pca = PCA(n_components = len(factors))
-pca_x_df = pca.fit_transform(scaled_x_df)
+pca_x_df = pca.fit_transform(scale_x_df)
 
-model = LinearRegression(fit_intercept = False)
-model.fit(pca_x_df, overlap_y_df)
+fit = LinearRegression(fit_intercept = False).fit(pca_x_df, overlap_y_df)
 
-gamma = model.coef_
+gamma = fit.coef_
 np.dot(pca.components_.T[:, :comps], gamma.T[:comps]).ravel()
 ```
 
@@ -284,7 +279,6 @@ def pcr_rsq(x, y, comps):
     x = x - np.average(x, axis = 0)
     y = y - np.average(y, axis = 0)
     
-    # result = np.dot(coef, np.dot(np.dot(x.T, x), coef.T)) / np.dot(y.T, y)
     result = np.dot(np.dot(coef, np.dot(x.T, x)), coef.T) / np.dot(y.T, y)
     
     return result.item()
@@ -324,6 +318,7 @@ def pcr_se(x, y, comps):
     var_y = np.dot(y.T, y)   
     var_resid = (1 - rsq) * var_y / df_resid
     
+    # uses covariance matrix
     pca = sm.multivariate.PCA(x, standardize = False, demean = True)
     L = pca.eigenvals[:comps]
     V = pca.eigenvecs.iloc[:, :comps]
@@ -340,6 +335,8 @@ pcr_se(scale_x_df, overlap_y_df, comps)
 ```{python}
 pcr_se(overlap_x_df, overlap_y_df, comps)
 ```
+
+# Partial least squares
 
 # Standalone risk
 

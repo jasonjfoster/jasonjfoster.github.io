@@ -55,11 +55,6 @@ returns_df = pd.concat([returns_df, overlap_df], keys = ["returns", "overlap"], 
 ```
 
 ```{python}
-import datetime
-from scipy.optimize import minimize
-```
-
-```{python}
 sd_df = returns_df["overlap"].rolling(width, min_periods = 1).std() * \
     np.sqrt(scale["periods"]) * np.sqrt(scale["overlap"])
 ```
@@ -799,6 +794,10 @@ implied_vol_newton(params, type, S, K, r, q, tau)
 ## Yield-to-maturity
 
 # Optimization
+
+```{python}
+from scipy.optimize import minimize
+```
 
 ## Implied volatility
 

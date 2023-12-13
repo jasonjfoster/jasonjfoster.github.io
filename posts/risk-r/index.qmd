@@ -51,11 +51,6 @@ returns_xts <- do.call(merge, lapply(factors, function(i) {
 overlap_xts <- roll_mean(returns_xts, scale[["overlap"]], min_obs = 1, na_restore = TRUE)
 ```
 
-```{r, message = FALSE}
-library(pls)
-# library(CVXR)
-```
-
 ```{r}
 tickers <- "BAICX" # fund inception date is "2011-11-28" 
 invisible(getSymbols(tickers, src = "tiingo", api.key = Sys.getenv("TIINGO_API_KEY"), adjust = TRUE))
@@ -208,6 +203,11 @@ coef(summary(fit))[ , "Std. Error"]
 
 # Principal component regression
 
+
+```{r, message = FALSE}
+library(pls)
+```
+
 ```{r}
 comps <- 1
 ```
@@ -231,7 +231,6 @@ pcr_coef <- function(x, y, comps) {
     V <- LV$vectors
     
     W <- x %*% V
-    # gamma <- solve(t(W) %*% W) %*% (t(W) %*% y)
     gamma <- solve(crossprod(W)) %*% (crossprod(W, y))
     
     result <- V[ , 1:comps] %*% as.matrix(gamma[1:comps])
@@ -332,6 +331,8 @@ pcr_se(scale_x_xts, overlap_y_xts, comps)
 ```{r}
 pcr_se(overlap_x_xts, overlap_y_xts, comps)
 ```
+
+# Partial least squares
 
 # Standalone risk
 
