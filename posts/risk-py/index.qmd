@@ -58,7 +58,7 @@ returns_df = pd.concat([returns_df, overlap_df], keys = ["returns", "overlap"], 
 import os
 ```
 
-* Open: <https://github.com/pydata/pandas-datareader/issues/965>
+-   Open: <https://github.com/pydata/pandas-datareader/issues/965>
 
 ```{python}
 tickers = ["BAICX"] # fund inception date is "2011-11-28"
@@ -86,13 +86,15 @@ overlap_x_df = returns_df.dropna()["overlap"][factors][-width:]
 overlap_y_df = returns_df.dropna()["overlap"][tickers][-width:]
 ```
 
-# Ordinary least squares
+# Regression analysis
+
+## Ordinary least squares
 
 ```{python}
 intercept = True
 ```
 
-## Coefficients
+### Coefficients
 
 $$
 \begin{aligned}
@@ -100,7 +102,7 @@ $$
 \end{aligned}
 $$
 
-* <https://faculty.washington.edu/ezivot/research/factormodellecture_handout.pdf>
+-   <https://faculty.washington.edu/ezivot/research/factormodellecture_handout.pdf>
 
 ```{python}
 def lm_coef(x, y, weights, intercept):
@@ -127,7 +129,7 @@ if (intercept): overlap_x_df = overlap_x_df.iloc[:, 1:]
 np.array(fit.params)
 ```
 
-## R-squared
+### R-squared
 
 $$
 \begin{aligned}
@@ -160,7 +162,7 @@ lm_rsq(overlap_x_df, overlap_y_df, weights, intercept)
 fit.rsquared
 ```
 
-## Standard errors
+### Standard errors
 
 $$
 \begin{aligned}
@@ -171,7 +173,7 @@ $$
 \end{aligned}
 $$
 
-* <http://people.duke.edu/~rnau/mathreg.htm>
+-   <http://people.duke.edu/~rnau/mathreg.htm>
 
 ```{python}
 def lm_se(x, y, weights, intercept):
@@ -207,8 +209,7 @@ lm_se(overlap_x_df, overlap_y_df, weights, intercept)
 np.array(fit.bse)
 ```
 
-# Principal component regression
-
+## Principal component regression
 
 ```{python}
 from sklearn.decomposition import PCA
@@ -219,7 +220,7 @@ from sklearn.linear_model import LinearRegression
 comps = 1
 ```
 
-## Coefficients
+### Coefficients
 
 $$
 \begin{aligned}
@@ -229,7 +230,7 @@ W_{k}&=\mathbf{X}V_{k}=[\mathbf{X}\mathbf{v}_{1},\ldots,\mathbf{X}\mathbf{v}_{k}
 \end{aligned}
 $$
 
-* <https://en.wikipedia.org/wiki/Principal_component_regression>
+-   <https://en.wikipedia.org/wiki/Principal_component_regression>
 
 ```{python}
 def pcr_coef(x, y, comps):
@@ -270,7 +271,7 @@ gamma = fit.coef_
 np.dot(pca.components_.T[:, :comps], gamma.T[:comps]).ravel()
 ```
 
-## R-squared
+### R-squared
 
 ```{python}
 def pcr_rsq(x, y, comps):
@@ -293,7 +294,7 @@ pcr_rsq(scale_x_df, overlap_y_df, comps)
 pcr_rsq(overlap_x_df, overlap_y_df, comps)
 ```
 
-## Standard errors
+### Standard errors
 
 $$
 \begin{aligned}
@@ -337,9 +338,11 @@ pcr_se(scale_x_df, overlap_y_df, comps)
 pcr_se(overlap_x_df, overlap_y_df, comps)
 ```
 
-# Partial least squares
+## Partial least squares
 
-# Standalone risk
+# Risk decomposition
+
+## Standalone risk
 
 $$
 \begin{aligned}
@@ -388,7 +391,7 @@ def lm_sar(x, y, weights, intercept):
 lm_sar(overlap_x_df, overlap_y_df, weights, intercept) * np.sqrt(scale["periods"]) * np.sqrt(scale["overlap"])
 ```
 
-# Risk contribution
+## Risk contribution
 
 $$
 \begin{aligned}
@@ -398,7 +401,7 @@ $$
 \end{aligned}
 $$
 
-* <http://faculty.washington.edu/ezivot/research/factormodelrisklecture_handout.pdf>
+-   <http://faculty.washington.edu/ezivot/research/factormodelrisklecture_handout.pdf>
 
 ```{python}
 def lm_mcr(x, y, weights, intercept):
@@ -425,7 +428,9 @@ def lm_mcr(x, y, weights, intercept):
 lm_mcr(overlap_x_df, overlap_y_df, weights, intercept) * np.sqrt(scale["periods"]) * np.sqrt(scale["overlap"])
 ```
 
-# Implied shocks
+# Scenario analysis
+
+## Implied shocks
 
 $$
 \begin{aligned}
@@ -452,7 +457,7 @@ overlap_z_df = overlap_x_df.iloc[:, [0, 1]]
 implied_shocks(shocks, overlap_x_df, overlap_z_df, weights)
 ```
 
-# Stress P&L
+## Stress P&L
 
 ```{python}
 def pnl_stress(shocks, x, y, z, weights, intercept):

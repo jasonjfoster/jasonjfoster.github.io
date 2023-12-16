@@ -1,0 +1,62 @@
+### Marchenko--Pastur distribution
+
+Marchenko--Pastur distribution is the limiting distribution of eigenvalues of Wishart matrices as the matrix dimension $m$ and degrees of freedom $n$ both tend to infinity with ratio $m/n\,\to \,\lambda\in(0,+\infty)$:
+
+$$
+\begin{aligned}
+d\nu(x)&={\frac {1}{2\pi\sigma ^{2}}}{\frac{\sqrt{(\lambda_{+}-x)(x-\lambda_{-})}}{\lambda x}}\,\mathbf{1}_{x\in[\lambda_{-},\lambda _{+}]}\,dx
+\end{aligned}
+$$
+
+with
+
+$$
+\begin{aligned}
+\lambda_{\pm}&=\sigma^{2}(1\pm{\sqrt{\lambda }})^{2}
+\end{aligned}
+$$
+
+```{python}
+# https://en.wikipedia.org/wiki/Marchenko%E2%80%93Pastur_distribution
+# https://faculty.baruch.cuny.edu/jgatheral/RandomMatrixCovariance2008.pdf
+def dmp(x, sigma = 1):
+    
+    L, V = np.linalg.eig(np.cov(x.T, ddof = 1))
+    idx = L.argsort()[::-1]
+    L = L[idx]
+    
+    lmbda = x.shape[1] / x.shape[0]
+    lower = sigma * (1 - np.sqrt(lmbda)) ** 2
+    upper = sigma * (1 + np.sqrt(lmbda)) ** 2
+    
+    d = np.where((L <= lower) | (L >= upper), 0,
+                 1 / (2 * np.pi * sigma * lmbda * L) * np.sqrt((upper - L) * (L - lower)))
+    
+    return d
+```
+
+```{python}
+n_sim = 5000
+n_cols = 1000
+```
+
+```{python}
+data_sim = np.random.normal(size = n_sim * n_cols).reshape((n_sim, n_cols))
+```
+
+```{python}
+L, V = np.linalg.eig(np.cov(data_sim.T, ddof = 1))
+idx = L.argsort()[::-1]
+L = L[idx]
+```
+
+```{python}
+dmp_df = pd.DataFrame.from_dict({"evals": L,
+                                 "dmp": dmp(data_sim)})
+```
+
+```{r, fig.width = 4, fig.height = 3}
+dmp_plt <- plot_density(py$dmp_df, x = "evals", y = "dmp",
+                        title = "Marchenko-Pastur distribution", xlab = "Eigenvalues", ylab = "Density")
+print(dmp_plt)
+```

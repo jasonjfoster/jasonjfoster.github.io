@@ -75,13 +75,15 @@ overlap_x_xts <- tail(overlap_xts[ , factors], width)
 overlap_y_xts <- tail(overlap_xts[ , tickers], width)
 ```
 
-# Ordinary least squares
+# Regression analysis
+
+## Ordinary least squares
 
 ```{r}
 intercept <- TRUE
 ```
 
-## Coefficients
+### Coefficients
 
 $$
 \begin{aligned}
@@ -89,7 +91,7 @@ $$
 \end{aligned}
 $$
 
-* <https://faculty.washington.edu/ezivot/research/factormodellecture_handout.pdf>
+-   <https://faculty.washington.edu/ezivot/research/factormodellecture_handout.pdf>
 
 ```{r}
 lm_coef <- function(x, y, weights, intercept) {
@@ -117,7 +119,7 @@ if (intercept) {
 coef(fit)
 ```
 
-## R-squared
+### R-squared
 
 $$
 \begin{aligned}
@@ -153,7 +155,7 @@ lm_rsq(overlap_x_xts, overlap_y_xts, weights, intercept)
 summary(fit)$r.squared
 ```
 
-## Standard errors
+### Standard errors
 
 $$
 \begin{aligned}
@@ -164,7 +166,7 @@ $$
 \end{aligned}
 $$
 
-* <http://people.duke.edu/~rnau/mathreg.htm>
+-   <http://people.duke.edu/~rnau/mathreg.htm>
 
 ```{r}
 lm_se <- function(x, y, weights, intercept) {
@@ -202,8 +204,7 @@ lm_se(overlap_x_xts, overlap_y_xts, weights, intercept)
 coef(summary(fit))[ , "Std. Error"]
 ```
 
-# Principal component regression
-
+## Principal component regression
 
 ```{r, message = FALSE}
 library(pls)
@@ -213,7 +214,7 @@ library(pls)
 comps <- 1
 ```
 
-## Coefficients
+### Coefficients
 
 $$
 \begin{aligned}
@@ -223,7 +224,7 @@ W_{k}&=\mathbf{X}V_{k}=[\mathbf{X}\mathbf{v}_{1},\ldots,\mathbf{X}\mathbf{v}_{k}
 \end{aligned}
 $$
 
-* <https://en.wikipedia.org/wiki/Principal_component_regression>
+-   <https://en.wikipedia.org/wiki/Principal_component_regression>
 
 ```{r}
 pcr_coef <- function(x, y, comps) {
@@ -260,7 +261,7 @@ fit <- pcr(reformulate(termlabels = ".", response = tickers),
 coef(fit)[ , , 1]
 ```
 
-## R-squared
+### R-squared
 
 ```{r}
 pcr_rsq <- function(x, y, comps) {
@@ -289,7 +290,7 @@ pcr_rsq(overlap_x_xts, overlap_y_xts, comps)
 R2(fit)$val[comps + 1]
 ```
 
-## Standard errors
+### Standard errors
 
 $$
 \begin{aligned}
@@ -334,9 +335,11 @@ pcr_se(scale_x_xts, overlap_y_xts, comps)
 pcr_se(overlap_x_xts, overlap_y_xts, comps)
 ```
 
-# Partial least squares
+## Partial least squares
 
-# Standalone risk
+# Risk decomposition
+
+## Standalone risk
 
 $$
 \begin{aligned}
@@ -370,7 +373,7 @@ lm_sar <- function(x, y, weights, intercept) {
 lm_sar(overlap_x_xts, overlap_y_xts, weights, intercept) * sqrt(scale[["periods"]]) * sqrt(scale[["overlap"]])
 ```
 
-# Risk contribution
+## Risk contribution
 
 $$
 \begin{aligned}
@@ -380,7 +383,7 @@ $$
 \end{aligned}
 $$
 
-* <http://faculty.washington.edu/ezivot/research/factormodelrisklecture_handout.pdf>
+-   <http://faculty.washington.edu/ezivot/research/factormodelrisklecture_handout.pdf>
 
 ```{r}
 lm_mcr <- function(x, y, weights, intercept) {
@@ -407,7 +410,9 @@ lm_mcr <- function(x, y, weights, intercept) {
 lm_mcr(overlap_x_xts, overlap_y_xts, weights, intercept) * sqrt(scale[["periods"]]) * sqrt(scale[["overlap"]])
 ```
 
-# Implied shocks
+# Scenario analysis
+
+## Implied shocks
 
 $$
 \begin{aligned}
@@ -436,7 +441,7 @@ overlap_z_xts <- overlap_x_xts[ , 1:2]
 implied_shocks(shocks, overlap_x_xts, overlap_z_xts, weights)
 ```
 
-# Stress P&L
+## Stress P&L
 
 ```{r}
 pnl_stress <- function(shocks, x, y, z, weights, intercept) {

@@ -260,138 +260,6 @@ clean_plt <- plot_ts(clean_mlt, title = "Eigenvector 1Y")
 print(clean_plt)
 ```
 
-<!-- ### Contour ellipsoid -->
-
-<!-- The contours of a multivariate normal (MVN) distribution are ellipsoids centered at the mean. The directions of the axes are given by the eigenvectors of the covariance matrix and squared lengths are given by the eigenvalues: -->
-
-<!-- $$ -->
-<!-- \begin{aligned} -->
-<!-- ({\mathbf{x}}-{\boldsymbol{\mu}})^{\mathrm{T}}{\boldsymbol{\Sigma}}^{-1}({\mathbf{x}}-{\boldsymbol{\mu}})=c^{2} -->
-<!-- \end{aligned} -->
-<!-- $$ -->
-
-<!-- Or, in general parametric form: -->
-
-<!-- $$ -->
-<!-- \begin{aligned} -->
-<!-- X(t)&=X_{c}+a\,\cos t\,\cos \varphi -b\,\sin t\,\sin \varphi\\ -->
-<!-- Y(t)&=Y_{c}+a\,\cos t\,\sin \varphi +b\,\sin t\,\cos \varphi -->
-<!-- \end{aligned} -->
-<!-- $$ where $t$ varies from $0,\ldots,2\pi$. Here $(X_{c},Y_{c})$ is the center of the ellipse and $\varphi$ is the angle between the x-axis and the major axis of the ellipse. -->
-
-<!-- Specifically: -->
-
-<!-- $$ -->
-<!-- \begin{aligned} -->
-<!-- &\text{Center: }\boldsymbol{\mu}=(X_{c},Y_{c})\\ -->
-<!-- &\text{Radius: }c^{2}= \chi_{\alpha}^{2}(df)\\ -->
-<!-- &\text{Length: }a=c\sqrt{\lambda_{k}}\\ -->
-<!-- &\text{Angle of rotation: }\varphi=\text{atan2}\left(\frac{V_{k}(2)}{V_{k}(1)}\right) -->
-<!-- \end{aligned} -->
-<!-- $$ -->
-
-<!-- ```{python} -->
-<!-- # https://www.visiondummy.com/2014/04/draw-error-ellipse-representing-covariance-matrix/ -->
-<!-- # https://maitra.public.iastate.edu/stat501/lectures/MultivariateNormalDistribution-I.pdf -->
-<!-- # https://en.wikipedia.org/wiki/Multivariate_normal_distribution -->
-<!-- # https://en.wikipedia.org/wiki/Ellipse#General_parametric_form -->
-<!-- def ellipse(n_sim, x, y, sigma): -->
-
-<!--     data = np.concatenate((x, y), axis = 1) -->
-<!--     L, V = np.linalg.eig(np.cov(data.T, ddof = 1)) -->
-<!--     idx = L.argsort()[::-1] -->
-<!--     L = L[idx] -->
-<!--     V = V[:, idx] -->
-
-<!--     c = np.sqrt(chi2.ppf(norm.cdf(sigma), 2)) -->
-<!--     t = np.linspace(0, 2 * np.pi, n_sim) -->
-<!--     phi = np.arctan2(V[1, 0], V[0, 0]) -->
-<!--     a = c * np.sqrt(L[0]) * np.cos(t) -->
-<!--     b = c * np.sqrt(L[1]) * np.sin(t) -->
-<!--     R = np.matrix([[np.cos(phi), np.sin(phi)], [-np.sin(phi), np.cos(phi)]]) -->
-<!--     r = np.matmul(np.matrix([a, b]).T, R) -->
-
-<!--     result = np.add(r, np.mean(data, axis = 0)) # 2D only -->
-
-<!--     return result -->
-<!-- ``` -->
-
-<!-- ```{python} -->
-<!-- returns_x_df = returns_df.dropna()["returns"][factors]  -->
-<!-- returns_x_mat = np.matrix(returns_x_df) # extended history -->
-<!-- ellipse_x_mat = ellipse(1000, returns_x_mat[:, [0]], returns_x_mat[:, [2]], 1) -->
-<!-- ``` -->
-
-<!-- ```{r, fig.width = 3, fig.height = 3} -->
-<!-- ellipse_plt <- plot_scatter(data.table(py$returns_x_mat[ , c(1, 3)]), x = "V1", y = "V2", -->
-<!--                             title = "Return 1D (%)", xlab = "SP500", ylab = "DGS10") + -->
-<!--   geom_point(data = data.table(py$ellipse_x_mat), aes(x = V1 * 100, y = V2 * 100)) -->
-<!-- print(ellipse_plt) -->
-<!-- ``` -->
-
-<!-- ### Marchenko--Pastur distribution -->
-
-<!-- Marchenko--Pastur distribution is the limiting distribution of eigenvalues of Wishart matrices as the matrix dimension $m$ and degrees of freedom $n$ both tend to infinity with ratio $m/n\,\to \,\lambda\in(0,+\infty)$: -->
-
-<!-- $$ -->
-<!-- \begin{aligned} -->
-<!-- d\nu(x)&={\frac {1}{2\pi\sigma ^{2}}}{\frac{\sqrt{(\lambda_{+}-x)(x-\lambda_{-})}}{\lambda x}}\,\mathbf{1}_{x\in[\lambda_{-},\lambda _{+}]}\,dx -->
-<!-- \end{aligned} -->
-<!-- $$ -->
-
-<!-- with -->
-
-<!-- $$ -->
-<!-- \begin{aligned} -->
-<!-- \lambda_{\pm}&=\sigma^{2}(1\pm{\sqrt{\lambda }})^{2} -->
-<!-- \end{aligned} -->
-<!-- $$ -->
-
-<!-- ```{python} -->
-<!-- # https://en.wikipedia.org/wiki/Marchenko%E2%80%93Pastur_distribution -->
-<!-- # https://faculty.baruch.cuny.edu/jgatheral/RandomMatrixCovariance2008.pdf -->
-<!-- def dmp(x, sigma = 1): -->
-
-<!--     L, V = np.linalg.eig(np.cov(x.T, ddof = 1)) -->
-<!--     idx = L.argsort()[::-1] -->
-<!--     L = L[idx] -->
-
-<!--     lmbda = x.shape[1] / x.shape[0] -->
-<!--     lower = sigma * (1 - np.sqrt(lmbda)) ** 2 -->
-<!--     upper = sigma * (1 + np.sqrt(lmbda)) ** 2 -->
-
-<!--     d = np.where((L <= lower) | (L >= upper), 0, -->
-<!--                  1 / (2 * np.pi * sigma * lmbda * L) * np.sqrt((upper - L) * (L - lower))) -->
-
-<!--     return d -->
-<!-- ``` -->
-
-<!-- ```{python} -->
-<!-- n_sim = 5000 -->
-<!-- n_cols = 1000 -->
-<!-- ``` -->
-
-<!-- ```{python} -->
-<!-- data_sim = np.random.normal(size = n_sim * n_cols).reshape((n_sim, n_cols)) -->
-<!-- ``` -->
-
-<!-- ```{python} -->
-<!-- L, V = np.linalg.eig(np.cov(data_sim.T, ddof = 1)) -->
-<!-- idx = L.argsort()[::-1] -->
-<!-- L = L[idx] -->
-<!-- ``` -->
-
-<!-- ```{python} -->
-<!-- dmp_df = pd.DataFrame.from_dict({"evals": L, -->
-<!--                                  "dmp": dmp(data_sim)}) -->
-<!-- ``` -->
-
-<!-- ```{r, fig.width = 4, fig.height = 3} -->
-<!-- dmp_plt <- plot_density(py$dmp_df, x = "evals", y = "dmp", -->
-<!--                         title = "Marchenko-Pastur distribution", xlab = "Eigenvalues", ylab = "Density") -->
-<!-- print(dmp_plt) -->
-<!-- ``` -->
-
 ## Random portfolios
 
 Need to generate uniformly distributed weights $\mathbf{w}=(w_{1},w_{2},\ldots,w_{N})$ such that $\sum_{j=1}^{N}w_{i}=1$ and $w_{i}\geq0$:
@@ -728,14 +596,21 @@ np.sqrt(np.matmul(np.transpose(params3), np.matmul(sigma, params3)))
 <!-- ### Prior distribution -->
 
 <!-- $$ -->
+
 <!-- \begin{aligned} -->
+
 <!-- \text{Risk aversion: } &\lambda=\frac{E(r)-r_{f}}{\sigma^{2}}=\frac{IR}{\sigma}\\ -->
+
 <!-- \text{Implied returns: } &\Pi=\lambda\Sigma w\\ -->
+
 <!-- \text{Distribution: } &N\sim(\Pi,\tau\Sigma) -->
+
 <!-- \end{aligned} -->
+
 <!-- $$ -->
 
 <!-- ```{python} -->
+
 <!-- def implied_pnl(params, ir, sigma): -->
 
 <!--     lmbda = ir / np.sqrt(np.matmul(np.transpose(params), np.matmul(sigma, params))) -->
@@ -743,94 +618,157 @@ np.sqrt(np.matmul(np.transpose(params3), np.matmul(sigma, params3)))
 <!--     result = np.matmul(lmbda * sigma, params) -->
 
 <!--     return result -->
+
 <!-- ``` -->
 
 <!-- ```{python} -->
+
 <!-- implied_pnl(params3, ir, sigma) -->
+
 <!-- ``` -->
 
 <!-- ### Conditional distribution -->
 
 <!-- $$ -->
+
 <!-- \begin{aligned} -->
+
 <!-- \text{Prior mean variance: } &\tau\in(0.01, 0.05)\approx(0.025)\\ -->
+
 <!-- \text{Asset views: } &\mathbf{P}={\begin{bmatrix} -->
+
 <!-- p_{11}&\cdots&p_{1n}\\ -->
+
 <!-- \vdots&\ddots&\vdots\\ -->
+
 <!-- p_{k1}&\cdots&p_{kn} -->
+
 <!-- \end{bmatrix}}= -->
+
 <!-- {\begin{bmatrix} -->
+
 <!-- 0&0&0&0&0&0&1&0\\ -->
+
 <!-- -1&1&0&0&0&0&0&0\\ -->
+
 <!-- 0&0&0.5&-0.5&0.5&-0.5&0&0 -->
+
 <!-- \end{bmatrix}}\\ -->
+
 <!-- \text{View returns: } &\mathbf{Q}={\begin{bmatrix} -->
+
 <!-- q_{1}\\ -->
+
 <!-- \vdots\\ -->
+
 <!-- q_{k} -->
+
 <!-- \end{bmatrix}}= -->
+
 <!-- {\begin{bmatrix} -->
+
 <!-- 0.0525\\ -->
+
 <!-- 0.0025\\ -->
+
 <!-- 0.0200 -->
+
 <!-- \end{bmatrix}}\\ -->
+
 <!-- \text{View confidence: } &\mathbf{C}={\begin{bmatrix} -->
+
 <!-- c_{1}\\ -->
+
 <!-- \vdots\\ -->
+
 <!-- c_{k} -->
+
 <!-- \end{bmatrix}}= -->
+
 <!-- {\begin{bmatrix} -->
+
 <!-- 0.2500\\ -->
+
 <!-- 0.5000\\ -->
+
 <!-- 0.6500 -->
+
 <!-- \end{bmatrix}}\\ -->
+
 <!-- \text{View covariance: } &\mathbf{\Omega}={\begin{bmatrix} -->
+
 <!-- \tau\left(\frac{1-c_{1}}{c_{1}}\right)\left(p_{1}\Sigma p_{1}^{T}\right)&0&0\\ -->
+
 <!-- 0&\ddots&0\\ -->
+
 <!-- 0&0&\tau\left(\frac{1-c_{k}}{c_{k}}\right)\left(p_{k}\Sigma p_{k}^{T}\right) -->
+
 <!-- \end{bmatrix}}\\ -->
+
 <!-- \text{Distribution: } &N\sim(\mathbf{Q}, \mathbf{\Omega}) -->
+
 <!-- \end{aligned} -->
+
 <!-- $$ -->
 
 <!-- ### Posterior distribution -->
 
 <!-- $$ -->
+
 <!-- \begin{aligned} -->
+
 <!-- \text{Implied returns: } &\hat{\Pi}=\Pi+\tau\Sigma \mathbf{P}^{T}\left(\tau \mathbf{P}\Sigma \mathbf{P}^{T}+\mathbf{\Omega}\right)^{-1}\left(\mathbf{Q}-\mathbf{P}\Pi^{T}\right)\\ -->
+
 <!-- \text{Covariance: } &\hat{\Sigma}=\Sigma+\tau\left[\Sigma-\Sigma\mathbf{P}^{T}\left(\tau\mathbf{P}\Sigma\mathbf{P}^{T}+\mathbf{\Omega}\right)^{-1}\tau\mathbf{P}\Sigma\right]\\ -->
+
 <!-- \text{Weights: } &\hat{w}=\hat{\Pi}\left(\lambda\Sigma\right)^{-1}\\ -->
+
 <!-- \text{Distribution: } &N\sim\left(\left[\left(\tau\Sigma\right)^{-1}+\mathbf{P}^{T}\Omega^{-1}\mathbf{P}\right]^{-1}\left[\left(\tau\Sigma\right)^{-1}\Pi+\mathbf{P}^{T}\Omega^{-1}\mathbf{Q}\right],\left[\left(\tau\Sigma\right)^{-1}+\mathbf{P}^{T}\Omega^{-1}\mathbf{P}\right]^{-1}\right) -->
+
 <!-- \end{aligned} -->
+
 <!-- $$ -->
 
 <!-- ```{python} -->
+
 <!-- def black_litterman(params, ir, sigma, views): -->
 
 <!--     # prior distribution -->
+
 <!--     weights_prior = params -->
+
 <!--     sigma_prior = sigma -->
+
 <!--     lmbda = ir / np.sqrt(np.matmul(np.transpose(weights_prior), np.matmul(sigma_prior, weights_prior))) -->
+
 <!--     pi_prior = np.transpose(np.matrix(np.matmul(lmbda * sigma_prior, weights_prior))) -->
 
 <!--     # matrix calculations -->
+
 <!--     matmul_left = np.multiply(views["tau"], np.matmul(sigma_prior, views["P"].T)) -->
+
 <!--     matmul_mid = np.multiply(views["tau"], np.matmul(views["P"], np.matmul(sigma_prior, views["P"].T))) -->
+
 <!--     matmul_right = views["Q"] - np.matmul(views["P"], pi_prior) -->
 
 <!--     # conditional distribution -->
+
 <!--     omega = np.diag(np.diag(np.matmul(np.diag([(1 - x) / x for x in views["C"]]), matmul_mid))) -->
 
 <!--     # posterior distribution -->
+
 <!--     pi_posterior = pi_prior + np.matmul(matmul_left, np.matmul(np.linalg.inv(matmul_mid + omega), matmul_right)) -->
 
 <!--     sigma_posterior = sigma_prior + np.multiply(views["tau"], sigma_prior) - \ -->
+
 <!--         np.matmul(matmul_left, np.matmul(np.linalg.inv(matmul_mid + omega), -->
+
 <!--                                          np.multiply(views["tau"], np.matmul(views["P"], sigma_prior)))) -->
 
 <!--     weights_posterior = np.matmul(pi_posterior.T, np.linalg.inv(lmbda * sigma_prior)) -->
 
 <!--     # implied confidence -->
+
 <!--     pi_posterior_100 = pi_prior + np.matmul(matmul_left, np.matmul(np.linalg.inv(matmul_mid), matmul_right)) -->
 
 <!--     weights_posterior_100 = np.matmul(pi_posterior_100.T, np.linalg.inv(lmbda * sigma_prior)) -->
@@ -838,41 +776,65 @@ np.sqrt(np.matmul(np.transpose(params3), np.matmul(sigma, params3)))
 <!--     implied_confidence = (weights_posterior - weights_prior) / (weights_posterior_100 - weights_prior) -->
 
 <!--     result = {"implied_confidence": implied_confidence, -->
+
 <!--               "weights_prior": np.matrix(weights_prior), -->
+
 <!--               "weights_posterior": weights_posterior, -->
+
 <!--               "pi_prior": np.transpose(pi_prior), -->
+
 <!--               "pi_posterior": np.transpose(pi_posterior), -->
+
 <!--               "sigma_prior": sigma_prior, -->
+
 <!--               "sigma_posterior": sigma_posterior} -->
 
 <!--     return result -->
+
 <!-- ``` -->
 
 <!-- ```{python} -->
+
 <!-- tau = 0.025 -->
+
 <!-- P = np.diag([1] * len(factors)) -->
+
 <!-- Q = np.transpose(np.matrix(implied_shocks([0.1], overlap_x_mat, overlap_x_mat[:, 0], 1))) -->
+
 <!-- C = [0.95] * len(factors) -->
+
 <!-- views = {"tau": tau, "P": P, "Q": Q, "C": C} -->
+
 <!-- ``` -->
 
 <!-- ```{python} -->
+
 <!-- bl = black_litterman(params3, ir, sigma, views) -->
+
 <!-- bl -->
+
 <!-- ``` -->
 
 <!-- ```{python} -->
+
 <!-- params4 = np.array(bl["weights_posterior"])[0] -->
+
 <!-- params4 = params4 / sum(params4) # no leverage -->
+
 <!-- params4 -->
+
 <!-- ``` -->
 
 <!-- ```{python} -->
+
 <!-- np.matmul(mu, params4) -->
+
 <!-- ``` -->
 
 <!-- ```{python} -->
+
 <!-- np.sqrt(np.matmul(np.transpose(params4), np.matmul(sigma, params4))) -->
+
 <!-- ``` -->
 
 ## Risk parity

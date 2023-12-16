@@ -1,0 +1,68 @@
+### Contour ellipsoid
+
+The contours of a multivariate normal (MVN) distribution are ellipsoids centered at the mean. The directions of the axes are given by the eigenvectors of the covariance matrix and squared lengths are given by the eigenvalues:
+
+$$
+\begin{aligned}
+({\mathbf{x}}-{\boldsymbol{\mu}})^{\mathrm{T}}{\boldsymbol{\Sigma}}^{-1}({\mathbf{x}}-{\boldsymbol{\mu}})=c^{2}
+\end{aligned}
+$$
+
+Or, in general parametric form:
+
+$$
+\begin{aligned}
+X(t)&=X_{c}+a\,\cos t\,\cos \varphi -b\,\sin t\,\sin \varphi\\
+Y(t)&=Y_{c}+a\,\cos t\,\sin \varphi +b\,\sin t\,\cos \varphi
+\end{aligned}
+$$ where $t$ varies from $0,\ldots,2\pi$. Here $(X_{c},Y_{c})$ is the center of the ellipse and $\varphi$ is the angle between the x-axis and the major axis of the ellipse.
+
+Specifically:
+
+$$
+\begin{aligned}
+&\text{Center: }\boldsymbol{\mu}=(X_{c},Y_{c})\\
+&\text{Radius: }c^{2}= \chi_{\alpha}^{2}(df)\\
+&\text{Length: }a=c\sqrt{\lambda_{k}}\\
+&\text{Angle of rotation: }\varphi=\text{atan2}\left(\frac{V_{k}(2)}{V_{k}(1)}\right)
+\end{aligned}
+$$
+
+```{python}
+# https://www.visiondummy.com/2014/04/draw-error-ellipse-representing-covariance-matrix/
+# https://maitra.public.iastate.edu/stat501/lectures/MultivariateNormalDistribution-I.pdf
+# https://en.wikipedia.org/wiki/Multivariate_normal_distribution
+# https://en.wikipedia.org/wiki/Ellipse#General_parametric_form
+def ellipse(n_sim, x, y, sigma):
+
+    data = np.concatenate((x, y), axis = 1)
+    L, V = np.linalg.eig(np.cov(data.T, ddof = 1))
+    idx = L.argsort()[::-1]
+    L = L[idx]
+    V = V[:, idx]
+
+    c = np.sqrt(chi2.ppf(norm.cdf(sigma), 2))
+    t = np.linspace(0, 2 * np.pi, n_sim)
+    phi = np.arctan2(V[1, 0], V[0, 0])
+    a = c * np.sqrt(L[0]) * np.cos(t)
+    b = c * np.sqrt(L[1]) * np.sin(t)
+    R = np.matrix([[np.cos(phi), np.sin(phi)], [-np.sin(phi), np.cos(phi)]])
+    r = np.matmul(np.matrix([a, b]).T, R)
+
+    result = np.add(r, np.mean(data, axis = 0)) # 2D only
+
+    return result
+```
+
+```{python}
+returns_x_df = returns_df.dropna()["returns"][factors]
+returns_x_mat = np.matrix(returns_x_df) # extended history
+ellipse_x_mat = ellipse(1000, returns_x_mat[:, [0]], returns_x_mat[:, [2]], 1)
+```
+
+```{r, fig.width = 3, fig.height = 3}
+ellipse_plt <- plot_scatter(data.table(py$returns_x_mat[ , c(1, 3)]), x = "V1", y = "V2",
+                            title = "Return 1D (%)", xlab = "SP500", ylab = "DGS10") +
+  geom_point(data = data.table(py$ellipse_x_mat), aes(x = V1 * 100, y = V2 * 100))
+print(ellipse_plt)
+```

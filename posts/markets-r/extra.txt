@@ -1,0 +1,68 @@
+## Contour ellipsoid
+
+The contours of a multivariate normal (MVN) distribution are ellipsoids centered at the mean. The directions of the axes are given by the eigenvectors of the covariance matrix and squared lengths are given by the eigenvalues:
+
+$$
+\begin{aligned}
+({\mathbf{x}}-{\boldsymbol{\mu}})^{\mathrm{T}}{\boldsymbol{\Sigma}}^{-1}({\mathbf{x}}-{\boldsymbol{\mu}})=c^{2}
+\end{aligned}
+$$
+
+Or, in general parametric form:
+
+$$
+\begin{aligned}
+X(t)&=X_{c}+a\,\cos t\,\cos \varphi -b\,\sin t\,\sin \varphi\\
+Y(t)&=Y_{c}+a\,\cos t\,\sin \varphi +b\,\sin t\,\cos \varphi
+\end{aligned}
+$$ where $t$ varies from $0,\ldots,2\pi$. Here $(X_{c},Y_{c})$ is the center of the ellipse and $\varphi$ is the angle between the x-axis and the major axis of the ellipse.
+
+Specifically:
+
+$$
+\begin{aligned}
+&\text{Center: }\boldsymbol{\mu}=(X_{c},Y_{c})\\
+&\text{Radius: }c^{2}= \chi_{\alpha}^{2}(df)\\
+&\text{Length: }a=c\sqrt{\lambda_{k}}\\
+&\text{Angle of rotation: }\varphi=\text{atan2}\left(\frac{V_{k}(2)}{V_{k}(1)}\right)
+\end{aligned}
+$$
+
+```{r}
+# https://www.visiondummy.com/2014/04/draw-error-ellipse-representing-covariance-matrix/
+# https://maitra.public.iastate.edu/stat501/lectures/MultivariateNormalDistribution-I.pdf
+# https://en.wikipedia.org/wiki/Multivariate_normal_distribution
+# https://en.wikipedia.org/wiki/Ellipse#General_parametric_form
+ellipse <- function(n_sim, x, y, sigma) {
+    
+    data <- cbind(x, y)
+    LV <- eigen(cov(data))
+    L <- LV$values
+    V <- LV$vectors
+    
+    c <- sqrt(qchisq(pnorm(sigma), 2))
+    t <- seq(0, 2 * pi, len = n_sim)
+    phi <- atan2(V[2, 1], V[1, 1])
+    a <- c * sqrt(L[1]) * cos(t)
+    b <- c * sqrt(L[2]) * sin(t)
+    R <- matrix(c(cos(phi), -sin(phi), sin(phi), cos(phi)), nrow = 2, ncol = 2)
+    r <- t(rbind(a, b)) %*% R
+    
+    result <- sweep(r, 2, colMeans(data), "+") # 2D only
+    
+    return(result)
+    
+}
+```
+
+```{r}
+returns_x_xts <- na.omit(returns_xts)[ , factors] # extended history
+ellipse_x_xts <- ellipse(1000, returns_x_xts[ , 1], returns_x_xts[ , 3], 1)
+```
+
+```{r, fig.width = 3, fig.height = 3}
+ellipse_plt <- plot_scatter(data.table(returns_x_xts[ , c(1, 3)]), x = "SP500", y = "DGS10",
+                            title = "Return 1D (%)") +
+  geom_point(data = data.table(ellipse_x_xts), aes(x = V1 * 100, y = V2 * 100))
+print(ellipse_plt)
+```

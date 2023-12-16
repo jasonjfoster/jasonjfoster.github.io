@@ -1,0 +1,57 @@
+## Marchenko--Pastur distribution
+
+Marchenko--Pastur distribution is the limiting distribution of eigenvalues of Wishart matrices as the matrix dimension $m$ and degrees of freedom $n$ both tend to infinity with ratio $m/n\,\to \,\lambda\in(0,+\infty)$:
+
+$$
+\begin{aligned}
+d\nu(x)&={\frac {1}{2\pi\sigma ^{2}}}{\frac{\sqrt{(\lambda_{+}-x)(x-\lambda_{-})}}{\lambda x}}\,\mathbf{1}_{x\in[\lambda_{-},\lambda _{+}]}\,dx
+\end{aligned}
+$$
+
+with
+
+$$
+\begin{aligned}
+\lambda_{\pm}&=\sigma^{2}(1\pm{\sqrt{\lambda }})^{2}
+\end{aligned}
+$$
+
+```{r}
+# https://en.wikipedia.org/wiki/Marchenko%E2%80%93Pastur_distribution
+# https://faculty.baruch.cuny.edu/jgatheral/RandomMatrixCovariance2008.pdf
+dmp <- function(x, sigma = 1) {
+  
+  LV <- eigen(cov(x))
+  L <- LV$values
+  
+  lmbda <- ncol(x) / nrow(x)
+  lower <- sigma * (1 - sqrt(lmbda)) ^ 2
+  upper <- sigma * (1 + sqrt(lmbda)) ^ 2
+  
+  d <- ifelse((L <= lower) | (L >= upper), 0,
+              1 / (2 * pi * sigma * lmbda * L) * sqrt((upper - L) * (L - lower)))
+  
+  return(d)
+  
+}
+```
+
+```{r}
+n_sim <- 5000
+n_cols <- 1000
+```
+
+```{r}
+data_sim <- matrix(rnorm(n_sim * n_cols), nrow = n_sim, ncol = n_cols)
+```
+
+```{r, warning = FALSE}
+dmp_dt <- data.table(evals = eigen(cov(data_sim))$values,
+                     dmp = dmp(data_sim))
+```
+
+```{r, fig.width = 4, fig.height = 3}
+dmp_plt <- plot_density(dmp_dt, x = "evals", y = "dmp",
+                        title = "Marchenko-Pastur distribution", xlab = "Eigenvalues", ylab = "Density")
+print(dmp_plt)
+```
