@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Jason Foster">
-<meta name="dcterms.date" content="2023-12-15">
+<meta name="dcterms.date" content="2023-12-16">
 
 <title>jjf234.github.io - Markets</title>
 <style>
@@ -157,7 +157,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <div>
       <div class="quarto-title-meta-heading">Published</div>
       <div class="quarto-title-meta-contents">
-        <p class="date">December 15, 2023</p>
+        <p class="date">December 16, 2023</p>
       </div>
     </div>
     
@@ -179,7 +179,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#expected-value" id="toc-expected-value" class="nav-link" data-scroll-target="#expected-value">Expected value</a></li>
   <li><a href="#variance" id="toc-variance" class="nav-link" data-scroll-target="#variance">Variance</a></li>
   </ul></li>
-  <li><a href="#outlier-detection" id="toc-outlier-detection" class="nav-link" data-scroll-target="#outlier-detection">Outlier detection</a></li>
+  <li><a href="#outlier-detection" id="toc-outlier-detection" class="nav-link" data-scroll-target="#outlier-detection">Outlier detection</a>
+  <ul class="collapse">
+  <li><a href="#interquartile-range" id="toc-interquartile-range" class="nav-link" data-scroll-target="#interquartile-range">Interquartile range</a></li>
+  <li><a href="#contour-ellipsoid" id="toc-contour-ellipsoid" class="nav-link" data-scroll-target="#contour-ellipsoid">Contour ellipsoid</a></li>
+  </ul></li>
   <li><a href="#granger-causality" id="toc-granger-causality" class="nav-link" data-scroll-target="#granger-causality">Granger causality</a></li>
   </ul>
 </nav>
@@ -292,10 +296,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="outlier-detection" class="level1">
 <h1>Outlier detection</h1>
+<section id="interquartile-range" class="level2">
+<h2 class="anchored" data-anchor-id="interquartile-range">Interquartile range</h2>
 <p>Outliers are defined the regression residuals that fall below <span class="math inline">\(Q_{1}−1.5\times IQR\)</span> or above <span class="math inline">\(Q_{3}+1.5\times IQR\)</span>:</p>
 <ul>
 <li><a href="https://stats.stackexchange.com/a/1153" class="uri">https://stats.stackexchange.com/a/1153</a></li>
 <li><a href="https://stats.stackexchange.com/a/108951" class="uri">https://stats.stackexchange.com/a/108951</a></li>
+<li><a href="https://robjhyndman.com/hyndsight/tsoutliers/" class="uri">https://robjhyndman.com/hyndsight/tsoutliers/</a></li>
 </ul>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>outliers <span class="ot">&lt;-</span> <span class="cf">function</span>(z) {</span>
@@ -341,6 +348,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p><img src="index_files/figure-html/unnamed-chunk-16-1.png" class="img-fluid" width="768"></p>
 </div>
 </div>
+</section>
+<section id="contour-ellipsoid" class="level2">
+<h2 class="anchored" data-anchor-id="contour-ellipsoid">Contour ellipsoid</h2>
+</section>
 </section>
 <section id="granger-causality" class="level1">
 <h1>Granger causality</h1>

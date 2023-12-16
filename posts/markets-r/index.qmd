@@ -137,10 +137,13 @@ print(score_plt)
 
 # Outlier detection
 
+## Interquartile range
+
 Outliers are defined the regression residuals that fall below $Q_{1}−1.5\times IQR$ or above $Q_{3}+1.5\times IQR$:
 
 -   <https://stats.stackexchange.com/a/1153>
 -   <https://stats.stackexchange.com/a/108951>
+-   <https://robjhyndman.com/hyndsight/tsoutliers/>
 
 ```{r}
 outliers <- function(z) {
@@ -189,6 +192,8 @@ outliers_plt <- score_plt +
   geom_point(data = outliers_mlt, aes(x = index, y = value, fill = variable))
 print(outliers_plt)
 ```
+
+## Contour ellipsoid
 
 # Granger causality
 
