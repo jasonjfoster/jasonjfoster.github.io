@@ -1,5 +1,5 @@
 ---
-title: "Portfolios"
+title: "Eigen"
 author: "[Jason Foster](mailto:jason.j.foster@gmail.com)"
 date: last-modified
 categories:
@@ -51,11 +51,6 @@ returns_xts <- do.call(merge, lapply(factors, function(i) {
 overlap_xts <- roll_mean(returns_xts, scale[["overlap"]], min_obs = 1, na_restore = TRUE)
 ```
 
-```{r, message = FALSE}
-library(pls)
-library(CVXR)
-```
-
 ```{r}
 tickers <- "BAICX" # fund inception date is "2011-11-28" 
 invisible(getSymbols(tickers, src = "tiingo", api.key = Sys.getenv("TIINGO_API_KEY"), adjust = TRUE))
@@ -95,8 +90,9 @@ $$
 \end{aligned}
 $$
 
+-   <https://www.r-bloggers.com/fixing-non-positive-definite-correlation-matrices-using-r-2/>
+
 ```{r}
-# https://www.r-bloggers.com/fixing-non-positive-definite-correlation-matrices-using-r-2/
 eigen_decomp <- function(x, comps) {
     
     LV <- eigen(cov(x))
@@ -208,14 +204,15 @@ comp <- 1
 raw_df <- roll_eigen1(overlap_x_df, width, comp)
 ```
 
-```{r, fig.width = 6, fig.height = 3}
+```{r, echo = FALSE, fig.width = 6, fig.height = 3}
 raw_mlt <- melt(as.data.table(raw_df), id.vars = "index")
 raw_plt <- plot_ts(raw_mlt, title = "Eigenvector 1Y")
 print(raw_plt)
 ```
 
+-   <https://quant.stackexchange.com/a/3095>
+
 ```{r}
-# https://quant.stackexchange.com/a/3095
 roll_eigen2 <- function(x, width, comp) {
     
     n_rows <- nrow(x)
@@ -251,7 +248,7 @@ roll_eigen2 <- function(x, width, comp) {
 clean_df <- roll_eigen2(overlap_x_df, width, comp)
 ```
 
-```{r, fig.width = 6, fig.height = 3}
+```{r, echo = FALSE, fig.width = 6, fig.height = 3}
 clean_mlt <- melt(as.data.table(clean_df), id.vars = "index")
 clean_plt <- plot_ts(clean_mlt, title = "Eigenvector 1Y")
 print(clean_plt)

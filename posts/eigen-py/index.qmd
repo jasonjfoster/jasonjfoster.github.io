@@ -55,11 +55,6 @@ returns_df = pd.concat([returns_df, overlap_df], keys = ["returns", "overlap"], 
 ```
 
 ```{python}
-# import datetime
-from scipy.optimize import minimize
-```
-
-```{python}
 import os
 ```
 
@@ -105,8 +100,9 @@ $$
 \end{aligned}
 $$
 
+-   <https://www.r-bloggers.com/fixing-non-positive-definite-correlation-matrices-using-r-2/>
+
 ```{python}
-# https://www.r-bloggers.com/fixing-non-positive-definite-correlation-matrices-using-r-2/
 def eigen_decomp(x, comps):
     
     L, V = np.linalg.eig(np.cov(x.T, ddof = 1))
@@ -214,15 +210,16 @@ comp = 1
 raw_df = roll_eigen1(overlap_x_df, width, comp)
 ```
 
-```{r, fig.width = 6, fig.height = 3}
+```{r, echo = FALSE, fig.width = 6, fig.height = 3}
 raw_mlt <- melt(as.data.table(py$raw_df, keep.rownames = "index"), id.vars = "index")
 raw_mlt[ , index := as.Date(index)]
 raw_plt <- plot_ts(raw_mlt, title = "Eigenvector 1Y")
 print(raw_plt)
 ```
 
+-   <https://quant.stackexchange.com/a/3095>
+
 ```{python}
-# https://quant.stackexchange.com/a/3095
 def roll_eigen2(x, width, comp):
     
     n_rows = len(x)
@@ -253,7 +250,7 @@ def roll_eigen2(x, width, comp):
 clean_df = roll_eigen2(overlap_x_df, width, comp)
 ```
 
-```{r, fig.width = 6, fig.height = 3}
+```{r, echo = FALSE, fig.width = 6, fig.height = 3}
 clean_mlt <- melt(as.data.table(py$clean_df, keep.rownames = "index"), id.vars = "index")
 clean_mlt[ , index := as.Date(index)]
 clean_plt <- plot_ts(clean_mlt, title = "Eigenvector 1Y")
