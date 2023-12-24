@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Jason Foster">
-<meta name="dcterms.date" content="2023-12-15">
+<meta name="dcterms.date" content="2023-12-24">
 
 <title>jjf234.github.io - Portfolios</title>
 <style>
@@ -157,7 +157,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <div>
       <div class="quarto-title-meta-heading">Published</div>
       <div class="quarto-title-meta-contents">
-        <p class="date">December 15, 2023</p>
+        <p class="date">December 24, 2023</p>
       </div>
     </div>
     
@@ -173,13 +173,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#principal-component-analysis" id="toc-principal-component-analysis" class="nav-link active" data-scroll-target="#principal-component-analysis">Principal component analysis</a>
-  <ul class="collapse">
-  <li><a href="#eigendecomposition" id="toc-eigendecomposition" class="nav-link" data-scroll-target="#eigendecomposition">Eigendecomposition</a></li>
-  <li><a href="#variance-explained" id="toc-variance-explained" class="nav-link" data-scroll-target="#variance-explained">Variance explained</a></li>
-  <li><a href="#cosine-similarity" id="toc-cosine-similarity" class="nav-link" data-scroll-target="#cosine-similarity">Cosine similarity</a></li>
-  </ul></li>
-  <li><a href="#random-portfolios" id="toc-random-portfolios" class="nav-link" data-scroll-target="#random-portfolios">Random portfolios</a>
+  <li><a href="#random-portfolios" id="toc-random-portfolios" class="nav-link active" data-scroll-target="#random-portfolios">Random portfolios</a>
   <ul class="collapse">
   <li><a href="#random-turnover" id="toc-random-turnover" class="nav-link" data-scroll-target="#random-turnover">Random turnover</a></li>
   </ul></li>
@@ -266,282 +260,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>overlap_x_mat <span class="op">=</span> np.matrix(overlap_x_df[<span class="op">-</span>width:])</span>
 <span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>overlap_y_mat <span class="op">=</span> np.matrix(overlap_y_df[<span class="op">-</span>width:])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<section id="principal-component-analysis" class="level2">
-<h2 class="anchored" data-anchor-id="principal-component-analysis">Principal component analysis</h2>
-<p>Underlying returns are structural bets that can be analyzed through dimension reduction techniques such as principal components analysis (PCA). Most empirical studies apply PCA to a covariance matrix (<em>note: for multi-asset portfolios, use the correlation matrix because asset-class variances are on different scales</em>) of equity returns (yield changes) and find that movements in the equity markets (yield curve) can be explained by a subset of principal components. For example, the yield curve can be decomposed in terms of shift, twist, and butterfly, respectively.</p>
-<section id="eigendecomposition" class="level3">
-<h3 class="anchored" data-anchor-id="eigendecomposition">Eigendecomposition</h3>
-<p><span class="math display">\[
-\begin{aligned}
-\boldsymbol{\Sigma}&amp;=\lambda_{1}\mathbf{v}_{1}\mathbf{v}_{1}^\mathrm{T}+\lambda_{2}\mathbf{v}_{2}\mathbf{v}_{2}^\mathrm{T}+\cdots+\lambda_{k}\mathbf{v}_{k}\mathbf{v}_{k}^\mathrm{T}\\
-&amp;=V\Lambda V^{\mathrm{T}}
-\end{aligned}
-\]</span></p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># https://www.r-bloggers.com/fixing-non-positive-definite-correlation-matrices-using-r-2/</span></span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> eigen_decomp(x, comps):</span>
-<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>    L, V <span class="op">=</span> np.linalg.eig(np.cov(x.T, ddof <span class="op">=</span> <span class="dv">1</span>))</span>
-<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>    idx <span class="op">=</span> L.argsort()[::<span class="op">-</span><span class="dv">1</span>]</span>
-<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>    L <span class="op">=</span> L[idx]</span>
-<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>    V <span class="op">=</span> V[:, idx]</span>
-<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>    L <span class="op">=</span> L[:comps]</span>
-<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>    V <span class="op">=</span> V[:, :comps]</span>
-<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> np.matmul(V, np.multiply(L, V.T))</span>
-<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>comps <span class="op">=</span> <span class="dv">1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>eigen_decomp(overlap_x_mat, comps) <span class="op">*</span> scale[<span class="st">"periods"</span>] <span class="op">*</span> scale[<span class="st">"overlap"</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>array([[ 2.10177072e-02, -4.77529237e-03,  5.86663972e-04,
-         1.43982775e-03],
-       [-4.77529237e-03,  1.08496217e-03, -1.33291988e-04,
-        -3.27133612e-04],
-       [ 5.86663972e-04, -1.33291988e-04,  1.63754596e-05,
-         4.01896867e-05],
-       [ 1.43982775e-03, -3.27133612e-04,  4.01896867e-05,
-         9.86360661e-05]])</code></pre>
-</div>
-</div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co"># np.cov(overlap_x_mat.T) * scale["periods"] * scale["overlap"]</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-</section>
-<section id="variance-explained" class="level3">
-<h3 class="anchored" data-anchor-id="variance-explained">Variance explained</h3>
-<p>We often look at the proportion of variance explained by the first <span class="math inline">\(i\)</span> principal components as an indication of how many components are needed.</p>
-<p><span class="math display">\[
-\begin{aligned}
-\frac{\sum_{j=1}^{i}{\lambda_{j}}}{\sum_{j=1}^{k}{\lambda_{j}}}
-\end{aligned}
-\]</span></p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> variance_explained(x):</span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>    L, V <span class="op">=</span> np.linalg.eig(np.cov(x.T, ddof <span class="op">=</span> <span class="dv">1</span>))   </span>
-<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>    idx <span class="op">=</span> L.argsort()[::<span class="op">-</span><span class="dv">1</span>]</span>
-<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>    L <span class="op">=</span> L[idx]</span>
-<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> L.cumsum() <span class="op">/</span> L.<span class="bu">sum</span>()</span>
-<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>variance_explained(overlap_x_mat)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>array([0.85645941, 0.99017229, 0.99659713, 1.        ])</code></pre>
-</div>
-</div>
-</section>
-<section id="cosine-similarity" class="level3">
-<h3 class="anchored" data-anchor-id="cosine-similarity">Cosine similarity</h3>
-<p>Also, a challenge of rolling PCA is to try to match the eigenvectors: may need to change the sign and order.</p>
-<p><span class="math display">\[
-\begin{aligned}
-\text{similarity}=\frac{\mathbf{A}\cdot\mathbf{B}}{\|\mathbf{A}\|\|\mathbf{B}\|}
-\end{aligned}
-\]</span></p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> eigen_vals(x):</span>
-<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>    L, V <span class="op">=</span> np.linalg.eig(np.cov(x.T, ddof <span class="op">=</span> <span class="dv">1</span>))</span>
-<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>    idx <span class="op">=</span> L.argsort()[::<span class="op">-</span><span class="dv">1</span>]</span>
-<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>    L <span class="op">=</span> L[idx]</span>
-<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> pd.DataFrame(L)</span>
-<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> eigen_vecs(x):</span>
-<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a>    L, V <span class="op">=</span> np.linalg.eig(np.cov(x.T, ddof <span class="op">=</span> <span class="dv">1</span>))</span>
-<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a>    idx <span class="op">=</span> L.argsort()[::<span class="op">-</span><span class="dv">1</span>]</span>
-<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a>    V <span class="op">=</span> V[:, idx]</span>
-<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb21-15"><a href="#cb21-15" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> pd.DataFrame(V)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> roll_eigen1(x, width, comp):</span>
-<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>    n_rows <span class="op">=</span> <span class="bu">len</span>(x)</span>
-<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> pd.DataFrame()</span>
-<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(width <span class="op">-</span> <span class="dv">1</span>, n_rows):</span>
-<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a>        idx <span class="op">=</span> <span class="bu">range</span>(<span class="bu">max</span>(i <span class="op">-</span> width <span class="op">+</span> <span class="dv">1</span>, <span class="dv">0</span>), i <span class="op">+</span> <span class="dv">1</span>)</span>
-<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a>        evec <span class="op">=</span> eigen_vecs(x.iloc[idx]).iloc[:, comp <span class="op">-</span> <span class="dv">1</span>]</span>
-<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a>        result <span class="op">=</span> result.append(evec.transpose())</span>
-<span id="cb22-11"><a href="#cb22-11" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb22-12"><a href="#cb22-12" aria-hidden="true" tabindex="-1"></a>    result.index <span class="op">=</span> x.index[(width <span class="op">-</span> <span class="dv">1</span>):]</span>
-<span id="cb22-13"><a href="#cb22-13" aria-hidden="true" tabindex="-1"></a>    result.columns <span class="op">=</span> x.columns</span>
-<span id="cb22-14"><a href="#cb22-14" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb22-15"><a href="#cb22-15" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result  </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>comp <span class="op">=</span> <span class="dv">1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>raw_df <span class="op">=</span> roll_eigen1(overlap_x_df, width, comp)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>raw_mlt <span class="ot">&lt;-</span> <span class="fu">melt</span>(<span class="fu">as.data.table</span>(py<span class="sc">$</span>raw_df, <span class="at">keep.rownames =</span> <span class="st">"index"</span>), <span class="at">id.vars =</span> <span class="st">"index"</span>)</span>
-<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>raw_mlt[ , index <span class="sc">:</span><span class="er">=</span> <span class="fu">as.Date</span>(index)]</span>
-<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>raw_plt <span class="ot">&lt;-</span> <span class="fu">plot_ts</span>(raw_mlt, <span class="at">title =</span> <span class="st">"Eigenvector 1Y"</span>)</span>
-<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(raw_plt)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output-display">
-<p><img src="index_files/figure-html/unnamed-chunk-24-1.png" class="img-fluid" width="576"></p>
-</div>
-</div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="co"># https://quant.stackexchange.com/a/3095</span></span>
-<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> roll_eigen2(x, width, comp):</span>
-<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>    n_rows <span class="op">=</span> <span class="bu">len</span>(x)</span>
-<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> pd.DataFrame()</span>
-<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(width <span class="op">-</span> <span class="dv">1</span>, n_rows):</span>
-<span id="cb26-8"><a href="#cb26-8" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb26-9"><a href="#cb26-9" aria-hidden="true" tabindex="-1"></a>        idx <span class="op">=</span> <span class="bu">range</span>(<span class="bu">max</span>(i <span class="op">-</span> width <span class="op">+</span> <span class="dv">1</span>, <span class="dv">0</span>), i <span class="op">+</span> <span class="dv">1</span>)</span>
-<span id="cb26-10"><a href="#cb26-10" aria-hidden="true" tabindex="-1"></a>        evec <span class="op">=</span> eigen_vecs(x.iloc[idx]).iloc[:, comp <span class="op">-</span> <span class="dv">1</span>]</span>
-<span id="cb26-11"><a href="#cb26-11" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb26-12"><a href="#cb26-12" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> i <span class="op">&gt;</span> width <span class="op">-</span> <span class="dv">1</span>:</span>
-<span id="cb26-13"><a href="#cb26-13" aria-hidden="true" tabindex="-1"></a>            </span>
-<span id="cb26-14"><a href="#cb26-14" aria-hidden="true" tabindex="-1"></a>            similarity <span class="op">=</span> np.matmul(np.matrix(evec),</span>
-<span id="cb26-15"><a href="#cb26-15" aria-hidden="true" tabindex="-1"></a>                                   np.matrix(result.iloc[<span class="op">-</span><span class="dv">1</span>, :]).T)</span>
-<span id="cb26-16"><a href="#cb26-16" aria-hidden="true" tabindex="-1"></a>            evec <span class="op">=</span> pd.DataFrame(np.multiply(np.sign(similarity), np.matrix(evec))) </span>
-<span id="cb26-17"><a href="#cb26-17" aria-hidden="true" tabindex="-1"></a>            result <span class="op">=</span> result.append(evec)</span>
-<span id="cb26-18"><a href="#cb26-18" aria-hidden="true" tabindex="-1"></a>            </span>
-<span id="cb26-19"><a href="#cb26-19" aria-hidden="true" tabindex="-1"></a>        <span class="cf">else</span>:</span>
-<span id="cb26-20"><a href="#cb26-20" aria-hidden="true" tabindex="-1"></a>            result <span class="op">=</span> result.append(evec.transpose())</span>
-<span id="cb26-21"><a href="#cb26-21" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb26-22"><a href="#cb26-22" aria-hidden="true" tabindex="-1"></a>    result.index <span class="op">=</span> x.index[(width <span class="op">-</span> <span class="dv">1</span>):]</span>
-<span id="cb26-23"><a href="#cb26-23" aria-hidden="true" tabindex="-1"></a>    result.columns <span class="op">=</span> x.columns</span>
-<span id="cb26-24"><a href="#cb26-24" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb26-25"><a href="#cb26-25" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result  </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>clean_df <span class="op">=</span> roll_eigen2(overlap_x_df, width, comp)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>clean_mlt <span class="ot">&lt;-</span> <span class="fu">melt</span>(<span class="fu">as.data.table</span>(py<span class="sc">$</span>clean_df, <span class="at">keep.rownames =</span> <span class="st">"index"</span>), <span class="at">id.vars =</span> <span class="st">"index"</span>)</span>
-<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>clean_mlt[ , index <span class="sc">:</span><span class="er">=</span> <span class="fu">as.Date</span>(index)]</span>
-<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>clean_plt <span class="ot">&lt;-</span> <span class="fu">plot_ts</span>(clean_mlt, <span class="at">title =</span> <span class="st">"Eigenvector 1Y"</span>)</span>
-<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(clean_plt)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output-display">
-<p><img src="index_files/figure-html/unnamed-chunk-27-1.png" class="img-fluid" width="576"></p>
-</div>
-</div>
-<!-- ### Contour ellipsoid -->
-<!-- The contours of a multivariate normal (MVN) distribution are ellipsoids centered at the mean. The directions of the axes are given by the eigenvectors of the covariance matrix and squared lengths are given by the eigenvalues: -->
-<!-- $$ -->
-<!-- \begin{aligned} -->
-<!-- ({\mathbf{x}}-{\boldsymbol{\mu}})^{\mathrm{T}}{\boldsymbol{\Sigma}}^{-1}({\mathbf{x}}-{\boldsymbol{\mu}})=c^{2} -->
-<!-- \end{aligned} -->
-<!-- $$ -->
-<!-- Or, in general parametric form: -->
-<!-- $$ -->
-<!-- \begin{aligned} -->
-<!-- X(t)&=X_{c}+a\,\cos t\,\cos \varphi -b\,\sin t\,\sin \varphi\\ -->
-<!-- Y(t)&=Y_{c}+a\,\cos t\,\sin \varphi +b\,\sin t\,\cos \varphi -->
-<!-- \end{aligned} -->
-<!-- $$ where $t$ varies from $0,\ldots,2\pi$. Here $(X_{c},Y_{c})$ is the center of the ellipse and $\varphi$ is the angle between the x-axis and the major axis of the ellipse. -->
-<!-- Specifically: -->
-<!-- $$ -->
-<!-- \begin{aligned} -->
-<!-- &\text{Center: }\boldsymbol{\mu}=(X_{c},Y_{c})\\ -->
-<!-- &\text{Radius: }c^{2}= \chi_{\alpha}^{2}(df)\\ -->
-<!-- &\text{Length: }a=c\sqrt{\lambda_{k}}\\ -->
-<!-- &\text{Angle of rotation: }\varphi=\text{atan2}\left(\frac{V_{k}(2)}{V_{k}(1)}\right) -->
-<!-- \end{aligned} -->
-<!-- $$ -->
-<!-- ```{python} -->
-<!-- # https://www.visiondummy.com/2014/04/draw-error-ellipse-representing-covariance-matrix/ -->
-<!-- # https://maitra.public.iastate.edu/stat501/lectures/MultivariateNormalDistribution-I.pdf -->
-<!-- # https://en.wikipedia.org/wiki/Multivariate_normal_distribution -->
-<!-- # https://en.wikipedia.org/wiki/Ellipse#General_parametric_form -->
-<!-- def ellipse(n_sim, x, y, sigma): -->
-<!--     data = np.concatenate((x, y), axis = 1) -->
-<!--     L, V = np.linalg.eig(np.cov(data.T, ddof = 1)) -->
-<!--     idx = L.argsort()[::-1] -->
-<!--     L = L[idx] -->
-<!--     V = V[:, idx] -->
-<!--     c = np.sqrt(chi2.ppf(norm.cdf(sigma), 2)) -->
-<!--     t = np.linspace(0, 2 * np.pi, n_sim) -->
-<!--     phi = np.arctan2(V[1, 0], V[0, 0]) -->
-<!--     a = c * np.sqrt(L[0]) * np.cos(t) -->
-<!--     b = c * np.sqrt(L[1]) * np.sin(t) -->
-<!--     R = np.matrix([[np.cos(phi), np.sin(phi)], [-np.sin(phi), np.cos(phi)]]) -->
-<!--     r = np.matmul(np.matrix([a, b]).T, R) -->
-<!--     result = np.add(r, np.mean(data, axis = 0)) # 2D only -->
-<!--     return result -->
-<!-- ``` -->
-<!-- ```{python} -->
-<!-- returns_x_df = returns_df.dropna()["returns"][factors]  -->
-<!-- returns_x_mat = np.matrix(returns_x_df) # extended history -->
-<!-- ellipse_x_mat = ellipse(1000, returns_x_mat[:, [0]], returns_x_mat[:, [2]], 1) -->
-<!-- ``` -->
-<!-- ```{r, fig.width = 3, fig.height = 3} -->
-
-<!-- ellipse_plt <- plot_scatter(data.table(py$returns_x_mat[ , c(1, 3)]), x = "V1", y = "V2", -->
-<!--                             title = "Return 1D (%)", xlab = "SP500", ylab = "DGS10") + -->
-
-<!--   geom_point(data = data.table(py$ellipse_x_mat), aes(x = V1 * 100, y = V2 * 100)) -->
-<!-- print(ellipse_plt) -->
-<!-- ``` -->
-<!-- ### Marchenko--Pastur distribution -->
-<!-- Marchenko--Pastur distribution is the limiting distribution of eigenvalues of Wishart matrices as the matrix dimension $m$ and degrees of freedom $n$ both tend to infinity with ratio $m/n\,\to \,\lambda\in(0,+\infty)$: -->
-<!-- $$ -->
-<!-- \begin{aligned} -->
-<!-- d\nu(x)&={\frac {1}{2\pi\sigma ^{2}}}{\frac{\sqrt{(\lambda_{+}-x)(x-\lambda_{-})}}{\lambda x}}\,\mathbf{1}_{x\in[\lambda_{-},\lambda _{+}]}\,dx -->
-<!-- \end{aligned} -->
-<!-- $$ -->
-<!-- with -->
-<!-- $$ -->
-<!-- \begin{aligned} -->
-<!-- \lambda_{\pm}&=\sigma^{2}(1\pm{\sqrt{\lambda }})^{2} -->
-<!-- \end{aligned} -->
-<!-- $$ -->
-<!-- ```{python} -->
-<!-- # https://en.wikipedia.org/wiki/Marchenko%E2%80%93Pastur_distribution -->
-<!-- # https://faculty.baruch.cuny.edu/jgatheral/RandomMatrixCovariance2008.pdf -->
-<!-- def dmp(x, sigma = 1): -->
-<!--     L, V = np.linalg.eig(np.cov(x.T, ddof = 1)) -->
-<!--     idx = L.argsort()[::-1] -->
-<!--     L = L[idx] -->
-<!--     lmbda = x.shape[1] / x.shape[0] -->
-<!--     lower = sigma * (1 - np.sqrt(lmbda)) ** 2 -->
-<!--     upper = sigma * (1 + np.sqrt(lmbda)) ** 2 -->
-<!--     d = np.where((L <= lower) | (L >= upper), 0, -->
-<!--                  1 / (2 * np.pi * sigma * lmbda * L) * np.sqrt((upper - L) * (L - lower))) -->
-<!--     return d -->
-<!-- ``` -->
-<!-- ```{python} -->
-<!-- n_sim = 5000 -->
-<!-- n_cols = 1000 -->
-<!-- ``` -->
-<!-- ```{python} -->
-<!-- data_sim = np.random.normal(size = n_sim * n_cols).reshape((n_sim, n_cols)) -->
-<!-- ``` -->
-<!-- ```{python} -->
-<!-- L, V = np.linalg.eig(np.cov(data_sim.T, ddof = 1)) -->
-<!-- idx = L.argsort()[::-1] -->
-<!-- L = L[idx] -->
-<!-- ``` -->
-<!-- ```{python} -->
-<!-- dmp_df = pd.DataFrame.from_dict({"evals": L, -->
-<!--                                  "dmp": dmp(data_sim)}) -->
-<!-- ``` -->
-<!-- ```{r, fig.width = 4, fig.height = 3} -->
-<!-- dmp_plt <- plot_density(py$dmp_df, x = "evals", y = "dmp", -->
-<!--                         title = "Marchenko-Pastur distribution", xlab = "Eigenvalues", ylab = "Density") -->
-<!-- print(dmp_plt) -->
-<!-- ``` -->
-</section>
-</section>
 <section id="random-portfolios" class="level2">
 <h2 class="anchored" data-anchor-id="random-portfolios">Random portfolios</h2>
 <p>Need to generate uniformly distributed weights <span class="math inline">\(\mathbf{w}=(w_{1},w_{2},\ldots,w_{N})\)</span> such that <span class="math inline">\(\sum_{j=1}^{N}w_{i}=1\)</span> and <span class="math inline">\(w_{i}\geq0\)</span>:</p>
@@ -551,66 +269,66 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </ul>
 <p>Can also scale random weights by <span class="math inline">\(M\)</span>, e.g.&nbsp;if sum of weights must be 10% then multiply weights by 10%.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> rand_weights1(n_sim, n_assets, lmbda):  </span>
-<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>    rand_exp <span class="op">=</span> np.matrix(np.random.uniform(size <span class="op">=</span> (n_sim, n_assets)))</span>
-<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>    rand_exp_sum <span class="op">=</span> np.<span class="bu">sum</span>(rand_exp, axis <span class="op">=</span> <span class="dv">1</span>)</span>
-<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> np.divide(rand_exp, rand_exp_sum)</span>
-<span id="cb29-7"><a href="#cb29-7" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb29-8"><a href="#cb29-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> rand_weights1(n_sim, n_assets, lmbda):  </span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>    rand_exp <span class="op">=</span> np.matrix(np.random.uniform(size <span class="op">=</span> (n_sim, n_assets)))</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>    rand_exp_sum <span class="op">=</span> np.<span class="bu">sum</span>(rand_exp, axis <span class="op">=</span> <span class="dv">1</span>)</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> np.divide(rand_exp, rand_exp_sum)</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Methodology: uniform sampling from the simplex (http://mathoverflow.net/a/76258)</span></span>
-<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a><span class="co"># z ~ U(0, 1) then -ln(z) is an exponential(1) distribution</span></span>
-<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a><span class="co"># This is also known as generating a random vector from the symmetric Dirichlet distribution</span></span>
-<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> rand_weights2(n_sim, n_assets, lmbda):   </span>
-<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a>    rand_exp <span class="op">=</span> np.matrix(<span class="op">-</span>np.log(<span class="dv">1</span> <span class="op">-</span> np.random.uniform(size <span class="op">=</span> (n_sim, n_assets))) <span class="op">/</span> lmbda)</span>
-<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a>    rand_exp_sum <span class="op">=</span> np.<span class="bu">sum</span>(rand_exp, axis <span class="op">=</span> <span class="dv">1</span>)</span>
-<span id="cb30-8"><a href="#cb30-8" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb30-9"><a href="#cb30-9" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> np.divide(rand_exp, rand_exp_sum)</span>
-<span id="cb30-10"><a href="#cb30-10" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb30-11"><a href="#cb30-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Methodology: uniform sampling from the simplex (http://mathoverflow.net/a/76258)</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="co"># z ~ U(0, 1) then -ln(z) is an exponential(1) distribution</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="co"># This is also known as generating a random vector from the symmetric Dirichlet distribution</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> rand_weights2(n_sim, n_assets, lmbda):   </span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>    rand_exp <span class="op">=</span> np.matrix(<span class="op">-</span>np.log(<span class="dv">1</span> <span class="op">-</span> np.random.uniform(size <span class="op">=</span> (n_sim, n_assets))) <span class="op">/</span> lmbda)</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>    rand_exp_sum <span class="op">=</span> np.<span class="bu">sum</span>(rand_exp, axis <span class="op">=</span> <span class="dv">1</span>)</span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> np.divide(rand_exp, rand_exp_sum)</span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 1. Generate n exponential(1) random variables x_1, x_2, ..., x_n</span></span>
-<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a><span class="co"># 2. Let y_i = x_i / (sum_{i = 1}^{n} x_i)</span></span>
-<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> rand_weights3(n_sim, n_assets, lmbda):</span>
-<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a>    rand_exp <span class="op">=</span> np.matrix(np.random.exponential(size <span class="op">=</span> (n_sim, n_assets)))</span>
-<span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a>    rand_exp_sum <span class="op">=</span> np.<span class="bu">sum</span>(rand_exp, axis <span class="op">=</span> <span class="dv">1</span>)</span>
-<span id="cb31-7"><a href="#cb31-7" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb31-8"><a href="#cb31-8" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> np.divide(rand_exp, rand_exp_sum)</span>
-<span id="cb31-9"><a href="#cb31-9" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb31-10"><a href="#cb31-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 1. Generate n exponential(1) random variables x_1, x_2, ..., x_n</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="co"># 2. Let y_i = x_i / (sum_{i = 1}^{n} x_i)</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> rand_weights3(n_sim, n_assets, lmbda):</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>    rand_exp <span class="op">=</span> np.matrix(np.random.exponential(size <span class="op">=</span> (n_sim, n_assets)))</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>    rand_exp_sum <span class="op">=</span> np.<span class="bu">sum</span>(rand_exp, axis <span class="op">=</span> <span class="dv">1</span>)</span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> np.divide(rand_exp, rand_exp_sum)</span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>lmbda <span class="op">=</span> <span class="dv">1</span></span>
-<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>n_assets <span class="op">=</span> <span class="dv">3</span></span>
-<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>n_sim <span class="op">=</span> <span class="dv">10000</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>lmbda <span class="op">=</span> <span class="dv">1</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>n_assets <span class="op">=</span> <span class="dv">3</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>n_sim <span class="op">=</span> <span class="dv">10000</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>approach1 <span class="op">=</span> rand_weights1(n_sim, n_assets, lmbda)</span>
-<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>approach2 <span class="op">=</span> rand_weights2(n_sim, n_assets, lmbda)</span>
-<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>approach3 <span class="op">=</span> rand_weights3(n_sim, n_assets, lmbda)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>approach1 <span class="op">=</span> rand_weights1(n_sim, n_assets, lmbda)</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>approach2 <span class="op">=</span> rand_weights2(n_sim, n_assets, lmbda)</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>approach3 <span class="op">=</span> rand_weights3(n_sim, n_assets, lmbda)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_pairs</span>(<span class="fu">as.data.table</span>(py<span class="sc">$</span>approach1), <span class="at">title =</span> <span class="st">"Weight (%)"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_pairs</span>(<span class="fu">as.data.table</span>(py<span class="sc">$</span>approach1), <span class="at">title =</span> <span class="st">"Weight (%)"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="index_files/figure-html/unnamed-chunk-33-1.png" class="img-fluid" width="384"></p>
+<p><img src="index_files/figure-html/unnamed-chunk-19-1.png" class="img-fluid" width="384"></p>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_pairs</span>(<span class="fu">as.data.table</span>(py<span class="sc">$</span>approach2), <span class="at">title =</span> <span class="st">"Weight (%)"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_pairs</span>(<span class="fu">as.data.table</span>(py<span class="sc">$</span>approach2), <span class="at">title =</span> <span class="st">"Weight (%)"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="index_files/figure-html/unnamed-chunk-34-1.png" class="img-fluid" width="384"></p>
+<p><img src="index_files/figure-html/unnamed-chunk-20-1.png" class="img-fluid" width="384"></p>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_pairs</span>(<span class="fu">as.data.table</span>(py<span class="sc">$</span>approach3), <span class="at">title =</span> <span class="st">"Weight (%)"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_pairs</span>(<span class="fu">as.data.table</span>(py<span class="sc">$</span>approach3), <span class="at">title =</span> <span class="st">"Weight (%)"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="index_files/figure-html/unnamed-chunk-35-1.png" class="img-fluid" width="384"></p>
+<p><img src="index_files/figure-html/unnamed-chunk-21-1.png" class="img-fluid" width="384"></p>
 </div>
 </div>
 <section id="random-turnover" class="level3">
@@ -627,63 +345,63 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </ul>
 <p>Then add random turnover to previous period’s random weights.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> rand_iterative(n_assets, lower, upper, target):</span>
-<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a>    plug <span class="op">=</span> <span class="va">False</span></span>
-<span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb37-5"><a href="#cb37-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">while</span> <span class="kw">not</span> plug:</span>
-<span id="cb37-6"><a href="#cb37-6" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb37-7"><a href="#cb37-7" aria-hidden="true" tabindex="-1"></a>        result <span class="op">=</span> np.random.uniform(low <span class="op">=</span> lower, high <span class="op">=</span> upper, size <span class="op">=</span> n_assets <span class="op">-</span> <span class="dv">1</span>)</span>
-<span id="cb37-8"><a href="#cb37-8" aria-hidden="true" tabindex="-1"></a>        temp <span class="op">=</span> target <span class="op">-</span> <span class="bu">sum</span>(result)</span>
-<span id="cb37-9"><a href="#cb37-9" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb37-10"><a href="#cb37-10" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> ((temp <span class="op">&lt;=</span> upper) <span class="kw">and</span> (temp <span class="op">&gt;=</span> lower)):</span>
-<span id="cb37-11"><a href="#cb37-11" aria-hidden="true" tabindex="-1"></a>            plug <span class="op">=</span> <span class="va">True</span></span>
-<span id="cb37-12"><a href="#cb37-12" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb37-13"><a href="#cb37-13" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> np.append(result, temp)</span>
-<span id="cb37-14"><a href="#cb37-14" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb37-15"><a href="#cb37-15" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> rand_iterative(n_assets, lower, upper, target):</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>    plug <span class="op">=</span> <span class="va">False</span></span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">while</span> <span class="kw">not</span> plug:</span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>        result <span class="op">=</span> np.random.uniform(low <span class="op">=</span> lower, high <span class="op">=</span> upper, size <span class="op">=</span> n_assets <span class="op">-</span> <span class="dv">1</span>)</span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>        temp <span class="op">=</span> target <span class="op">-</span> <span class="bu">sum</span>(result)</span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> ((temp <span class="op">&lt;=</span> upper) <span class="kw">and</span> (temp <span class="op">&gt;=</span> lower)):</span>
+<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a>            plug <span class="op">=</span> <span class="va">True</span></span>
+<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> np.append(result, temp)</span>
+<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb21-15"><a href="#cb21-15" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> rand_turnover1(n_sim, n_assets, lower, upper, target):</span>
-<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>    rng <span class="op">=</span> upper <span class="op">-</span> lower</span>
-<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb38-5"><a href="#cb38-5" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> rand_weights3(n_sim, n_assets, lmbda) <span class="op">*</span> rng</span>
-<span id="cb38-6"><a href="#cb38-6" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> result <span class="op">-</span> rng <span class="op">/</span> n_assets</span>
-<span id="cb38-7"><a href="#cb38-7" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb38-8"><a href="#cb38-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> rand_turnover1(n_sim, n_assets, lower, upper, target):</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>    rng <span class="op">=</span> upper <span class="op">-</span> lower</span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> rand_weights3(n_sim, n_assets, lmbda) <span class="op">*</span> rng</span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> result <span class="op">-</span> rng <span class="op">/</span> n_assets</span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> rand_turnover2(n_sim, n_assets, lower, upper, target):</span>
-<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> np.matrix(rand_iterative(n_assets, lower, upper, target))</span>
-<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">while</span> result.shape[<span class="dv">0</span>] <span class="op">&lt;</span> n_sim:</span>
-<span id="cb39-6"><a href="#cb39-6" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb39-7"><a href="#cb39-7" aria-hidden="true" tabindex="-1"></a>        temp <span class="op">=</span> np.matrix(rand_iterative(n_assets, lower, upper, target))</span>
-<span id="cb39-8"><a href="#cb39-8" aria-hidden="true" tabindex="-1"></a>        result <span class="op">=</span> np.concatenate((result, temp), axis <span class="op">=</span> <span class="dv">0</span>)</span>
-<span id="cb39-9"><a href="#cb39-9" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb39-10"><a href="#cb39-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> rand_turnover2(n_sim, n_assets, lower, upper, target):</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> np.matrix(rand_iterative(n_assets, lower, upper, target))</span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">while</span> result.shape[<span class="dv">0</span>] <span class="op">&lt;</span> n_sim:</span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a>        temp <span class="op">=</span> np.matrix(rand_iterative(n_assets, lower, upper, target))</span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a>        result <span class="op">=</span> np.concatenate((result, temp), axis <span class="op">=</span> <span class="dv">0</span>)</span>
+<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>lower <span class="op">=</span> <span class="op">-</span><span class="fl">0.05</span></span>
-<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>upper <span class="op">=</span> <span class="fl">0.05</span></span>
-<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>target <span class="op">=</span> <span class="dv">0</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>lower <span class="op">=</span> <span class="op">-</span><span class="fl">0.05</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>upper <span class="op">=</span> <span class="fl">0.05</span></span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>target <span class="op">=</span> <span class="dv">0</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>approach1 <span class="op">=</span> rand_turnover1(n_sim, n_assets, lower, upper, target)</span>
-<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>approach2 <span class="op">=</span> rand_turnover2(n_sim, n_assets, lower, upper, target)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>approach1 <span class="op">=</span> rand_turnover1(n_sim, n_assets, lower, upper, target)</span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>approach2 <span class="op">=</span> rand_turnover2(n_sim, n_assets, lower, upper, target)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_pairs</span>(<span class="fu">as.data.table</span>(py<span class="sc">$</span>approach1), <span class="at">title =</span> <span class="st">"Weight (%)"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_pairs</span>(<span class="fu">as.data.table</span>(py<span class="sc">$</span>approach1), <span class="at">title =</span> <span class="st">"Weight (%)"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="index_files/figure-html/unnamed-chunk-41-1.png" class="img-fluid" width="384"></p>
+<p><img src="index_files/figure-html/unnamed-chunk-27-1.png" class="img-fluid" width="384"></p>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_pairs</span>(<span class="fu">as.data.table</span>(py<span class="sc">$</span>approach2), <span class="at">title =</span> <span class="st">"Weight (%)"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_pairs</span>(<span class="fu">as.data.table</span>(py<span class="sc">$</span>approach2), <span class="at">title =</span> <span class="st">"Weight (%)"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="index_files/figure-html/unnamed-chunk-42-1.png" class="img-fluid" width="384"></p>
+<p><img src="index_files/figure-html/unnamed-chunk-28-1.png" class="img-fluid" width="384"></p>
 </div>
 </div>
 </section>
@@ -691,17 +409,17 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="mean-variance" class="level2">
 <h2 class="anchored" data-anchor-id="mean-variance">Mean-variance</h2>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> geometric_mean(x, scale):</span>
-<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> np.prod(<span class="dv">1</span> <span class="op">+</span> x) <span class="op">**</span> (scale <span class="op">/</span> x.shape[<span class="dv">1</span>]) <span class="op">-</span> <span class="dv">1</span></span>
-<span id="cb44-4"><a href="#cb44-4" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb44-5"><a href="#cb44-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> geometric_mean(x, scale):</span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> np.prod(<span class="dv">1</span> <span class="op">+</span> x) <span class="op">**</span> (scale <span class="op">/</span> x.shape[<span class="dv">1</span>]) <span class="op">-</span> <span class="dv">1</span></span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>returns_x_df <span class="op">=</span> returns_df.dropna()[<span class="st">"returns"</span>][factors] <span class="co"># REMOVE LATER</span></span>
-<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a>returns_x_mat <span class="op">=</span> np.matrix(returns_x_df) <span class="co"># extended history # REMOVE LATER</span></span>
-<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a>mu <span class="op">=</span> np.apply_along_axis(geometric_mean, <span class="dv">0</span>, returns_x_mat, scale[<span class="st">"periods"</span>])</span>
-<span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a>sigma <span class="op">=</span> np.cov(overlap_x_df.T, ddof <span class="op">=</span> <span class="dv">1</span>) <span class="op">*</span> scale[<span class="st">"periods"</span>] <span class="op">*</span> scale[<span class="st">"overlap"</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>returns_x_df <span class="op">=</span> returns_df.dropna()[<span class="st">"returns"</span>][factors] <span class="co"># REMOVE LATER</span></span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>returns_x_mat <span class="op">=</span> np.matrix(returns_x_df) <span class="co"># extended history # REMOVE LATER</span></span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>mu <span class="op">=</span> np.apply_along_axis(geometric_mean, <span class="dv">0</span>, returns_x_mat, scale[<span class="st">"periods"</span>])</span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>sigma <span class="op">=</span> np.cov(overlap_x_df.T, ddof <span class="op">=</span> <span class="dv">1</span>) <span class="op">*</span> scale[<span class="st">"periods"</span>] <span class="op">*</span> scale[<span class="st">"overlap"</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <section id="maximum-return" class="level3">
 <h3 class="anchored" data-anchor-id="maximum-return">Maximum return</h3>
@@ -715,51 +433,51 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 \end{aligned}
 \]</span></p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>target <span class="op">=</span> <span class="fl">0.06</span></span>
-<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a>start <span class="op">=</span> np.array([<span class="dv">1</span>] <span class="op">*</span> <span class="bu">len</span>(factors))</span>
-<span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a>bnds <span class="op">=</span> [(np.finfo(<span class="bu">float</span>).eps, <span class="dv">1</span>) <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="bu">len</span>(factors))]</span>
-<span id="cb46-4"><a href="#cb46-4" aria-hidden="true" tabindex="-1"></a>cons <span class="op">=</span> [{<span class="st">"type"</span>: <span class="st">"ineq"</span>, <span class="st">"fun"</span>: <span class="kw">lambda</span> params, sigma, target: max_pnl_cons(params, sigma, target),</span>
-<span id="cb46-5"><a href="#cb46-5" aria-hidden="true" tabindex="-1"></a>         <span class="st">"args"</span>: (sigma, target)},</span>
-<span id="cb46-6"><a href="#cb46-6" aria-hidden="true" tabindex="-1"></a>        {<span class="st">"type"</span>: <span class="st">"eq"</span>, <span class="st">"fun"</span>: <span class="kw">lambda</span> params: np.<span class="bu">sum</span>(params) <span class="op">-</span> <span class="dv">1</span>}]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>target <span class="op">=</span> <span class="fl">0.06</span></span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>start <span class="op">=</span> np.array([<span class="dv">1</span>] <span class="op">*</span> <span class="bu">len</span>(factors))</span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>bnds <span class="op">=</span> [(np.finfo(<span class="bu">float</span>).eps, <span class="dv">1</span>) <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="bu">len</span>(factors))]</span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>cons <span class="op">=</span> [{<span class="st">"type"</span>: <span class="st">"ineq"</span>, <span class="st">"fun"</span>: <span class="kw">lambda</span> params, sigma, target: max_pnl_cons(params, sigma, target),</span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a>         <span class="st">"args"</span>: (sigma, target)},</span>
+<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a>        {<span class="st">"type"</span>: <span class="st">"eq"</span>, <span class="st">"fun"</span>: <span class="kw">lambda</span> params: np.<span class="bu">sum</span>(params) <span class="op">-</span> <span class="dv">1</span>}]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb47"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> max_pnl_cons(params, sigma, target):</span>
-<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb47-3"><a href="#cb47-3" aria-hidden="true" tabindex="-1"></a>    var <span class="op">=</span> np.matmul(np.transpose(params), np.matmul(sigma, params))</span>
-<span id="cb47-4"><a href="#cb47-4" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb47-5"><a href="#cb47-5" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> target <span class="op">**</span> <span class="dv">2</span> <span class="op">-</span> var</span>
-<span id="cb47-6"><a href="#cb47-6" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb47-7"><a href="#cb47-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result</span>
-<span id="cb47-8"><a href="#cb47-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb47-9"><a href="#cb47-9" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> max_pnl_obj(params, mu):</span>
-<span id="cb47-10"><a href="#cb47-10" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb47-11"><a href="#cb47-11" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> np.matmul(mu, params)</span>
-<span id="cb47-12"><a href="#cb47-12" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb47-13"><a href="#cb47-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="op">-</span>result</span>
-<span id="cb47-14"><a href="#cb47-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb47-15"><a href="#cb47-15" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> max_pnl_optim(params, mu):</span>
-<span id="cb47-16"><a href="#cb47-16" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb47-17"><a href="#cb47-17" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> minimize(max_pnl_obj, params, args <span class="op">=</span> (mu), bounds <span class="op">=</span> bnds, constraints <span class="op">=</span> cons)</span>
-<span id="cb47-18"><a href="#cb47-18" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb47-19"><a href="#cb47-19" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result.x</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> max_pnl_cons(params, sigma, target):</span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>    var <span class="op">=</span> np.matmul(np.transpose(params), np.matmul(sigma, params))</span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> target <span class="op">**</span> <span class="dv">2</span> <span class="op">-</span> var</span>
+<span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb31-7"><a href="#cb31-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result</span>
+<span id="cb31-8"><a href="#cb31-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-9"><a href="#cb31-9" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> max_pnl_obj(params, mu):</span>
+<span id="cb31-10"><a href="#cb31-10" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb31-11"><a href="#cb31-11" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> np.matmul(mu, params)</span>
+<span id="cb31-12"><a href="#cb31-12" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb31-13"><a href="#cb31-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="op">-</span>result</span>
+<span id="cb31-14"><a href="#cb31-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-15"><a href="#cb31-15" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> max_pnl_optim(params, mu):</span>
+<span id="cb31-16"><a href="#cb31-16" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb31-17"><a href="#cb31-17" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> minimize(max_pnl_obj, params, args <span class="op">=</span> (mu), bounds <span class="op">=</span> bnds, constraints <span class="op">=</span> cons)</span>
+<span id="cb31-18"><a href="#cb31-18" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb31-19"><a href="#cb31-19" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result.x</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb48"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>params1 <span class="op">=</span> max_pnl_optim(start, mu)</span>
-<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a>params1</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>params1 <span class="op">=</span> max_pnl_optim(start, mu)</span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>params1</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>array([3.26405507e-01, 5.98307299e-01, 7.52871933e-02, 2.22044605e-16])</code></pre>
+<pre><code>array([3.33478228e-01, 5.67596349e-01, 9.89254230e-02, 2.27645187e-16])</code></pre>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb50"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>np.matmul(mu, params1)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>np.matmul(mu, params1)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>0.03376578562571013</code></pre>
+<pre><code>0.032906364465747885</code></pre>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb52"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a>np.sqrt(np.matmul(np.transpose(params1), np.matmul(sigma, params1)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>np.sqrt(np.matmul(np.transpose(params1), np.matmul(sigma, params1)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>0.06000001495531018</code></pre>
+<pre><code>0.06000003526699834</code></pre>
 </div>
 </div>
 </section>
@@ -775,48 +493,48 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 \end{aligned}
 \]</span></p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb54"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a>target <span class="op">=</span> <span class="fl">0.03</span></span>
-<span id="cb54-2"><a href="#cb54-2" aria-hidden="true" tabindex="-1"></a>start <span class="op">=</span> np.array([<span class="dv">1</span>] <span class="op">*</span> <span class="bu">len</span>(factors))</span>
-<span id="cb54-3"><a href="#cb54-3" aria-hidden="true" tabindex="-1"></a>cons <span class="op">=</span> [{<span class="st">"type"</span>: <span class="st">"ineq"</span>, <span class="st">"fun"</span>: <span class="kw">lambda</span> params, mu, target: min_risk_cons(params, mu, target),</span>
-<span id="cb54-4"><a href="#cb54-4" aria-hidden="true" tabindex="-1"></a>         <span class="st">"args"</span>: (mu, target)},</span>
-<span id="cb54-5"><a href="#cb54-5" aria-hidden="true" tabindex="-1"></a>        {<span class="st">"type"</span>: <span class="st">"eq"</span>, <span class="st">"fun"</span>: <span class="kw">lambda</span> params: np.<span class="bu">sum</span>(params) <span class="op">-</span> <span class="dv">1</span>}]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>target <span class="op">=</span> <span class="fl">0.03</span></span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>start <span class="op">=</span> np.array([<span class="dv">1</span>] <span class="op">*</span> <span class="bu">len</span>(factors))</span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>cons <span class="op">=</span> [{<span class="st">"type"</span>: <span class="st">"ineq"</span>, <span class="st">"fun"</span>: <span class="kw">lambda</span> params, mu, target: min_risk_cons(params, mu, target),</span>
+<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a>         <span class="st">"args"</span>: (mu, target)},</span>
+<span id="cb38-5"><a href="#cb38-5" aria-hidden="true" tabindex="-1"></a>        {<span class="st">"type"</span>: <span class="st">"eq"</span>, <span class="st">"fun"</span>: <span class="kw">lambda</span> params: np.<span class="bu">sum</span>(params) <span class="op">-</span> <span class="dv">1</span>}]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb55"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> min_risk_cons(params, mu, target):</span>
-<span id="cb55-2"><a href="#cb55-2" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb55-3"><a href="#cb55-3" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> np.matmul(mu, params) <span class="op">-</span> target</span>
-<span id="cb55-4"><a href="#cb55-4" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb55-5"><a href="#cb55-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result</span>
-<span id="cb55-6"><a href="#cb55-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb55-7"><a href="#cb55-7" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> min_risk_obj(params, sigma):</span>
-<span id="cb55-8"><a href="#cb55-8" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb55-9"><a href="#cb55-9" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> np.matmul(np.transpose(params), np.matmul(sigma, params))</span>
-<span id="cb55-10"><a href="#cb55-10" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb55-11"><a href="#cb55-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result</span>
-<span id="cb55-12"><a href="#cb55-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb55-13"><a href="#cb55-13" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> min_risk_optim(params, sigma):</span>
-<span id="cb55-14"><a href="#cb55-14" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb55-15"><a href="#cb55-15" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> minimize(min_risk_obj, params, args <span class="op">=</span> (sigma), bounds <span class="op">=</span> bnds, constraints <span class="op">=</span> cons)</span>
-<span id="cb55-16"><a href="#cb55-16" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb55-17"><a href="#cb55-17" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result.x</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> min_risk_cons(params, mu, target):</span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> np.matmul(mu, params) <span class="op">-</span> target</span>
+<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result</span>
+<span id="cb39-6"><a href="#cb39-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-7"><a href="#cb39-7" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> min_risk_obj(params, sigma):</span>
+<span id="cb39-8"><a href="#cb39-8" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb39-9"><a href="#cb39-9" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> np.matmul(np.transpose(params), np.matmul(sigma, params))</span>
+<span id="cb39-10"><a href="#cb39-10" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb39-11"><a href="#cb39-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result</span>
+<span id="cb39-12"><a href="#cb39-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-13"><a href="#cb39-13" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> min_risk_optim(params, sigma):</span>
+<span id="cb39-14"><a href="#cb39-14" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb39-15"><a href="#cb39-15" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> minimize(min_risk_obj, params, args <span class="op">=</span> (sigma), bounds <span class="op">=</span> bnds, constraints <span class="op">=</span> cons)</span>
+<span id="cb39-16"><a href="#cb39-16" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb39-17"><a href="#cb39-17" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result.x</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb56"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a>params2 <span class="op">=</span> min_risk_optim(start, sigma)</span>
-<span id="cb56-2"><a href="#cb56-2" aria-hidden="true" tabindex="-1"></a>params2</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>params2 <span class="op">=</span> min_risk_optim(start, sigma)</span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>params2</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>array([0.28129901, 0.57444227, 0.14268022, 0.0015785 ])</code></pre>
+<pre><code>array([2.97430685e-01, 5.52140503e-01, 1.50428812e-01, 2.49800181e-16])</code></pre>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb58"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a>np.matmul(mu, params2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>np.matmul(mu, params2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>0.030000000014880894</code></pre>
+<pre><code>0.02999999999411795</code></pre>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb60"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a>np.sqrt(np.matmul(np.transpose(params2), np.matmul(sigma, params2))) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>np.sqrt(np.matmul(np.transpose(params2), np.matmul(sigma, params2))) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>0.053329800985138204</code></pre>
+<pre><code>0.054626654580512614</code></pre>
 </div>
 </div>
 </section>
@@ -831,77 +549,77 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 \end{aligned}
 \]</span></p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb62"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a>ir <span class="op">=</span> <span class="fl">0.5</span></span>
-<span id="cb62-2"><a href="#cb62-2" aria-hidden="true" tabindex="-1"></a>target <span class="op">=</span> ir <span class="op">/</span> <span class="fl">0.06</span> <span class="co"># ir / std (see Black-Litterman)</span></span>
-<span id="cb62-3"><a href="#cb62-3" aria-hidden="true" tabindex="-1"></a>start <span class="op">=</span> np.array([<span class="dv">1</span>] <span class="op">*</span> <span class="bu">len</span>(factors))</span>
-<span id="cb62-4"><a href="#cb62-4" aria-hidden="true" tabindex="-1"></a>cons <span class="op">=</span> [{<span class="st">"type"</span>: <span class="st">"eq"</span>, <span class="st">"fun"</span>: <span class="kw">lambda</span> params: np.<span class="bu">sum</span>(params) <span class="op">-</span> <span class="dv">1</span>}]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>ir <span class="op">=</span> <span class="fl">0.5</span></span>
+<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a>target <span class="op">=</span> ir <span class="op">/</span> <span class="fl">0.06</span> <span class="co"># ir / std (see Black-Litterman)</span></span>
+<span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a>start <span class="op">=</span> np.array([<span class="dv">1</span>] <span class="op">*</span> <span class="bu">len</span>(factors))</span>
+<span id="cb46-4"><a href="#cb46-4" aria-hidden="true" tabindex="-1"></a>cons <span class="op">=</span> [{<span class="st">"type"</span>: <span class="st">"eq"</span>, <span class="st">"fun"</span>: <span class="kw">lambda</span> params: np.<span class="bu">sum</span>(params) <span class="op">-</span> <span class="dv">1</span>}]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb63"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb63-1"><a href="#cb63-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(start)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb47"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(start)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1 1 1 1]</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb65"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb65-1"><a href="#cb65-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(start.shape)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb49"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(start.shape)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>(4,)</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb67"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb67-1"><a href="#cb67-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(mu)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb51"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(mu)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[ 0.07405352  0.01611388 -0.00062083  0.00057442]</code></pre>
+<pre><code>[ 0.0741518   0.01444308 -0.00019696  0.00084524]</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb69"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb69-1"><a href="#cb69-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(mu.shape)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb53"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(mu.shape)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>(4,)</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb71"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb71-1"><a href="#cb71-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(sigma)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb55"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(sigma)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[[ 3.01221457e-02 -3.09311371e-03 -1.82736546e-04  2.54333924e-03]
- [-3.09311371e-03  4.52148557e-03 -1.23227666e-04 -3.75643354e-04]
- [-1.82736546e-04 -1.23227666e-04  7.13041018e-05 -4.01338204e-05]
- [ 2.54333924e-03 -3.75643354e-04 -4.01338204e-05  4.27710435e-04]]</code></pre>
+<pre><code>[[ 3.00635294e-02 -3.11798296e-03 -1.77879306e-04  2.54324229e-03]
+ [-3.11798296e-03  4.53805294e-03 -1.23898887e-04 -3.78080435e-04]
+ [-1.77879306e-04 -1.23898887e-04  7.18234782e-05 -3.96740334e-05]
+ [ 2.54324229e-03 -3.78080435e-04 -3.96740334e-05  4.27709578e-04]]</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb73"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb73-1"><a href="#cb73-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(sigma.shape)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb57"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(sigma.shape)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>(4, 4)</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb75"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb75-1"><a href="#cb75-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(np.matmul(np.transpose(start), np.matmul(sigma, start)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb59"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(np.matmul(np.transpose(start), np.matmul(sigma, start)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>0.032599614083650405</code></pre>
+<pre><code>0.032512568704157904</code></pre>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb77"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb77-1"><a href="#cb77-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> max_ratio_obj(params, mu, sigma, target):</span>
-<span id="cb77-2"><a href="#cb77-2" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb77-3"><a href="#cb77-3" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> np.matmul(mu, params) <span class="op">-</span> <span class="fl">0.5</span> <span class="op">*</span> target <span class="op">*</span> (np.matmul(np.transpose(params),</span>
-<span id="cb77-4"><a href="#cb77-4" aria-hidden="true" tabindex="-1"></a>                                                               np.matmul(sigma, params)))</span>
-<span id="cb77-5"><a href="#cb77-5" aria-hidden="true" tabindex="-1"></a><span class="co">#     result = np.matmul(mu, params) / np.sqrt(np.matmul(np.transpose(params), np.matmul(sigma, params)))</span></span>
-<span id="cb77-6"><a href="#cb77-6" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb77-7"><a href="#cb77-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="op">-</span>result</span>
-<span id="cb77-8"><a href="#cb77-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb77-9"><a href="#cb77-9" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> max_ratio_optim(params, mu, sigma, target):</span>
-<span id="cb77-10"><a href="#cb77-10" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb77-11"><a href="#cb77-11" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> minimize(max_ratio_obj, params, args <span class="op">=</span> (mu, sigma, target), bounds <span class="op">=</span> bnds,</span>
-<span id="cb77-12"><a href="#cb77-12" aria-hidden="true" tabindex="-1"></a>                      constraints <span class="op">=</span> cons) </span>
-<span id="cb77-13"><a href="#cb77-13" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb77-14"><a href="#cb77-14" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result.x</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb61"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb61-1"><a href="#cb61-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> max_ratio_obj(params, mu, sigma, target):</span>
+<span id="cb61-2"><a href="#cb61-2" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb61-3"><a href="#cb61-3" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> np.matmul(mu, params) <span class="op">-</span> <span class="fl">0.5</span> <span class="op">*</span> target <span class="op">*</span> (np.matmul(np.transpose(params),</span>
+<span id="cb61-4"><a href="#cb61-4" aria-hidden="true" tabindex="-1"></a>                                                               np.matmul(sigma, params)))</span>
+<span id="cb61-5"><a href="#cb61-5" aria-hidden="true" tabindex="-1"></a><span class="co">#     result = np.matmul(mu, params) / np.sqrt(np.matmul(np.transpose(params), np.matmul(sigma, params)))</span></span>
+<span id="cb61-6"><a href="#cb61-6" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb61-7"><a href="#cb61-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="op">-</span>result</span>
+<span id="cb61-8"><a href="#cb61-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-9"><a href="#cb61-9" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> max_ratio_optim(params, mu, sigma, target):</span>
+<span id="cb61-10"><a href="#cb61-10" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb61-11"><a href="#cb61-11" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> minimize(max_ratio_obj, params, args <span class="op">=</span> (mu, sigma, target), bounds <span class="op">=</span> bnds,</span>
+<span id="cb61-12"><a href="#cb61-12" aria-hidden="true" tabindex="-1"></a>                      constraints <span class="op">=</span> cons) </span>
+<span id="cb61-13"><a href="#cb61-13" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb61-14"><a href="#cb61-14" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result.x</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb78"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb78-1"><a href="#cb78-1" aria-hidden="true" tabindex="-1"></a>params3 <span class="op">=</span> max_ratio_optim(start, mu, sigma, target)</span>
-<span id="cb78-2"><a href="#cb78-2" aria-hidden="true" tabindex="-1"></a>params3</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb62"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a>params3 <span class="op">=</span> max_ratio_optim(start, mu, sigma, target)</span>
+<span id="cb62-2"><a href="#cb62-2" aria-hidden="true" tabindex="-1"></a>params3</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>array([3.56760581e-01, 6.43239419e-01, 2.22044605e-16, 2.63244287e-16])</code></pre>
-</div>
-</div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb80"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb80-1"><a href="#cb80-1" aria-hidden="true" tabindex="-1"></a>np.matmul(mu, params3)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>0.03678445682847213</code></pre>
+<pre><code>array([3.55021061e-01, 6.02524365e-01, 4.24545734e-02, 2.78748379e-16])</code></pre>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb82"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb82-1"><a href="#cb82-1" aria-hidden="true" tabindex="-1"></a>np.sqrt(np.matmul(np.transpose(params3), np.matmul(sigma, params3)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb64"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb64-1"><a href="#cb64-1" aria-hidden="true" tabindex="-1"></a>np.matmul(mu, params3)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>0.06546033283152945</code></pre>
+<pre><code>0.035019395052128664</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb66"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb66-1"><a href="#cb66-1" aria-hidden="true" tabindex="-1"></a>np.sqrt(np.matmul(np.transpose(params3), np.matmul(sigma, params3)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>0.06396234177264824</code></pre>
 </div>
 </div>
 <!-- ## Black-Litterman -->
@@ -1063,69 +781,69 @@ w_{i}\frac{\partial\sigma_{P}}{\partial w_{i}}=\frac{1}{\lambda}
 \]</span></p>
 <p>Notice that <span class="math inline">\(1/\lambda\)</span> is the risk contribution of the <span class="math inline">\(i^{th}\)</span> asset. Now use <code>Python</code> to maximize the Lagrangian numerically:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb84"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb84-1"><a href="#cb84-1" aria-hidden="true" tabindex="-1"></a><span class="co"># http://faculty.washington.edu/ezivot/econ424/riskbudgetingslides.pdf</span></span>
-<span id="cb84-2"><a href="#cb84-2" aria-hidden="true" tabindex="-1"></a><span class="co"># https://systematicinvestor.wordpress.com/2011/11/16/black-litterman-model/</span></span>
-<span id="cb84-3"><a href="#cb84-3" aria-hidden="true" tabindex="-1"></a><span class="co"># https://cran.r-project.org/web/packages/BLCOP/vignettes/BLCOP.pdf</span></span>
-<span id="cb84-4"><a href="#cb84-4" aria-hidden="true" tabindex="-1"></a><span class="co"># http://math.stackexchange.com/questions/17776/inverse-of-the-sum-of-matrices</span></span>
-<span id="cb84-5"><a href="#cb84-5" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> risk_parity_obj(params, sigma, target):</span>
-<span id="cb84-6"><a href="#cb84-6" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb84-7"><a href="#cb84-7" aria-hidden="true" tabindex="-1"></a>    risk <span class="op">=</span> np.sqrt(np.matmul(np.transpose(params), np.matmul(sigma, params)))</span>
-<span id="cb84-8"><a href="#cb84-8" aria-hidden="true" tabindex="-1"></a>    risk_contrib <span class="op">=</span> target <span class="op">/</span> <span class="bu">len</span>(params)</span>
-<span id="cb84-9"><a href="#cb84-9" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb84-10"><a href="#cb84-10" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> <span class="op">-</span>(<span class="bu">sum</span>(np.log(params)) <span class="op">-</span> (<span class="dv">1</span> <span class="op">/</span> risk_contrib) <span class="op">*</span> (risk <span class="op">-</span> target))</span>
-<span id="cb84-11"><a href="#cb84-11" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb84-12"><a href="#cb84-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result</span>
-<span id="cb84-13"><a href="#cb84-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb84-14"><a href="#cb84-14" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> risk_parity_optim(params, sigma, target):</span>
-<span id="cb84-15"><a href="#cb84-15" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb84-16"><a href="#cb84-16" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> minimize(risk_parity_obj, params, args <span class="op">=</span> (sigma, target)).x</span>
-<span id="cb84-17"><a href="#cb84-17" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> result <span class="op">/</span> <span class="bu">sum</span>(result) <span class="co"># no leverage</span></span>
-<span id="cb84-18"><a href="#cb84-18" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb84-19"><a href="#cb84-19" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb68"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb68-1"><a href="#cb68-1" aria-hidden="true" tabindex="-1"></a><span class="co"># http://faculty.washington.edu/ezivot/econ424/riskbudgetingslides.pdf</span></span>
+<span id="cb68-2"><a href="#cb68-2" aria-hidden="true" tabindex="-1"></a><span class="co"># https://systematicinvestor.wordpress.com/2011/11/16/black-litterman-model/</span></span>
+<span id="cb68-3"><a href="#cb68-3" aria-hidden="true" tabindex="-1"></a><span class="co"># https://cran.r-project.org/web/packages/BLCOP/vignettes/BLCOP.pdf</span></span>
+<span id="cb68-4"><a href="#cb68-4" aria-hidden="true" tabindex="-1"></a><span class="co"># http://math.stackexchange.com/questions/17776/inverse-of-the-sum-of-matrices</span></span>
+<span id="cb68-5"><a href="#cb68-5" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> risk_parity_obj(params, sigma, target):</span>
+<span id="cb68-6"><a href="#cb68-6" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb68-7"><a href="#cb68-7" aria-hidden="true" tabindex="-1"></a>    risk <span class="op">=</span> np.sqrt(np.matmul(np.transpose(params), np.matmul(sigma, params)))</span>
+<span id="cb68-8"><a href="#cb68-8" aria-hidden="true" tabindex="-1"></a>    risk_contrib <span class="op">=</span> target <span class="op">/</span> <span class="bu">len</span>(params)</span>
+<span id="cb68-9"><a href="#cb68-9" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb68-10"><a href="#cb68-10" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> <span class="op">-</span>(<span class="bu">sum</span>(np.log(params)) <span class="op">-</span> (<span class="dv">1</span> <span class="op">/</span> risk_contrib) <span class="op">*</span> (risk <span class="op">-</span> target))</span>
+<span id="cb68-11"><a href="#cb68-11" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb68-12"><a href="#cb68-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result</span>
+<span id="cb68-13"><a href="#cb68-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb68-14"><a href="#cb68-14" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> risk_parity_optim(params, sigma, target):</span>
+<span id="cb68-15"><a href="#cb68-15" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb68-16"><a href="#cb68-16" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> minimize(risk_parity_obj, params, args <span class="op">=</span> (sigma, target)).x</span>
+<span id="cb68-17"><a href="#cb68-17" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> result <span class="op">/</span> <span class="bu">sum</span>(result) <span class="co"># no leverage</span></span>
+<span id="cb68-18"><a href="#cb68-18" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb68-19"><a href="#cb68-19" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb85"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb85-1"><a href="#cb85-1" aria-hidden="true" tabindex="-1"></a>target <span class="op">=</span> <span class="dv">1</span></span>
-<span id="cb85-2"><a href="#cb85-2" aria-hidden="true" tabindex="-1"></a>start <span class="op">=</span> np.array([<span class="dv">1</span>] <span class="op">*</span> <span class="bu">len</span>(factors))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb69"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb69-1"><a href="#cb69-1" aria-hidden="true" tabindex="-1"></a>target <span class="op">=</span> <span class="dv">1</span></span>
+<span id="cb69-2"><a href="#cb69-2" aria-hidden="true" tabindex="-1"></a>start <span class="op">=</span> np.array([<span class="dv">1</span>] <span class="op">*</span> <span class="bu">len</span>(factors))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb86"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb86-1"><a href="#cb86-1" aria-hidden="true" tabindex="-1"></a>params5 <span class="op">=</span> risk_parity_optim(start, sigma, target)</span>
-<span id="cb86-2"><a href="#cb86-2" aria-hidden="true" tabindex="-1"></a>params5</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb70"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb70-1"><a href="#cb70-1" aria-hidden="true" tabindex="-1"></a>params5 <span class="op">=</span> risk_parity_optim(start, sigma, target)</span>
+<span id="cb70-2"><a href="#cb70-2" aria-hidden="true" tabindex="-1"></a>params5</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>array([0.02186021, 0.09158876, 0.68015919, 0.20639183])</code></pre>
+<pre><code>array([0.02197783, 0.09196207, 0.67896   , 0.2071001 ])</code></pre>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb88"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb88-1"><a href="#cb88-1" aria-hidden="true" tabindex="-1"></a>risk <span class="op">=</span> np.sqrt(np.matmul(np.transpose(params5), np.matmul(sigma, params5)))</span>
-<span id="cb88-2"><a href="#cb88-2" aria-hidden="true" tabindex="-1"></a>risk_contrib <span class="op">=</span> np.multiply(params5, np.matmul(sigma, params5)) <span class="op">/</span> risk</span>
-<span id="cb88-3"><a href="#cb88-3" aria-hidden="true" tabindex="-1"></a>risk_contrib</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb72"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb72-1"><a href="#cb72-1" aria-hidden="true" tabindex="-1"></a>risk <span class="op">=</span> np.sqrt(np.matmul(np.transpose(params5), np.matmul(sigma, params5)))</span>
+<span id="cb72-2"><a href="#cb72-2" aria-hidden="true" tabindex="-1"></a>risk_contrib <span class="op">=</span> np.multiply(params5, np.matmul(sigma, params5)) <span class="op">/</span> risk</span>
+<span id="cb72-3"><a href="#cb72-3" aria-hidden="true" tabindex="-1"></a>risk_contrib</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>array([0.00205912, 0.00205897, 0.00205906, 0.00205913])</code></pre>
+<pre><code>array([0.00207012, 0.00206996, 0.00207006, 0.00207012])</code></pre>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb90"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb90-1"><a href="#cb90-1" aria-hidden="true" tabindex="-1"></a>np.matmul(mu, params5)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb74"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb74-1"><a href="#cb74-1" aria-hidden="true" tabindex="-1"></a>np.matmul(mu, params5)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>0.002790967874284264</code></pre>
+<pre><code>0.002999229811662311</code></pre>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb92"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb92-1"><a href="#cb92-1" aria-hidden="true" tabindex="-1"></a>np.sqrt(np.matmul(np.transpose(params5), np.matmul(sigma, params5))) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb76"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb76-1"><a href="#cb76-1" aria-hidden="true" tabindex="-1"></a>np.sqrt(np.matmul(np.transpose(params5), np.matmul(sigma, params5))) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>0.008236287723178887</code></pre>
+<pre><code>0.008280260152428262</code></pre>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb94"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb94-1"><a href="#cb94-1" aria-hidden="true" tabindex="-1"></a>pd.DataFrame.from_dict({<span class="st">"max_pnl"</span>: params1,</span>
-<span id="cb94-2"><a href="#cb94-2" aria-hidden="true" tabindex="-1"></a>                        <span class="st">"min_risk"</span>: params2,</span>
-<span id="cb94-3"><a href="#cb94-3" aria-hidden="true" tabindex="-1"></a>                        <span class="st">"max_ratio"</span>: params3,</span>
-<span id="cb94-4"><a href="#cb94-4" aria-hidden="true" tabindex="-1"></a>                        <span class="co"># "black_litterman": params4,</span></span>
-<span id="cb94-5"><a href="#cb94-5" aria-hidden="true" tabindex="-1"></a>                        <span class="st">"risk_parity"</span>: params5})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb78"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb78-1"><a href="#cb78-1" aria-hidden="true" tabindex="-1"></a>pd.DataFrame.from_dict({<span class="st">"max_pnl"</span>: params1,</span>
+<span id="cb78-2"><a href="#cb78-2" aria-hidden="true" tabindex="-1"></a>                        <span class="st">"min_risk"</span>: params2,</span>
+<span id="cb78-3"><a href="#cb78-3" aria-hidden="true" tabindex="-1"></a>                        <span class="st">"max_ratio"</span>: params3,</span>
+<span id="cb78-4"><a href="#cb78-4" aria-hidden="true" tabindex="-1"></a>                        <span class="co"># "black_litterman": params4,</span></span>
+<span id="cb78-5"><a href="#cb78-5" aria-hidden="true" tabindex="-1"></a>                        <span class="st">"risk_parity"</span>: params5})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>        max_pnl  min_risk     max_ratio  risk_parity
-0  3.264055e-01  0.281299  3.567606e-01     0.021860
-1  5.983073e-01  0.574442  6.432394e-01     0.091589
-2  7.528719e-02  0.142680  2.220446e-16     0.680159
-3  2.220446e-16  0.001578  2.632443e-16     0.206392</code></pre>
+<pre><code>        max_pnl      min_risk     max_ratio  risk_parity
+0  3.334782e-01  2.974307e-01  3.550211e-01     0.021978
+1  5.675963e-01  5.521405e-01  6.025244e-01     0.091962
+2  9.892542e-02  1.504288e-01  4.245457e-02     0.678960
+3  2.276452e-16  2.498002e-16  2.787484e-16     0.207100</code></pre>
 </div>
 </div>
 </section>
@@ -1152,26 +870,26 @@ w_{i}\frac{\partial\sigma_{P}}{\partial w_{i}}=\frac{1}{\lambda}
 \]</span></p>
 <p>where <span class="math inline">\(t=1,\ldots,n\)</span> is each period.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb96"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb96-1"><a href="#cb96-1" aria-hidden="true" tabindex="-1"></a><span class="co"># http://www.frongello.com/support/Works/Chap20RiskBook.pdf</span></span>
-<span id="cb96-2"><a href="#cb96-2" aria-hidden="true" tabindex="-1"></a><span class="co"># https://github.com/R-Finance/PortfolioAttribution/blob/master/R/Carino.R</span></span>
-<span id="cb96-3"><a href="#cb96-3" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> pnl_attrib(params, x):</span>
-<span id="cb96-4"><a href="#cb96-4" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb96-5"><a href="#cb96-5" aria-hidden="true" tabindex="-1"></a>    total_i <span class="op">=</span> np.<span class="bu">sum</span>(x, axis <span class="op">=</span> <span class="dv">1</span>)</span>
-<span id="cb96-6"><a href="#cb96-6" aria-hidden="true" tabindex="-1"></a>    total <span class="op">=</span> np.prod(<span class="dv">1</span> <span class="op">+</span> total_i) <span class="op">-</span> <span class="dv">1</span></span>
-<span id="cb96-7"><a href="#cb96-7" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb96-8"><a href="#cb96-8" aria-hidden="true" tabindex="-1"></a>    coef <span class="op">=</span> (np.log(<span class="dv">1</span> <span class="op">+</span> total_i) <span class="op">/</span> total_i) <span class="op">/</span> (np.log(<span class="dv">1</span> <span class="op">+</span> total) <span class="op">/</span> total)</span>
-<span id="cb96-9"><a href="#cb96-9" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb96-10"><a href="#cb96-10" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> np.<span class="bu">sum</span>(np.multiply(x, coef), axis <span class="op">=</span> <span class="dv">0</span>)</span>
-<span id="cb96-11"><a href="#cb96-11" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb96-12"><a href="#cb96-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> np.ravel(result)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb80"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb80-1"><a href="#cb80-1" aria-hidden="true" tabindex="-1"></a><span class="co"># http://www.frongello.com/support/Works/Chap20RiskBook.pdf</span></span>
+<span id="cb80-2"><a href="#cb80-2" aria-hidden="true" tabindex="-1"></a><span class="co"># https://github.com/R-Finance/PortfolioAttribution/blob/master/R/Carino.R</span></span>
+<span id="cb80-3"><a href="#cb80-3" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> pnl_attrib(params, x):</span>
+<span id="cb80-4"><a href="#cb80-4" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb80-5"><a href="#cb80-5" aria-hidden="true" tabindex="-1"></a>    total_i <span class="op">=</span> np.<span class="bu">sum</span>(x, axis <span class="op">=</span> <span class="dv">1</span>)</span>
+<span id="cb80-6"><a href="#cb80-6" aria-hidden="true" tabindex="-1"></a>    total <span class="op">=</span> np.prod(<span class="dv">1</span> <span class="op">+</span> total_i) <span class="op">-</span> <span class="dv">1</span></span>
+<span id="cb80-7"><a href="#cb80-7" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb80-8"><a href="#cb80-8" aria-hidden="true" tabindex="-1"></a>    coef <span class="op">=</span> (np.log(<span class="dv">1</span> <span class="op">+</span> total_i) <span class="op">/</span> total_i) <span class="op">/</span> (np.log(<span class="dv">1</span> <span class="op">+</span> total) <span class="op">/</span> total)</span>
+<span id="cb80-9"><a href="#cb80-9" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb80-10"><a href="#cb80-10" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> np.<span class="bu">sum</span>(np.multiply(x, coef), axis <span class="op">=</span> <span class="dv">0</span>)</span>
+<span id="cb80-11"><a href="#cb80-11" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb80-12"><a href="#cb80-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> np.ravel(result)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb97"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb97-1"><a href="#cb97-1" aria-hidden="true" tabindex="-1"></a>attrib_mat <span class="op">=</span> np.multiply(params1, np.matrix(returns_x_df)[<span class="op">-</span>width:])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb81"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb81-1"><a href="#cb81-1" aria-hidden="true" tabindex="-1"></a>attrib_mat <span class="op">=</span> np.multiply(params1, np.matrix(returns_x_df)[<span class="op">-</span>width:])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb98"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb98-1"><a href="#cb98-1" aria-hidden="true" tabindex="-1"></a>pnl_attrib(params1, attrib_mat)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb82"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb82-1"><a href="#cb82-1" aria-hidden="true" tabindex="-1"></a>pnl_attrib(params1, attrib_mat)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>array([ 7.00131842e-02, -4.54433669e-02,  3.23924382e-04,  1.10987945e-18])</code></pre>
+<pre><code>array([ 6.28488339e-02, -3.29098189e-02,  3.97256516e-04,  2.34689866e-18])</code></pre>
 </div>
 </div>
 
