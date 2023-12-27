@@ -186,6 +186,11 @@ comp <- 1
 raw_df <- roll_eigen1(overlap_x_df, width, comp)
 ```
 
+```{r}
+# library(rolleigen)
+# raw_df <- roll_eigen(overlap_x_df, width)[["vectors"]]
+```
+
 ```{r, echo = FALSE, fig.width = 6, fig.height = 3}
 raw_mlt <- melt(as.data.table(raw_df), id.vars = "index")
 raw_plt <- plot_ts(raw_mlt, title = "Eigenvector 1Y")

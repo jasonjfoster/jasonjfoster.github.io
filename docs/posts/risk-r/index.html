@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Jason Foster">
-<meta name="dcterms.date" content="2023-12-16">
+<meta name="dcterms.date" content="2023-12-27">
 
 <title>jjf234.github.io - Risk</title>
 <style>
@@ -157,7 +157,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <div>
       <div class="quarto-title-meta-heading">Published</div>
       <div class="quarto-title-meta-contents">
-        <p class="date">December 16, 2023</p>
+        <p class="date">December 27, 2023</p>
       </div>
     </div>
     
@@ -285,8 +285,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell">
 <div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">t</span>(<span class="fu">lm_coef</span>(overlap_x_xts, overlap_y_xts, weights, intercept))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>       (Intercept)    xSP500 xDTWEXAFEGS   xDGS10 xBAMLH0A0HYM2
-BAICX 3.200137e-06 0.2220396  -0.1296513 2.588621      1.599829</code></pre>
+<pre><code>        (Intercept)    xSP500 xDTWEXAFEGS  xDGS10 xBAMLH0A0HYM2
+BAICX -8.682107e-06 0.2299223  -0.1314854 2.78038      1.579444</code></pre>
 </div>
 </div>
 <div class="cell">
@@ -299,9 +299,9 @@ BAICX 3.200137e-06 0.2220396  -0.1296513 2.588621      1.599829</code></pre>
 <span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a><span class="fu">coef</span>(fit)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>              (Intercept)        overlap_x_xtsSP500   overlap_x_xtsDTWEXAFEGS 
-             3.200137e-06              2.220396e-01             -1.296513e-01 
+            -8.682107e-06              2.299223e-01             -1.314854e-01 
        overlap_x_xtsDGS10 overlap_x_xtsBAMLH0A0HYM2 
-             2.588621e+00              1.599829e+00 </code></pre>
+             2.780380e+00              1.579444e+00 </code></pre>
 </div>
 </div>
 </section>
@@ -335,13 +335,13 @@ R^{2}=\frac{\hat{\beta}^\mathrm{T}(X^\mathrm{T}WX)\hat{\beta}}{y^\mathrm{T}Wy}
 <div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">lm_rsq</span>(overlap_x_xts, overlap_y_xts, weights, intercept)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>          BAICX
-BAICX 0.8510259</code></pre>
+BAICX 0.8573029</code></pre>
 </div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(fit)<span class="sc">$</span>r.squared</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 0.8510259</code></pre>
+<pre><code>[1] 0.8573029</code></pre>
 </div>
 </div>
 </section>
@@ -378,7 +378,7 @@ BAICX 0.8510259</code></pre>
 <span id="cb20-17"><a href="#cb20-17" aria-hidden="true" tabindex="-1"></a>    }</span>
 <span id="cb20-18"><a href="#cb20-18" aria-hidden="true" tabindex="-1"></a>    </span>
 <span id="cb20-19"><a href="#cb20-19" aria-hidden="true" tabindex="-1"></a>    var_y <span class="ot">&lt;-</span> <span class="fu">crossprod</span>(y, <span class="fu">diag</span>(weights)) <span class="sc">%*%</span> y</span>
-<span id="cb20-20"><a href="#cb20-20" aria-hidden="true" tabindex="-1"></a>    var_resid <span class="ot">&lt;-</span> <span class="fu">as.vector</span>((<span class="dv">1</span> <span class="sc">-</span> rsq) <span class="sc">*</span> var_y <span class="sc">/</span> df_resid)</span>
+<span id="cb20-20"><a href="#cb20-20" aria-hidden="true" tabindex="-1"></a>    var_resid <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>((<span class="dv">1</span> <span class="sc">-</span> rsq) <span class="sc">*</span> var_y <span class="sc">/</span> df_resid)</span>
 <span id="cb20-21"><a href="#cb20-21" aria-hidden="true" tabindex="-1"></a>    </span>
 <span id="cb20-22"><a href="#cb20-22" aria-hidden="true" tabindex="-1"></a>    result <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(var_resid <span class="sc">*</span> <span class="fu">diag</span>(<span class="fu">solve</span>(<span class="fu">crossprod</span>(x, <span class="fu">diag</span>(weights)) <span class="sc">%*%</span> x)))</span>
 <span id="cb20-23"><a href="#cb20-23" aria-hidden="true" tabindex="-1"></a>    </span>
@@ -389,16 +389,16 @@ BAICX 0.8510259</code></pre>
 <div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">lm_se</span>(overlap_x_xts, overlap_y_xts, weights, intercept)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>  (Intercept)        xSP500   xDTWEXAFEGS        xDGS10 xBAMLH0A0HYM2 
- 5.259103e-05  1.898313e-02  3.594401e-02  1.830781e-01  1.581168e-01 </code></pre>
+ 5.089759e-05  1.823187e-02  3.535277e-02  1.855269e-01  1.510996e-01 </code></pre>
 </div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">coef</span>(<span class="fu">summary</span>(fit))[ , <span class="st">"Std. Error"</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>              (Intercept)        overlap_x_xtsSP500   overlap_x_xtsDTWEXAFEGS 
-             5.259103e-05              1.898313e-02              3.594401e-02 
+             5.089759e-05              1.823187e-02              3.535277e-02 
        overlap_x_xtsDGS10 overlap_x_xtsBAMLH0A0HYM2 
-             1.830781e-01              1.581168e-01 </code></pre>
+             1.855269e-01              1.510996e-01 </code></pre>
 </div>
 </div>
 </section>
@@ -446,14 +446,14 @@ W_{k}&amp;=\mathbf{X}V_{k}=[\mathbf{X}\mathbf{v}_{1},\ldots,\mathbf{X}\mathbf{v}
 <div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="fu">t</span>(<span class="fu">pcr_coef</span>(scale_x_xts, overlap_y_xts, comps))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>             [,1]          [,2]         [,3]         [,4]
-[1,] 0.0008149658 -0.0007201751 0.0005639629 0.0005636265</code></pre>
+[1,] 0.0008185607 -0.0007027256 0.0005112718 0.0006250951</code></pre>
 </div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="fu">t</span>(<span class="fu">pcr_coef</span>(overlap_x_xts, overlap_y_xts, comps))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>          [,1]        [,2]       [,3]      [,4]
-[1,] 0.4082975 -0.09352349 0.01108694 0.0280529</code></pre>
+<pre><code>          [,1]        [,2]        [,3]       [,4]
+[1,] 0.4129235 -0.08322167 0.008898687 0.03026532</code></pre>
 </div>
 </div>
 <div class="cell">
@@ -462,7 +462,7 @@ W_{k}&amp;=\mathbf{X}V_{k}=[\mathbf{X}\mathbf{v}_{1},\ldots,\mathbf{X}\mathbf{v}
 <span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a><span class="fu">coef</span>(fit)[ , , <span class="dv">1</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>        SP500    DTWEXAFEGS         DGS10  BAMLH0A0HYM2 
- 0.0008149658 -0.0007201751  0.0005639629  0.0005636265 </code></pre>
+ 0.0008185607 -0.0007027256  0.0005112718  0.0006250951 </code></pre>
 </div>
 </div>
 </section>
@@ -485,21 +485,21 @@ W_{k}&amp;=\mathbf{X}V_{k}=[\mathbf{X}\mathbf{v}_{1},\ldots,\mathbf{X}\mathbf{v}
 <div class="cell">
 <div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="fu">pcr_rsq</span>(scale_x_xts, overlap_y_xts, comps)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>         BAICX
-BAICX 0.811921</code></pre>
+<pre><code>          BAICX
+BAICX 0.8154917</code></pre>
 </div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="fu">pcr_rsq</span>(overlap_x_xts, overlap_y_xts, comps)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>          BAICX
-BAICX 0.6770664</code></pre>
+BAICX 0.6633663</code></pre>
 </div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="fu">R2</span>(fit)<span class="sc">$</span>val[comps <span class="sc">+</span> <span class="dv">1</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 0.811921</code></pre>
+<pre><code>[1] 0.8154917</code></pre>
 </div>
 </div>
 </section>
@@ -526,7 +526,7 @@ BAICX 0.6770664</code></pre>
 <span id="cb42-11"><a href="#cb42-11" aria-hidden="true" tabindex="-1"></a>    df_resid <span class="ot">&lt;-</span> n_rows <span class="sc">-</span> n_cols <span class="sc">-</span> <span class="dv">1</span></span>
 <span id="cb42-12"><a href="#cb42-12" aria-hidden="true" tabindex="-1"></a>    </span>
 <span id="cb42-13"><a href="#cb42-13" aria-hidden="true" tabindex="-1"></a>    var_y <span class="ot">&lt;-</span> <span class="fu">crossprod</span>(y)</span>
-<span id="cb42-14"><a href="#cb42-14" aria-hidden="true" tabindex="-1"></a>    var_resid <span class="ot">&lt;-</span> <span class="fu">as.vector</span>((<span class="dv">1</span> <span class="sc">-</span> rsq) <span class="sc">*</span> var_y <span class="sc">/</span> df_resid)</span>
+<span id="cb42-14"><a href="#cb42-14" aria-hidden="true" tabindex="-1"></a>    var_resid <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>((<span class="dv">1</span> <span class="sc">-</span> rsq) <span class="sc">*</span> var_y <span class="sc">/</span> df_resid)</span>
 <span id="cb42-15"><a href="#cb42-15" aria-hidden="true" tabindex="-1"></a>    </span>
 <span id="cb42-16"><a href="#cb42-16" aria-hidden="true" tabindex="-1"></a>    LV <span class="ot">&lt;-</span> <span class="fu">eigen</span>(<span class="fu">cov</span>(x))</span>
 <span id="cb42-17"><a href="#cb42-17" aria-hidden="true" tabindex="-1"></a>    L <span class="ot">&lt;-</span> LV<span class="sc">$</span>values[<span class="dv">1</span><span class="sc">:</span>comps] <span class="sc">*</span> (n_rows <span class="sc">-</span> <span class="dv">1</span>)</span>
@@ -541,13 +541,13 @@ BAICX 0.6770664</code></pre>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="fu">pcr_se</span>(scale_x_xts, overlap_y_xts, comps)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 2.495768e-05 2.205479e-05 1.727091e-05 1.726061e-05</code></pre>
+<pre><code>[1] 2.477426e-05 2.126844e-05 1.547396e-05 1.891890e-05</code></pre>
 </div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb45"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="fu">pcr_se</span>(overlap_x_xts, overlap_y_xts, comps)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 0.0179419313 0.0041097290 0.0004871963 0.0012327366</code></pre>
+<pre><code>[1] 0.0187164392 0.0037721595 0.0004033477 0.0013718253</code></pre>
 </div>
 </div>
 </section>
@@ -589,7 +589,8 @@ BAICX 0.6770664</code></pre>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb48"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a><span class="fu">lm_sar</span>(overlap_x_xts, overlap_y_xts, weights, intercept) <span class="sc">*</span> <span class="fu">sqrt</span>(scale[[<span class="st">"periods"</span>]]) <span class="sc">*</span> <span class="fu">sqrt</span>(scale[[<span class="st">"overlap"</span>]])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 0.07518497 0.00000000 0.03192696 0.00840318 0.03211179 0.02549763 0.02901927</code></pre>
+<pre><code>[1] 0.074183436 0.000000000 0.032249592 0.008116787 0.032200524 0.025430586
+[7] 0.028022990</code></pre>
 </div>
 </div>
 </section>
@@ -628,8 +629,8 @@ BAICX 0.6770664</code></pre>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb51"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a><span class="fu">lm_mcr</span>(overlap_x_xts, overlap_y_xts, weights, intercept) <span class="sc">*</span> <span class="fu">sqrt</span>(scale[[<span class="st">"periods"</span>]]) <span class="sc">*</span> <span class="fu">sqrt</span>(scale[[<span class="st">"overlap"</span>]])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 0.075184973 0.000000000 0.025633864 0.004748299 0.018562604 0.015039592
-[7] 0.011200614</code></pre>
+<pre><code>[1] 0.074183436 0.000000000 0.025625713 0.004480016 0.018070788 0.015421160
+[7] 0.010585759</code></pre>
 </div>
 </div>
 </section>
@@ -661,8 +662,8 @@ BAICX 0.6770664</code></pre>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb55"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a><span class="fu">implied_shocks</span>(shocks, overlap_x_xts, overlap_z_xts, weights)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>     SP500 DTWEXAFEGS      DGS10 BAMLH0A0HYM2
-[1,]  -0.1        0.1 -0.0102389 -0.003531926</code></pre>
+<pre><code>     SP500 DTWEXAFEGS        DGS10 BAMLH0A0HYM2
+[1,]  -0.1        0.1 -0.009473669  -0.00519414</code></pre>
 </div>
 </div>
 </section>
@@ -684,8 +685,8 @@ BAICX 0.6770664</code></pre>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb58"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a><span class="fu">pnl_stress</span>(shocks, overlap_x_xts, overlap_y_xts, overlap_z_xts, weights, intercept)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>        (Intercept)      xSP500 xDTWEXAFEGS      xDGS10 xBAMLH0A0HYM2
-BAICX -2.179408e-05 -0.02220396 -0.01296513 -0.02650463  -0.005650476</code></pre>
+<pre><code>       (Intercept)      xSP500 xDTWEXAFEGS     xDGS10 xBAMLH0A0HYM2
+BAICX 6.841715e-05 -0.02299223 -0.01314854 -0.0263404  -0.008203853</code></pre>
 </div>
 </div>
 

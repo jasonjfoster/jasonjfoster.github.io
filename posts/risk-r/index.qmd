@@ -188,7 +188,7 @@ lm_se <- function(x, y, weights, intercept) {
     }
     
     var_y <- crossprod(y, diag(weights)) %*% y
-    var_resid <- as.vector((1 - rsq) * var_y / df_resid)
+    var_resid <- as.numeric((1 - rsq) * var_y / df_resid)
     
     result <- sqrt(var_resid * diag(solve(crossprod(x, diag(weights)) %*% x)))
     
@@ -314,7 +314,7 @@ pcr_se <- function(x, y, comps) {
     df_resid <- n_rows - n_cols - 1
     
     var_y <- crossprod(y)
-    var_resid <- as.vector((1 - rsq) * var_y / df_resid)
+    var_resid <- as.numeric((1 - rsq) * var_y / df_resid)
     
     LV <- eigen(cov(x))
     L <- LV$values[1:comps] * (n_rows - 1)
