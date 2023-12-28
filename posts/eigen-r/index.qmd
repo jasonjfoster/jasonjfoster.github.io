@@ -52,29 +52,7 @@ overlap_xts <- roll_mean(returns_xts, scale[["overlap"]], min_obs = 1, na_restor
 ```
 
 ```{r}
-tickers <- "BAICX" # fund inception date is "2011-11-28" 
-invisible(getSymbols(tickers, src = "tiingo", api.key = Sys.getenv("TIINGO_API_KEY"), adjust = TRUE))
-prices_xts <- do.call(merge, c(lapply(tickers, function(i) Cl(get(i))), all = TRUE))
-colnames(prices_xts) <- tickers
-index(prices_xts) <- as.Date(index(prices_xts))
-```
-
-```{r}
-returns_xts <- merge(returns_xts, diff(log(prices_xts)))
-overlap_xts <- merge(overlap_xts, roll_mean(returns_xts[ , tickers], scale[["overlap"]], min_obs = 1))
-```
-
-```{r}
-# weights <- 0.9 ^ ((width - 1):0)
-weights <- rep(1, width)
-```
-
-```{r}
-# overlap_df <- na.omit(overlap_xts)
-overlap_x_df <- na.omit(overlap_xts)[ , factors]
-overlap_y_df <- na.omit(overlap_xts)[ , tickers]
-overlap_x_xts <- tail(overlap_x_df, width)
-overlap_y_xts <- tail(overlap_y_df, width)
+overlap_xts <- na.omit(overlap_xts)
 ```
 
 # Decomposition
@@ -109,11 +87,11 @@ comps <- 1
 ```
 
 ```{r}
-eigen_decomp(overlap_x_xts, comps) * scale[["periods"]] * scale[["overlap"]]
+eigen_decomp(overlap_xts, comps) * scale[["periods"]] * scale[["overlap"]]
 ```
 
 ```{r}
-# cov(overlap_x_xts) * scale[["periods"]] * scale[["overlap"]]
+# cov(overlap_xts) * scale[["periods"]] * scale[["overlap"]]
 ```
 
 # Variance
@@ -140,7 +118,7 @@ variance_explained <- function(x) {
 ```
 
 ```{r}
-variance_explained(overlap_x_xts)
+variance_explained(overlap_xts)
 ```
 
 # Similarity
@@ -181,12 +159,14 @@ comp <- 1
 ```
 
 ```{r}
-raw_df <- roll_eigen1(overlap_x_df, width, comp)
+raw_df <- roll_eigen1(overlap_xts, width, comp)
 ```
 
 ```{r}
+# # install.packages("devtools")
+# devtools::install_github("jjf234/rolleigen") # roll (>= 1.1.7)
 # library(rolleigen)
-# raw_df <- roll_eigen(overlap_x_df, width)[["vectors"]][ , comp, ]
+# raw_df <- roll_eigen(overlap_xts, width)[["vectors"]][ , comp, ]
 ```
 
 ```{r, echo = FALSE, fig.width = 6, fig.height = 3}
@@ -233,7 +213,7 @@ roll_eigen2 <- function(x, width, comp) {
 ```
 
 ```{r}
-clean_df <- roll_eigen2(overlap_x_df, width, comp)
+clean_df <- roll_eigen2(overlap_xts, width, comp)
 ```
 
 ```{r, echo = FALSE, fig.width = 6, fig.height = 3}

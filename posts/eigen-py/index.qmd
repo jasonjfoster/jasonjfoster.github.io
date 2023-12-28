@@ -55,36 +55,7 @@ returns_df = pd.concat([returns_df, overlap_df], keys = ["returns", "overlap"], 
 ```
 
 ```{python}
-import os
-```
-
--   Open: <https://github.com/pydata/pandas-datareader/issues/965>
-
-```{python}
-tickers = ["BAICX"] # fund inception date is "2011-11-28"
-prices_df = pdr.get_data_tiingo(tickers, start = "1900-01-01", api_key = os.getenv("TIINGO_API_KEY"))
-prices_df = prices_df.pivot_table(index = "date", columns = "symbol", values = "adjClose") \
-    .tz_localize(None)
-```
-
-```{python}
-returns_cols = list(zip(["returns"], tickers))
-overlap_cols = list(zip(["overlap"], tickers))
-returns_df[returns_cols] = np.log(prices_df).diff()
-returns_df[overlap_cols] = returns_df[returns_cols].rolling(scale["overlap"], min_periods = 1).mean()
-returns_df.sort_index(axis = 1, inplace = True)
-```
-
-```{python}
-# weights = np.array([0.9 ** i for i in range(width - 1, -1, -1)]).reshape((width, 1))
-weights = np.array([1] * width).reshape((width, 1))
-```
-
-```{python}
-overlap_x_df = returns_df.dropna()["overlap"][factors]
-overlap_y_df = returns_df.dropna()["overlap"][tickers]
-overlap_x_mat = np.matrix(overlap_x_df[-width:])
-overlap_y_mat = np.matrix(overlap_y_df[-width:])
+overlap_df = returns_df.dropna()["overlap"]
 ```
 
 # Decomposition
@@ -121,11 +92,11 @@ comps = 1
 ```
 
 ```{python}
-eigen_decomp(overlap_x_mat, comps) * scale["periods"] * scale["overlap"]
+eigen_decomp(overlap_df, comps) * scale["periods"] * scale["overlap"]
 ```
 
 ```{python}
-# np.cov(overlap_x_mat.T) * scale["periods"] * scale["overlap"]
+# np.cov(overlap_df.T) * scale["periods"] * scale["overlap"]
 ```
 
 # Variance
@@ -151,7 +122,7 @@ def variance_explained(x):
 ```
 
 ```{python}
-variance_explained(overlap_x_mat)
+variance_explained(overlap_df)
 ```
 
 # Similarity
@@ -203,7 +174,7 @@ comp = 1
 ```
 
 ```{python}
-raw_df = roll_eigen1(overlap_x_df, width, comp)
+raw_df = roll_eigen1(overlap_df, width, comp)
 ```
 
 ```{r, echo = FALSE, fig.width = 6, fig.height = 3}
@@ -232,6 +203,7 @@ def roll_eigen2(x, width, comp):
             similarity = np.dot(evecs.T, result_ls[-1])
             order = np.argmax(np.abs(similarity))
             evec = np.multiply(np.sign(similarity[order]), evecs[:, order])
+            
             result_ls.append(evec)
             
         else:
@@ -244,7 +216,7 @@ def roll_eigen2(x, width, comp):
 ```
 
 ```{python}
-clean_df = roll_eigen2(overlap_x_df, width, comp)
+clean_df = roll_eigen2(overlap_df, width, comp)
 ```
 
 ```{r, echo = FALSE, fig.width = 6, fig.height = 3}
