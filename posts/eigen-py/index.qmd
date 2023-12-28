@@ -164,8 +164,6 @@ $$
 \end{aligned}
 $$
 
--   <https://papers.ssrn.com/sol3/papers.cfm?abstract_id=4400158>
-
 ```{python}
 def eigen(x):
   
@@ -216,6 +214,7 @@ print(raw_plt)
 ```
 
 -   <https://quant.stackexchange.com/a/3095>
+-   <https://papers.ssrn.com/sol3/papers.cfm?abstract_id=4400158>
 
 ```{python}
 def roll_eigen2(x, width, comp):
@@ -226,16 +225,17 @@ def roll_eigen2(x, width, comp):
     for i in range(width - 1, n_rows):
         
         idx = range(max(i - width + 1, 0), i + 1)
-        evec = eigen(x.iloc[idx])["vectors"][:, comp - 1]
+        evecs = eigen(x.iloc[idx])["vectors"]
         
         if i > width - 1:
             
-            similarity = np.dot(evec, result_ls[-1].T)
-            evec = np.multiply(np.sign(similarity), evec)
+            similarity = np.dot(evecs.T, result_ls[-1])
+            order = np.argmax(np.abs(similarity))
+            evec = np.multiply(np.sign(similarity[order]), evecs[:, order])
             result_ls.append(evec)
             
         else:
-            result_ls.append(evec)
+            result_ls.append(evecs[:, comp - 1])
     
     result_df = pd.DataFrame(result_ls, index = x.index[(width - 1):],
                              columns = x.columns)

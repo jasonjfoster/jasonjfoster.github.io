@@ -153,8 +153,6 @@ $$
 \end{aligned}
 $$
 
--   <https://papers.ssrn.com/sol3/papers.cfm?abstract_id=4400158>
-
 ```{r}
 roll_eigen1 <- function(x, width, comp) {
     
@@ -198,6 +196,7 @@ print(raw_plt)
 ```
 
 -   <https://quant.stackexchange.com/a/3095>
+-   <https://papers.ssrn.com/sol3/papers.cfm?abstract_id=4400158>
 
 ```{r}
 roll_eigen2 <- function(x, width, comp) {
@@ -208,16 +207,18 @@ roll_eigen2 <- function(x, width, comp) {
     for (i in width:n_rows) {
         
         idx <- max(i - width + 1, 1):i
-        evec <- eigen(cov(x[idx, ]))[["vectors"]][ , comp]
+        evecs <- eigen(cov(x[idx, ]))[["vectors"]]
                 
         if (i > width) {
+          
+            similarity <- crossprod(evecs, result_ls[[length(result_ls)]])
+            order <- which.max(abs(similarity))
+            evec <- sign(similarity)[order] * evecs[ , order]
             
-            similarity <- evec %*% result_ls[[length(result_ls)]]
-            evec <- as.numeric(sign(similarity)) * evec
             result_ls <- append(result_ls, list(evec))
             
         } else {
-            result_ls <- append(result_ls, list(evec))
+            result_ls <- append(result_ls, list(evecs[ , comp]))
         }
                 
     }
