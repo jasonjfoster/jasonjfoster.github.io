@@ -1,0 +1,289 @@
+## Black-Litterman
+
+### Prior distribution
+
+$$
+\begin{aligned}
+\text{Risk aversion: } &\lambda=\frac{E(r)-r_{f}}{\sigma^{2}}=\frac{IR}{\sigma}\\
+\text{Implied returns: } &\Pi=\lambda\Sigma w\\
+\text{Distribution: } &N\sim(\Pi,\tau\Sigma)
+\end{aligned}
+$$
+
+```{python}
+def implied_pnl(params, ir, sigma):
+    
+    lmbda = ir / np.sqrt(np.matmul(np.transpose(params), np.matmul(sigma, params)))
+    
+    result = np.matmul(lmbda * sigma, params)
+    
+    return result
+```
+
+```{python}
+implied_pnl(params3, ir, sigma)
+```
+
+### Conditional distribution
+
+$$
+\begin{aligned}
+\text{Prior mean variance: } &\tau\in(0.01, 0.05)\approx(0.025)\\
+\text{Asset views: } &\mathbf{P}={\begin{bmatrix}
+p_{11}&\cdots&p_{1n}\\
+\vdots&\ddots&\vdots\\
+p_{k1}&\cdots&p_{kn}
+\end{bmatrix}}=
+{\begin{bmatrix}
+0&0&0&0&0&0&1&0\\
+-1&1&0&0&0&0&0&0\\
+0&0&0.5&-0.5&0.5&-0.5&0&0
+\end{bmatrix}}\\
+\text{View returns: } &\mathbf{Q}={\begin{bmatrix}
+q_{1}\\
+\vdots\\
+q_{k}
+\end{bmatrix}}=
+{\begin{bmatrix}
+0.0525\\
+0.0025\\
+0.0200
+\end{bmatrix}}\\
+\text{View confidence: } &\mathbf{C}={\begin{bmatrix}
+c_{1}\\
+\vdots\\
+c_{k}
+\end{bmatrix}}=
+{\begin{bmatrix}
+0.2500\\
+0.5000\\
+0.6500
+\end{bmatrix}}\\
+\text{View covariance: } &\mathbf{\Omega}={\begin{bmatrix}
+\tau\left(\frac{1-c_{1}}{c_{1}}\right)\left(p_{1}\Sigma p_{1}^{T}\right)&0&0\\
+0&\ddots&0\\
+0&0&\tau\left(\frac{1-c_{k}}{c_{k}}\right)\left(p_{k}\Sigma p_{k}^{T}\right)
+\end{bmatrix}}\\
+\text{Distribution: } &N\sim(\mathbf{Q}, \mathbf{\Omega})
+\end{aligned}
+$$
+
+### Posterior distribution
+
+$$
+\begin{aligned}
+\text{Implied returns: } &\hat{\Pi}=\Pi+\tau\Sigma \mathbf{P}^{T}\left(\tau \mathbf{P}\Sigma \mathbf{P}^{T}+\mathbf{\Omega}\right)^{-1}\left(\mathbf{Q}-\mathbf{P}\Pi^{T}\right)\\
+\text{Covariance: } &\hat{\Sigma}=\Sigma+\tau\left[\Sigma-\Sigma\mathbf{P}^{T}\left(\tau\mathbf{P}\Sigma\mathbf{P}^{T}+\mathbf{\Omega}\right)^{-1}\tau\mathbf{P}\Sigma\right]\\
+\text{Weights: } &\hat{w}=\hat{\Pi}\left(\lambda\Sigma\right)^{-1}\\
+\text{Distribution: } &N\sim\left(\left[\left(\tau\Sigma\right)^{-1}+\mathbf{P}^{T}\Omega^{-1}\mathbf{P}\right]^{-1}\left[\left(\tau\Sigma\right)^{-1}\Pi+\mathbf{P}^{T}\Omega^{-1}\mathbf{Q}\right],\left[\left(\tau\Sigma\right)^{-1}+\mathbf{P}^{T}\Omega^{-1}\mathbf{P}\right]^{-1}\right)
+\end{aligned}
+$$
+
+```{python}
+def black_litterman(params, ir, sigma, views):
+    
+    # prior distribution
+    weights_prior = params
+    sigma_prior = sigma
+    lmbda = ir / np.sqrt(np.matmul(np.transpose(weights_prior), np.matmul(sigma_prior, weights_prior)))
+    pi_prior = np.transpose(np.matrix(np.matmul(lmbda * sigma_prior, weights_prior)))
+    
+    # matrix calculations
+    matmul_left = np.multiply(views["tau"], np.matmul(sigma_prior, views["P"].T))
+    matmul_mid = np.multiply(views["tau"], np.matmul(views["P"], np.matmul(sigma_prior, views["P"].T)))
+    matmul_right = views["Q"] - np.matmul(views["P"], pi_prior)
+    
+    # conditional distribution
+    omega = np.diag(np.diag(np.matmul(np.diag([(1 - x) / x for x in views["C"]]), matmul_mid)))
+    
+    # posterior distribution
+    pi_posterior = pi_prior + np.matmul(matmul_left, np.matmul(np.linalg.inv(matmul_mid + omega), matmul_right))
+    
+    sigma_posterior = sigma_prior + np.multiply(views["tau"], sigma_prior) - \
+        np.matmul(matmul_left, np.matmul(np.linalg.inv(matmul_mid + omega),
+                                         np.multiply(views["tau"], np.matmul(views["P"], sigma_prior))))
+    
+    weights_posterior = np.matmul(pi_posterior.T, np.linalg.inv(lmbda * sigma_prior))
+    
+    # implied confidence
+    pi_posterior_100 = pi_prior + np.matmul(matmul_left, np.matmul(np.linalg.inv(matmul_mid), matmul_right))
+    
+    weights_posterior_100 = np.matmul(pi_posterior_100.T, np.linalg.inv(lmbda * sigma_prior))
+    
+    implied_confidence = (weights_posterior - weights_prior) / (weights_posterior_100 - weights_prior)
+    
+    result = {"implied_confidence": implied_confidence,
+              "weights_prior": np.matrix(weights_prior),
+              "weights_posterior": weights_posterior,
+              "pi_prior": np.transpose(pi_prior),
+              "pi_posterior": np.transpose(pi_posterior),
+              "sigma_prior": sigma_prior,
+              "sigma_posterior": sigma_posterior}
+        
+    return result
+```
+
+```{python}
+tau = 0.025
+P = np.diag([1] * len(factors))
+Q = np.transpose(np.matrix(implied_shocks([0.1], overlap_x_mat, overlap_x_mat[:, 0], 1)))
+C = [0.95] * len(factors)
+views = {"tau": tau, "P": P, "Q": Q, "C": C}
+```
+
+```{python}
+bl = black_litterman(params3, ir, sigma, views)
+bl
+```
+
+```{python}
+params4 = np.array(bl["weights_posterior"])[0]
+params4 = params4 / sum(params4) # no leverage
+params4
+```
+
+```{python}
+np.matmul(mu, params4)
+```
+
+```{python}
+np.sqrt(np.matmul(np.transpose(params4), np.matmul(sigma, params4)))
+```
+
+## Risk parity
+
+Risk parity is an approach to portfolio management that focuses on allocation of risk rather than allocation of capital. In a risk parity strategy, the asset allocations are leveraged, or deleveraged, to have equal risk contributions. Suppose that $\mathbf{R}$ is a $T \times N$ matrix of asset returns where the return of the $i^{th}$ asset is $R_{i,t}$ at time $t$. Define $\Sigma$ to be the covariance matrix of $\mathbf{R}$ and let $\mathbf{w}=(w_{1},\dots,w_{N})$ be a vector of asset weights. Then the volatility of the return of the strategy is $\sigma_{P}=\sqrt{\mathbf{w}^T\Sigma\mathbf{w}}$ and, by Euler's Theorem, satisfies:
+
+$$
+\begin{aligned}
+\sigma_{P}&=\sum_{i=1}^{N}w_{i}\frac{\partial\sigma_{P}}{\partial w_{i}}\\
+&=w_{1}\frac{\partial\sigma_{P}}{\partial w_{1}}+\dots+w_{N}\frac{\partial\sigma_{P}}{\partial w_{N}}
+\end{aligned}
+$$
+
+where each element is the risk contribution of the $i^{th}$ risky asset. The risk parity objective solves for weights such that each asset contributes equal risk using the following nonlinear constrained optimization problem:
+
+$$
+\begin{aligned}
+\begin{array}{rrcl}
+\displaystyle\max_{x}&\displaystyle\sum_{i=1}^{N}\log(w_{i})\\
+\textrm{s.t.}&\sqrt{\mathbf{w}^T\Sigma\mathbf{w}}&\leq&\sigma 
+\end{array}
+\end{aligned}
+$$
+
+To incorporate these conditions into one equation, introduce a new variable $\lambda$ that is the Lagrange multiplier and define a new function $\mathcal{L}$ as follows:
+
+$$
+\begin{aligned}
+\mathcal{L}(\mathbf{w},\lambda)&=\sum_{i=1}^{N}\log(w_{i})-\lambda(\sqrt{\mathbf{w}^T\Sigma\mathbf{w}}-\sigma)
+\end{aligned}
+$$
+
+Then set the partial derivatives of $\mathcal{L}$ equal to zero for each asset $i$:
+
+$$
+\begin{aligned}
+\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial w_{i}}&=\frac{1}{w_{i}}-\lambda\frac{\partial\sigma_{P}}{\partial w_{i}}=0
+\Leftrightarrow
+w_{i}\frac{\partial\sigma_{P}}{\partial w_{i}}=\frac{1}{\lambda}
+\end{aligned}
+$$
+
+Notice that $1/\lambda$ is the risk contribution of the $i^{th}$ asset. Now use `Python` to maximize the Lagrangian numerically:
+
+```{python}
+# http://faculty.washington.edu/ezivot/econ424/riskbudgetingslides.pdf
+# https://systematicinvestor.wordpress.com/2011/11/16/black-litterman-model/
+# https://cran.r-project.org/web/packages/BLCOP/vignettes/BLCOP.pdf
+# http://math.stackexchange.com/questions/17776/inverse-of-the-sum-of-matrices
+def risk_parity_obj(params, sigma, target):
+    
+    risk = np.sqrt(np.matmul(np.transpose(params), np.matmul(sigma, params)))
+    risk_contrib = target / len(params)
+    
+    result = -(sum(np.log(params)) - (1 / risk_contrib) * (risk - target))
+    
+    return result
+
+def risk_parity_optim(params, sigma, target):
+    
+    result = minimize(risk_parity_obj, params, args = (sigma, target)).x
+    result = result / sum(result) # no leverage
+    
+    return result
+```
+
+```{python}
+target = 1
+start = np.array([1] * len(factors))
+```
+
+```{python}
+params5 = risk_parity_optim(start, sigma, target)
+params5
+```
+
+```{python}
+risk = np.sqrt(np.matmul(np.transpose(params5), np.matmul(sigma, params5)))
+risk_contrib = np.multiply(params5, np.matmul(sigma, params5)) / risk
+risk_contrib
+```
+
+```{python}
+np.matmul(mu, params5)
+```
+
+```{python}
+np.sqrt(np.matmul(np.transpose(params5), np.matmul(sigma, params5))) 
+```
+
+## Portfolio attribution
+
+### Single-period
+
+The arithmetic active return is commonly decomposed using the Brinson-Fachler method:
+
+$$
+\begin{aligned}
+\text{Allocation: } &r_{a}=\sum_{k=1}^{n}(w_{p,k}-w_{b,k})(r_{b,k}-r_{b})\\
+\text{Selection: } &r_{s}=\sum_{k=1}^{n}w_{p,k}(r_{p,k}-r_{b,k})\\
+\end{aligned}
+$$
+
+where $k=1,\ldots,n$ is each sector or factor.
+
+### Multi-period
+
+Arithmetic attributes add to the active return of a single period; however, they cannot be summed or compounded to explain the active return over multiple periods. To solve this problem, the original arithmetic attribute is multiplied by a single scaling coefficient for that period. After all single-period original attributes have been transformed, the adjusted attributes sum to the active return over the periods.
+
+$$
+\begin{aligned}
+\text{Carino scaling coefficient: } &c_{t}=\frac{[\ln(1+r_{p,t})-\ln(1+r_{b,t})]/(r_{p,t}-r_{b,t})}{[\ln(1+r_{p})-\ln(1+r_{b})]/(r_{p}-r_{b})}
+\end{aligned}
+$$
+
+where $t=1,\ldots,n$ is each period.
+
+```{python}
+# http://www.frongello.com/support/Works/Chap20RiskBook.pdf
+# https://github.com/R-Finance/PortfolioAttribution/blob/master/R/Carino.R
+def pnl_attrib(params, x):
+    
+    total_i = np.sum(x, axis = 1)
+    total = np.prod(1 + total_i) - 1
+    
+    coef = (np.log(1 + total_i) / total_i) / (np.log(1 + total) / total)
+    
+    result = np.sum(np.multiply(x, coef), axis = 0)
+    
+    return np.ravel(result)
+```
+
+```{python}
+attrib_mat = np.multiply(params1, np.matrix(returns_x_df)[-width:])
+```
+
+```{python}
+pnl_attrib(params1, attrib_mat)
+```
