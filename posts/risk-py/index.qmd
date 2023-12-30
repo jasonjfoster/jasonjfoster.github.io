@@ -82,7 +82,7 @@ weights = np.array([1] * width).reshape((width, 1))
 
 ```{python}
 overlap_df = returns_df.dropna()["overlap"]
-overlap_x_df = returns_df.dropna()["overlap"][factors][-width:]
+overlap_x_df = returns_df.dropna()["overlap"][factors][-width:] # same dimension as `weights`
 overlap_y_df = returns_df.dropna()["overlap"][tickers][-width:]
 ```
 
@@ -401,7 +401,7 @@ $$
 \end{aligned}
 $$
 
--   <http://faculty.washington.edu/ezivot/research/factormodelrisklecture_handout.pdf>
+-   <https://bookdown.org/compfinezbook/introcompfinr/Portfolio-risk-reports.html>
 
 ```{python}
 def lm_mcr(x, y, weights, intercept):

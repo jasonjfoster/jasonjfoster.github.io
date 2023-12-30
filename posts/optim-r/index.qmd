@@ -74,11 +74,9 @@ weights <- rep(1, width)
 ```
 
 ```{r}
-# overlap_df <- na.omit(overlap_xts)
-overlap_x_df <- na.omit(overlap_xts)[ , factors]
-overlap_y_df <- na.omit(overlap_xts)[ , tickers]
-overlap_x_xts <- tail(overlap_x_df, width)
-overlap_y_xts <- tail(overlap_y_df, width)
+overlap_xts <- na.omit(overlap_xts)
+overlap_x_xts <- tail(overlap_xts[ , factors], width) # same dimension as `weights`
+overlap_y_xts <- tail(overlap_xts[ , tickers], width)
 ```
 
 # Random weights
@@ -92,10 +90,10 @@ Need to generate uniformly distributed weights $\mathbf{w}=(w_{1},w_{2},\ldots,w
 Can also scale random weights by $M$, e.g. if sum of weights must be 10% then multiply weights by 10%.
 
 ```{r}
-rand_weights1 <- function(n_sim, n_assets, lmbda) {
+rand_weights1 <- function(n_sim, n_assets) {
     
     rand_exp <- matrix(runif(n_sim * n_assets), nrow = n_sim, ncol = n_assets)
-    result <- sweep(rand_exp, 1, rowSums(rand_exp), "/")
+    result <- rand_exp / rowSums(rand_exp)
     
     return(result)
     
@@ -103,26 +101,29 @@ rand_weights1 <- function(n_sim, n_assets, lmbda) {
 ```
 
 ```{r}
-# Methodology: uniform sampling from the simplex (http://mathoverflow.net/a/76258)
-# z ~ U(0, 1) then -ln(z) is an exponential(1) distribution
-# This is also known as generating a random vector from the symmetric Dirichlet distribution
+n_assets <- 3
+n_sim <- 10000
+```
+
+```{r}
+approach1 <- rand_weights1(n_sim, n_assets)
+```
+
+```{r, echo = FALSE, fig.width = 4, fig.height = 4}
+plot_pairs(as.data.table(approach1), title = "Weight (%)")
+```
+
+**Approach 2**: uniform sampling from the simplex (<http://mathoverflow.net/a/76258>)
+
+-   $z\sim U(0,1)$ then $-\ln(z)$ is an $\text{Exp}(1)$ distribution
+
+This is also known as generating a random vector from the symmetric Dirichlet distribution.
+
+```{r}
 rand_weights2 <- function(n_sim, n_assets, lmbda) {
     
     rand_exp <- matrix(-log(1 - runif(n_sim * n_assets)) / lmbda, nrow = n_sim, ncol = n_assets)
-    result <- sweep(rand_exp, 1, rowSums(rand_exp), "/")
-    
-    return(result)
-    
-}
-```
-
-```{r}
-# 1. Generate n exponential(1) random variables x_1, x_2, ..., x_n
-# 2. Let y_i = x_i / (sum_{i = 1}^{n} x_i)
-rand_weights3 <- function(n_sim, n_assets, lmbda) {
-    
-    rand_exp <- matrix(rexp(n_sim * n_assets), nrow = n_sim, ncol = n_assets)
-    result <- sweep(rand_exp, 1, rowSums(rand_exp), "/")
+    result <- rand_exp / rowSums(rand_exp)
     
     return(result)
     
@@ -131,22 +132,34 @@ rand_weights3 <- function(n_sim, n_assets, lmbda) {
 
 ```{r}
 lmbda <- 1
-n_assets <- 3
-n_sim <- 10000
 ```
 
 ```{r}
-approach1 <- rand_weights1(n_sim, n_assets, lmbda)
 approach2 <- rand_weights2(n_sim, n_assets, lmbda)
-approach3 <- rand_weights2(n_sim, n_assets, lmbda)
-```
-
-```{r, echo = FALSE, fig.width = 4, fig.height = 4}
-plot_pairs(as.data.table(approach1), title = "Weight (%)")
 ```
 
 ```{r, echo = FALSE, fig.width = 4, fig.height = 4}
 plot_pairs(as.data.table(approach2), title = "Weight (%)")
+```
+
+**Approach 3**
+
+1. Generate $\text{Exp}(1)$ random variables $x_{1},x_{2},\ldots,x_{N}$
+2. Let $y_{i}=\frac{x_{i}}{\sum_{i=1}^{N}x_{i}}$
+
+```{r}
+rand_weights3 <- function(n_sim, n_assets) {
+    
+    rand_exp <- matrix(rexp(n_sim * n_assets), nrow = n_sim, ncol = n_assets)
+    result <- rand_exp / rowSums(rand_exp)
+    
+    return(result)
+    
+}
+```
+
+```{r}
+approach3 <- rand_weights3(n_sim, n_assets)
 ```
 
 ```{r, echo = FALSE, fig.width = 4, fig.height = 4}
@@ -195,7 +208,7 @@ rand_turnover1 <- function(n_sim, n_assets, lower, upper, target) {
     
     rng <- upper - lower
     
-    result <- rand_weights3(n_sim, n_assets, lmbda) * rng
+    result <- rand_weights3(n_sim, n_assets) * rng
     result <- result - rng / n_assets
     
     return(result)
