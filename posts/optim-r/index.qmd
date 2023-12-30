@@ -113,15 +113,16 @@ approach1 <- rand_weights1(n_sim, n_assets)
 plot_pairs(as.data.table(approach1), title = "Weight (%)")
 ```
 
-**Approach 2**: uniform sampling from the simplex (<http://mathoverflow.net/a/76258>)
+**Approach 2**: uniform sample from the simplex (<http://mathoverflow.net/a/76258>) and then normalize
 
--   $z\sim U(0,1)$ then $-\ln(z)$ is an $\text{Exp}(1)$ distribution
+-   If $z\sim U(0,1)$ then $-\ln(z)$ is an $\text{Exp}(1)$ distribution
 
 This is also known as generating a random vector from the symmetric Dirichlet distribution.
 
 ```{r}
 rand_weights2 <- function(n_sim, n_assets, lmbda) {
     
+    # uses 'inverse transform sampling' method: <https://en.wikipedia.org/wiki/Inverse_transform_sampling>
     rand_exp <- matrix(-log(1 - runif(n_sim * n_assets)) / lmbda, nrow = n_sim, ncol = n_assets)
     result <- rand_exp / rowSums(rand_exp)
     
@@ -142,10 +143,9 @@ approach2 <- rand_weights2(n_sim, n_assets, lmbda)
 plot_pairs(as.data.table(approach2), title = "Weight (%)")
 ```
 
-**Approach 3**
+**Approach 3**: directly generate $\text{Exp}(1)$ and then normalize
 
-1. Generate $\text{Exp}(1)$ random variables $x_{1},x_{2},\ldots,x_{N}$
-2. Let $y_{i}=\frac{x_{i}}{\sum_{i=1}^{N}x_{i}}$
+-   If $x\sim\text{Exp}(1)$ then let $y_{i}=\frac{x_{i}}{\sum_{i=1}^{N}x_{i}}$
 
 ```{r}
 rand_weights3 <- function(n_sim, n_assets) {

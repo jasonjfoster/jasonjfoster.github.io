@@ -281,20 +281,21 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p><img src="index_files/figure-html/unnamed-chunk-16-1.png" class="img-fluid" width="384"></p>
 </div>
 </div>
-<p><strong>Approach 2</strong>: uniform sampling from the simplex (<a href="http://mathoverflow.net/a/76258" class="uri">http://mathoverflow.net/a/76258</a>)</p>
+<p><strong>Approach 2</strong>: uniform sample from the simplex (<a href="http://mathoverflow.net/a/76258" class="uri">http://mathoverflow.net/a/76258</a>) and then normalize</p>
 <ul>
-<li><span class="math inline">\(z\sim U(0,1)\)</span> then <span class="math inline">\(-\ln(z)\)</span> is an <span class="math inline">\(\text{Exp}(1)\)</span> distribution</li>
+<li>If <span class="math inline">\(z\sim U(0,1)\)</span> then <span class="math inline">\(-\ln(z)\)</span> is an <span class="math inline">\(\text{Exp}(1)\)</span> distribution</li>
 </ul>
 <p>This is also known as generating a random vector from the symmetric Dirichlet distribution.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> rand_weights2(n_sim, n_assets, lmbda):   </span>
 <span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>    rand_exp <span class="op">=</span> np.matrix(<span class="op">-</span>np.log(<span class="dv">1</span> <span class="op">-</span> np.random.uniform(size <span class="op">=</span> (n_sim, n_assets))) <span class="op">/</span> lmbda)</span>
-<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>    rand_exp_sum <span class="op">=</span> np.<span class="bu">sum</span>(rand_exp, axis <span class="op">=</span> <span class="dv">1</span>)</span>
-<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> rand_exp <span class="op">/</span> rand_exp_sum</span>
-<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>    <span class="co"># uses 'inverse transform sampling' method: &lt;https://en.wikipedia.org/wiki/Inverse_transform_sampling&gt;</span></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>    rand_exp <span class="op">=</span> np.matrix(<span class="op">-</span>np.log(<span class="dv">1</span> <span class="op">-</span> np.random.uniform(size <span class="op">=</span> (n_sim, n_assets))) <span class="op">/</span> lmbda)</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>    rand_exp_sum <span class="op">=</span> np.<span class="bu">sum</span>(rand_exp, axis <span class="op">=</span> <span class="dv">1</span>)</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> rand_exp <span class="op">/</span> rand_exp_sum</span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>lmbda <span class="op">=</span> <span class="dv">1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -307,11 +308,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p><img src="index_files/figure-html/unnamed-chunk-20-1.png" class="img-fluid" width="384"></p>
 </div>
 </div>
-<p><strong>Approach 3</strong></p>
-<ol type="1">
-<li>Generate <span class="math inline">\(\text{Exp}(1)\)</span> random variables <span class="math inline">\(x_{1},x_{2},\ldots,x_{N}\)</span></li>
-<li>Let <span class="math inline">\(y_{i}=\frac{x_{i}}{\sum_{i=1}^{N}x_{i}}\)</span></li>
-</ol>
+<p><strong>Approach 3</strong>: directly generate <span class="math inline">\(\text{Exp}(1)\)</span> and then normalize</p>
+<ul>
+<li>If <span class="math inline">\(x\sim\text{Exp}(1)\)</span> then let <span class="math inline">\(y_{i}=\frac{x_{i}}{\sum_{i=1}^{N}x_{i}}\)</span></li>
+</ul>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> rand_weights3(n_sim, n_assets):</span>
 <span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>    </span>
