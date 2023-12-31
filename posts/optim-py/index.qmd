@@ -121,16 +121,16 @@ approach1 = rand_weights1(n_sim, n_assets)
 plot_pairs(as.data.table(py$approach1), title = "Weight (%)")
 ```
 
-**Approach 2**: uniform sample from the simplex (<http://mathoverflow.net/a/76258>) and then normalize
+**Approach 2(a)**: uniform sample from the simplex (<http://mathoverflow.net/a/76258>) and then normalize
 
--   If $z\sim U(0,1)$ then $-\ln(z)$ is an $\text{Exp}(1)$ distribution
+-   If $u\sim U(0,1)$ then $-\ln(u)$ is an $\text{Exp}(1)$ distribution
 
 This is also known as generating a random vector from the symmetric Dirichlet distribution.
 
 ```{python}
-def rand_weights2(n_sim, n_assets, lmbda):   
+def rand_weights2a(n_sim, n_assets, lmbda):   
     
-    # uses 'inverse transform sampling' method: <https://en.wikipedia.org/wiki/Inverse_transform_sampling>
+    # use 'inverse transform sampling' method: https://en.wikipedia.org/wiki/Inverse_transform_sampling
     rand_exp = np.matrix(-np.log(1 - np.random.uniform(size = (n_sim, n_assets))) / lmbda)
     rand_exp_sum = np.sum(rand_exp, axis = 1)
     
@@ -144,19 +144,17 @@ lmbda = 1
 ```
 
 ```{python}
-approach2 = rand_weights2(n_sim, n_assets, lmbda)
+approach2a = rand_weights2a(n_sim, n_assets, lmbda)
 ```
 
 ```{r, echo = FALSE, fig.width = 4, fig.height = 4}
-plot_pairs(as.data.table(py$approach2), title = "Weight (%)")
+plot_pairs(as.data.table(py$approach2a), title = "Weight (%)")
 ```
 
-**Approach 3**: directly generate $\text{Exp}(1)$ and then normalize
-
--   If $x\sim\text{Exp}(1)$ then let $y_{i}=\frac{x_{i}}{\sum_{i=1}^{N}x_{i}}$
+**Approach 2(b)**: directly generate $\text{Exp}(1)$ and then normalize
 
 ```{python}
-def rand_weights3(n_sim, n_assets):
+def rand_weights2b(n_sim, n_assets):
     
     rand_exp = np.matrix(np.random.exponential(size = (n_sim, n_assets)))
     rand_exp_sum = np.sum(rand_exp, axis = 1)
@@ -167,11 +165,11 @@ def rand_weights3(n_sim, n_assets):
 ```
 
 ```{python}
-approach3 = rand_weights3(n_sim, n_assets)
+approach2b = rand_weights2b(n_sim, n_assets)
 ```
 
 ```{r, echo = FALSE, fig.width = 4, fig.height = 4}
-plot_pairs(as.data.table(py$approach3), title = "Weight (%)")
+plot_pairs(as.data.table(py$approach2b), title = "Weight (%)")
 ```
 
 ## Random turnover
@@ -189,43 +187,12 @@ How to generate random weights between lower bound $a$ and upper bound $b$ that 
 Then add random turnover to previous period's random weights.
 
 ```{python}
-def rand_iterative(n_assets, lower, upper, target):
-    
-    plug = False
-    
-    while not plug:
-        
-        result = np.random.uniform(low = lower, high = upper, size = n_assets - 1)
-        temp = target - sum(result)
-        
-        if ((temp <= upper) and (temp >= lower)):
-            plug = True
-        
-    result = np.append(result, temp)
-    
-    return result
-```
-
-```{python}
 def rand_turnover1(n_sim, n_assets, lower, upper, target):
     
     rng = upper - lower
     
-    result = rand_weights3(n_sim, n_assets) * rng
+    result = rand_weights2b(n_sim, n_assets) * rng
     result = result - rng / n_assets
-    
-    return result
-```
-
-```{python}
-def rand_turnover2(n_sim, n_assets, lower, upper, target):
-    
-    result = np.matrix(rand_iterative(n_assets, lower, upper, target))
-    
-    while result.shape[0] < n_sim:
-    
-        temp = np.matrix(rand_iterative(n_assets, lower, upper, target))
-        result = np.concatenate((result, temp), axis = 0)
     
     return result
 ```
@@ -238,11 +205,44 @@ target = 0
 
 ```{python}
 approach1 = rand_turnover1(n_sim, n_assets, lower, upper, target)
-approach2 = rand_turnover2(n_sim, n_assets, lower, upper, target)
 ```
 
 ```{r, echo = FALSE, fig.width = 4, fig.height = 4}
 plot_pairs(as.data.table(py$approach1), title = "Weight (%)")
+```
+
+```{python}
+def rand_iterative(n_assets, lower, upper, target):
+    
+    result = np.random.uniform(low = lower, high = upper, size = n_assets - 1)
+    temp = target - sum(result)
+    
+    while not ((temp <= upper) and (temp >= lower)):
+        result = np.random.uniform(low = lower, high = upper, size = n_assets - 1)
+        temp = target - sum(result)
+        
+    result = np.append(result, temp)
+    
+    return result
+```
+
+```{python}
+def rand_turnover2(n_sim, n_assets, lower, upper, target):
+  
+    result_ls = []
+    
+    for i in range(n_sim):
+      
+      result_sim = rand_iterative(n_assets, lower, upper, target)
+      result_ls.append(result_sim)
+      
+    result = pd.DataFrame(result_ls)
+    
+    return result
+```
+
+```{python}
+approach2 = rand_turnover2(n_sim, n_assets, lower, upper, target)
 ```
 
 ```{r, echo = FALSE, fig.width = 4, fig.height = 4}

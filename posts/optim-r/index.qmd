@@ -113,16 +113,16 @@ approach1 <- rand_weights1(n_sim, n_assets)
 plot_pairs(as.data.table(approach1), title = "Weight (%)")
 ```
 
-**Approach 2**: uniform sample from the simplex (<http://mathoverflow.net/a/76258>) and then normalize
+**Approach 2(a)**: uniform sample from the simplex (<http://mathoverflow.net/a/76258>) and then normalize
 
--   If $z\sim U(0,1)$ then $-\ln(z)$ is an $\text{Exp}(1)$ distribution
+-   If $u\sim U(0,1)$ then $-\ln(u)$ is an $\text{Exp}(1)$ distribution
 
 This is also known as generating a random vector from the symmetric Dirichlet distribution.
 
 ```{r}
-rand_weights2 <- function(n_sim, n_assets, lmbda) {
+rand_weights2a <- function(n_sim, n_assets, lmbda) {
     
-    # uses 'inverse transform sampling' method: <https://en.wikipedia.org/wiki/Inverse_transform_sampling>
+    # use 'inverse transform sampling' method: https://en.wikipedia.org/wiki/Inverse_transform_sampling
     rand_exp <- matrix(-log(1 - runif(n_sim * n_assets)) / lmbda, nrow = n_sim, ncol = n_assets)
     result <- rand_exp / rowSums(rand_exp)
     
@@ -136,19 +136,17 @@ lmbda <- 1
 ```
 
 ```{r}
-approach2 <- rand_weights2(n_sim, n_assets, lmbda)
+approach2a <- rand_weights2a(n_sim, n_assets, lmbda)
 ```
 
 ```{r, echo = FALSE, fig.width = 4, fig.height = 4}
-plot_pairs(as.data.table(approach2), title = "Weight (%)")
+plot_pairs(as.data.table(approach2a), title = "Weight (%)")
 ```
 
-**Approach 3**: directly generate $\text{Exp}(1)$ and then normalize
-
--   If $x\sim\text{Exp}(1)$ then let $y_{i}=\frac{x_{i}}{\sum_{i=1}^{N}x_{i}}$
+**Approach 2(b)**: directly generate $\text{Exp}(1)$ and then normalize
 
 ```{r}
-rand_weights3 <- function(n_sim, n_assets) {
+rand_weights2b <- function(n_sim, n_assets) {
     
     rand_exp <- matrix(rexp(n_sim * n_assets), nrow = n_sim, ncol = n_assets)
     result <- rand_exp / rowSums(rand_exp)
@@ -159,11 +157,11 @@ rand_weights3 <- function(n_sim, n_assets) {
 ```
 
 ```{r}
-approach3 <- rand_weights3(n_sim, n_assets)
+approach2b <- rand_weights2b(n_sim, n_assets)
 ```
 
 ```{r, echo = FALSE, fig.width = 4, fig.height = 4}
-plot_pairs(as.data.table(approach3), title = "Weight (%)")
+plot_pairs(as.data.table(approach2b), title = "Weight (%)")
 ```
 
 ## Random turnover
@@ -181,52 +179,12 @@ How to generate random weights between lower bound $a$ and upper bound $b$ that 
 Then add random turnover to previous period's random weights.
 
 ```{r}
-rand_iterative <- function(n_assets, lower, upper, target) {
-    
-    plug <- FALSE
-    
-    while (!plug) {
-        
-        result <- as.matrix(runif(n_assets - 1, min = lower, max = upper))
-        temp <- target - sum(result)
-        
-        if ((temp <= upper) && (temp >= lower)) {
-            plug <- TRUE            
-        }
-        
-    }
-    
-    result <- append(result, temp)
-    
-    return(result)
-    
-}
-```
-
-```{r}
 rand_turnover1 <- function(n_sim, n_assets, lower, upper, target) {
     
     rng <- upper - lower
     
-    result <- rand_weights3(n_sim, n_assets) * rng
+    result <- rand_weights2b(n_sim, n_assets) * rng
     result <- result - rng / n_assets
-    
-    return(result)
-    
-}
-```
-
-```{r}
-rand_turnover2 <- function(n_sim, n_assets, lower, upper, target) {
-    
-    result <- matrix(rand_iterative(n_assets, lower, upper, target), nrow = 1, ncol = n_assets)
-    
-    while (nrow(result) < n_sim) {
-        
-        temp <- matrix(rand_iterative(n_assets, lower, upper, target), nrow = 1, ncol = n_assets)
-        result <- rbind(result, temp)
-        
-    }
     
     return(result)
     
@@ -241,11 +199,53 @@ target <- 0
 
 ```{r}
 approach1 <- rand_turnover1(n_sim, n_assets, lower, upper, target)
-approach2 <- rand_turnover2(n_sim, n_assets, lower, upper, target)
 ```
 
 ```{r, echo = FALSE, fig.width = 4, fig.height = 4}
 plot_pairs(as.data.table(approach1), title = "Weight (%)")
+```
+
+```{r}
+rand_iterative <- function(n_assets, lower, upper, target) {
+    
+    result <- runif(n_assets - 1, min = lower, max = upper)
+    temp <- target - sum(result)
+    
+    while (!((temp <= upper) && (temp >= lower))) {
+        
+        result <- runif(n_assets - 1, min = lower, max = upper)
+        temp <- target - sum(result)
+        
+    }
+    
+    result <- append(result, temp)
+    
+    return(result)
+    
+}
+```
+
+```{r}
+rand_turnover2 <- function(n_sim, n_assets, lower, upper, target) {
+  
+    result_ls <- list()
+    
+    for (i in 1:n_sim) {
+        
+        result_sim <- rand_iterative(n_assets, lower, upper, target)
+        result_ls <- append(result_ls, list(result_sim))
+        
+    }
+    
+    result <- do.call(rbind, result_ls)
+    
+    return(result)
+    
+}
+```
+
+```{r}
+approach2 <- rand_turnover2(n_sim, n_assets, lower, upper, target)
 ```
 
 ```{r, echo = FALSE, fig.width = 4, fig.height = 4}
