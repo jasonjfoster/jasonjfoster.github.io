@@ -264,21 +264,86 @@ geometric_mean <- function(x, scale) {
 }
 ```
 
+-   <https://www.adrian.idv.hk/2021-06-22-kkt/>
+-   <https://or.stackexchange.com/a/3738>
+-   <https://bookdown.org/compfinezbook/introFinRbook/Portfolio-Theory-with-Matrix-Algebra.html#algorithm-for-computing-efficient-frontier>
+-   <https://palomar.home.ece.ust.hk/MAFS6010R_lectures/slides_robust_portfolio.html>
+
 ```{r}
-returns_x_xts <- na.omit(returns_xts)[ , factors] # extended history # REMOVE LATER
+returns_x_xts <- na.omit(returns_xts)[ , factors] # extended history
 mu <- apply(returns_x_xts, 2, geometric_mean, scale = scale[["periods"]])
 sigma <- cov(overlap_x_xts) * scale[["periods"]] * scale[["overlap"]]
 ```
 
 ## Maximize mean
 
+<!-- $$ -->
+<!-- \begin{aligned} -->
+<!-- \begin{array}{rrcl} -->
+<!-- \displaystyle\max_{x}&\mu^{T}\mathbf{w}\\ -->
+<!-- \textrm{s.t.}&\mathbf{w}^T\Sigma\mathbf{w}&\leq&\sigma^{2}\\ -->
+<!-- &e^T\mathbf{w}&=&1 -->
+<!-- \end{array} -->
+<!-- \end{aligned} -->
+<!-- $$ -->
+
 $$
 \begin{aligned}
 \begin{array}{rrcl}
-\displaystyle\max_{x}&\mu^{T}\mathbf{w}\\
-\textrm{s.t.}&\mathbf{w}^T\Sigma\mathbf{w}&\leq&\sigma^{2}\\
-&e^T\mathbf{w}&=&1
+\displaystyle\min&-\mathbf{w}^{T}\mu\\
+\textrm{s.t.}&\mathbf{w}^{T}e&=&1
 \end{array}
+\end{aligned}
+$$
+
+To incorporate these conditions into one equation, introduce new variables $\lambda_{i}$ that are the Lagrange multipliers and define a new function $\mathcal{L}$ as follows:
+
+$$
+\begin{aligned}
+\mathcal{L}(\mathbf{w},\lambda)&=-\mathbf{w}^{T}\mu-\lambda_{1}(\mathbf{w}^{T}e-1)
+\end{aligned}
+$$
+
+Then, to minimize this function, take derivatives with respect to $w$ and Lagrange multipliers $\lambda_{i}$:
+
+$$
+\begin{aligned}
+\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial w}&=-\mu-\lambda_{1}e=0\\
+\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial \lambda_{1}}&=\mathbf{w}e^T-1=0
+\end{aligned}
+$$
+
+Simplify the equations above in matrix form and solve for the Lagrange multipliers $\lambda_{i}$:
+
+$$
+\begin{aligned}
+\begin{bmatrix}
+-\mu & e \\
+e^{T} & 0
+\end{bmatrix}
+\begin{bmatrix}
+\mathbf{w} \\
+-\lambda_{1}
+\end{bmatrix}
+&=
+\begin{bmatrix}
+0 \\
+1
+\end{bmatrix}
+\\
+\begin{bmatrix}
+\mathbf{w} \\
+-\lambda_{1}
+\end{bmatrix}
+&=
+\begin{bmatrix}
+-\mu & e \\
+e^{T} & 0
+\end{bmatrix}^{-1}
+\begin{bmatrix}
+0 \\
+1
+\end{bmatrix}
 \end{aligned}
 $$
 
@@ -286,19 +351,19 @@ $$
 target <- 0.06
 ```
 
--   <https://palomar.home.ece.ust.hk/MAFS6010R_lectures/slides_robust_portfolio.html>
-
 ```{r}
-max_pnl_optim <- function(mu, sigma, target) {
+max_mean_optim <- function(mu, sigma, target) {
     
     params <- Variable(length(mu))
     
-    cons <- list(params >= 0, sum(params) == 1,
+    obj <- Maximize(t(params) %*% mu)
+    
+    cons <- list(sum(params) == 1, params >= 0,
                  quad_form(params, sigma) <= target ^ 2)
     
-    obj <- Maximize(t(params) %*% mu)
-        
-    result <- solve(Problem(obj, cons))$getValue(params)
+    prob <- Problem(obj, cons)
+    
+    result <- solve(prob)$getValue(params)
     
     return(result)
 
@@ -306,27 +371,101 @@ max_pnl_optim <- function(mu, sigma, target) {
 ```
 
 ```{r}
-params1 <- max_pnl_optim(mu, sigma, target)
+params1 <- t(max_mean_optim(mu, sigma, target))
 params1
 ```
 
 ```{r}
-mu %*% params1
+params1 %*% mu
 ```
 
 ```{r}
-sqrt(t(params1) %*% sigma %*% params1)
+sqrt(params1 %*% sigma %*% t(params1))
+```
+
+```{r}
+# # install.packages("devtools")
+# devtools::install_github("jasonjfoster/rolloptim") # roll (>= 1.1.7)
+# library(rolloptim)
+# 
+# mu <- roll::roll_mean(returns_x_xts, 5)
+# sigma <- roll::roll_cov(returns_x_xts, width = 5)
+# 
+# xx <- roll::roll_crossprod(returns_x_xts, returns_x_xts, 5)
+# xy <- roll::roll_crossprod(returns_x_xts, y, 5) # TO DO
+# 
+# roll_max_mean(mu)
 ```
 
 ## Minimize variance
 
+<!-- $$ -->
+<!-- \begin{aligned} -->
+<!-- \begin{array}{rrcl} -->
+<!-- \displaystyle\min_{x}&\mathbf{w}^T\Sigma\mathbf{w}\\ -->
+<!-- \textrm{s.t.}&\mu^{T}\mathbf{w}&\geq&M\\ -->
+<!-- &e^T\mathbf{w}&=&1 -->
+<!-- \end{array} -->
+<!-- \end{aligned} -->
+<!-- $$ -->
+
 $$
 \begin{aligned}
 \begin{array}{rrcl}
-\displaystyle\min_{x}&\mathbf{w}^T\Sigma\mathbf{w}\\
-\textrm{s.t.}&\mu^{T}\mathbf{w}&\geq&M\\
-&e^T\mathbf{w}&=&1
+\displaystyle\min&\frac{1}{2}\mathbf{w}^T\Sigma\mathbf{w}\\
+\textrm{s.t.}&\mathbf{w}^{T}e&=&1
 \end{array}
+\end{aligned}
+$$
+
+To incorporate these conditions into one equation, introduce new variables $\lambda_{i}$ that are the Lagrange multipliers and define a new function $\mathcal{L}$ as follows:
+
+$$
+\begin{aligned}
+\mathcal{L}(\mathbf{w},\lambda)&=\frac{1}{2}\mathbf{w}^{T}\Sigma\mathbf{w}-\lambda_{1}(\mathbf{w}^{T}e-1)
+\end{aligned}
+$$
+
+Then, to minimize this function, take derivatives with respect to $w$ and Lagrange multipliers $\lambda_{i}$:
+
+$$
+\begin{aligned}
+\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial w}&=\mathbf{w}\Sigma-\lambda_{1}e=0\\
+\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial \lambda_{1}}&=\mathbf{w}e^T-1=0
+\end{aligned}
+$$
+
+Simplify the equations above in matrix form and solve for the Lagrange multipliers $\lambda_{i}$:
+
+$$
+\begin{aligned}
+\begin{bmatrix}
+\Sigma & e \\
+e^{T} & 0
+\end{bmatrix}
+\begin{bmatrix}
+\mathbf{w} \\
+-\lambda_{1}
+\end{bmatrix}
+&=
+\begin{bmatrix}
+0 \\
+1
+\end{bmatrix}
+\\
+\begin{bmatrix}
+\mathbf{w} \\
+-\lambda_{1}
+\end{bmatrix}
+&=
+\begin{bmatrix}
+\Sigma & e \\
+e^{T} & 0
+\end{bmatrix}^{-1}
+\begin{bmatrix}
+0 \\
+1
+\end{bmatrix}
 \end{aligned}
 $$
 
@@ -335,16 +474,18 @@ target <- 0.03
 ```
 
 ```{r}
-min_risk_optim <- function(mu, sigma, target) {
+min_var_optim <- function(mu, sigma, target) {
     
     params <- Variable(length(mu))
     
-    cons <- list(params >= 0, sum(params) == 1,
+    obj <- Minimize(quad_form(params, sigma))
+    
+    cons <- list(sum(params) == 1, params >= 0,
                  sum(mu * params) >= target)
     
-    obj <- Minimize(quad_form(params, sigma))
-        
-    result <- solve(Problem(obj, cons))$getValue(params)
+    prob <- Problem(obj, cons)
+    
+    result <- solve(prob)$getValue(params)
     
     return(result)
 
@@ -352,26 +493,90 @@ min_risk_optim <- function(mu, sigma, target) {
 ```
 
 ```{r}
-params2 <- min_risk_optim(mu, sigma, target)
+params2 <- t(min_var_optim(mu, sigma, target))
 params2
 ```
 
 ```{r}
-mu %*% params2
+params2 %*% mu
 ```
 
 ```{r}
-sqrt(t(params2) %*% sigma %*% params2)
+sqrt(params2 %*% sigma %*% t(params2))
+```
+
+```{r}
+# roll_min_var(sigma)
 ```
 
 ## Maximize utility
 
+<!-- $$ -->
+<!-- \begin{aligned} -->
+<!-- \begin{array}{rrcl} -->
+<!-- \displaystyle\max_{x}&\mu^{T}\mathbf{w}-\frac{1}{2}\delta(\mathbf{w}^T\Sigma\mathbf{w})\\ -->
+<!-- \textrm{s.t.}&e^T\mathbf{w}&=&1 -->
+<!-- \end{array} -->
+<!-- \end{aligned} -->
+<!-- $$ -->
+
 $$
 \begin{aligned}
 \begin{array}{rrcl}
-\displaystyle\max_{x}&\mu^{T}\mathbf{w}-\frac{1}{2}\delta(\mathbf{w}^T\Sigma\mathbf{w})\\
+\displaystyle\min&\frac{1}{2}\delta(\mathbf{w}^{T}\Sigma\mathbf{w})-\mu^{T}\mathbf{w}\\
 \textrm{s.t.}&e^T\mathbf{w}&=&1
 \end{array}
+\end{aligned}
+$$
+
+To incorporate these conditions into one equation, introduce new variables $\lambda_{i}$ that are the Lagrange multipliers and define a new function $\mathcal{L}$ as follows:
+
+$$
+\begin{aligned}
+\mathcal{L}(\mathbf{w},\lambda)&=\frac{1}{2}\mathbf{w}^{T}\Sigma\mathbf{w}-\mu^{T}\mathbf{w}-\lambda_{1}(\mathbf{w}^{T}e-1)
+\end{aligned}
+$$
+
+Then, to minimize this function, take derivatives with respect to $w$ and Lagrange multipliers $\lambda_{i}$:
+
+$$
+\begin{aligned}
+\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial w}&=\mathbf{w}\Sigma-\mu^{T}-\lambda_{1}e=0\\
+\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial \lambda_{1}}&=\mathbf{w}e^T-1=0
+\end{aligned}
+$$
+
+Simplify the equations above in matrix form and solve for the Lagrange multipliers $\lambda_{i}$:
+
+$$
+\begin{aligned}
+\begin{bmatrix}
+\Sigma & e \\
+e^{T} & 0
+\end{bmatrix}
+\begin{bmatrix}
+\mathbf{w} \\
+-\lambda_{1}
+\end{bmatrix}
+&=
+\begin{bmatrix}
+\mu^{T} \\
+1
+\end{bmatrix}
+\\
+\begin{bmatrix}
+\mathbf{w} \\
+-\lambda_{1}
+\end{bmatrix}
+&=
+\begin{bmatrix}
+\Sigma & e \\
+e^{T} & 0
+\end{bmatrix}^{-1}
+\begin{bmatrix}
+\mu^{T} \\
+1
+\end{bmatrix}
 \end{aligned}
 $$
 
@@ -381,15 +586,17 @@ target <- ir / 0.06 # ir / std (see Black-Litterman)
 ```
 
 ```{r}
-max_ratio_optim <- function(mu, sigma, target) {
+max_utility_optim <- function(mu, sigma, target) {
     
     params <- Variable(length(mu))
     
-    cons <- list(params >= 0, sum(params) == 1)
+    obj <- Minimize(0.5 * target * quad_form(params, sigma) - t(mu) %*% params)
     
-    obj <- Maximize(t(mu) %*% params - 0.5 * target * quad_form(params, sigma))
+    cons <- list(sum(params) == 1, params >= 0)
+    
+    prob <- Problem(obj, cons)
         
-    result <- solve(Problem(obj, cons))$getValue(params)
+    result <- solve(prob)$getValue(params)
     
     return(result)
 
@@ -397,22 +604,90 @@ max_ratio_optim <- function(mu, sigma, target) {
 ```
 
 ```{r}
-params3 <- max_ratio_optim(mu, sigma, target)
+params3 <- t(max_utility_optim(mu, sigma, target))
 params3
 ```
 
 ```{r}
-mu %*% params3
+params3 %*% mu 
 ```
 
 ```{r}
-sqrt(t(params3) %*% sigma %*% params3)
+sqrt(params3 %*% sigma %*% t(params3))
+```
+
+```{r}
+# roll_max_utility(mu, sigma)
 ```
 
 ## Minimize residual sum of squares
 
+$$
+\begin{aligned}
+\begin{array}{rrcl}
+\displaystyle\min&\frac{1}{2}\delta(\mathbf{w}^{T}X^{T}X\mathbf{w})-X^{T}y\mathbf{w}\\
+\textrm{s.t.}&e^T\mathbf{w}&=&1
+\end{array}
+\end{aligned}
+$$
+
+To incorporate these conditions into one equation, introduce new variables $\lambda_{i}$ that are the Lagrange multipliers and define a new function $\mathcal{L}$ as follows:
+
+$$
+\begin{aligned}
+\mathcal{L}(\mathbf{w},\lambda)&=\frac{1}{2}\mathbf{w}^{T}X^{T}X\mathbf{w}-X^{T}y\mathbf{w}-\lambda_{1}(\mathbf{w}^{T}e-1)
+\end{aligned}
+$$
+
+Then, to minimize this function, take derivatives with respect to $w$ and Lagrange multipliers $\lambda_{i}$:
+
+$$
+\begin{aligned}
+\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial w}&=\mathbf{w}X^{T}X-X^{T}y-\lambda_{1}e=0\\
+\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial \lambda_{1}}&=\mathbf{w}e^T-1=0
+\end{aligned}
+$$
+
+Simplify the equations above in matrix form and solve for the Lagrange multipliers $\lambda_{i}$:
+
+$$
+\begin{aligned}
+\begin{bmatrix}
+X^{T}X & e \\
+e^{T} & 0
+\end{bmatrix}
+\begin{bmatrix}
+\mathbf{w} \\
+-\lambda_{1}
+\end{bmatrix}
+&=
+\begin{bmatrix}
+X^{T}y \\
+1
+\end{bmatrix}
+\\
+\begin{bmatrix}
+\mathbf{w} \\
+-\lambda_{1}
+\end{bmatrix}
+&=
+\begin{bmatrix}
+X^{T}X & e \\
+e^{T} & 0
+\end{bmatrix}^{-1}
+\begin{bmatrix}
+X^{T}y \\
+1
+\end{bmatrix}
+\end{aligned}
+$$
+
 ```{r}
-data.frame("max_pnl" = params1,
-           "min_risk" = params2,
-           "max_ratio" = params3)
+# roll_min_rss(xx, xy)
+```
+
+```{r}
+data.frame("max_pnl" = t(params1),
+           "min_risk" = t(params2),
+           "max_ratio" = t(params3))
 ```
