@@ -122,7 +122,7 @@ This is also known as generating a random vector from the symmetric Dirichlet di
 ```{r}
 rand_weights2a <- function(n_sim, n_assets, lmbda) {
     
-    # use 'inverse transform sampling' method: https://en.wikipedia.org/wiki/Inverse_transform_sampling
+    # inverse transform sampling: https://en.wikipedia.org/wiki/Inverse_transform_sampling
     rand_exp <- matrix(-log(1 - runif(n_sim * n_assets)) / lmbda, nrow = n_sim, ncol = n_assets)
     result <- rand_exp / rowSums(rand_exp)
     

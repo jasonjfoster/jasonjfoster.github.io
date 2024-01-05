@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Jason Foster">
-<meta name="dcterms.date" content="2024-01-04">
+<meta name="dcterms.date" content="2024-01-05">
 
 <title>jasonjfoster.github.io - Optimization</title>
 <style>
@@ -157,7 +157,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <div>
       <div class="quarto-title-meta-heading">Published</div>
       <div class="quarto-title-meta-contents">
-        <p class="date">January 4, 2024</p>
+        <p class="date">January 5, 2024</p>
       </div>
     </div>
     
@@ -280,7 +280,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell">
 <div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>rand_weights2a <span class="ot">&lt;-</span> <span class="cf">function</span>(n_sim, n_assets, lmbda) {</span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>    <span class="co"># use 'inverse transform sampling' method: https://en.wikipedia.org/wiki/Inverse_transform_sampling</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>    <span class="co"># inverse transform sampling: https://en.wikipedia.org/wiki/Inverse_transform_sampling</span></span>
 <span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>    rand_exp <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="sc">-</span><span class="fu">log</span>(<span class="dv">1</span> <span class="sc">-</span> <span class="fu">runif</span>(n_sim <span class="sc">*</span> n_assets)) <span class="sc">/</span> lmbda, <span class="at">nrow =</span> n_sim, <span class="at">ncol =</span> n_assets)</span>
 <span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>    result <span class="ot">&lt;-</span> rand_exp <span class="sc">/</span> <span class="fu">rowSums</span>(rand_exp)</span>
 <span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>    </span>
