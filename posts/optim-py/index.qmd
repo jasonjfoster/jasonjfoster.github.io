@@ -254,15 +254,19 @@ plot_pairs(as.data.table(py$approach2), title = "Weight (%)")
 ```{python}
 def geometric_mean(x, scale):
     
-    result = np.prod(1 + x) ** (scale / x.shape[1]) - 1
+    result = np.prod(1 + x) ** (scale/ len(x)) - 1
     
     return result
 ```
 
+-   <https://www.adrian.idv.hk/2021-06-22-kkt/>
+-   <https://or.stackexchange.com/a/3738>
+-   <https://bookdown.org/compfinezbook/introFinRbook/Portfolio-Theory-with-Matrix-Algebra.html#algorithm-for-computing-efficient-frontier>
+-   <https://palomar.home.ece.ust.hk/MAFS6010R_lectures/slides_robust_portfolio.html>
+
 ```{python}
-returns_x_df = returns_df.dropna()["returns"][factors] # REMOVE LATER
-returns_x_mat = np.matrix(returns_x_df) # extended history # REMOVE LATER
-mu = np.apply_along_axis(geometric_mean, 0, returns_x_mat, scale["periods"])
+returns_x_df = returns_df.dropna()["returns"][factors]
+mu = returns_x_df.apply(geometric_mean, axis = 0, scale = scale["periods"])
 sigma = np.cov(overlap_x_df.T, ddof = 1) * scale["periods"] * scale["overlap"]
 ```
 
@@ -271,10 +275,61 @@ sigma = np.cov(overlap_x_df.T, ddof = 1) * scale["periods"] * scale["overlap"]
 $$
 \begin{aligned}
 \begin{array}{rrcl}
-\displaystyle\max_{x}&\mu^{T}\mathbf{w}\\
-\textrm{s.t.}&\mathbf{w}^T\Sigma\mathbf{w}&\leq&\sigma^{2}\\
-&e^T\mathbf{w}&=&1
+\displaystyle\min&-\mathbf{w}^{T}\mu\\
+\textrm{s.t.}&\mathbf{w}^{T}e&=&1\\
+&\mathbf{w}^T\Sigma\mathbf{w}&\leq&\sigma^{2}\\
 \end{array}
+\end{aligned}
+$$
+
+To incorporate these conditions into one equation, introduce new variables $\lambda_{i}$ that are the Lagrange multipliers and define a new function $\mathcal{L}$ as follows:
+
+$$
+\begin{aligned}
+\mathcal{L}(\mathbf{w},\lambda)&=-\mathbf{w}^{T}\mu-\lambda_{1}(\mathbf{w}^{T}e-1)
+\end{aligned}
+$$
+
+Then, to minimize this function, take derivatives with respect to $w$ and Lagrange multipliers $\lambda_{i}$:
+
+$$
+\begin{aligned}
+\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial w}&=-\mu-\lambda_{1}e=0\\
+\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial \lambda_{1}}&=\mathbf{w}e^T-1=0
+\end{aligned}
+$$
+
+Simplify the equations above in matrix form and solve for the Lagrange multipliers $\lambda_{i}$:
+
+$$
+\begin{aligned}
+\begin{bmatrix}
+-\mu & e \\
+e^{T} & 0
+\end{bmatrix}
+\begin{bmatrix}
+\mathbf{w} \\
+-\lambda_{1}
+\end{bmatrix}
+&=
+\begin{bmatrix}
+0 \\
+1
+\end{bmatrix}
+\\
+\begin{bmatrix}
+\mathbf{w} \\
+-\lambda_{1}
+\end{bmatrix}
+&=
+\begin{bmatrix}
+-\mu & e \\
+e^{T} & 0
+\end{bmatrix}^{-1}
+\begin{bmatrix}
+0 \\
+1
+\end{bmatrix}
 \end{aligned}
 $$
 
@@ -282,44 +337,44 @@ $$
 target = 0.06
 start = np.array([1] * len(factors))
 bnds = [(np.finfo(float).eps, 1) for i in range(len(factors))]
-cons = [{"type": "ineq", "fun": lambda params, sigma, target: max_pnl_cons(params, sigma, target),
-         "args": (sigma, target)},
-        {"type": "eq", "fun": lambda params: np.sum(params) - 1}]
 ```
 
 ```{python}
-def max_pnl_cons(params, sigma, target):
+def max_mean_cons(params, sigma, target):
     
-    var = np.matmul(np.transpose(params), np.matmul(sigma, params))
+    var = np.dot(params, np.dot(sigma, params))
     
     result = target ** 2 - var
     
     return result
 
-def max_pnl_obj(params, mu):
+def max_mean_obj(params, mu):
     
-    result = np.matmul(mu, params)
+    result = -np.dot(mu, params)
     
-    return -result
+    return result
 
-def max_pnl_optim(params, mu):
+def max_mean_optim(params, mu):
+  
+    cons = [{"type": "ineq", "fun": max_mean_cons, "args": (sigma, target)},
+           {"type": "eq", "fun": lambda params: np.sum(params) - 1}]
     
-    result = minimize(max_pnl_obj, params, args = (mu), bounds = bnds, constraints = cons)
+    result = minimize(max_mean_obj, params, args = (mu), bounds = bnds, constraints = cons)
     
     return result.x
 ```
 
 ```{python}
-params1 = max_pnl_optim(start, mu)
+params1 = max_mean_optim(start, mu)
 params1
 ```
 
 ```{python}
-np.matmul(mu, params1)
+np.dot(mu, params1)
 ```
 
 ```{python}
-np.sqrt(np.matmul(np.transpose(params1), np.matmul(sigma, params1)))
+np.sqrt(np.dot(params1, np.dot(sigma, params1)))
 ```
 
 ## Minimize variance
@@ -327,52 +382,102 @@ np.sqrt(np.matmul(np.transpose(params1), np.matmul(sigma, params1)))
 $$
 \begin{aligned}
 \begin{array}{rrcl}
-\displaystyle\min_{x}&\mathbf{w}^T\Sigma\mathbf{w}\\
-\textrm{s.t.}&\mu^{T}\mathbf{w}&\geq&M\\
-&e^T\mathbf{w}&=&1
+\displaystyle\min&\frac{1}{2}\mathbf{w}^T\Sigma\mathbf{w}\\
+\textrm{s.t.}&\mathbf{w}^{T}e&=&1\\
+&\mu^{T}\mathbf{w}&\geq&M\\
 \end{array}
+\end{aligned}
+$$
+
+To incorporate these conditions into one equation, introduce new variables $\lambda_{i}$ that are the Lagrange multipliers and define a new function $\mathcal{L}$ as follows:
+
+$$
+\begin{aligned}
+\mathcal{L}(\mathbf{w},\lambda)&=\frac{1}{2}\mathbf{w}^{T}\Sigma\mathbf{w}-\lambda_{1}(\mathbf{w}^{T}e-1)
+\end{aligned}
+$$
+
+Then, to minimize this function, take derivatives with respect to $w$ and Lagrange multipliers $\lambda_{i}$:
+
+$$
+\begin{aligned}
+\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial w}&=\mathbf{w}\Sigma-\lambda_{1}e=0\\
+\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial \lambda_{1}}&=\mathbf{w}e^T-1=0
+\end{aligned}
+$$
+
+Simplify the equations above in matrix form and solve for the Lagrange multipliers $\lambda_{i}$:
+
+$$
+\begin{aligned}
+\begin{bmatrix}
+\Sigma & e \\
+e^{T} & 0
+\end{bmatrix}
+\begin{bmatrix}
+\mathbf{w} \\
+-\lambda_{1}
+\end{bmatrix}
+&=
+\begin{bmatrix}
+0 \\
+1
+\end{bmatrix}
+\\
+\begin{bmatrix}
+\mathbf{w} \\
+-\lambda_{1}
+\end{bmatrix}
+&=
+\begin{bmatrix}
+\Sigma & e \\
+e^{T} & 0
+\end{bmatrix}^{-1}
+\begin{bmatrix}
+0 \\
+1
+\end{bmatrix}
 \end{aligned}
 $$
 
 ```{python}
 target = 0.03
-start = np.array([1] * len(factors))
-cons = [{"type": "ineq", "fun": lambda params, mu, target: min_risk_cons(params, mu, target),
-         "args": (mu, target)},
-        {"type": "eq", "fun": lambda params: np.sum(params) - 1}]
 ```
 
 ```{python}
-def min_risk_cons(params, mu, target):
+def min_var_cons(params, mu, target):
     
-    result = np.matmul(mu, params) - target
-    
-    return result
-
-def min_risk_obj(params, sigma):
-    
-    result = np.matmul(np.transpose(params), np.matmul(sigma, params))
+    result = np.dot(mu, params) - target
     
     return result
 
-def min_risk_optim(params, sigma):
+def min_var_obj(params, sigma):
     
-    result = minimize(min_risk_obj, params, args = (sigma), bounds = bnds, constraints = cons)
+    result = np.dot(params, np.dot(sigma, params))
+    
+    return result
+
+def min_var_optim(params, sigma):
+  
+    cons = [{"type": "ineq", "fun": min_var_cons, "args": (mu, target)},
+            {"type": "eq", "fun": lambda params: np.sum(params) - 1}]
+    
+    result = minimize(min_var_obj, params, args = (sigma), bounds = bnds, constraints = cons)
     
     return result.x
 ```
 
 ```{python}
-params2 = min_risk_optim(start, sigma)
+params2 = min_var_optim(start, sigma)
 params2
 ```
 
 ```{python}
-np.matmul(mu, params2)
+np.dot(mu, params2)
 ```
 
 ```{python}
-np.sqrt(np.matmul(np.transpose(params2), np.matmul(sigma, params2))) 
+np.sqrt(np.dot(params2, np.dot(sigma, params2))) 
 ```
 
 ## Maximize utility
@@ -380,43 +485,92 @@ np.sqrt(np.matmul(np.transpose(params2), np.matmul(sigma, params2)))
 $$
 \begin{aligned}
 \begin{array}{rrcl}
-\displaystyle\max_{x}&\mu^{T}\mathbf{w}-\frac{1}{2}\delta(\mathbf{w}^T\Sigma\mathbf{w})\\
-\textrm{s.t.}&e^T\mathbf{w}&=&1
+\displaystyle\min&\frac{1}{2}\delta(\mathbf{w}^{T}\Sigma\mathbf{w})-\mu^{T}\mathbf{w}\\
+\textrm{s.t.}&\mathbf{w}^{T}e&=&1\\
 \end{array}
+\end{aligned}
+$$
+
+To incorporate these conditions into one equation, introduce new variables $\lambda_{i}$ that are the Lagrange multipliers and define a new function $\mathcal{L}$ as follows:
+
+$$
+\begin{aligned}
+\mathcal{L}(\mathbf{w},\lambda)&=\frac{1}{2}\mathbf{w}^{T}\Sigma\mathbf{w}-\mu^{T}\mathbf{w}-\lambda_{1}(\mathbf{w}^{T}e-1)
+\end{aligned}
+$$
+
+Then, to minimize this function, take derivatives with respect to $w$ and Lagrange multipliers $\lambda_{i}$:
+
+$$
+\begin{aligned}
+\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial w}&=\mathbf{w}\Sigma-\mu^{T}-\lambda_{1}e=0\\
+\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial \lambda_{1}}&=\mathbf{w}e^T-1=0
+\end{aligned}
+$$
+
+Simplify the equations above in matrix form and solve for the Lagrange multipliers $\lambda_{i}$:
+
+$$
+\begin{aligned}
+\begin{bmatrix}
+\Sigma & e \\
+e^{T} & 0
+\end{bmatrix}
+\begin{bmatrix}
+\mathbf{w} \\
+-\lambda_{1}
+\end{bmatrix}
+&=
+\begin{bmatrix}
+\mu^{T} \\
+1
+\end{bmatrix}
+\\
+\begin{bmatrix}
+\mathbf{w} \\
+-\lambda_{1}
+\end{bmatrix}
+&=
+\begin{bmatrix}
+\Sigma & e \\
+e^{T} & 0
+\end{bmatrix}^{-1}
+\begin{bmatrix}
+\mu^{T} \\
+1
+\end{bmatrix}
 \end{aligned}
 $$
 
 ```{python}
 ir = 0.5
 target = ir / 0.06 # ir / std (see Black-Litterman)
-start = np.array([1] * len(factors))
-cons = [{"type": "eq", "fun": lambda params: np.sum(params) - 1}]
 ```
 
 ```{python}
-def max_ratio_obj(params, mu, sigma, target):
+def max_utility_obj(params, mu, sigma, target):
     
-    result = np.matmul(mu, params) - 0.5 * target * (np.matmul(np.transpose(params),
-                                                               np.matmul(sigma, params)))
-#     result = np.matmul(mu, params) / np.sqrt(np.matmul(np.transpose(params), np.matmul(sigma, params)))
+    result = 0.5 * target * (np.dot(params, np.dot(sigma, params))) - np.dot(mu, params)
     
-    return -result
+    return result
 
-def max_ratio_optim(params, mu, sigma, target):
+def max_utility_optim(params, mu, sigma, target):
+  
+    cons = [{"type": "eq", "fun": lambda params: np.sum(params) - 1}]
     
-    result = minimize(max_ratio_obj, params, args = (mu, sigma, target), bounds = bnds,
+    result = minimize(max_utility_obj, params, args = (mu, sigma, target), bounds = bnds,
                       constraints = cons) 
     
     return result.x
 ```
 
 ```{python}
-params3 = max_ratio_optim(start, mu, sigma, target)
+params3 = max_utility_optim(start, mu, sigma, target)
 params3
 ```
 
 ```{python}
-np.matmul(mu, params3)
+np.dot(mu, params3)
 ```
 
 ```{python}
@@ -425,8 +579,70 @@ np.sqrt(np.matmul(np.transpose(params3), np.matmul(sigma, params3)))
 
 ## Minimize residual sum of squares
 
+$$
+\begin{aligned}
+\begin{array}{rrcl}
+\displaystyle\min&\frac{1}{2}\delta(\mathbf{w}^{T}X^{T}X\mathbf{w})-X^{T}y\mathbf{w}\\
+\textrm{s.t.}&\mathbf{w}^{T}e&=&1\\
+\end{array}
+\end{aligned}
+$$
+
+To incorporate these conditions into one equation, introduce new variables $\lambda_{i}$ that are the Lagrange multipliers and define a new function $\mathcal{L}$ as follows:
+
+$$
+\begin{aligned}
+\mathcal{L}(\mathbf{w},\lambda)&=\frac{1}{2}\mathbf{w}^{T}X^{T}X\mathbf{w}-X^{T}y\mathbf{w}-\lambda_{1}(\mathbf{w}^{T}e-1)
+\end{aligned}
+$$
+
+Then, to minimize this function, take derivatives with respect to $w$ and Lagrange multipliers $\lambda_{i}$:
+
+$$
+\begin{aligned}
+\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial w}&=\mathbf{w}X^{T}X-X^{T}y-\lambda_{1}e=0\\
+\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial \lambda_{1}}&=\mathbf{w}e^T-1=0
+\end{aligned}
+$$
+
+Simplify the equations above in matrix form and solve for the Lagrange multipliers $\lambda_{i}$:
+
+$$
+\begin{aligned}
+\begin{bmatrix}
+X^{T}X & e \\
+e^{T} & 0
+\end{bmatrix}
+\begin{bmatrix}
+\mathbf{w} \\
+-\lambda_{1}
+\end{bmatrix}
+&=
+\begin{bmatrix}
+X^{T}y \\
+1
+\end{bmatrix}
+\\
+\begin{bmatrix}
+\mathbf{w} \\
+-\lambda_{1}
+\end{bmatrix}
+&=
+\begin{bmatrix}
+X^{T}X & e \\
+e^{T} & 0
+\end{bmatrix}^{-1}
+\begin{bmatrix}
+X^{T}y \\
+1
+\end{bmatrix}
+\end{aligned}
+$$
+
 ```{python}
-pd.DataFrame.from_dict({"max_pnl": params1,
-                        "min_risk": params2,
-                        "max_ratio": params3})
+pd.DataFrame({
+  "max_pnl": params1,
+  "min_risk": params2,
+  "max_ratio": params3
+})
 ```

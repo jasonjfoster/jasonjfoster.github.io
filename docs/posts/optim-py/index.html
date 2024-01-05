@@ -7,9 +7,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Jason Foster">
-<meta name="dcterms.date" content="2023-12-31">
+<meta name="dcterms.date" content="2024-01-05">
 
-<title>jjf234.github.io - Optimization</title>
+<title>jasonjfoster.github.io - Optimization</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -110,7 +110,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container">
     <a class="navbar-brand" href="../../index.html">
-    <span class="navbar-title">jjf234.github.io</span>
+    <span class="navbar-title">jasonjfoster.github.io</span>
     </a>
   </div>
             <div id="quarto-search" class="" title="Search"></div>
@@ -120,7 +120,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
   <li class="nav-item compact">
-    <a class="nav-link" href="https://github.com/jjf234" rel="" target=""><i class="bi bi-github" role="img">
+    <a class="nav-link" href="https://github.com/jasonjfoster" rel="" target=""><i class="bi bi-github" role="img">
 </i> 
  <span class="menu-text"></span></a>
   </li>  
@@ -157,7 +157,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <div>
       <div class="quarto-title-meta-heading">Published</div>
       <div class="quarto-title-meta-contents">
-        <p class="date">December 31, 2023</p>
+        <p class="date">January 5, 2024</p>
       </div>
     </div>
     
@@ -406,73 +406,123 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell">
 <div class="sourceCode cell-code" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> geometric_mean(x, scale):</span>
 <span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> np.prod(<span class="dv">1</span> <span class="op">+</span> x) <span class="op">**</span> (scale <span class="op">/</span> x.shape[<span class="dv">1</span>]) <span class="op">-</span> <span class="dv">1</span></span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> np.prod(<span class="dv">1</span> <span class="op">+</span> x) <span class="op">**</span> (scale<span class="op">/</span> <span class="bu">len</span>(x)) <span class="op">-</span> <span class="dv">1</span></span>
 <span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>    </span>
 <span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
+<ul>
+<li><a href="https://www.adrian.idv.hk/2021-06-22-kkt/" class="uri">https://www.adrian.idv.hk/2021-06-22-kkt/</a></li>
+<li><a href="https://or.stackexchange.com/a/3738" class="uri">https://or.stackexchange.com/a/3738</a></li>
+<li><a href="https://bookdown.org/compfinezbook/introFinRbook/Portfolio-Theory-with-Matrix-Algebra.html#algorithm-for-computing-efficient-frontier" class="uri">https://bookdown.org/compfinezbook/introFinRbook/Portfolio-Theory-with-Matrix-Algebra.html#algorithm-for-computing-efficient-frontier</a></li>
+<li><a href="https://palomar.home.ece.ust.hk/MAFS6010R_lectures/slides_robust_portfolio.html" class="uri">https://palomar.home.ece.ust.hk/MAFS6010R_lectures/slides_robust_portfolio.html</a></li>
+</ul>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>returns_x_df <span class="op">=</span> returns_df.dropna()[<span class="st">"returns"</span>][factors] <span class="co"># REMOVE LATER</span></span>
-<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>returns_x_mat <span class="op">=</span> np.matrix(returns_x_df) <span class="co"># extended history # REMOVE LATER</span></span>
-<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>mu <span class="op">=</span> np.apply_along_axis(geometric_mean, <span class="dv">0</span>, returns_x_mat, scale[<span class="st">"periods"</span>])</span>
-<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>sigma <span class="op">=</span> np.cov(overlap_x_df.T, ddof <span class="op">=</span> <span class="dv">1</span>) <span class="op">*</span> scale[<span class="st">"periods"</span>] <span class="op">*</span> scale[<span class="st">"overlap"</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>returns_x_df <span class="op">=</span> returns_df.dropna()[<span class="st">"returns"</span>][factors]</span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>mu <span class="op">=</span> returns_x_df.<span class="bu">apply</span>(geometric_mean, axis <span class="op">=</span> <span class="dv">0</span>, scale <span class="op">=</span> scale[<span class="st">"periods"</span>])</span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>sigma <span class="op">=</span> np.cov(overlap_x_df.T, ddof <span class="op">=</span> <span class="dv">1</span>) <span class="op">*</span> scale[<span class="st">"periods"</span>] <span class="op">*</span> scale[<span class="st">"overlap"</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <section id="maximize-mean" class="level2">
 <h2 class="anchored" data-anchor-id="maximize-mean">Maximize mean</h2>
 <p><span class="math display">\[
 \begin{aligned}
 \begin{array}{rrcl}
-\displaystyle\max_{x}&amp;\mu^{T}\mathbf{w}\\
-\textrm{s.t.}&amp;\mathbf{w}^T\Sigma\mathbf{w}&amp;\leq&amp;\sigma^{2}\\
-&amp;e^T\mathbf{w}&amp;=&amp;1
+\displaystyle\min&amp;-\mathbf{w}^{T}\mu\\
+\textrm{s.t.}&amp;\mathbf{w}^{T}e&amp;=&amp;1\\
+&amp;\mathbf{w}^T\Sigma\mathbf{w}&amp;\leq&amp;\sigma^{2}\\
 \end{array}
+\end{aligned}
+\]</span></p>
+<p>To incorporate these conditions into one equation, introduce new variables <span class="math inline">\(\lambda_{i}\)</span> that are the Lagrange multipliers and define a new function <span class="math inline">\(\mathcal{L}\)</span> as follows:</p>
+<p><span class="math display">\[
+\begin{aligned}
+\mathcal{L}(\mathbf{w},\lambda)&amp;=-\mathbf{w}^{T}\mu-\lambda_{1}(\mathbf{w}^{T}e-1)
+\end{aligned}
+\]</span></p>
+<p>Then, to minimize this function, take derivatives with respect to <span class="math inline">\(w\)</span> and Lagrange multipliers <span class="math inline">\(\lambda_{i}\)</span>:</p>
+<p><span class="math display">\[
+\begin{aligned}
+\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial w}&amp;=-\mu-\lambda_{1}e=0\\
+\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial \lambda_{1}}&amp;=\mathbf{w}e^T-1=0
+\end{aligned}
+\]</span></p>
+<p>Simplify the equations above in matrix form and solve for the Lagrange multipliers <span class="math inline">\(\lambda_{i}\)</span>:</p>
+<p><span class="math display">\[
+\begin{aligned}
+\begin{bmatrix}
+-\mu &amp; e \\
+e^{T} &amp; 0
+\end{bmatrix}
+\begin{bmatrix}
+\mathbf{w} \\
+-\lambda_{1}
+\end{bmatrix}
+&amp;=
+\begin{bmatrix}
+0 \\
+1
+\end{bmatrix}
+\\
+\begin{bmatrix}
+\mathbf{w} \\
+-\lambda_{1}
+\end{bmatrix}
+&amp;=
+\begin{bmatrix}
+-\mu &amp; e \\
+e^{T} &amp; 0
+\end{bmatrix}^{-1}
+\begin{bmatrix}
+0 \\
+1
+\end{bmatrix}
 \end{aligned}
 \]</span></p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>target <span class="op">=</span> <span class="fl">0.06</span></span>
 <span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>start <span class="op">=</span> np.array([<span class="dv">1</span>] <span class="op">*</span> <span class="bu">len</span>(factors))</span>
-<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>bnds <span class="op">=</span> [(np.finfo(<span class="bu">float</span>).eps, <span class="dv">1</span>) <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="bu">len</span>(factors))]</span>
-<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>cons <span class="op">=</span> [{<span class="st">"type"</span>: <span class="st">"ineq"</span>, <span class="st">"fun"</span>: <span class="kw">lambda</span> params, sigma, target: max_pnl_cons(params, sigma, target),</span>
-<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>         <span class="st">"args"</span>: (sigma, target)},</span>
-<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a>        {<span class="st">"type"</span>: <span class="st">"eq"</span>, <span class="st">"fun"</span>: <span class="kw">lambda</span> params: np.<span class="bu">sum</span>(params) <span class="op">-</span> <span class="dv">1</span>}]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>bnds <span class="op">=</span> [(np.finfo(<span class="bu">float</span>).eps, <span class="dv">1</span>) <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="bu">len</span>(factors))]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> max_pnl_cons(params, sigma, target):</span>
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> max_mean_cons(params, sigma, target):</span>
 <span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>    var <span class="op">=</span> np.matmul(np.transpose(params), np.matmul(sigma, params))</span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>    var <span class="op">=</span> np.dot(params, np.dot(sigma, params))</span>
 <span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>    </span>
 <span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> target <span class="op">**</span> <span class="dv">2</span> <span class="op">-</span> var</span>
 <span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a>    </span>
 <span id="cb29-7"><a href="#cb29-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result</span>
 <span id="cb29-8"><a href="#cb29-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb29-9"><a href="#cb29-9" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> max_pnl_obj(params, mu):</span>
+<span id="cb29-9"><a href="#cb29-9" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> max_mean_obj(params, mu):</span>
 <span id="cb29-10"><a href="#cb29-10" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb29-11"><a href="#cb29-11" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> np.matmul(mu, params)</span>
+<span id="cb29-11"><a href="#cb29-11" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> <span class="op">-</span>np.dot(mu, params)</span>
 <span id="cb29-12"><a href="#cb29-12" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb29-13"><a href="#cb29-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="op">-</span>result</span>
+<span id="cb29-13"><a href="#cb29-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result</span>
 <span id="cb29-14"><a href="#cb29-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb29-15"><a href="#cb29-15" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> max_pnl_optim(params, mu):</span>
-<span id="cb29-16"><a href="#cb29-16" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb29-17"><a href="#cb29-17" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> minimize(max_pnl_obj, params, args <span class="op">=</span> (mu), bounds <span class="op">=</span> bnds, constraints <span class="op">=</span> cons)</span>
-<span id="cb29-18"><a href="#cb29-18" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb29-19"><a href="#cb29-19" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result.x</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb29-15"><a href="#cb29-15" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> max_mean_optim(params, mu):</span>
+<span id="cb29-16"><a href="#cb29-16" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb29-17"><a href="#cb29-17" aria-hidden="true" tabindex="-1"></a>    cons <span class="op">=</span> [{<span class="st">"type"</span>: <span class="st">"ineq"</span>, <span class="st">"fun"</span>: max_mean_cons, <span class="st">"args"</span>: (sigma, target)},</span>
+<span id="cb29-18"><a href="#cb29-18" aria-hidden="true" tabindex="-1"></a>           {<span class="st">"type"</span>: <span class="st">"eq"</span>, <span class="st">"fun"</span>: <span class="kw">lambda</span> params: np.<span class="bu">sum</span>(params) <span class="op">-</span> <span class="dv">1</span>}]</span>
+<span id="cb29-19"><a href="#cb29-19" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb29-20"><a href="#cb29-20" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> minimize(max_mean_obj, params, args <span class="op">=</span> (mu), bounds <span class="op">=</span> bnds, constraints <span class="op">=</span> cons)</span>
+<span id="cb29-21"><a href="#cb29-21" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb29-22"><a href="#cb29-22" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result.x</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>params1 <span class="op">=</span> max_pnl_optim(start, mu)</span>
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>params1 <span class="op">=</span> max_mean_optim(start, mu)</span>
 <span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>params1</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>array([4.58738017e-01, 5.41261983e-01, 2.22044605e-16, 2.32859522e-16])</code></pre>
+<pre><code>array([4.62578958e-01, 5.37421042e-01, 2.22044605e-16, 2.22044605e-16])</code></pre>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>np.matmul(mu, params1)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>np.dot(mu, params1)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>0.04181332070485769</code></pre>
+<pre><code>0.041570397509656645</code></pre>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>np.sqrt(np.matmul(np.transpose(params1), np.matmul(sigma, params1)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>np.sqrt(np.dot(params1, np.dot(sigma, params1)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>0.06000001956736139</code></pre>
+<pre><code>0.060000021858548906</code></pre>
 </div>
 </div>
 </section>
@@ -481,55 +531,99 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p><span class="math display">\[
 \begin{aligned}
 \begin{array}{rrcl}
-\displaystyle\min_{x}&amp;\mathbf{w}^T\Sigma\mathbf{w}\\
-\textrm{s.t.}&amp;\mu^{T}\mathbf{w}&amp;\geq&amp;M\\
-&amp;e^T\mathbf{w}&amp;=&amp;1
+\displaystyle\min&amp;\frac{1}{2}\mathbf{w}^T\Sigma\mathbf{w}\\
+\textrm{s.t.}&amp;\mathbf{w}^{T}e&amp;=&amp;1\\
+&amp;\mu^{T}\mathbf{w}&amp;\geq&amp;M\\
 \end{array}
 \end{aligned}
 \]</span></p>
+<p>To incorporate these conditions into one equation, introduce new variables <span class="math inline">\(\lambda_{i}\)</span> that are the Lagrange multipliers and define a new function <span class="math inline">\(\mathcal{L}\)</span> as follows:</p>
+<p><span class="math display">\[
+\begin{aligned}
+\mathcal{L}(\mathbf{w},\lambda)&amp;=\frac{1}{2}\mathbf{w}^{T}\Sigma\mathbf{w}-\lambda_{1}(\mathbf{w}^{T}e-1)
+\end{aligned}
+\]</span></p>
+<p>Then, to minimize this function, take derivatives with respect to <span class="math inline">\(w\)</span> and Lagrange multipliers <span class="math inline">\(\lambda_{i}\)</span>:</p>
+<p><span class="math display">\[
+\begin{aligned}
+\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial w}&amp;=\mathbf{w}\Sigma-\lambda_{1}e=0\\
+\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial \lambda_{1}}&amp;=\mathbf{w}e^T-1=0
+\end{aligned}
+\]</span></p>
+<p>Simplify the equations above in matrix form and solve for the Lagrange multipliers <span class="math inline">\(\lambda_{i}\)</span>:</p>
+<p><span class="math display">\[
+\begin{aligned}
+\begin{bmatrix}
+\Sigma &amp; e \\
+e^{T} &amp; 0
+\end{bmatrix}
+\begin{bmatrix}
+\mathbf{w} \\
+-\lambda_{1}
+\end{bmatrix}
+&amp;=
+\begin{bmatrix}
+0 \\
+1
+\end{bmatrix}
+\\
+\begin{bmatrix}
+\mathbf{w} \\
+-\lambda_{1}
+\end{bmatrix}
+&amp;=
+\begin{bmatrix}
+\Sigma &amp; e \\
+e^{T} &amp; 0
+\end{bmatrix}^{-1}
+\begin{bmatrix}
+0 \\
+1
+\end{bmatrix}
+\end{aligned}
+\]</span></p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>target <span class="op">=</span> <span class="fl">0.03</span></span>
-<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>start <span class="op">=</span> np.array([<span class="dv">1</span>] <span class="op">*</span> <span class="bu">len</span>(factors))</span>
-<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>cons <span class="op">=</span> [{<span class="st">"type"</span>: <span class="st">"ineq"</span>, <span class="st">"fun"</span>: <span class="kw">lambda</span> params, mu, target: min_risk_cons(params, mu, target),</span>
-<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a>         <span class="st">"args"</span>: (mu, target)},</span>
-<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a>        {<span class="st">"type"</span>: <span class="st">"eq"</span>, <span class="st">"fun"</span>: <span class="kw">lambda</span> params: np.<span class="bu">sum</span>(params) <span class="op">-</span> <span class="dv">1</span>}]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>target <span class="op">=</span> <span class="fl">0.03</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> min_risk_cons(params, mu, target):</span>
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> min_var_cons(params, mu, target):</span>
 <span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> np.matmul(mu, params) <span class="op">-</span> target</span>
+<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> np.dot(mu, params) <span class="op">-</span> target</span>
 <span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a>    </span>
 <span id="cb37-5"><a href="#cb37-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result</span>
 <span id="cb37-6"><a href="#cb37-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-7"><a href="#cb37-7" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> min_risk_obj(params, sigma):</span>
+<span id="cb37-7"><a href="#cb37-7" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> min_var_obj(params, sigma):</span>
 <span id="cb37-8"><a href="#cb37-8" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb37-9"><a href="#cb37-9" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> np.matmul(np.transpose(params), np.matmul(sigma, params))</span>
+<span id="cb37-9"><a href="#cb37-9" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> np.dot(params, np.dot(sigma, params))</span>
 <span id="cb37-10"><a href="#cb37-10" aria-hidden="true" tabindex="-1"></a>    </span>
 <span id="cb37-11"><a href="#cb37-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result</span>
 <span id="cb37-12"><a href="#cb37-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-13"><a href="#cb37-13" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> min_risk_optim(params, sigma):</span>
-<span id="cb37-14"><a href="#cb37-14" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb37-15"><a href="#cb37-15" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> minimize(min_risk_obj, params, args <span class="op">=</span> (sigma), bounds <span class="op">=</span> bnds, constraints <span class="op">=</span> cons)</span>
-<span id="cb37-16"><a href="#cb37-16" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb37-17"><a href="#cb37-17" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result.x</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb37-13"><a href="#cb37-13" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> min_var_optim(params, sigma):</span>
+<span id="cb37-14"><a href="#cb37-14" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb37-15"><a href="#cb37-15" aria-hidden="true" tabindex="-1"></a>    cons <span class="op">=</span> [{<span class="st">"type"</span>: <span class="st">"ineq"</span>, <span class="st">"fun"</span>: min_var_cons, <span class="st">"args"</span>: (mu, target)},</span>
+<span id="cb37-16"><a href="#cb37-16" aria-hidden="true" tabindex="-1"></a>            {<span class="st">"type"</span>: <span class="st">"eq"</span>, <span class="st">"fun"</span>: <span class="kw">lambda</span> params: np.<span class="bu">sum</span>(params) <span class="op">-</span> <span class="dv">1</span>}]</span>
+<span id="cb37-17"><a href="#cb37-17" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb37-18"><a href="#cb37-18" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> minimize(min_var_obj, params, args <span class="op">=</span> (sigma), bounds <span class="op">=</span> bnds, constraints <span class="op">=</span> cons)</span>
+<span id="cb37-19"><a href="#cb37-19" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb37-20"><a href="#cb37-20" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result.x</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>params2 <span class="op">=</span> min_risk_optim(start, sigma)</span>
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>params2 <span class="op">=</span> min_var_optim(start, sigma)</span>
 <span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>params2</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>array([0.30240864, 0.52942142, 0.12462501, 0.04354492])</code></pre>
+<pre><code>array([0.3075824 , 0.53278519, 0.12181692, 0.03781549])</code></pre>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>np.matmul(mu, params2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>np.dot(mu, params2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>0.030000000044080797</code></pre>
+<pre><code>0.030000000046054496</code></pre>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>np.sqrt(np.matmul(np.transpose(params2), np.matmul(sigma, params2))) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>np.sqrt(np.dot(params2, np.dot(sigma, params2))) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>0.04257030014439174</code></pre>
+<pre><code>0.04274960927285742</code></pre>
 </div>
 </div>
 </section>
@@ -538,65 +632,163 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p><span class="math display">\[
 \begin{aligned}
 \begin{array}{rrcl}
-\displaystyle\max_{x}&amp;\mu^{T}\mathbf{w}-\frac{1}{2}\delta(\mathbf{w}^T\Sigma\mathbf{w})\\
-\textrm{s.t.}&amp;e^T\mathbf{w}&amp;=&amp;1
+\displaystyle\min&amp;\frac{1}{2}\delta(\mathbf{w}^{T}\Sigma\mathbf{w})-\mu^{T}\mathbf{w}\\
+\textrm{s.t.}&amp;\mathbf{w}^{T}e&amp;=&amp;1\\
 \end{array}
+\end{aligned}
+\]</span></p>
+<p>To incorporate these conditions into one equation, introduce new variables <span class="math inline">\(\lambda_{i}\)</span> that are the Lagrange multipliers and define a new function <span class="math inline">\(\mathcal{L}\)</span> as follows:</p>
+<p><span class="math display">\[
+\begin{aligned}
+\mathcal{L}(\mathbf{w},\lambda)&amp;=\frac{1}{2}\mathbf{w}^{T}\Sigma\mathbf{w}-\mu^{T}\mathbf{w}-\lambda_{1}(\mathbf{w}^{T}e-1)
+\end{aligned}
+\]</span></p>
+<p>Then, to minimize this function, take derivatives with respect to <span class="math inline">\(w\)</span> and Lagrange multipliers <span class="math inline">\(\lambda_{i}\)</span>:</p>
+<p><span class="math display">\[
+\begin{aligned}
+\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial w}&amp;=\mathbf{w}\Sigma-\mu^{T}-\lambda_{1}e=0\\
+\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial \lambda_{1}}&amp;=\mathbf{w}e^T-1=0
+\end{aligned}
+\]</span></p>
+<p>Simplify the equations above in matrix form and solve for the Lagrange multipliers <span class="math inline">\(\lambda_{i}\)</span>:</p>
+<p><span class="math display">\[
+\begin{aligned}
+\begin{bmatrix}
+\Sigma &amp; e \\
+e^{T} &amp; 0
+\end{bmatrix}
+\begin{bmatrix}
+\mathbf{w} \\
+-\lambda_{1}
+\end{bmatrix}
+&amp;=
+\begin{bmatrix}
+\mu^{T} \\
+1
+\end{bmatrix}
+\\
+\begin{bmatrix}
+\mathbf{w} \\
+-\lambda_{1}
+\end{bmatrix}
+&amp;=
+\begin{bmatrix}
+\Sigma &amp; e \\
+e^{T} &amp; 0
+\end{bmatrix}^{-1}
+\begin{bmatrix}
+\mu^{T} \\
+1
+\end{bmatrix}
 \end{aligned}
 \]</span></p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb44"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>ir <span class="op">=</span> <span class="fl">0.5</span></span>
-<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>target <span class="op">=</span> ir <span class="op">/</span> <span class="fl">0.06</span> <span class="co"># ir / std (see Black-Litterman)</span></span>
-<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a>start <span class="op">=</span> np.array([<span class="dv">1</span>] <span class="op">*</span> <span class="bu">len</span>(factors))</span>
-<span id="cb44-4"><a href="#cb44-4" aria-hidden="true" tabindex="-1"></a>cons <span class="op">=</span> [{<span class="st">"type"</span>: <span class="st">"eq"</span>, <span class="st">"fun"</span>: <span class="kw">lambda</span> params: np.<span class="bu">sum</span>(params) <span class="op">-</span> <span class="dv">1</span>}]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>target <span class="op">=</span> ir <span class="op">/</span> <span class="fl">0.06</span> <span class="co"># ir / std (see Black-Litterman)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> max_ratio_obj(params, mu, sigma, target):</span>
+<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> max_utility_obj(params, mu, sigma, target):</span>
 <span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> np.matmul(mu, params) <span class="op">-</span> <span class="fl">0.5</span> <span class="op">*</span> target <span class="op">*</span> (np.matmul(np.transpose(params),</span>
-<span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a>                                                               np.matmul(sigma, params)))</span>
-<span id="cb45-5"><a href="#cb45-5" aria-hidden="true" tabindex="-1"></a><span class="co">#     result = np.matmul(mu, params) / np.sqrt(np.matmul(np.transpose(params), np.matmul(sigma, params)))</span></span>
-<span id="cb45-6"><a href="#cb45-6" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb45-7"><a href="#cb45-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="op">-</span>result</span>
-<span id="cb45-8"><a href="#cb45-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-9"><a href="#cb45-9" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> max_ratio_optim(params, mu, sigma, target):</span>
+<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> <span class="fl">0.5</span> <span class="op">*</span> target <span class="op">*</span> (np.dot(params, np.dot(sigma, params))) <span class="op">-</span> np.dot(mu, params)</span>
+<span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb45-5"><a href="#cb45-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result</span>
+<span id="cb45-6"><a href="#cb45-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-7"><a href="#cb45-7" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> max_utility_optim(params, mu, sigma, target):</span>
+<span id="cb45-8"><a href="#cb45-8" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb45-9"><a href="#cb45-9" aria-hidden="true" tabindex="-1"></a>    cons <span class="op">=</span> [{<span class="st">"type"</span>: <span class="st">"eq"</span>, <span class="st">"fun"</span>: <span class="kw">lambda</span> params: np.<span class="bu">sum</span>(params) <span class="op">-</span> <span class="dv">1</span>}]</span>
 <span id="cb45-10"><a href="#cb45-10" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb45-11"><a href="#cb45-11" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> minimize(max_ratio_obj, params, args <span class="op">=</span> (mu, sigma, target), bounds <span class="op">=</span> bnds,</span>
+<span id="cb45-11"><a href="#cb45-11" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> minimize(max_utility_obj, params, args <span class="op">=</span> (mu, sigma, target), bounds <span class="op">=</span> bnds,</span>
 <span id="cb45-12"><a href="#cb45-12" aria-hidden="true" tabindex="-1"></a>                      constraints <span class="op">=</span> cons) </span>
 <span id="cb45-13"><a href="#cb45-13" aria-hidden="true" tabindex="-1"></a>    </span>
 <span id="cb45-14"><a href="#cb45-14" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result.x</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>params3 <span class="op">=</span> max_ratio_optim(start, mu, sigma, target)</span>
+<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>params3 <span class="op">=</span> max_utility_optim(start, mu, sigma, target)</span>
 <span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a>params3</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>array([4.78449628e-01, 5.21550372e-01, 2.46005473e-16, 2.38090797e-16])</code></pre>
+<pre><code>array([4.80909376e-01, 5.19090624e-01, 4.00070602e-16, 3.48896259e-16])</code></pre>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb48"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>np.matmul(mu, params3)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb48"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>np.dot(mu, params3)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>0.0430094200561693</code></pre>
+<pre><code>0.04269044980275753</code></pre>
 </div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb50"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>np.sqrt(np.matmul(np.transpose(params3), np.matmul(sigma, params3)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>0.06225230173496182</code></pre>
+<pre><code>0.062117917640854114</code></pre>
 </div>
 </div>
 </section>
 <section id="minimize-residual-sum-of-squares" class="level2">
 <h2 class="anchored" data-anchor-id="minimize-residual-sum-of-squares">Minimize residual sum of squares</h2>
+<p><span class="math display">\[
+\begin{aligned}
+\begin{array}{rrcl}
+\displaystyle\min&amp;\frac{1}{2}\delta(\mathbf{w}^{T}X^{T}X\mathbf{w})-X^{T}y\mathbf{w}\\
+\textrm{s.t.}&amp;\mathbf{w}^{T}e&amp;=&amp;1\\
+\end{array}
+\end{aligned}
+\]</span></p>
+<p>To incorporate these conditions into one equation, introduce new variables <span class="math inline">\(\lambda_{i}\)</span> that are the Lagrange multipliers and define a new function <span class="math inline">\(\mathcal{L}\)</span> as follows:</p>
+<p><span class="math display">\[
+\begin{aligned}
+\mathcal{L}(\mathbf{w},\lambda)&amp;=\frac{1}{2}\mathbf{w}^{T}X^{T}X\mathbf{w}-X^{T}y\mathbf{w}-\lambda_{1}(\mathbf{w}^{T}e-1)
+\end{aligned}
+\]</span></p>
+<p>Then, to minimize this function, take derivatives with respect to <span class="math inline">\(w\)</span> and Lagrange multipliers <span class="math inline">\(\lambda_{i}\)</span>:</p>
+<p><span class="math display">\[
+\begin{aligned}
+\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial w}&amp;=\mathbf{w}X^{T}X-X^{T}y-\lambda_{1}e=0\\
+\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial \lambda_{1}}&amp;=\mathbf{w}e^T-1=0
+\end{aligned}
+\]</span></p>
+<p>Simplify the equations above in matrix form and solve for the Lagrange multipliers <span class="math inline">\(\lambda_{i}\)</span>:</p>
+<p><span class="math display">\[
+\begin{aligned}
+\begin{bmatrix}
+X^{T}X &amp; e \\
+e^{T} &amp; 0
+\end{bmatrix}
+\begin{bmatrix}
+\mathbf{w} \\
+-\lambda_{1}
+\end{bmatrix}
+&amp;=
+\begin{bmatrix}
+X^{T}y \\
+1
+\end{bmatrix}
+\\
+\begin{bmatrix}
+\mathbf{w} \\
+-\lambda_{1}
+\end{bmatrix}
+&amp;=
+\begin{bmatrix}
+X^{T}X &amp; e \\
+e^{T} &amp; 0
+\end{bmatrix}^{-1}
+\begin{bmatrix}
+X^{T}y \\
+1
+\end{bmatrix}
+\end{aligned}
+\]</span></p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb52"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a>pd.DataFrame.from_dict({<span class="st">"max_pnl"</span>: params1,</span>
-<span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a>                        <span class="st">"min_risk"</span>: params2,</span>
-<span id="cb52-3"><a href="#cb52-3" aria-hidden="true" tabindex="-1"></a>                        <span class="st">"max_ratio"</span>: params3})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb52"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a>pd.DataFrame({</span>
+<span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a>  <span class="st">"max_pnl"</span>: params1,</span>
+<span id="cb52-3"><a href="#cb52-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">"min_risk"</span>: params2,</span>
+<span id="cb52-4"><a href="#cb52-4" aria-hidden="true" tabindex="-1"></a>  <span class="st">"max_ratio"</span>: params3</span>
+<span id="cb52-5"><a href="#cb52-5" aria-hidden="true" tabindex="-1"></a>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>        max_pnl  min_risk     max_ratio
-0  4.587380e-01  0.302409  4.784496e-01
-1  5.412620e-01  0.529421  5.215504e-01
-2  2.220446e-16  0.124625  2.460055e-16
-3  2.328595e-16  0.043545  2.380908e-16</code></pre>
+0  4.625790e-01  0.307582  4.809094e-01
+1  5.374210e-01  0.532785  5.190906e-01
+2  2.220446e-16  0.121817  4.000706e-16
+3  2.220446e-16  0.037815  3.488963e-16</code></pre>
 </div>
 </div>
 
