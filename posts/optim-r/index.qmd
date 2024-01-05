@@ -275,23 +275,14 @@ mu <- apply(returns_x_xts, 2, geometric_mean, scale = scale[["periods"]])
 sigma <- cov(overlap_x_xts) * scale[["periods"]] * scale[["overlap"]]
 ```
 
-## Maximize mean
-
-<!-- $$ -->
-<!-- \begin{aligned} -->
-<!-- \begin{array}{rrcl} -->
-<!-- \displaystyle\max_{x}&\mu^{T}\mathbf{w}\\ -->
-<!-- \textrm{s.t.}&\mathbf{w}^T\Sigma\mathbf{w}&\leq&\sigma^{2}\\ -->
-<!-- &e^T\mathbf{w}&=&1 -->
-<!-- \end{array} -->
-<!-- \end{aligned} -->
-<!-- $$ -->
+## Maximize means
 
 $$
 \begin{aligned}
 \begin{array}{rrcl}
 \displaystyle\min&-\mathbf{w}^{T}\mu\\
-\textrm{s.t.}&\mathbf{w}^{T}e&=&1
+\textrm{s.t.}&\mathbf{w}^{T}e&=&1\\
+&\mathbf{w}^T\Sigma\mathbf{w}&\leq&\sigma^{2}\\
 \end{array}
 \end{aligned}
 $$
@@ -388,32 +379,23 @@ sqrt(params1 %*% sigma %*% t(params1))
 # devtools::install_github("jasonjfoster/rolloptim") # roll (>= 1.1.7)
 # library(rolloptim)
 # 
-# mu <- roll::roll_mean(returns_x_xts, 5)
-# sigma <- roll::roll_cov(returns_x_xts, width = 5)
+# mu <- roll_mean(returns_x_xts, 5)
+# sigma <- roll_cov(returns_x_xts, width = 5)
 # 
-# xx <- roll::roll_crossprod(returns_x_xts, returns_x_xts, 5)
-# xy <- roll::roll_crossprod(returns_x_xts, y, 5) # TO DO
+# xx <- roll_crossprod(returns_x_xts, returns_x_xts, 5)
+# xy <- roll_crossprod(returns_x_xts, y, 5) # TO DO
 # 
 # roll_max_mean(mu)
 ```
 
 ## Minimize variance
 
-<!-- $$ -->
-<!-- \begin{aligned} -->
-<!-- \begin{array}{rrcl} -->
-<!-- \displaystyle\min_{x}&\mathbf{w}^T\Sigma\mathbf{w}\\ -->
-<!-- \textrm{s.t.}&\mu^{T}\mathbf{w}&\geq&M\\ -->
-<!-- &e^T\mathbf{w}&=&1 -->
-<!-- \end{array} -->
-<!-- \end{aligned} -->
-<!-- $$ -->
-
 $$
 \begin{aligned}
 \begin{array}{rrcl}
 \displaystyle\min&\frac{1}{2}\mathbf{w}^T\Sigma\mathbf{w}\\
-\textrm{s.t.}&\mathbf{w}^{T}e&=&1
+\textrm{s.t.}&\mathbf{w}^{T}e&=&1\\
+&\mu^{T}\mathbf{w}&\geq&M\\
 \end{array}
 \end{aligned}
 $$
@@ -511,20 +493,11 @@ sqrt(params2 %*% sigma %*% t(params2))
 
 ## Maximize utility
 
-<!-- $$ -->
-<!-- \begin{aligned} -->
-<!-- \begin{array}{rrcl} -->
-<!-- \displaystyle\max_{x}&\mu^{T}\mathbf{w}-\frac{1}{2}\delta(\mathbf{w}^T\Sigma\mathbf{w})\\ -->
-<!-- \textrm{s.t.}&e^T\mathbf{w}&=&1 -->
-<!-- \end{array} -->
-<!-- \end{aligned} -->
-<!-- $$ -->
-
 $$
 \begin{aligned}
 \begin{array}{rrcl}
 \displaystyle\min&\frac{1}{2}\delta(\mathbf{w}^{T}\Sigma\mathbf{w})-\mu^{T}\mathbf{w}\\
-\textrm{s.t.}&e^T\mathbf{w}&=&1
+\textrm{s.t.}&\mathbf{w}^{T}e&=&1\\
 \end{array}
 \end{aligned}
 $$
@@ -626,7 +599,7 @@ $$
 \begin{aligned}
 \begin{array}{rrcl}
 \displaystyle\min&\frac{1}{2}\delta(\mathbf{w}^{T}X^{T}X\mathbf{w})-X^{T}y\mathbf{w}\\
-\textrm{s.t.}&e^T\mathbf{w}&=&1
+\textrm{s.t.}&\mathbf{w}^{T}e&=&1\\
 \end{array}
 \end{aligned}
 $$
