@@ -51,10 +51,6 @@ returns_xts <- do.call(merge, lapply(factors, function(i) {
 overlap_xts <- roll_mean(returns_xts, scale[["overlap"]], min_obs = 1, na_restore = TRUE)
 ```
 
-```{r, message = FALSE}
-library(CVXR)
-```
-
 ```{r}
 tickers <- "BAICX" # fund inception date is "2011-11-28" 
 invisible(getSymbols(tickers, src = "tiingo", api.key = Sys.getenv("TIINGO_API_KEY"), adjust = TRUE))
@@ -253,6 +249,10 @@ plot_pairs(as.data.table(approach2), title = "Weight (%)")
 ```
 
 # Mean-variance
+
+```{r, message = FALSE}
+library(CVXR)
+```
 
 ```{r}
 geometric_mean <- function(x, scale) {
