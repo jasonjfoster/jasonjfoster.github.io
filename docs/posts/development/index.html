@@ -200,14 +200,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <section id="system-setup" class="level1">
 <h1>System setup</h1>
-<pre><code># environment variable: PATH=c:\rtools&lt;123&gt;\usr\bin</code></pre>
+<p>Set environment variable: <code>PATH=c:\rtools&lt;123&gt;\usr\bin</code></p>
 </section>
 <section id="git-and-github" class="level1">
 <h1>Git and GitHub</h1>
 <pre><code>git config --global user.name "&lt;NAME&gt;"
 git config --global user.email "&lt;EMAIL&gt;"</code></pre>
-<p>If needed, generate an SSH key: RStudio &gt; Tools &gt; Git/SVN &gt; Create RSA Key…</p>
-<p>Then give GitHub your SSH public key: GitHub &gt; SSH and GPG Keys &gt; New SSH key</p>
+<p>If needed, generate an SSH key: <code>RStudio &gt; Tools &gt; Git/SVN &gt; Create RSA Key...</code></p>
+<p>Then give GitHub your SSH public key: <code>GitHub &gt; SSH and GPG Keys &gt; New SSH key</code></p>
 <p>Create a new repository on the command line</p>
 <pre><code>echo "# &lt;REPO&gt;" &gt;&gt; README.md
 git init
@@ -225,29 +225,29 @@ git push -u origin main</code></pre>
 <section id="development-workflow" class="level1">
 <h1>Development workflow</h1>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>RcppArmadillo<span class="sc">::</span><span class="fu">RcppArmadillo.package.skeleton</span>(<span class="at">name =</span> <span class="st">"anRpackage"</span>,</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>                                              <span class="at">path =</span> <span class="st">"."</span>,</span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>                                              <span class="at">example_code =</span> <span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>RcppArmadillo<span class="sc">::</span><span class="fu">RcppArmadillo.package.skeleton</span>(<span class="at">name =</span> <span class="st">"anRpackage"</span>,</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>                                              <span class="at">path =</span> <span class="st">"."</span>,</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>                                              <span class="at">example_code =</span> <span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="compiled-code" class="level1">
 <h1>Compiled code</h1>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>Rcpp<span class="sc">::</span><span class="fu">compileAttributes</span>(<span class="at">verbose =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>tools<span class="sc">::</span><span class="fu">package_native_routine_registration_skeleton</span>(<span class="st">"."</span>, <span class="at">character_only =</span> <span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>Rcpp<span class="sc">::</span><span class="fu">compileAttributes</span>(<span class="at">verbose =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>tools<span class="sc">::</span><span class="fu">package_native_routine_registration_skeleton</span>(<span class="st">"."</span>, <span class="at">character_only =</span> <span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="object-documentation" class="level1">
 <h1>Object documentation</h1>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>roxygen2<span class="sc">::</span><span class="fu">roxygenize</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>roxygen2<span class="sc">::</span><span class="fu">roxygenize</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="automated-checking" class="level1">
 <h1>Automated checking</h1>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>usethis<span class="sc">::</span><span class="fu">use_github_action</span>(<span class="st">"check-standard"</span>)</span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>usethis<span class="sc">::</span><span class="fu">use_github_action</span>(<span class="st">"test-coverage"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>usethis<span class="sc">::</span><span class="fu">use_github_action</span>(<span class="st">"check-standard"</span>)</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>usethis<span class="sc">::</span><span class="fu">use_github_action</span>(<span class="st">"test-coverage"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="python" class="level1">
@@ -267,7 +267,7 @@ git push -u origin main</code></pre>
 <ul>
 <li><a href="https://github.com/osqp/osqp/issues/385" class="uri">https://github.com/osqp/osqp/issues/385</a></li>
 </ul>
-<p>Use python 3.10 for qdldl</p>
+<p>Use python 3.10 for <code>qdldl</code></p>
 <ul>
 <li><a href="https://github.com/pydata/pandas-datareader/issues/965" class="uri">https://github.com/pydata/pandas-datareader/issues/965</a></li>
 </ul>

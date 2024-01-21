@@ -12,13 +12,13 @@ categories:
 
 ## Secure Shell
 
-EC2 \> Network & Security \> Key Pairs \> Create Key Pair \> \*.pem
+`EC2 > Network & Security > Key Pairs > Create Key Pair > *.pem`
 
-PuTTYgen \> Load an existing private key file \> Save private key \> \*.ppk
+`PuTTYgen > Load an existing private key file > Save private key > *.ppk`
 
-Host Name: ec2-user\@ec2-1-23-456-789.us-east-2.compute.amazonaws.com
+Host Name: `ec2-user\@ec2-1-23-456-789.us-east-2.compute.amazonaws.com`
 
-Connection \> SSH \> Auth & WinSCP \> Auth \> Private key file for authentication
+`Connection > SSH > Auth & WinSCP > Auth > Private key file for authentication`
 
 ```         
 sudo yum update
@@ -26,7 +26,7 @@ sudo yum update
 
 ## Jupyter Server
 
-Amazon Linux 2
+Install `Amazon Linux 2`
 
 ```         
 wget https://repo.anaconda.com/archive/Anaconda3-2023.03-Linux-x86_64.sh
@@ -86,9 +86,9 @@ crontab -e
 
 ## RStudio Server
 
-* <https://aws.amazon.com/blogs/big-data/running-r-on-aws/>
+-   <https://aws.amazon.com/blogs/big-data/running-r-on-aws/>
 
-Install R
+Install `R`
 
 ```         
 sudo su
@@ -97,7 +97,7 @@ sudo su
 sudo amazon-linux-extras install R3.4 # Amazon Linux 2
 ```
 
-Install RStudio Server
+Install `RStudio Server`
 
 -   <https://posit.co/download/rstudio-server/>
 
@@ -107,7 +107,7 @@ yum install rstudio-server-rhel-1.2.5019-x86_64.rpm
 rm rstudio-server-rhel-1.2.5019-x86_64.rpm
 ```
 
-Install Shiny Server
+Install `Shiny Server`
 
 -   <https://posit.co/download/shiny-server/>
 
@@ -125,7 +125,7 @@ useradd -m jjf234
 sudo passwd jjf234 # prompt to enter password
 ```
 
-Need to create '/ShinyApps' under '/ec2-user' and then subfolders with code, e.g. /home/ec2-user/ShinyApps/hello
+Need to create `/ShinyApps` under `/ec2-user` and then subfolders with code, e.g. `/home/ec2-user/ShinyApps/hello`
 
 ```         
 # sudo /opt/shiny-server/bin/deploy-example user-dirs
@@ -133,7 +133,7 @@ Need to create '/ShinyApps' under '/ec2-user' and then subfolders with code, e.g
 # sudo cp -R /opt/shiny-server/samples/sample-apps/hello ~/ShinyApps
 ```
 
-Install devtools
+Install `devtools`
 
 ```         
 sudo yum install libcurl-devel
@@ -142,13 +142,13 @@ sudo yum install libxml2-devel
 R -e "install.packages('devtools', repos = 'http://cran.rstudio.com/')"
 ```
 
-Install RcppParallel
+Install `RcppParallel`
 
 ```         
 R -e "install.packages('RcppParallel', repos = 'http://cran.rstudio.com/')"
 ```
 
-Install RcppArmadillo
+Install `RcppArmadillo`
 
 ```         
 R -e "install.packages('RcppArmadillo', repos = 'http://cran.rstudio.com/')"
@@ -161,7 +161,7 @@ R -e "install.packages(c('data.table', 'xts', 'testthat', 'microbenchmark'),
 repos = 'http://cran.rstudio.com/')"
 ```
 
-Install roll
+Install `roll`
 
 ```         
 R -e "devtools::install_github('jjf234/roll')"
