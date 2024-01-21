@@ -10,69 +10,13 @@ categories:
 
 ```{r, echo = FALSE, message = FALSE}
 source("../plot/theme_jjf.R")
-```
-
-```{r, message = FALSE}
-library(quantmod)
-library(roll)
-library(data.table)
-```
-
-```{r, echo = FALSE}
-options("getSymbols.warning4.0" = FALSE)
-```
-
-```{r}
-factors_r <- c("SP500", "DTWEXAFEGS") # "SP500" does not contain dividends; note: "DTWEXM" discontinued as of Jan 2020
-factors_d <- c("DGS10", "BAMLH0A0HYM2")
-factors <- c(factors_r, factors_d)
-width <- 252
-scale <- list("periods" = 252, "overlap" = 5)
+source("../helper-levels.R")
+source("../helper-prices.R")
 ```
 
 ```{r, echo = FALSE}
 palette <- c("black", palette_jjf(length(factors)))
 names(palette) <- c("Overall", factors)
-```
-
-```{r, results = "hide"}
-getSymbols(factors, src = "FRED")
-levels_xts <- do.call(merge, c(lapply(factors, function(i) get(i)), all = TRUE))
-```
-
-```{r}
-returns_xts <- do.call(merge, lapply(factors, function(i) {
-    if (i %in% factors_r) {
-        diff(log((levels_xts[ , i])))
-    } else if (i %in% factors_d) {
-        -diff(levels_xts[ , i]) / 100
-    }    
-}))
-overlap_xts <- roll_mean(returns_xts, scale[["overlap"]], min_obs = 1, na_restore = TRUE)
-```
-
-```{r}
-tickers <- "BAICX" # fund inception date is "2011-11-28" 
-invisible(getSymbols(tickers, src = "tiingo", api.key = Sys.getenv("TIINGO_API_KEY"), adjust = TRUE))
-prices_xts <- do.call(merge, c(lapply(tickers, function(i) Cl(get(i))), all = TRUE))
-colnames(prices_xts) <- tickers
-index(prices_xts) <- as.Date(index(prices_xts))
-```
-
-```{r}
-returns_xts <- merge(returns_xts, diff(log(prices_xts)))
-overlap_xts <- merge(overlap_xts, roll_mean(returns_xts[ , tickers], scale[["overlap"]], min_obs = 1))
-```
-
-```{r}
-# weights <- 0.9 ^ ((width - 1):0)
-weights <- rep(1, width)
-```
-
-```{r}
-overlap_xts <- na.omit(overlap_xts)
-overlap_x_xts <- tail(overlap_xts[ , factors], width) # same dimension as `weights`
-overlap_y_xts <- tail(overlap_xts[ , tickers], width)
 ```
 
 # Random weights
