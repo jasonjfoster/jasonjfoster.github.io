@@ -10,24 +10,7 @@ categories:
 
 ```{r, echo = FALSE, message = FALSE}
 source("../plot/theme_jjf.R")
-```
-
-```{r, message = FALSE}
-library(quantmod)
-library(roll)
-library(data.table)
-```
-
-```{r, echo = FALSE}
-options("getSymbols.warning4.0" = FALSE)
-```
-
-```{r}
-factors_r <- c("SP500", "DTWEXAFEGS") # "SP500" does not contain dividends; note: "DTWEXM" discontinued as of Jan 2020
-factors_d <- c("DGS10", "BAMLH0A0HYM2")
-factors <- c(factors_r, factors_d)
-width <- 252
-scale <- list("periods" = 252, "overlap" = 5)
+source("../helper-levels.R")
 ```
 
 ```{r, echo = FALSE}
@@ -35,23 +18,7 @@ palette <- c("black", palette_jjf(length(factors)))
 names(palette) <- c("Overall", factors)
 ```
 
-```{r, results = "hide"}
-getSymbols(factors, src = "FRED")
-levels_xts <- do.call(merge, c(lapply(factors, function(i) get(i)), all = TRUE))
-```
-
-```{r}
-returns_xts <- do.call(merge, lapply(factors, function(i) {
-    if (i %in% factors_r) {
-        diff(log((levels_xts[ , i])))
-    } else if (i %in% factors_d) {
-        -diff(levels_xts[ , i]) / 100
-    }    
-}))
-overlap_xts <- roll_mean(returns_xts, scale[["overlap"]], min_obs = 1, na_restore = TRUE)
-```
-
-```{r}
+```{r, echo = FALSE}
 overlap_xts <- na.omit(overlap_xts)
 ```
 
