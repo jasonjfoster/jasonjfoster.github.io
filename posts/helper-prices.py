@@ -11,7 +11,7 @@ returns_cols = list(zip(["returns"], tickers))
 overlap_cols = list(zip(["overlap"], tickers))
 returns_df[returns_cols] = np.log(prices_df).diff()
 returns_df[overlap_cols] = returns_df[returns_cols].rolling(scale["overlap"], min_periods = 1).mean()
-returns_df.sort_index(axis = 1, inplace = True)
+returns_df.sort_index(axis = 0, inplace = True)
 
 # weights = np.array([0.9 ** i for i in range(width - 1, -1, -1)]).reshape((width, 1))
 weights = np.array([1] * width).reshape((width, 1))

@@ -12,6 +12,7 @@ scale = {"periods": 252, "overlap": 5}
 
 # https://pandas-datareader.readthedocs.io/en/latest/remote_data.html
 levels_df = pdr.get_data_fred(factors, start = "1900-01-01")
+levels_df.sort_index(axis = 0, inplace = True)
 
 returns_df = levels_df.apply(lambda x: np.log(x).diff() if x.name in factors_r else -x.diff() / 100)
 overlap_df = returns_df.rolling(scale["overlap"], min_periods = 1).mean()

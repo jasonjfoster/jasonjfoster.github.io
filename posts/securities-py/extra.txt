@@ -1,0 +1,174 @@
+## Variance swaps
+
+A variance swap can be written as:
+
+$$
+\begin{aligned}
+K_{var}={\frac{2e^{rT}}{T}}\left(\int\limits_{0}^{F_{0}}{\frac{1}{K^{2}}}P(K)dK+\int\limits_{F_{0}}^{\infty}{\frac{1}{K^{2}}} C(K)dK\right)
+\end{aligned}
+$$
+
+The CBOE Volatility Index (VIX) is calculated as a variance swap on the 30-day variance of the S&P 500 with an adjustment term:
+
+$$
+\begin{aligned}
+\sigma^{2}={\frac{2e^{rT}}{T}}\left(\sum_{i=0}^{K_{0}}\frac{\Delta K_{i}}{K_{i}^{2}}P(K_{i})+\sum_{i=K_{0}}^{\infty}\frac{\Delta K_{i}}{K_{i}^{2}}C(K_{i})\right)-\frac{1}{T}\left(\frac{F}{K_{0}}-1\right)^{2}
+\end{aligned}
+$$
+
+```{python}
+def rle(x):
+    
+    n = len(x)
+    y = x.iloc[1:].reset_index(drop = True) != x.iloc[:-1].reset_index(drop = True)
+    i = y[y].index.tolist() + [n - 1]
+    
+    result = {"lengths": np.diff([0] + i),
+              "values": x.reset_index(drop = True)[i]}
+    
+    return result
+```
+
+```{python}
+# https://cdn.cboe.com/resources/vix/vixwhite.pdf
+# https://en.wikipedia.org/wiki/VIX
+# https://en.wikipedia.org/wiki/Variance_swap
+# https://www.ivolatility.com/doc/VarianceSwaps.pdf
+def implied_vol_vix(calls_df, puts_df, r, tau):
+    
+    # time to expiration 
+    t = ((tau["exp_time"] - tau["sys_time"]).total_seconds() / 60) / (365 * 24 * 60)
+    
+    # midpoint of bid and ask
+    calls_df["Mid"] = calls_df[["Bid", "Ask"]].mean(axis = 1)
+    puts_df["Mid"] = puts_df[["Bid", "Ask"]].mean(axis = 1)
+    
+    options_df = calls_df[["Strike", "Mid"]] \
+        .merge(puts_df[["Strike", "Mid"]], on = "Strike") \
+        .rename(columns = {"Mid_x": "Call", "Mid_y": "Put"})
+    
+    options_df["Diff"] = abs(options_df["Call"] - options_df["Put"])
+    
+    # minimum absolute difference is forward index level
+    forward_df = options_df.loc[options_df["Diff"] == min(options_df["Diff"])]
+    k = forward_df["Strike"]
+    c = forward_df["Call"]
+    p = forward_df["Put"]
+    f = k + np.exp(r * t) * (c - p)
+    
+    # strike price equal or below forward index level
+    k0 = options_df.loc[options_df["Strike"] <= int(f), "Strike"].iloc[-1]
+    
+    # out-of-the-money options
+    puts_otm_df = puts_df.loc[puts_df["Strike"] < k0]
+    calls_otm_df = calls_df.loc[calls_df["Strike"] > k0]
+
+    # stop after two consecutive strike prices with zero bid prices
+    # https://stackoverflow.com/a/50311890
+    puts_otm_rle = rle(puts_otm_df["Bid"])
+    idx = puts_otm_rle["lengths"].cumsum() # end
+    try:
+        idx = idx[(puts_otm_rle["lengths"] > 1) & (puts_otm_rle["values"] == 0)].max()
+        puts_otm_df = puts_otm_df.iloc[(idx + 1):]
+    except:
+        pass
+    
+    calls_otm_rle = rle(calls_otm_df["Bid"])
+    idx = calls_otm_rle["lengths"].cumsum() # end
+    idx = idx - calls_otm_rle["lengths"] + 1 # start
+    try:
+        idx = idx[(calls_otm_rle["lengths"] > 1) & (calls_otm_rle["values"] == 0)].max()
+        calls_otm_df = calls_otm_df.iloc[:idx]
+    except:
+        pass
+
+    # average put and call prices for k0
+    # note: exclude options with zero bid price
+    result_df = puts_otm_df.loc[puts_otm_df["Bid"] != 0, ["Strike", "Mid"]] \
+        .append(pd.DataFrame(puts_df.loc[puts_df["Strike"] == k0, ["Strike", "Mid"]] \
+                             .append(calls_df.loc[calls_df["Strike"] == k0,
+                                                  ["Strike", "Mid"]]).mean(axis = 0)).transpose() \
+                .append(calls_otm_df.loc[calls_otm_df["Bid"] != 0,
+                                         ["Strike", "Mid"]])).reset_index(drop = True)
+    
+    # differences between strike prices
+    # note: create new column
+    result_df.loc[0, "Diff"] = result_df.loc[1, "Strike"] - result_df.loc[0, "Strike"]
+    result_df["Diff"].iloc[-1] = result_df["Strike"].iloc[-1] - result_df["Strike"].iloc[-2]
+    result_df["Diff"].iloc[1:-1] = (result_df["Strike"].iloc[2:].values -
+                                    result_df["Strike"].iloc[:-2].values) / 2
+
+    # variance
+    v = sum(result_df["Diff"] / result_df["Strike"] ** 2 * np.exp(r * t) *
+            result_df["Mid"]) * (2 / t) - (1 / t) * (f / k0 - 1) ** 2
+        
+    result = {"t": t,
+              "v": v}
+            
+    return result
+```
+
+```{python}
+sys_time = datetime.datetime.now().replace(hour = 9, minute = 46, second = 0)
+```
+
+```{python}
+v1 = implied_vol_vix(pd.read_csv("../securities/near_calls.csv"), pd.read_csv("../securities/near_puts.csv"), 0.000305,
+                     {"sys_time": sys_time,
+                      "exp_time": sys_time.replace(hour = 8, minute = 30, second = 0) +
+                                  datetime.timedelta(days = 25)})
+v2 = implied_vol_vix(pd.read_csv("../securities/next_calls.csv"), pd.read_csv("../securities/next_puts.csv"), 0.000286,
+                     {"sys_time": sys_time,
+                      "exp_time": sys_time.replace(hour = 15, minute = 0, second = 0) +
+                                  datetime.timedelta(days = 32)})
+```
+
+```{python}
+nt1 = v1["t"] * (365 * 24 * 60)
+nt2 = v2["t"] * (365 * 24 * 60)
+n30 = 30 * (24 * 60)
+n365 = 365 * (24 * 60)
+```
+
+```{python}
+vix = np.sqrt(((v1["t"] * v1["v"] * ((nt2 - n30) / (nt2 - nt1))).values +
+               (v2["t"] * v2["v"] * ((n30 - nt1) / (nt2 - nt1))).values) * (n365 / n30))
+vix
+```
+
+## Implied yield
+
+```{python}
+def yield_option(type, S, K, r, q, tau, sigma):
+    
+    d1 = bs_d1(S, K, r, q, tau, sigma)
+    d2 = bs_d2(S, K, r, q, tau, sigma)
+    value = bs_value(type, S, K, r, q, tau, sigma, d1, d2)
+    
+    if (type == "call"):
+        result = (value / S) / tau
+    elif (type == "put"):
+        result = (value / K) / tau
+        
+    return result
+```
+
+```{python}
+sigmas = [x / 100 for x in range(10, 31, 4)]
+taus = [x / 252 for x in range(20, 127, 20)]
+```
+
+```{python}
+yield_df = pd.DataFrame([(x, y) for x in sigmas for y in taus]) \
+    .rename(columns = {0: "sigma", 1: "tau"})
+yield_df["yield"] = yield_df.apply(lambda x: yield_option(type, S, K, r, q, x["tau"], x["sigma"]),
+                                   axis = 1)
+yield_df["sigma"] = yield_df["sigma"] * 100
+yield_df["tau"] = yield_df["tau"] * scale["periods"]
+```
+
+```{r, fig.width = 4, fig.height = 3}
+yield_plt <- plot_heatmap(py$yield_df, x = "tau", y = "sigma", z = "yield",
+                          title = "Yield (%)", xlab = "Tau", ylab = "Sigma")
+print(yield_plt)
+```

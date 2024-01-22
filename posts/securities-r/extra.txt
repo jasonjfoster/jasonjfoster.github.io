@@ -1,0 +1,155 @@
+## Variance swaps
+
+A variance swap can be written as:
+
+$$
+\begin{aligned}
+K_{var}={\frac{2e^{rT}}{T}}\left(\int\limits_{0}^{F_{0}}{\frac{1}{K^{2}}}P(K)dK+\int\limits_{F_{0}}^{\infty}{\frac{1}{K^{2}}} C(K)dK\right)
+\end{aligned}
+$$
+
+The CBOE Volatility Index (VIX) is calculated as a variance swap on the 30-day variance of the S&P 500 with an adjustment term:
+
+$$
+\begin{aligned}
+\sigma^{2}={\frac{2e^{rT}}{T}}\left(\sum_{i=0}^{K_{0}}\frac{\Delta K_{i}}{K_{i}^{2}}P(K_{i})+\sum_{i=K_{0}}^{\infty}\frac{\Delta K_{i}}{K_{i}^{2}}C(K_{i})\right)-\frac{1}{T}\left(\frac{F}{K_{0}}-1\right)^{2}
+\end{aligned}
+$$
+
+```{r}
+# https://cdn.cboe.com/resources/vix/vixwhite.pdf
+# https://en.wikipedia.org/wiki/VIX
+# https://en.wikipedia.org/wiki/Variance_swap
+# https://www.ivolatility.com/doc/VarianceSwaps.pdf
+implied_vol_vix <- function(calls_df, puts_df, r, tau) {
+  
+  # time to expiration  
+  t <- as.numeric(difftime(tau[["exp_time"]], tau[["sys_time"]], units = "mins")) / (365 * 24 * 60)
+  
+  # midpoint of bid and ask
+  calls_df[["Mid"]] <- rowMeans(calls_df[ , c("Bid", "Ask")])
+  puts_df[["Mid"]] <- rowMeans(puts_df[ , c("Bid", "Ask")])
+  
+  options_df <- merge(calls_df[ , c("Strike", "Mid")],
+                      puts_df[ , c("Strike", "Mid")], by = "Strike")
+  colnames(options_df) <- c("Strike", "Call", "Put")
+  
+  options_df[["Diff"]] <- abs(options_df[["Call"]] - options_df[["Put"]])
+  
+  # minimum absolute difference is forward index level
+  forward_df <- options_df[options_df[["Diff"]] == min(options_df[["Diff"]]), ]
+  k <- forward_df[["Strike"]]
+  c <- forward_df[["Call"]]
+  p <- forward_df[["Put"]]
+  f <- k + exp(r * t) * (c - p)
+  
+  # strike price equal or below forward index level
+  k0 <- tail(options_df[options_df[["Strike"]] <= f, "Strike"], 1)
+  
+  # out-of-the-money options
+  puts_otm_df <- puts_df[puts_df[["Strike"]] < k0, ]
+  calls_otm_df <- calls_df[calls_df[["Strike"]] > k0, ]
+  
+  # stop after two consecutive strike prices with zero bid prices
+  # https://stackoverflow.com/a/50311890
+  puts_otm_rle <- rle(puts_otm_df[["Bid"]])
+  idx <- cumsum(puts_otm_rle$lengths) # end
+  idx <- idx[max(which(puts_otm_rle$lengths > 1 & puts_otm_rle$values == 0))]
+  puts_otm_df <- puts_otm_df[(idx + 1):nrow(puts_otm_df), ]
+  
+  calls_otm_rle <- rle(calls_otm_df[["Bid"]])
+  idx <- cumsum(calls_otm_rle$lengths) # end
+  idx <- idx - calls_otm_rle$lengths + 1 # start
+  idx <- idx[max(which(calls_otm_rle$lengths > 1 & calls_otm_rle$values == 0))]
+  calls_otm_df <- calls_otm_df[1:(idx - 1), ]
+  
+  # average put and call prices for k0
+  # note: exclude options with zero bid price
+  result_df <- rbind(puts_otm_df[puts_otm_df[["Bid"]] != 0, c("Strike", "Mid")],
+                     colMeans(rbind(puts_df[puts_df[["Strike"]] == k0, c("Strike", "Mid")],
+                                    calls_df[calls_df[["Strike"]] == k0, c("Strike", "Mid")])),
+                     calls_otm_df[calls_otm_df[["Bid"]] != 0, c("Strike", "Mid")])
+  
+  # differences between strike prices
+  n_rows <- nrow(result_df)
+  result_df[1, "Diff"] <- result_df[2, "Strike"] - result_df[1, "Strike"]
+  result_df[n_rows, "Diff"] <- result_df[n_rows, "Strike"] - result_df[n_rows - 1, "Strike"]
+  result_df[2:(n_rows - 1), "Diff"] <- (result_df[3:n_rows, "Strike"] -
+                                          result_df[1:(n_rows - 2), "Strike"]) / 2
+  
+  # variance
+  v <- sum(result_df[ , "Diff"] / result_df[ , "Strike"] ^ 2 * exp(r * t) *
+             result_df[ , "Mid"]) * (2 / t) - (1 / t) * (f / k0 - 1) ^ 2
+  
+  result <- list("t" = t,
+                 "v" = v)
+  
+  return(result)
+  
+}
+```
+
+```{r}
+sys_time <- format(Sys.Date(), paste0("%Y-%m-%d", "09:46:00"))
+```
+
+```{r}
+v1 <- implied_vol_vix(read.csv("../securities/near_calls.csv"), read.csv("../securities/near_puts.csv"), 0.000305,
+                      list("sys_time" = sys_time,
+                           "exp_time" = format(Sys.Date() + 25, paste0("%Y-%m-%d", "08:30:00"))))
+
+v2 <- implied_vol_vix(read.csv("../securities/next_calls.csv"), read.csv("../securities/next_puts.csv"), 0.000286,
+                      list("sys_time" = sys_time,
+                           "exp_time" = format(Sys.Date() + 32, paste0("%Y-%m-%d", "15:00:00"))))
+```
+
+```{r}
+nt1 <- v1$t * (365 * 24 * 60)
+nt2 <- v2$t * (365 * 24 * 60)
+n30 <- 30 * (24 * 60)
+n365 <- 365 * (24 * 60)
+```
+
+```{r}
+vix <- sqrt((v1$t * v1$v * ((nt2 - n30) / (nt2 - nt1)) +
+               v2$t * v2$v * ((n30 - nt1) / (nt2 - nt1))) * (n365 / n30))
+print(vix)
+```
+
+## Implied yield
+
+```{r}
+yield_option <- function(type, S, K, r, q, tau, sigma) {
+    
+    d1 <- bs_d1(S, K, r, q, tau, sigma)
+    d2 <- bs_d2(S, K, r, q, tau, sigma)
+    value <- bs_value(type, S, K, r, q, tau, sigma, d1, d2)
+    
+    if (type == "call") {
+        result <- (value / S) / tau
+    } else if (type == "put") {
+        result <- (value / K) / tau
+    }
+    
+    return(result)
+    
+}
+```
+
+```{r}
+sigmas <- seq(0.1, 0.3, by = 0.04)
+taus <- seq(20, 126, by = 20) / 252
+```
+
+```{r}
+yield_dt <- CJ(sigma = sigmas, tau = taus)
+yield_dt[ , yield := yield_option(type, S, K, r, q, tau, sigma), by = c("sigma", "tau")]
+yield_dt[ , sigma := sigma * 100]
+yield_dt[ , tau := tau * scale[["periods"]]]
+```
+
+```{r, fig.width = 4, fig.height = 3}
+yield_plt <- plot_heatmap(yield_dt, x = "tau", y = "sigma", z = "yield",
+                          title = "Yield (%)", xlab = "Tau", ylab = "Sigma")
+print(yield_plt)
+```
