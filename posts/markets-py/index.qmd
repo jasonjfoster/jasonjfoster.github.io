@@ -263,9 +263,10 @@ lead_lag_df = roll_lead_lag(score_x_df, score_y_df, width, order, p_value)
 ```
 
 ```{r, echo = FALSE, fig.width = 6, fig.height = 3}
-# lead_lag_mlt <- melt(as.data.table(py$lead_lag_df, keep.rownames = "index"), id.vars = "index")
-# lead_lag_mlt[ , index := as.Date(index)]
-# lead_lag_plt <- plot_ts_decomp(lead_lag_mlt, decomp = "Total", title = "Lead lag 1M", palette = palette) +
-#   theme(axis.text.y = element_blank())
-# print(lead_lag_plt)
+lead_lag_mlt <- melt(as.data.table(py$lead_lag_df, keep.rownames = "index"), id.vars = "index")
+lead_lag_mlt[ , index := as.Date(index)]
+lead_lag_mlt[ , value := as.logical(value)]
+lead_lag_plt <- plot_ts_decomp(lead_lag_mlt, decomp = "Total", title = "Lead lag 1M", palette = palette) +
+  theme(axis.text.y = element_blank())
+print(lead_lag_plt)
 ```
