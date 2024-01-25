@@ -230,6 +230,8 @@ def roll_lead_lag(x, y, width, order, p_value):
     n_rows = len(x)
     x_name = x.name
     y_name = y.name
+    # x_y_ls = []
+    # y_x_ls = []
     result_ls = []
 
     for i in range(width - 1, n_rows):
@@ -241,9 +243,12 @@ def roll_lead_lag(x, y, width, order, p_value):
 
         x_y_status = (x_y < p_value) and (y_x > p_value)
         y_x_status = (x_y > p_value) and (y_x < p_value)
-
+        
+        # x_y_ls.append(x_y_status)
+        # y_x_ls.append(y_x_status)
         result_ls.append({x_name: x_y_status, y_name: y_x_status})
 
+    # result = pd.DataFrame({x_name: x_y_ls, y_name: y_x_ls})
     result = pd.DataFrame(result_ls, index = x.index[(width - 1):])
 
     return result

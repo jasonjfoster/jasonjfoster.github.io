@@ -210,7 +210,8 @@ roll_lead_lag <- function(x, y, width, order, p_value) {
     n_rows <- nrow(x)
     x_name <- names(x)
     y_name <- names(y)
-    result_ls <- list()
+    x_y_ls <- list()
+    y_x_ls <- list()
     
     for (i in width:n_rows) {
         
@@ -222,15 +223,14 @@ roll_lead_lag <- function(x, y, width, order, p_value) {
         x_y_status <- (x_y < p_value) && (y_x > p_value)
         y_x_status <- (x_y > p_value) && (y_x < p_value)
         
-        total <- data.frame("x_y" = x_y_status,
-                            "y_x" = y_x_status)
-        colnames(total) <- c(x_name, y_name)
-        
-        result_ls <- append(result_ls, list(total))
-        
+        x_y_ls <- append(x_y_ls, list(x_y_status))
+        y_x_ls <- append(y_x_ls, list(y_x_status))
+
     }
     
-    result <- do.call(rbind, result_ls)
+    result <- data.frame("x_y" = do.call(c, x_y_ls), "y_x" = do.call(c, y_x_ls))
+    colnames(result) <- c(x_name, y_name)
+    
     result <- xts(result, index(x)[width:n_rows])
     
     return(result)
