@@ -518,7 +518,7 @@ options_df = pd.DataFrame({
 })
 options_df["dS"] = options_df["spot"] - S
 options_df["dt_diff"] = (options_df.index - options_df.index[0]).days
-options_df["dt"] = options_df["dt_diff"] / options_df["dt_diff"][-1]
+options_df["dt"] = options_df["dt_diff"] / options_df["dt_diff"].iloc[-1]
 options_df["dsigma"] = options_df["sigma"] - sigma
 ```
 
