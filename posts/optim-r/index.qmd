@@ -602,11 +602,76 @@ $$
 -   <https://scaron.info/blog/conversion-from-least-squares-to-quadratic-programming.html>
 
 ```{r}
+min_rss_optim1 <- function(mu, sigma) {
+    
+    params <- Variable(length(mu))
+    
+    obj <- Minimize(0.5 * quad_form(params, sigma) - t(mu) %*% params)
+    
+    cons <- list(sum(params) == 1, params >= 0)
+    
+    prob <- Problem(obj, cons)
+        
+    result <- solve(prob)$getValue(params)
+    
+    return(result)
+
+}
+```
+
+```{r}
+params4 <- t(min_rss_optim1(crossprod(overlap_x_xts, overlap_y_xts), crossprod(overlap_x_xts)))
+params4
+```
+
+```{r}
+params4 %*% mu 
+```
+
+```{r}
+sqrt(params4 %*% sigma %*% t(params4))
+```
+
+```{r}
 # roll_min_rss(xx, xy)
 ```
 
 ```{r}
-data.frame("max_pnl" = t(params1),
-           "min_risk" = t(params2),
-           "max_ratio" = t(params3))
+min_rss_optim2 <- function(x, y) {
+    
+    params <- Variable(ncol(x))
+    
+    obj <- Minimize(sum_squares(y - x %*% params))
+    
+    cons <- list(sum(params) == 1, params >= 0)
+    
+    prob <- Problem(obj, cons)
+        
+    result <- solve(prob)$getValue(params)
+    
+    return(result)
+
+}
+```
+
+```{r}
+params5 <- t(min_rss_optim2(coredata(overlap_x_xts), coredata(overlap_y_xts)))
+params5
+```
+
+```{r}
+params5 %*% mu 
+```
+
+```{r}
+sqrt(params5 %*% sigma %*% t(params5))
+```
+
+
+```{r}
+round(data.frame("max_pnl" = t(params1) * 100,
+                 "min_risk" = t(params2) * 100,
+                 "max_ratio" = t(params3) * 100,
+                 "min_rss1" = t(params4) * 100,
+                 "min_rss2" = t(params5) * 100), 2)
 ```

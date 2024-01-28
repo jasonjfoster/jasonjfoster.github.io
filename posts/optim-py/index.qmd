@@ -186,7 +186,8 @@ plot_pairs(as.data.table(py$approach2), title = "Weight (%)")
 # Mean-variance
 
 ```{python}
-from scipy.optimize import minimize
+# from scipy.optimize import minimize
+import cvxpy as cp
 ```
 
 ```{python}
@@ -273,37 +274,27 @@ $$
 
 ```{python}
 target = 0.06
-start = np.array([1] * len(factors))
-bnds = [(np.finfo(float).eps, 1) for i in range(len(factors))]
 ```
 
 ```{python}
-def max_mean_cons(params, sigma, target):
+def max_mean_optim(mu, sigma, target):
     
-    var = np.dot(params, np.dot(sigma, params))
+    params = cp.Variable(len(mu))
     
-    result = target ** 2 - var
+    obj = cp.Maximize(params.T @ mu)
     
-    return result
-
-def max_mean_obj(params, mu):
+    cons = [cp.sum(params) == 1, params >= 0,
+            cp.quad_form(params, sigma) <= target ** 2]
     
-    result = -np.dot(mu, params)
+    prob = cp.Problem(obj, cons)
     
-    return result
-
-def max_mean_optim(params, mu, sigma, target):
-  
-    cons = [{"type": "ineq", "fun": max_mean_cons, "args": (sigma, target)},
-           {"type": "eq", "fun": lambda params: np.sum(params) - 1}]
+    prob.solve()
     
-    result = minimize(max_mean_obj, params, args = (mu), bounds = bnds, constraints = cons)
-    
-    return result.x
+    return params.value
 ```
 
 ```{python}
-params1 = max_mean_optim(start, mu, sigma, target)
+params1 = max_mean_optim(mu, sigma, target)
 params1
 ```
 
@@ -383,30 +374,24 @@ target = 0.03
 ```
 
 ```{python}
-def min_var_cons(params, mu, target):
+def min_var_optim(mu, sigma, target):
     
-    result = np.dot(mu, params) - target
+    params = cp.Variable(len(mu))
     
-    return result
-
-def min_var_obj(params, sigma):
+    obj = cp.Minimize(cp.quad_form(params, sigma))
     
-    result = np.dot(params, np.dot(sigma, params))
+    cons = [cp.sum(params) == 1, params >= 0,
+            params.T @ mu >= target]
     
-    return result
-
-def min_var_optim(params, mu, sigma, target):
-  
-    cons = [{"type": "ineq", "fun": min_var_cons, "args": (mu, target)},
-            {"type": "eq", "fun": lambda params: np.sum(params) - 1}]
+    prob = cp.Problem(obj, cons)
     
-    result = minimize(min_var_obj, params, args = (sigma), bounds = bnds, constraints = cons)
+    prob.solve()
     
-    return result.x
+    return params.value
 ```
 
 ```{python}
-params2 = min_var_optim(start, mu, sigma, target)
+params2 = min_var_optim(mu, sigma, target)
 params2
 ```
 
@@ -486,24 +471,23 @@ target = ir / 0.06 # ir / std (see Black-Litterman)
 ```
 
 ```{python}
-def max_utility_obj(params, mu, sigma, target):
+def max_utility_optim(mu, sigma, target):
     
-    result = 0.5 * target * (np.dot(params, np.dot(sigma, params))) - np.dot(mu, params)
+    params = cp.Variable(len(mu))
     
-    return result
-
-def max_utility_optim(params, mu, sigma, target):
-  
-    cons = [{"type": "eq", "fun": lambda params: np.sum(params) - 1}]
+    obj = cp.Minimize(0.5 * target * cp.quad_form(params, sigma) - params.T @ mu)
     
-    result = minimize(max_utility_obj, params, args = (mu, sigma, target), bounds = bnds,
-                      constraints = cons) 
+    cons = [cp.sum(params) == 1, params >= 0]
     
-    return result.x
+    prob = cp.Problem(obj, cons)
+    
+    prob.solve()
+    
+    return params.value
 ```
 
 ```{python}
-params3 = max_utility_optim(start, mu, sigma, target)
+params3 = max_utility_optim(mu, sigma, target)
 params3
 ```
 
@@ -580,9 +564,70 @@ $$
 -   <https://scaron.info/blog/conversion-from-least-squares-to-quadratic-programming.html>
 
 ```{python}
+def min_rss_optim1(mu, sigma):
+    
+    params = cp.Variable(len(mu))
+    
+    obj = cp.Minimize(0.5 * cp.quad_form(params, sigma) - params.T @ mu)
+    
+    cons = [cp.sum(params) == 1, params >= 0]
+    
+    prob = cp.Problem(obj, cons)
+    
+    prob.solve()
+    
+    return params.value
+```
+
+```{python}
+params4 = min_rss_optim1(np.dot(overlap_x_df.T.values, overlap_y_df.values),
+                         np.dot(overlap_x_df.T.values, overlap_x_df.values))
+params4
+```
+
+```{python}
+np.dot(mu, params4)
+```
+
+```{python}
+np.sqrt(np.matmul(np.transpose(params4), np.matmul(sigma, params4)))
+```
+
+```{python}
+def min_rss_optim2(x, y):
+    
+    params = cp.Variable(x.shape[1])
+    
+    obj = cp.Minimize(cp.sum_squares(y - x @ params))
+    
+    cons = [cp.sum(params) == 1, params >= 0]
+    
+    prob = cp.Problem(obj, cons)
+    
+    prob.solve()
+    
+    return params.value
+```
+
+```{python}
+params5 = min_rss_optim2(overlap_x_df.values, overlap_y_df.iloc[:, 0].values)
+params5
+```
+
+```{python}
+np.dot(mu, params5)
+```
+
+```{python}
+np.sqrt(np.matmul(np.transpose(params5), np.matmul(sigma, params5)))
+```
+
+```{python}
 pd.DataFrame({
-  "max_pnl": params1,
-  "min_risk": params2,
-  "max_ratio": params3
-})
+  "max_pnl": params1 * 100,
+  "min_risk": params2 * 100,
+  "max_ratio": params3 * 100,
+  "min_rss1": params4 * 100,
+  "min_rss2": params5 * 100
+}).round(2)
 ```
