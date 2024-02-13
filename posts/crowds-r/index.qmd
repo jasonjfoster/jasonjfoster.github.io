@@ -1,0 +1,186 @@
+---
+title: "Crowds"
+author: "[Jason Foster](mailto:jason.j.foster@gmail.com)"
+date: last-modified
+categories:
+  - analysis
+  - finance
+  - r
+draft: true
+---
+
+```{r, message = FALSE}
+library(xml2)
+library(quantmod)
+library(roll)
+```
+
+```{r, echo = FALSE}
+options("getSymbols.warning4.0" = FALSE)
+```
+
+```{r}
+factors_r <- c("SP500") # "SP500" does not contain dividends
+factors_d <- c("SOFR")
+factors <- c(factors_r, factors_d)
+width <- 20 * 3
+scale <- list("periods" = 252, "overlap" = 5)
+```
+
+```{r, results = "hide"}
+getSymbols(factors, src = "FRED")
+levels_xts <- do.call(merge, c(lapply(factors, function(i) get(i)), all = TRUE))
+```
+
+```{r}
+returns_xts <- do.call(merge, lapply(factors, function(i) {
+    if (i %in% factors_r) {
+        diff(log((levels_xts[ , i])))
+    } else if (i %in% factors_d) {
+        -diff(levels_xts[ , i]) / 100
+    }    
+}))
+overlap_xts <- roll_mean(returns_xts, scale[["overlap"]], min_obs = 1, na_restore = TRUE)
+```
+
+```{r, message = FALSE}
+library(CVXR)
+```
+
+```{r}
+get_nth <- function(x, n, offset = 0) {
+  
+  result <- x[seq(offset + 1, length(x), by = n)]
+  
+  return(result)
+  
+}
+```
+
+```{r}
+get_mstar <- function() {
+  
+  i <- 0
+  status <- TRUE
+  names_ls <- list()
+  tickers_ls <- list()
+  types_ls <- list()
+  
+  while(status) {
+    
+    i <- i + 1
+    
+    response <- read_html(paste0("https://www.morningstar.com/asset-allocation-funds?page=", i))
+    
+    table <- xml_find_all(response, ".//div[@class='topic__table-container']")
+    
+    if (length(table) == 0) {
+      status <- FALSE
+    } else {
+      
+      names_tickers <- xml_text(xml_find_all(response, ".//a[@class='mdc-link mds-link mds-link--data-table mdc-link--no-visited']"))
+      types <- xml_text(xml_find_all(response, ".//span[@class='mdc-data-point mdc-data-point--string mdc-string']"))
+      
+      names_ls <- append(names_ls, list(get_nth(names_tickers, 2)))
+      tickers_ls <- append(tickers_ls, list(get_nth(names_tickers, 2, 1)))
+      types_ls <- append(types_ls, list(get_nth(types, 5, 2)))
+      
+    }
+    
+  }
+  
+  result <- data.frame("name" = do.call(c, names_ls),
+                       "ticker" = do.call(c, tickers_ls),
+                       "type" = do.call(c, types_ls))
+  
+  return(result)
+  
+}
+```
+
+```{r}
+mstar_df <- get_mstar()
+```
+
+```{r}
+tickers <- mstar_df[mstar_df$type == "Tactical Allocation", "ticker"]
+invisible(getSymbols(tickers, src = "tiingo", api.key = Sys.getenv("TIINGO_API_KEY"), adjust = TRUE))
+prices_xts <- do.call(merge, c(lapply(tickers, function(i) Cl(get(i))), all = TRUE))
+colnames(prices_xts) <- tickers
+index(prices_xts) <- as.Date(index(prices_xts))
+```
+
+```{r}
+returns_xts <- merge(returns_xts, diff(log(prices_xts)))
+overlap_xts <- merge(overlap_xts, roll_mean(returns_xts[ , tickers], scale[["overlap"]], min_obs = 1))
+```
+
+```{r}
+overlap_xts <- na.omit(overlap_xts)
+overlap_x_xts <- tail(overlap_xts[ , factors], width)
+overlap_y_xts <- tail(overlap_xts[ , tickers], width)
+```
+
+```{r}
+pnl <- function(x) {
+  
+  return(prod(1 + x) - 1)
+  
+}
+```
+
+# Optimization
+
+```{r}
+min_rss_optim <- function(x, y) {
+    
+    params <- Variable(ncol(x))
+    
+    obj <- Minimize(sum_squares(y - x %*% params))
+    
+    cons <- list(sum(params) == 1, params >= 0, params <= 1)
+    
+    prob <- Problem(obj, cons)
+        
+    result <- solve(prob)$getValue(params)
+    
+    return(result)
+
+}
+```
+
+```{r}
+# n_rows <- nrow(overlap_xts)
+result_ls <- list()
+
+# for (i in width:n_rows) {
+for (i in width) {
+    
+    idx <- max(i - width + 1, 1):i
+    x_subset <- overlap_x_xts[idx, ]
+    y_subset <- overlap_y_xts[idx, ]
+    params_ls <- list()
+    
+    for (j in tickers) {
+        
+        params <- t(min_rss_optim(coredata(x_subset), coredata(y_subset[ , j])))
+        params_ls <- append(params_ls, list(params))
+        
+    }
+    
+    result <- colMeans(do.call(rbind, params_ls))
+    result_ls <- append(result_ls, list(result))
+    
+}
+```
+
+```{r}
+position <- do.call(rbind, result_ls)
+# position_xts <- xts(position, index(overlap_xts)[width:n_rows])
+position_xts <- xts(position, tail(index(overlap_xts), 1))
+colnames(position_xts) <- factors
+```
+
+```{r}
+tail(position_xts)
+```

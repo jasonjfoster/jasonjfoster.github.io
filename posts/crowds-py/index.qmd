@@ -1,0 +1,183 @@
+---
+title: "Crowds"
+author: "[Jason Foster](mailto:jason.j.foster@gmail.com)"
+date: last-modified
+categories:
+  - analysis
+  - finance
+  - python
+draft: true
+---
+
+```{python}
+import requests
+from lxml import html
+import numpy as np
+import pandas as pd
+import pandas_datareader as pdr
+```
+
+```{python}
+factors_r = ["SP500"] # "SP500" does not contain dividends
+factors_d = ["SOFR"]
+factors = factors_r + factors_d
+width = 20 * 3
+scale = {"periods": 252, "overlap": 5}
+```
+
+```{python}
+levels_df = pdr.get_data_fred(factors, start = "1900-01-01")
+```
+
+```{python}
+returns_df = levels_df.apply(lambda x: np.log(x).diff() if x.name in factors_r else -x.diff() / 100)
+overlap_df = returns_df.rolling(scale["overlap"], min_periods = 1).mean()
+returns_df = pd.concat([returns_df, overlap_df], keys = ["returns", "overlap"], axis = 1)
+```
+
+```{python}
+import os
+import cvxpy as cp
+```
+
+```{python}
+def get_nth(x, n, offset = 0):
+    
+    result = x[offset::n]
+    
+    return result
+```
+
+```{python}
+def get_text(x, n = 0):
+    
+    result_ls = []
+    
+    for i in x:
+      
+        if (len(i) == 0):
+            result_ls.append(i.text_content()) # types
+        else:
+            result_ls.append(i[n].text_content()) # names and tickers
+    
+    return result_ls
+```
+
+```{python}
+def get_mstar():
+    
+    i = 0
+    status = True
+    names_ls = []
+    tickers_ls = []
+    types_ls = []
+
+    while status:
+
+        i += 1
+
+        url = "https://www.morningstar.com/asset-allocation-funds?page=" + str(i)
+        response = requests.get(url)
+        tree = html.fromstring(response.content)
+
+        table = tree.xpath("//div[@class='topic__table-container']")
+
+        if (len(table) == 0):
+            status = False
+        else:
+
+            names_tickers = tree.xpath("//a[@class='mdc-link mds-link mds-link--data-table mdc-link--no-visited']")
+            types = tree.xpath("//span[@class='mdc-data-point mdc-data-point--string mdc-string']")
+            
+        names_ls.extend(get_text(get_nth(names_tickers, 2)))
+        tickers_ls.extend(get_text(get_nth(names_tickers, 2, 1)))
+        types_ls.extend(get_text(get_nth(types, 5, 2)))
+
+    result = pd.DataFrame({
+      "name": names_ls,
+      "ticker": tickers_ls,
+      "type": types_ls
+    })
+    
+    return result
+```
+
+```{python}
+mstar_df = get_mstar()
+```
+
+```{python}
+tickers = mstar_df.loc[mstar_df["type"] == "Tactical Allocation", "ticker"].tolist()
+prices_df = pdr.get_data_tiingo(tickers, start = "1900-01-01", api_key = os.getenv("TIINGO_API_KEY"))
+prices_df = prices_df.pivot_table(index = "date", columns = "symbol", values = "adjClose") \
+    .tz_localize(None)
+prices_df.sort_index(axis = 0, inplace = True)
+tickers = prices_df.columns
+```
+
+```{python}
+returns_cols = [("returns", i) for i in tickers]
+overlap_cols = [("overlap", i) for i in tickers]
+returns_df[returns_cols] = np.log(prices_df).diff()
+returns_df[overlap_cols] = returns_df[returns_cols].rolling(scale["overlap"], min_periods = 1).mean()
+returns_df.sort_index(axis = 1, inplace = True)
+```
+
+```{python}
+overlap_df = returns_df.dropna()["overlap"]
+overlap_x_df = returns_df.dropna()["overlap"][factors][-width:]
+overlap_y_df = returns_df.dropna()["overlap"][tickers][-width:]
+```
+
+```{python}
+def pnl(x):
+    return np.nanprod(1 + x) - 1
+```
+
+# Optimization
+
+```{python}
+def min_rss_optim(x, y):
+    
+    w = cp.Variable(x.shape[1])
+    
+    objective = cp.Minimize(cp.sum_squares(y - x @ w))
+    
+    constraints = [cp.sum(w) == 1, w >= 0, w <= 1]
+    
+    problem = cp.Problem(objective, constraints)
+    problem.solve()
+    
+    return w.value
+```
+
+```{python}
+# n_rows = overlap_df.shape[0]
+result_ls = []
+
+# for i in range(width - 1, n_rows):
+for i in range(width - 1, width):
+  
+  idx = range(max(i - width + 1, 0), i + 1)
+  x_subset = overlap_x_df.iloc[idx]
+  y_subset = overlap_y_df.iloc[idx]
+  params_ls = []
+  
+  for j in tickers:
+  
+    params = min_rss_optim(x_subset.values, y_subset.loc[:, j].values)
+    params_ls.append(params)
+  
+  result_ls.append(np.mean(params_ls, axis = 0))
+```
+
+```{python}
+# position_df = pd.DataFrame(result_ls, index = overlap_df.index[(width - 1):],
+#                            columns = factors)
+position_df = pd.DataFrame(result_ls, index = [overlap_df.index[-1]],
+                           columns = factors)
+```
+
+```{python}
+position_df.tail()
+```
