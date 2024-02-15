@@ -70,7 +70,8 @@ get_mstar <- function() {
     
     i <- i + 1
     
-    response <- read_html(paste0("https://www.morningstar.com/asset-allocation-funds?page=", i))
+    url <- "https://www.morningstar.com/asset-allocation-funds?page="
+    response <- read_html(paste0(url, i))
     
     table <- xml_find_all(response, ".//div[@class='topic__table-container']")
     

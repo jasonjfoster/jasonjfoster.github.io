@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Jason Foster">
-<meta name="dcterms.date" content="2024-02-13">
+<meta name="dcterms.date" content="2024-02-14">
 
 <title>jasonjfoster.github.io - Crowds</title>
 <style>
@@ -162,7 +162,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <div>
       <div class="quarto-title-meta-heading">Published</div>
       <div class="quarto-title-meta-contents">
-        <p class="date">February 13, 2024</p>
+        <p class="date">February 14, 2024</p>
       </div>
     </div>
     
@@ -240,32 +240,33 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>    </span>
 <span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>    i <span class="ot">&lt;-</span> i <span class="sc">+</span> <span class="dv">1</span></span>
 <span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>    response <span class="ot">&lt;-</span> <span class="fu">read_html</span>(<span class="fu">paste0</span>(<span class="st">"https://www.morningstar.com/asset-allocation-funds?page="</span>, i))</span>
-<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>    table <span class="ot">&lt;-</span> <span class="fu">xml_find_all</span>(response, <span class="st">".//div[@class='topic__table-container']"</span>)</span>
-<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="fu">length</span>(table) <span class="sc">==</span> <span class="dv">0</span>) {</span>
-<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>      status <span class="ot">&lt;-</span> <span class="cn">FALSE</span></span>
-<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>    } <span class="cf">else</span> {</span>
-<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>      </span>
-<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a>      names_tickers <span class="ot">&lt;-</span> <span class="fu">xml_text</span>(<span class="fu">xml_find_all</span>(response, <span class="st">".//a[@class='mdc-link mds-link mds-link--data-table mdc-link--no-visited']"</span>))</span>
-<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a>      types <span class="ot">&lt;-</span> <span class="fu">xml_text</span>(<span class="fu">xml_find_all</span>(response, <span class="st">".//span[@class='mdc-data-point mdc-data-point--string mdc-string']"</span>))</span>
-<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a>      </span>
-<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a>      names_ls <span class="ot">&lt;-</span> <span class="fu">append</span>(names_ls, <span class="fu">list</span>(<span class="fu">get_nth</span>(names_tickers, <span class="dv">2</span>)))</span>
-<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a>      tickers_ls <span class="ot">&lt;-</span> <span class="fu">append</span>(tickers_ls, <span class="fu">list</span>(<span class="fu">get_nth</span>(names_tickers, <span class="dv">2</span>, <span class="dv">1</span>)))</span>
-<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a>      types_ls <span class="ot">&lt;-</span> <span class="fu">append</span>(types_ls, <span class="fu">list</span>(<span class="fu">get_nth</span>(types, <span class="dv">5</span>, <span class="dv">2</span>)))</span>
-<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a>      </span>
-<span id="cb7-28"><a href="#cb7-28" aria-hidden="true" tabindex="-1"></a>    }</span>
-<span id="cb7-29"><a href="#cb7-29" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb7-30"><a href="#cb7-30" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb7-31"><a href="#cb7-31" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb7-32"><a href="#cb7-32" aria-hidden="true" tabindex="-1"></a>  result <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="st">"name"</span> <span class="ot">=</span> <span class="fu">do.call</span>(c, names_ls),</span>
-<span id="cb7-33"><a href="#cb7-33" aria-hidden="true" tabindex="-1"></a>                       <span class="st">"ticker"</span> <span class="ot">=</span> <span class="fu">do.call</span>(c, tickers_ls),</span>
-<span id="cb7-34"><a href="#cb7-34" aria-hidden="true" tabindex="-1"></a>                       <span class="st">"type"</span> <span class="ot">=</span> <span class="fu">do.call</span>(c, types_ls))</span>
-<span id="cb7-35"><a href="#cb7-35" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb7-36"><a href="#cb7-36" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(result)</span>
-<span id="cb7-37"><a href="#cb7-37" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb7-38"><a href="#cb7-38" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>    url <span class="ot">&lt;-</span> <span class="st">"https://www.morningstar.com/asset-allocation-funds?page="</span></span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>    response <span class="ot">&lt;-</span> <span class="fu">read_html</span>(<span class="fu">paste0</span>(url, i))</span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>    table <span class="ot">&lt;-</span> <span class="fu">xml_find_all</span>(response, <span class="st">".//div[@class='topic__table-container']"</span>)</span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="fu">length</span>(table) <span class="sc">==</span> <span class="dv">0</span>) {</span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>      status <span class="ot">&lt;-</span> <span class="cn">FALSE</span></span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>    } <span class="cf">else</span> {</span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a>      </span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a>      names_tickers <span class="ot">&lt;-</span> <span class="fu">xml_text</span>(<span class="fu">xml_find_all</span>(response, <span class="st">".//a[@class='mdc-link mds-link mds-link--data-table mdc-link--no-visited']"</span>))</span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a>      types <span class="ot">&lt;-</span> <span class="fu">xml_text</span>(<span class="fu">xml_find_all</span>(response, <span class="st">".//span[@class='mdc-data-point mdc-data-point--string mdc-string']"</span>))</span>
+<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a>      </span>
+<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a>      names_ls <span class="ot">&lt;-</span> <span class="fu">append</span>(names_ls, <span class="fu">list</span>(<span class="fu">get_nth</span>(names_tickers, <span class="dv">2</span>)))</span>
+<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a>      tickers_ls <span class="ot">&lt;-</span> <span class="fu">append</span>(tickers_ls, <span class="fu">list</span>(<span class="fu">get_nth</span>(names_tickers, <span class="dv">2</span>, <span class="dv">1</span>)))</span>
+<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a>      types_ls <span class="ot">&lt;-</span> <span class="fu">append</span>(types_ls, <span class="fu">list</span>(<span class="fu">get_nth</span>(types, <span class="dv">5</span>, <span class="dv">2</span>)))</span>
+<span id="cb7-28"><a href="#cb7-28" aria-hidden="true" tabindex="-1"></a>      </span>
+<span id="cb7-29"><a href="#cb7-29" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb7-30"><a href="#cb7-30" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb7-31"><a href="#cb7-31" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb7-32"><a href="#cb7-32" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb7-33"><a href="#cb7-33" aria-hidden="true" tabindex="-1"></a>  result <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="st">"name"</span> <span class="ot">=</span> <span class="fu">do.call</span>(c, names_ls),</span>
+<span id="cb7-34"><a href="#cb7-34" aria-hidden="true" tabindex="-1"></a>                       <span class="st">"ticker"</span> <span class="ot">=</span> <span class="fu">do.call</span>(c, tickers_ls),</span>
+<span id="cb7-35"><a href="#cb7-35" aria-hidden="true" tabindex="-1"></a>                       <span class="st">"type"</span> <span class="ot">=</span> <span class="fu">do.call</span>(c, types_ls))</span>
+<span id="cb7-36"><a href="#cb7-36" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb7-37"><a href="#cb7-37" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(result)</span>
+<span id="cb7-38"><a href="#cb7-38" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb7-39"><a href="#cb7-39" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>mstar_df <span class="ot">&lt;-</span> <span class="fu">get_mstar</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -346,7 +347,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tail</span>(position_xts)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>               SP500      SOFR
-2024-02-12 0.6711158 0.3288842</code></pre>
+2024-02-13 0.6722905 0.3277095</code></pre>
 </div>
 </div>
 

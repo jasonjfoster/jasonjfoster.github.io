@@ -78,8 +78,8 @@ def get_mstar():
 
         url = "https://www.morningstar.com/asset-allocation-funds?page=" + str(i)
         response = requests.get(url)
+        
         tree = html.fromstring(response.content)
-
         table = tree.xpath("//div[@class='topic__table-container']")
 
         if (len(table) == 0):
