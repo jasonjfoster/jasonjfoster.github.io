@@ -8,6 +8,12 @@ categories:
   - python
 ---
 
+```{python}
+factors_r = ["SP500", "DTWEXAFEGS"] # "SP500" does not contain dividends; note: "DTWEXM" discontinued as of Jan 2020
+factors_d = ["DGS10", "BAMLH0A0HYM2"]
+tickers = ["BAICX"] # fund inception date is "2011-11-28"
+```
+
 ```{r, echo = FALSE, message = FALSE}
 library(reticulate)
 library(data.table)
@@ -625,7 +631,7 @@ np.sqrt(np.matmul(np.transpose(params5), np.matmul(sigma, params5)))
 pd.DataFrame({
   "max_pnl": params1 * 100,
   "min_risk": params2 * 100,
-  "max_ratio": params3 * 100,
+  "max_utility": params3 * 100,
   "min_rss1": params4 * 100,
   "min_rss2": params5 * 100
 }).round(2)
