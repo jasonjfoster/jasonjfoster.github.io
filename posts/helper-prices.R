@@ -1,4 +1,3 @@
-tickers <- "BAICX" # fund inception date is "2011-11-28" 
 invisible(getSymbols(tickers, src = "tiingo", api.key = Sys.getenv("TIINGO_API_KEY"), adjust = TRUE))
 prices_xts <- do.call(merge, c(lapply(tickers, function(i) Cl(get(i))), all = TRUE))
 colnames(prices_xts) <- tickers

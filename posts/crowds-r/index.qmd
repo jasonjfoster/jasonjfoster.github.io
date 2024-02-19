@@ -9,42 +9,19 @@ categories:
 draft: true
 ---
 
-```{r, message = FALSE}
-library(xml2)
-library(quantmod)
-library(roll)
-```
-
-```{r, echo = FALSE}
-options("getSymbols.warning4.0" = FALSE)
-```
-
 ```{r}
 factors_r <- c("SP500") # "SP500" does not contain dividends
 factors_d <- c("SOFR")
-factors <- c(factors_r, factors_d)
-width <- 20 * 3
-scale <- list("periods" = 252, "overlap" = 5)
 ```
 
-```{r, results = "hide"}
-getSymbols(factors, src = "FRED")
-levels_xts <- do.call(merge, c(lapply(factors, function(i) get(i)), all = TRUE))
+```{r, echo = FALSE, message = FALSE}
+source("../helper-levels.R")
 ```
 
-```{r}
-returns_xts <- do.call(merge, lapply(factors, function(i) {
-    if (i %in% factors_r) {
-        diff(log((levels_xts[ , i])))
-    } else if (i %in% factors_d) {
-        -diff(levels_xts[ , i]) / 100
-    }    
-}))
-overlap_xts <- roll_mean(returns_xts, scale[["overlap"]], min_obs = 1, na_restore = TRUE)
-```
+# Parse web
 
 ```{r, message = FALSE}
-library(CVXR)
+library(xml2)
 ```
 
 ```{r}
@@ -105,32 +82,17 @@ mstar_df <- get_mstar()
 
 ```{r}
 tickers <- mstar_df[mstar_df$type == "Tactical Allocation", "ticker"]
-invisible(getSymbols(tickers, src = "tiingo", api.key = Sys.getenv("TIINGO_API_KEY"), adjust = TRUE))
-prices_xts <- do.call(merge, c(lapply(tickers, function(i) Cl(get(i))), all = TRUE))
-colnames(prices_xts) <- tickers
-index(prices_xts) <- as.Date(index(prices_xts))
 ```
 
-```{r}
-returns_xts <- merge(returns_xts, diff(log(prices_xts)))
-overlap_xts <- merge(overlap_xts, roll_mean(returns_xts[ , tickers], scale[["overlap"]], min_obs = 1))
-```
-
-```{r}
-overlap_xts <- na.omit(overlap_xts)
-overlap_x_xts <- tail(overlap_xts[ , factors], width)
-overlap_y_xts <- tail(overlap_xts[ , tickers], width)
-```
-
-```{r}
-pnl <- function(x) {
-  
-  return(prod(1 + x) - 1)
-  
-}
+```{r, echo = FALSE, message = FALSE}
+source("../helper-prices.R")
 ```
 
 # Optimization
+
+```{r, message = FALSE}
+library(CVXR)
+```
 
 ```{r}
 min_rss_optim <- function(x, y) {

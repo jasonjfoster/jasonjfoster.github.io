@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Jason Foster">
-<meta name="dcterms.date" content="2024-01-21">
+<meta name="dcterms.date" content="2024-02-19">
 
 <title>jasonjfoster.github.io - Risk</title>
 <style>
@@ -191,7 +191,7 @@ window.Quarto = {
       <div>
       <div class="quarto-title-meta-heading">Published</div>
       <div class="quarto-title-meta-contents">
-        <p class="date">January 21, 2024</p>
+        <p class="date">February 19, 2024</p>
       </div>
     </div>
     
@@ -243,12 +243,17 @@ window.Quarto = {
 
 
 
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>factors_r <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"SP500"</span>, <span class="st">"DTWEXAFEGS"</span>) <span class="co"># "SP500" does not contain dividends; note: "DTWEXM" discontinued as of Jan 2020</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>factors_d <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"DGS10"</span>, <span class="st">"BAMLH0A0HYM2"</span>)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>tickers <span class="ot">&lt;-</span> <span class="st">"BAICX"</span> <span class="co"># fund inception date is "2011-11-28" </span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
 <section id="regression-analysis" class="level1">
 <h1>Regression analysis</h1>
 <section id="ordinary-least-squares" class="level2">
 <h2 class="anchored" data-anchor-id="ordinary-least-squares">Ordinary least squares</h2>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>intercept <span class="ot">&lt;-</span> <span class="cn">TRUE</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>intercept <span class="ot">&lt;-</span> <span class="cn">TRUE</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <section id="coefficients" class="level3">
 <h3 class="anchored" data-anchor-id="coefficients">Coefficients</h3>
@@ -261,36 +266,36 @@ window.Quarto = {
 <li><a href="https://faculty.washington.edu/ezivot/research/factormodellecture_handout.pdf" class="uri">https://faculty.washington.edu/ezivot/research/factormodellecture_handout.pdf</a></li>
 </ul>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>lm_coef <span class="ot">&lt;-</span> <span class="cf">function</span>(x, y, weights, intercept) {</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (intercept) x <span class="ot">&lt;-</span> <span class="fu">model.matrix</span>(<span class="sc">~</span> x)</span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    result <span class="ot">&lt;-</span> <span class="fu">solve</span>(<span class="fu">crossprod</span>(x, <span class="fu">diag</span>(weights)) <span class="sc">%*%</span> x) <span class="sc">%*%</span> <span class="fu">crossprod</span>(x, <span class="fu">diag</span>(weights) <span class="sc">%*%</span> y)</span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(result)</span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>lm_coef <span class="ot">&lt;-</span> <span class="cf">function</span>(x, y, weights, intercept) {</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (intercept) x <span class="ot">&lt;-</span> <span class="fu">model.matrix</span>(<span class="sc">~</span> x)</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    result <span class="ot">&lt;-</span> <span class="fu">solve</span>(<span class="fu">crossprod</span>(x, <span class="fu">diag</span>(weights)) <span class="sc">%*%</span> x) <span class="sc">%*%</span> <span class="fu">crossprod</span>(x, <span class="fu">diag</span>(weights) <span class="sc">%*%</span> y)</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(result)</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">t</span>(<span class="fu">lm_coef</span>(overlap_x_xts, overlap_y_xts, weights, intercept))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">t</span>(<span class="fu">lm_coef</span>(overlap_x_xts, overlap_y_xts, weights, intercept))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>       (Intercept)    xSP500 xDTWEXAFEGS   xDGS10 xBAMLH0A0HYM2
-BAICX -1.60223e-05 0.2187729  -0.1447544 2.752537      1.599758</code></pre>
+<pre><code>        (Intercept)    xSP500 xDTWEXAFEGS   xDGS10 xBAMLH0A0HYM2
+BAICX -7.442374e-05 0.2076502  -0.1225253 2.992791      1.702957</code></pre>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (intercept) {</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    fit <span class="ot">&lt;-</span> <span class="fu">lm</span>(overlap_y_xts <span class="sc">~</span> overlap_x_xts, <span class="at">weights =</span> weights)</span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>} <span class="cf">else</span> {</span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    fit <span class="ot">&lt;-</span> <span class="fu">lm</span>(overlap_y_xts <span class="sc">~</span> overlap_x_xts <span class="sc">-</span> <span class="dv">1</span>, <span class="at">weights =</span> weights)</span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="fu">coef</span>(fit)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (intercept) {</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    fit <span class="ot">&lt;-</span> <span class="fu">lm</span>(overlap_y_xts <span class="sc">~</span> overlap_x_xts, <span class="at">weights =</span> weights)</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>} <span class="cf">else</span> {</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    fit <span class="ot">&lt;-</span> <span class="fu">lm</span>(overlap_y_xts <span class="sc">~</span> overlap_x_xts <span class="sc">-</span> <span class="dv">1</span>, <span class="at">weights =</span> weights)</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="fu">coef</span>(fit)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>              (Intercept)        overlap_x_xtsSP500   overlap_x_xtsDTWEXAFEGS 
-            -0.0000160223              0.2187728535             -0.1447543626 
+            -7.442374e-05              2.076502e-01             -1.225253e-01 
        overlap_x_xtsDGS10 overlap_x_xtsBAMLH0A0HYM2 
-             2.7525374459              1.5997581487 </code></pre>
+             2.992791e+00              1.702957e+00 </code></pre>
 </div>
 </div>
 </section>
@@ -302,35 +307,35 @@ R^{2}=\frac{\hat{\beta}^\mathrm{T}(X^\mathrm{T}WX)\hat{\beta}}{y^\mathrm{T}Wy}
 \end{aligned}
 \]</span></p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>lm_rsq <span class="ot">&lt;-</span> <span class="cf">function</span>(x, y, weights, intercept) {</span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    coef <span class="ot">&lt;-</span> <span class="fu">lm_coef</span>(x, y, weights, intercept)</span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (intercept) {</span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>        x <span class="ot">&lt;-</span> <span class="fu">model.matrix</span>(<span class="sc">~</span> x)</span>
-<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>        x <span class="ot">&lt;-</span> <span class="fu">sweep</span>(x, <span class="dv">2</span>, <span class="fu">apply</span>(x, <span class="dv">2</span>, weighted.mean, <span class="at">w =</span> weights), <span class="st">"-"</span>)</span>
-<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>        y <span class="ot">&lt;-</span> <span class="fu">sweep</span>(y, <span class="dv">2</span>, <span class="fu">apply</span>(y, <span class="dv">2</span>, weighted.mean, <span class="at">w =</span> weights), <span class="st">"-"</span>)</span>
-<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>    }</span>
-<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>    result <span class="ot">&lt;-</span> (<span class="fu">t</span>(coef) <span class="sc">%*%</span> (<span class="fu">crossprod</span>(x, <span class="fu">diag</span>(weights)) <span class="sc">%*%</span> x) <span class="sc">%*%</span> coef) <span class="sc">/</span> (<span class="fu">crossprod</span>(y, <span class="fu">diag</span>(weights)) <span class="sc">%*%</span> y)</span>
-<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(result)</span>
-<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>lm_rsq <span class="ot">&lt;-</span> <span class="cf">function</span>(x, y, weights, intercept) {</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    coef <span class="ot">&lt;-</span> <span class="fu">lm_coef</span>(x, y, weights, intercept)</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (intercept) {</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>        x <span class="ot">&lt;-</span> <span class="fu">model.matrix</span>(<span class="sc">~</span> x)</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>        x <span class="ot">&lt;-</span> <span class="fu">sweep</span>(x, <span class="dv">2</span>, <span class="fu">apply</span>(x, <span class="dv">2</span>, weighted.mean, <span class="at">w =</span> weights), <span class="st">"-"</span>)</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>        y <span class="ot">&lt;-</span> <span class="fu">sweep</span>(y, <span class="dv">2</span>, <span class="fu">apply</span>(y, <span class="dv">2</span>, weighted.mean, <span class="at">w =</span> weights), <span class="st">"-"</span>)</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>    result <span class="ot">&lt;-</span> (<span class="fu">t</span>(coef) <span class="sc">%*%</span> (<span class="fu">crossprod</span>(x, <span class="fu">diag</span>(weights)) <span class="sc">%*%</span> x) <span class="sc">%*%</span> coef) <span class="sc">/</span> (<span class="fu">crossprod</span>(y, <span class="fu">diag</span>(weights)) <span class="sc">%*%</span> y)</span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(result)</span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">lm_rsq</span>(overlap_x_xts, overlap_y_xts, weights, intercept)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">lm_rsq</span>(overlap_x_xts, overlap_y_xts, weights, intercept)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>          BAICX
-BAICX 0.8538352</code></pre>
+BAICX 0.8199411</code></pre>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(fit)<span class="sc">$</span>r.squared</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(fit)<span class="sc">$</span>r.squared</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 0.8538352</code></pre>
+<pre><code>[1] 0.8199411</code></pre>
 </div>
 </div>
 </section>
@@ -348,46 +353,46 @@ BAICX 0.8538352</code></pre>
 <li><a href="http://people.duke.edu/~rnau/mathreg.htm" class="uri">http://people.duke.edu/~rnau/mathreg.htm</a></li>
 </ul>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>lm_se <span class="ot">&lt;-</span> <span class="cf">function</span>(x, y, weights, intercept) {</span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>    n_rows <span class="ot">&lt;-</span> <span class="fu">nrow</span>(x)</span>
-<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>    n_cols <span class="ot">&lt;-</span> <span class="fu">ncol</span>(x)</span>
-<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>    rsq <span class="ot">&lt;-</span> <span class="fu">lm_rsq</span>(x, y, weights, intercept)</span>
-<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (intercept) {</span>
-<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>        x <span class="ot">&lt;-</span> <span class="fu">model.matrix</span>(<span class="sc">~</span> x)</span>
-<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>        y <span class="ot">&lt;-</span> <span class="fu">sweep</span>(y, <span class="dv">2</span>, <span class="fu">apply</span>(y, <span class="dv">2</span>, weighted.mean, <span class="at">w =</span> weights), <span class="st">"-"</span>)</span>
-<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>        df_resid <span class="ot">&lt;-</span> n_rows <span class="sc">-</span> n_cols <span class="sc">-</span> <span class="dv">1</span></span>
-<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>    } <span class="cf">else</span> {</span>
-<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a>        df_resid <span class="ot">&lt;-</span> n_rows <span class="sc">-</span> n_cols</span>
-<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a>    }</span>
-<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a>    var_y <span class="ot">&lt;-</span> <span class="fu">crossprod</span>(y, <span class="fu">diag</span>(weights)) <span class="sc">%*%</span> y</span>
-<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a>    var_resid <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>((<span class="dv">1</span> <span class="sc">-</span> rsq) <span class="sc">*</span> var_y <span class="sc">/</span> df_resid)</span>
-<span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb12-22"><a href="#cb12-22" aria-hidden="true" tabindex="-1"></a>    result <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(var_resid <span class="sc">*</span> <span class="fu">diag</span>(<span class="fu">solve</span>(<span class="fu">crossprod</span>(x, <span class="fu">diag</span>(weights)) <span class="sc">%*%</span> x)))</span>
-<span id="cb12-23"><a href="#cb12-23" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb12-24"><a href="#cb12-24" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(result)</span>
-<span id="cb12-25"><a href="#cb12-25" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>lm_se <span class="ot">&lt;-</span> <span class="cf">function</span>(x, y, weights, intercept) {</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>    n_rows <span class="ot">&lt;-</span> <span class="fu">nrow</span>(x)</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>    n_cols <span class="ot">&lt;-</span> <span class="fu">ncol</span>(x)</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>    rsq <span class="ot">&lt;-</span> <span class="fu">lm_rsq</span>(x, y, weights, intercept)</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (intercept) {</span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>        x <span class="ot">&lt;-</span> <span class="fu">model.matrix</span>(<span class="sc">~</span> x)</span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>        y <span class="ot">&lt;-</span> <span class="fu">sweep</span>(y, <span class="dv">2</span>, <span class="fu">apply</span>(y, <span class="dv">2</span>, weighted.mean, <span class="at">w =</span> weights), <span class="st">"-"</span>)</span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>        df_resid <span class="ot">&lt;-</span> n_rows <span class="sc">-</span> n_cols <span class="sc">-</span> <span class="dv">1</span></span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a>    } <span class="cf">else</span> {</span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a>        df_resid <span class="ot">&lt;-</span> n_rows <span class="sc">-</span> n_cols</span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a>    var_y <span class="ot">&lt;-</span> <span class="fu">crossprod</span>(y, <span class="fu">diag</span>(weights)) <span class="sc">%*%</span> y</span>
+<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a>    var_resid <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>((<span class="dv">1</span> <span class="sc">-</span> rsq) <span class="sc">*</span> var_y <span class="sc">/</span> df_resid)</span>
+<span id="cb13-21"><a href="#cb13-21" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb13-22"><a href="#cb13-22" aria-hidden="true" tabindex="-1"></a>    result <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(var_resid <span class="sc">*</span> <span class="fu">diag</span>(<span class="fu">solve</span>(<span class="fu">crossprod</span>(x, <span class="fu">diag</span>(weights)) <span class="sc">%*%</span> x)))</span>
+<span id="cb13-23"><a href="#cb13-23" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb13-24"><a href="#cb13-24" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(result)</span>
+<span id="cb13-25"><a href="#cb13-25" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">lm_se</span>(overlap_x_xts, overlap_y_xts, weights, intercept)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">lm_se</span>(overlap_x_xts, overlap_y_xts, weights, intercept)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>  (Intercept)        xSP500   xDTWEXAFEGS        xDGS10 xBAMLH0A0HYM2 
- 5.155263e-05  1.933628e-02  3.600169e-02  1.892733e-01  1.552193e-01 </code></pre>
+ 5.442855e-05  2.087395e-02  3.869208e-02  2.066174e-01  1.730341e-01 </code></pre>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">coef</span>(<span class="fu">summary</span>(fit))[ , <span class="st">"Std. Error"</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">coef</span>(<span class="fu">summary</span>(fit))[ , <span class="st">"Std. Error"</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>              (Intercept)        overlap_x_xtsSP500   overlap_x_xtsDTWEXAFEGS 
-             5.155263e-05              1.933628e-02              3.600169e-02 
+             5.442855e-05              2.087395e-02              3.869208e-02 
        overlap_x_xtsDGS10 overlap_x_xtsBAMLH0A0HYM2 
-             1.892733e-01              1.552193e-01 </code></pre>
+             2.066174e-01              1.730341e-01 </code></pre>
 </div>
 </div>
 </section>
@@ -395,10 +400,10 @@ BAICX 0.8538352</code></pre>
 <section id="principal-component-regression" class="level2">
 <h2 class="anchored" data-anchor-id="principal-component-regression">Principal component regression</h2>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(pls)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(pls)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>comps <span class="ot">&lt;-</span> <span class="dv">1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>comps <span class="ot">&lt;-</span> <span class="dv">1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <section id="coefficients-1" class="level3">
 <h3 class="anchored" data-anchor-id="coefficients-1">Coefficients</h3>
@@ -413,82 +418,82 @@ W_{k}&amp;=\mathbf{X}V_{k}=[\mathbf{X}\mathbf{v}_{1},\ldots,\mathbf{X}\mathbf{v}
 <li><a href="https://en.wikipedia.org/wiki/Principal_component_regression" class="uri">https://en.wikipedia.org/wiki/Principal_component_regression</a></li>
 </ul>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>pcr_coef <span class="ot">&lt;-</span> <span class="cf">function</span>(x, y, comps) {</span>
-<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>    x <span class="ot">&lt;-</span> <span class="fu">sweep</span>(x, <span class="dv">2</span>, <span class="fu">colMeans</span>(x), <span class="st">"-"</span>)</span>
-<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>    LV <span class="ot">&lt;-</span> <span class="fu">eigen</span>(<span class="fu">cov</span>(x))</span>
-<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>    V <span class="ot">&lt;-</span> LV<span class="sc">$</span>vectors</span>
-<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>    W <span class="ot">&lt;-</span> x <span class="sc">%*%</span> V</span>
-<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>    gamma <span class="ot">&lt;-</span> <span class="fu">solve</span>(<span class="fu">crossprod</span>(W)) <span class="sc">%*%</span> (<span class="fu">crossprod</span>(W, y))</span>
-<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a>    result <span class="ot">&lt;-</span> V[ , <span class="dv">1</span><span class="sc">:</span>comps] <span class="sc">%*%</span> <span class="fu">as.matrix</span>(gamma[<span class="dv">1</span><span class="sc">:</span>comps])</span>
-<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(result)</span>
-<span id="cb19-13"><a href="#cb19-13" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb19-14"><a href="#cb19-14" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>pcr_coef <span class="ot">&lt;-</span> <span class="cf">function</span>(x, y, comps) {</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>    x <span class="ot">&lt;-</span> <span class="fu">sweep</span>(x, <span class="dv">2</span>, <span class="fu">colMeans</span>(x), <span class="st">"-"</span>)</span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>    LV <span class="ot">&lt;-</span> <span class="fu">eigen</span>(<span class="fu">cov</span>(x))</span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>    V <span class="ot">&lt;-</span> LV<span class="sc">$</span>vectors</span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>    W <span class="ot">&lt;-</span> x <span class="sc">%*%</span> V</span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a>    gamma <span class="ot">&lt;-</span> <span class="fu">solve</span>(<span class="fu">crossprod</span>(W)) <span class="sc">%*%</span> (<span class="fu">crossprod</span>(W, y))</span>
+<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a>    result <span class="ot">&lt;-</span> V[ , <span class="dv">1</span><span class="sc">:</span>comps] <span class="sc">%*%</span> <span class="fu">as.matrix</span>(gamma[<span class="dv">1</span><span class="sc">:</span>comps])</span>
+<span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb20-12"><a href="#cb20-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(result)</span>
+<span id="cb20-13"><a href="#cb20-13" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb20-14"><a href="#cb20-14" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>scale_x_xts <span class="ot">&lt;-</span> <span class="fu">scale</span>(overlap_x_xts)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>scale_x_xts <span class="ot">&lt;-</span> <span class="fu">scale</span>(overlap_x_xts)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">t</span>(<span class="fu">pcr_coef</span>(scale_x_xts, overlap_y_xts, comps))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">t</span>(<span class="fu">pcr_coef</span>(scale_x_xts, overlap_y_xts, comps))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>            [,1]          [,2]         [,3]         [,4]
-[1,] 0.000811357 -0.0006897159 0.0005066415 0.0006189496</code></pre>
+<pre><code>             [,1]          [,2]         [,3]        [,4]
+[1,] 0.0007930315 -0.0006361622 0.0003917892 0.000605474</code></pre>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">t</span>(<span class="fu">pcr_coef</span>(overlap_x_xts, overlap_y_xts, comps))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="fu">t</span>(<span class="fu">pcr_coef</span>(overlap_x_xts, overlap_y_xts, comps))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>          [,1]        [,2]        [,3]       [,4]
-[1,] 0.4155457 -0.08961212 0.009802575 0.03185193</code></pre>
+<pre><code>          [,1]        [,2]        [,3]      [,4]
+[1,] 0.3955171 -0.07708353 0.006833906 0.0301262</code></pre>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>fit <span class="ot">&lt;-</span> <span class="fu">pcr</span>(<span class="fu">reformulate</span>(<span class="at">termlabels =</span> <span class="st">"."</span>, <span class="at">response =</span> tickers), </span>
-<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>           <span class="at">data =</span> <span class="fu">merge</span>(scale_x_xts, overlap_y_xts), <span class="at">ncomp =</span> comps)</span>
-<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a><span class="fu">coef</span>(fit)[ , , <span class="dv">1</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>fit <span class="ot">&lt;-</span> <span class="fu">pcr</span>(<span class="fu">reformulate</span>(<span class="at">termlabels =</span> <span class="st">"."</span>, <span class="at">response =</span> tickers), </span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>           <span class="at">data =</span> <span class="fu">merge</span>(scale_x_xts, overlap_y_xts), <span class="at">ncomp =</span> comps)</span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a><span class="fu">coef</span>(fit)[ , , <span class="dv">1</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>        SP500    DTWEXAFEGS         DGS10  BAMLH0A0HYM2 
- 0.0008113570 -0.0006897159  0.0005066415  0.0006189496 </code></pre>
+ 0.0007930315 -0.0006361622  0.0003917892  0.0006054740 </code></pre>
 </div>
 </div>
 </section>
 <section id="r-squared-1" class="level3">
 <h3 class="anchored" data-anchor-id="r-squared-1">R-squared</h3>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>pcr_rsq <span class="ot">&lt;-</span> <span class="cf">function</span>(x, y, comps) {</span>
-<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>    coef <span class="ot">&lt;-</span> <span class="fu">pcr_coef</span>(x, y, comps)</span>
-<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>    x <span class="ot">&lt;-</span> <span class="fu">sweep</span>(x, <span class="dv">2</span>, <span class="fu">colMeans</span>(x), <span class="st">"-"</span>)</span>
-<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a>    y <span class="ot">&lt;-</span> <span class="fu">sweep</span>(y, <span class="dv">2</span>, <span class="fu">colMeans</span>(y), <span class="st">"-"</span>)</span>
-<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a>    result <span class="ot">&lt;-</span> (<span class="fu">t</span>(coef) <span class="sc">%*%</span> <span class="fu">crossprod</span>(x) <span class="sc">%*%</span> coef) <span class="sc">/</span> <span class="fu">crossprod</span>(y)</span>
-<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb27-10"><a href="#cb27-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(result)</span>
-<span id="cb27-11"><a href="#cb27-11" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb27-12"><a href="#cb27-12" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>pcr_rsq <span class="ot">&lt;-</span> <span class="cf">function</span>(x, y, comps) {</span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>    coef <span class="ot">&lt;-</span> <span class="fu">pcr_coef</span>(x, y, comps)</span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>    x <span class="ot">&lt;-</span> <span class="fu">sweep</span>(x, <span class="dv">2</span>, <span class="fu">colMeans</span>(x), <span class="st">"-"</span>)</span>
+<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a>    y <span class="ot">&lt;-</span> <span class="fu">sweep</span>(y, <span class="dv">2</span>, <span class="fu">colMeans</span>(y), <span class="st">"-"</span>)</span>
+<span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb28-8"><a href="#cb28-8" aria-hidden="true" tabindex="-1"></a>    result <span class="ot">&lt;-</span> (<span class="fu">t</span>(coef) <span class="sc">%*%</span> <span class="fu">crossprod</span>(x) <span class="sc">%*%</span> coef) <span class="sc">/</span> <span class="fu">crossprod</span>(y)</span>
+<span id="cb28-9"><a href="#cb28-9" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb28-10"><a href="#cb28-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(result)</span>
+<span id="cb28-11"><a href="#cb28-11" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb28-12"><a href="#cb28-12" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="fu">pcr_rsq</span>(scale_x_xts, overlap_y_xts, comps)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="fu">pcr_rsq</span>(scale_x_xts, overlap_y_xts, comps)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>         BAICX
+BAICX 0.759635</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="fu">pcr_rsq</span>(overlap_x_xts, overlap_y_xts, comps)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>          BAICX
-BAICX 0.8166682</code></pre>
+BAICX 0.6047211</code></pre>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="fu">pcr_rsq</span>(overlap_x_xts, overlap_y_xts, comps)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="fu">R2</span>(fit)<span class="sc">$</span>val[comps <span class="sc">+</span> <span class="dv">1</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>          BAICX
-BAICX 0.6689196</code></pre>
-</div>
-</div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="fu">R2</span>(fit)<span class="sc">$</span>val[comps <span class="sc">+</span> <span class="dv">1</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>[1] 0.8166682</code></pre>
+<pre><code>[1] 0.759635</code></pre>
 </div>
 </div>
 </section>
@@ -502,41 +507,41 @@ BAICX 0.6689196</code></pre>
 \end{aligned}
 \]</span></p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="co"># unable to verify the result</span></span>
-<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>pcr_se <span class="ot">&lt;-</span> <span class="cf">function</span>(x, y, comps) {</span>
-<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a>    n_rows <span class="ot">&lt;-</span> <span class="fu">nrow</span>(x)</span>
-<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a>    n_cols <span class="ot">&lt;-</span> <span class="fu">ncol</span>(x)</span>
-<span id="cb34-6"><a href="#cb34-6" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb34-7"><a href="#cb34-7" aria-hidden="true" tabindex="-1"></a>    rsq <span class="ot">&lt;-</span> <span class="fu">pcr_rsq</span>(x, y, comps)</span>
-<span id="cb34-8"><a href="#cb34-8" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb34-9"><a href="#cb34-9" aria-hidden="true" tabindex="-1"></a>    y <span class="ot">&lt;-</span> <span class="fu">sweep</span>(y, <span class="dv">2</span>, <span class="fu">colMeans</span>(y), <span class="st">"-"</span>)</span>
-<span id="cb34-10"><a href="#cb34-10" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb34-11"><a href="#cb34-11" aria-hidden="true" tabindex="-1"></a>    df_resid <span class="ot">&lt;-</span> n_rows <span class="sc">-</span> n_cols <span class="sc">-</span> <span class="dv">1</span></span>
-<span id="cb34-12"><a href="#cb34-12" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb34-13"><a href="#cb34-13" aria-hidden="true" tabindex="-1"></a>    var_y <span class="ot">&lt;-</span> <span class="fu">crossprod</span>(y)</span>
-<span id="cb34-14"><a href="#cb34-14" aria-hidden="true" tabindex="-1"></a>    var_resid <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>((<span class="dv">1</span> <span class="sc">-</span> rsq) <span class="sc">*</span> var_y <span class="sc">/</span> df_resid)</span>
-<span id="cb34-15"><a href="#cb34-15" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb34-16"><a href="#cb34-16" aria-hidden="true" tabindex="-1"></a>    LV <span class="ot">&lt;-</span> <span class="fu">eigen</span>(<span class="fu">cov</span>(x))</span>
-<span id="cb34-17"><a href="#cb34-17" aria-hidden="true" tabindex="-1"></a>    L <span class="ot">&lt;-</span> LV<span class="sc">$</span>values[<span class="dv">1</span><span class="sc">:</span>comps] <span class="sc">*</span> (n_rows <span class="sc">-</span> <span class="dv">1</span>)</span>
-<span id="cb34-18"><a href="#cb34-18" aria-hidden="true" tabindex="-1"></a>    V <span class="ot">&lt;-</span> LV<span class="sc">$</span>vectors[ , <span class="dv">1</span><span class="sc">:</span>comps]</span>
-<span id="cb34-19"><a href="#cb34-19" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb34-20"><a href="#cb34-20" aria-hidden="true" tabindex="-1"></a>    result <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(var_resid <span class="sc">*</span> <span class="fu">diag</span>(V <span class="sc">%*%</span> <span class="fu">sweep</span>(<span class="fu">t</span>(V), <span class="dv">1</span>, <span class="dv">1</span> <span class="sc">/</span> L, <span class="st">"*"</span>)))</span>
-<span id="cb34-21"><a href="#cb34-21" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb34-22"><a href="#cb34-22" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(result)</span>
-<span id="cb34-23"><a href="#cb34-23" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb34-24"><a href="#cb34-24" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="co"># unable to verify the result</span></span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>pcr_se <span class="ot">&lt;-</span> <span class="cf">function</span>(x, y, comps) {</span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a>    n_rows <span class="ot">&lt;-</span> <span class="fu">nrow</span>(x)</span>
+<span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a>    n_cols <span class="ot">&lt;-</span> <span class="fu">ncol</span>(x)</span>
+<span id="cb35-6"><a href="#cb35-6" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb35-7"><a href="#cb35-7" aria-hidden="true" tabindex="-1"></a>    rsq <span class="ot">&lt;-</span> <span class="fu">pcr_rsq</span>(x, y, comps)</span>
+<span id="cb35-8"><a href="#cb35-8" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb35-9"><a href="#cb35-9" aria-hidden="true" tabindex="-1"></a>    y <span class="ot">&lt;-</span> <span class="fu">sweep</span>(y, <span class="dv">2</span>, <span class="fu">colMeans</span>(y), <span class="st">"-"</span>)</span>
+<span id="cb35-10"><a href="#cb35-10" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb35-11"><a href="#cb35-11" aria-hidden="true" tabindex="-1"></a>    df_resid <span class="ot">&lt;-</span> n_rows <span class="sc">-</span> n_cols <span class="sc">-</span> <span class="dv">1</span></span>
+<span id="cb35-12"><a href="#cb35-12" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb35-13"><a href="#cb35-13" aria-hidden="true" tabindex="-1"></a>    var_y <span class="ot">&lt;-</span> <span class="fu">crossprod</span>(y)</span>
+<span id="cb35-14"><a href="#cb35-14" aria-hidden="true" tabindex="-1"></a>    var_resid <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>((<span class="dv">1</span> <span class="sc">-</span> rsq) <span class="sc">*</span> var_y <span class="sc">/</span> df_resid)</span>
+<span id="cb35-15"><a href="#cb35-15" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb35-16"><a href="#cb35-16" aria-hidden="true" tabindex="-1"></a>    LV <span class="ot">&lt;-</span> <span class="fu">eigen</span>(<span class="fu">cov</span>(x))</span>
+<span id="cb35-17"><a href="#cb35-17" aria-hidden="true" tabindex="-1"></a>    L <span class="ot">&lt;-</span> LV<span class="sc">$</span>values[<span class="dv">1</span><span class="sc">:</span>comps] <span class="sc">*</span> (n_rows <span class="sc">-</span> <span class="dv">1</span>)</span>
+<span id="cb35-18"><a href="#cb35-18" aria-hidden="true" tabindex="-1"></a>    V <span class="ot">&lt;-</span> LV<span class="sc">$</span>vectors[ , <span class="dv">1</span><span class="sc">:</span>comps]</span>
+<span id="cb35-19"><a href="#cb35-19" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb35-20"><a href="#cb35-20" aria-hidden="true" tabindex="-1"></a>    result <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(var_resid <span class="sc">*</span> <span class="fu">diag</span>(V <span class="sc">%*%</span> <span class="fu">sweep</span>(<span class="fu">t</span>(V), <span class="dv">1</span>, <span class="dv">1</span> <span class="sc">/</span> L, <span class="st">"*"</span>)))</span>
+<span id="cb35-21"><a href="#cb35-21" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb35-22"><a href="#cb35-22" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(result)</span>
+<span id="cb35-23"><a href="#cb35-23" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb35-24"><a href="#cb35-24" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="fu">pcr_se</span>(scale_x_xts, overlap_y_xts, comps)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="fu">pcr_se</span>(scale_x_xts, overlap_y_xts, comps)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 2.446018e-05 2.079303e-05 1.527384e-05 1.865962e-05</code></pre>
+<pre><code>[1] 2.838410e-05 2.276945e-05 1.402287e-05 2.167106e-05</code></pre>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="fu">pcr_se</span>(overlap_x_xts, overlap_y_xts, comps)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="fu">pcr_se</span>(overlap_x_xts, overlap_y_xts, comps)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 0.0186015901 0.0040114188 0.0004388049 0.0014258278</code></pre>
+<pre><code>[1] 0.0203465643 0.0039654032 0.0003515562 0.0015497801</code></pre>
 </div>
 </div>
 </section>
@@ -556,30 +561,29 @@ BAICX 0.6689196</code></pre>
 \end{aligned}
 \]</span></p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>lm_sar <span class="ot">&lt;-</span> <span class="cf">function</span>(x, y, weights, intercept) {</span>
-<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>    coef <span class="ot">&lt;-</span> <span class="fu">lm_coef</span>(x, y, weights, intercept)</span>
-<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a>    rsq <span class="ot">&lt;-</span> <span class="fu">lm_rsq</span>(x, y, weights, intercept)</span>
-<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb39-6"><a href="#cb39-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (intercept) x <span class="ot">&lt;-</span> <span class="fu">model.matrix</span>(<span class="sc">~</span> x)</span>
-<span id="cb39-7"><a href="#cb39-7" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb39-8"><a href="#cb39-8" aria-hidden="true" tabindex="-1"></a>    sigma <span class="ot">&lt;-</span> <span class="fu">cov.wt</span>(<span class="fu">cbind</span>(x, y), <span class="at">wt =</span> weights, <span class="at">center =</span> intercept)<span class="sc">$</span>cov</span>
-<span id="cb39-9"><a href="#cb39-9" aria-hidden="true" tabindex="-1"></a>    sar <span class="ot">&lt;-</span> coef <span class="sc">^</span> <span class="dv">2</span> <span class="sc">*</span> <span class="fu">diag</span>(sigma[<span class="sc">-</span><span class="fu">ncol</span>(sigma), <span class="sc">-</span><span class="fu">ncol</span>(sigma)])</span>
-<span id="cb39-10"><a href="#cb39-10" aria-hidden="true" tabindex="-1"></a>    sar_eps <span class="ot">&lt;-</span> (<span class="dv">1</span> <span class="sc">-</span> rsq) <span class="sc">*</span> sigma[<span class="fu">ncol</span>(sigma), <span class="fu">ncol</span>(sigma)]</span>
-<span id="cb39-11"><a href="#cb39-11" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb39-12"><a href="#cb39-12" aria-hidden="true" tabindex="-1"></a>    result <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(<span class="fu">c</span>(sigma[<span class="fu">ncol</span>(sigma), <span class="fu">ncol</span>(sigma)],</span>
-<span id="cb39-13"><a href="#cb39-13" aria-hidden="true" tabindex="-1"></a>                     sar,</span>
-<span id="cb39-14"><a href="#cb39-14" aria-hidden="true" tabindex="-1"></a>                     sar_eps))</span>
-<span id="cb39-15"><a href="#cb39-15" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb39-16"><a href="#cb39-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(result)</span>
-<span id="cb39-17"><a href="#cb39-17" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb39-18"><a href="#cb39-18" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>lm_sar <span class="ot">&lt;-</span> <span class="cf">function</span>(x, y, weights, intercept) {</span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>    coef <span class="ot">&lt;-</span> <span class="fu">lm_coef</span>(x, y, weights, intercept)</span>
+<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a>    rsq <span class="ot">&lt;-</span> <span class="fu">lm_rsq</span>(x, y, weights, intercept)</span>
+<span id="cb40-5"><a href="#cb40-5" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb40-6"><a href="#cb40-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (intercept) x <span class="ot">&lt;-</span> <span class="fu">model.matrix</span>(<span class="sc">~</span> x)</span>
+<span id="cb40-7"><a href="#cb40-7" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb40-8"><a href="#cb40-8" aria-hidden="true" tabindex="-1"></a>    sigma <span class="ot">&lt;-</span> <span class="fu">cov.wt</span>(<span class="fu">cbind</span>(x, y), <span class="at">wt =</span> weights, <span class="at">center =</span> intercept)<span class="sc">$</span>cov</span>
+<span id="cb40-9"><a href="#cb40-9" aria-hidden="true" tabindex="-1"></a>    sar <span class="ot">&lt;-</span> coef <span class="sc">^</span> <span class="dv">2</span> <span class="sc">*</span> <span class="fu">diag</span>(sigma[<span class="sc">-</span><span class="fu">ncol</span>(sigma), <span class="sc">-</span><span class="fu">ncol</span>(sigma)])</span>
+<span id="cb40-10"><a href="#cb40-10" aria-hidden="true" tabindex="-1"></a>    sar_eps <span class="ot">&lt;-</span> (<span class="dv">1</span> <span class="sc">-</span> rsq) <span class="sc">*</span> sigma[<span class="fu">ncol</span>(sigma), <span class="fu">ncol</span>(sigma)]</span>
+<span id="cb40-11"><a href="#cb40-11" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb40-12"><a href="#cb40-12" aria-hidden="true" tabindex="-1"></a>    result <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(<span class="fu">c</span>(sigma[<span class="fu">ncol</span>(sigma), <span class="fu">ncol</span>(sigma)],</span>
+<span id="cb40-13"><a href="#cb40-13" aria-hidden="true" tabindex="-1"></a>                     sar,</span>
+<span id="cb40-14"><a href="#cb40-14" aria-hidden="true" tabindex="-1"></a>                     sar_eps))</span>
+<span id="cb40-15"><a href="#cb40-15" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb40-16"><a href="#cb40-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(result)</span>
+<span id="cb40-17"><a href="#cb40-17" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb40-18"><a href="#cb40-18" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="fu">lm_sar</span>(overlap_x_xts, overlap_y_xts, weights, intercept) <span class="sc">*</span> <span class="fu">sqrt</span>(scale[[<span class="st">"periods"</span>]]) <span class="sc">*</span> <span class="fu">sqrt</span>(scale[[<span class="st">"overlap"</span>]])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="fu">lm_sar</span>(overlap_x_xts, overlap_y_xts, weights, intercept) <span class="sc">*</span> <span class="fu">sqrt</span>(scale[[<span class="st">"periods"</span>]]) <span class="sc">*</span> <span class="fu">sqrt</span>(scale[[<span class="st">"overlap"</span>]])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 0.074128665 0.000000000 0.030419602 0.008921341 0.031630773 0.026017588
-[7] 0.028340502</code></pre>
+<pre><code>[1] 0.06943667 0.00000000 0.02723513 0.00720988 0.03328743 0.02630041 0.02946431</code></pre>
 </div>
 </div>
 </section>
@@ -596,30 +600,30 @@ BAICX 0.6689196</code></pre>
 <li><a href="https://bookdown.org/compfinezbook/introcompfinr/Portfolio-risk-reports.html" class="uri">https://bookdown.org/compfinezbook/introcompfinr/Portfolio-risk-reports.html</a></li>
 </ul>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>lm_mcr <span class="ot">&lt;-</span> <span class="cf">function</span>(x, y, weights, intercept) {</span>
-<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a>    coef <span class="ot">&lt;-</span> <span class="fu">lm_coef</span>(x, y, weights, intercept)</span>
-<span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a>    rsq <span class="ot">&lt;-</span> <span class="fu">lm_rsq</span>(x, y, weights, intercept)</span>
-<span id="cb42-5"><a href="#cb42-5" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb42-6"><a href="#cb42-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (intercept) x <span class="ot">&lt;-</span> <span class="fu">model.matrix</span>(<span class="sc">~</span> x)</span>
-<span id="cb42-7"><a href="#cb42-7" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb42-8"><a href="#cb42-8" aria-hidden="true" tabindex="-1"></a>    sigma <span class="ot">&lt;-</span> <span class="fu">cov.wt</span>(<span class="fu">cbind</span>(x, y), <span class="at">wt =</span> weights, <span class="at">center =</span> intercept)<span class="sc">$</span>cov</span>
-<span id="cb42-9"><a href="#cb42-9" aria-hidden="true" tabindex="-1"></a>    mcr <span class="ot">&lt;-</span> coef <span class="sc">*</span> sigma[<span class="sc">-</span><span class="fu">ncol</span>(sigma), <span class="sc">-</span><span class="fu">ncol</span>(sigma)] <span class="sc">%*%</span> coef <span class="sc">/</span> <span class="fu">sqrt</span>(sigma[<span class="fu">ncol</span>(sigma), <span class="fu">ncol</span>(sigma)])</span>
-<span id="cb42-10"><a href="#cb42-10" aria-hidden="true" tabindex="-1"></a>    mcr_eps <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(sigma[<span class="fu">ncol</span>(sigma), <span class="fu">ncol</span>(sigma)]) <span class="sc">-</span> <span class="fu">sum</span>(mcr)</span>
-<span id="cb42-11"><a href="#cb42-11" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb42-12"><a href="#cb42-12" aria-hidden="true" tabindex="-1"></a>    result <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fu">sqrt</span>(sigma[<span class="fu">ncol</span>(sigma), <span class="fu">ncol</span>(sigma)]),</span>
-<span id="cb42-13"><a href="#cb42-13" aria-hidden="true" tabindex="-1"></a>                mcr,</span>
-<span id="cb42-14"><a href="#cb42-14" aria-hidden="true" tabindex="-1"></a>                mcr_eps)</span>
-<span id="cb42-15"><a href="#cb42-15" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb42-16"><a href="#cb42-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(result)</span>
-<span id="cb42-17"><a href="#cb42-17" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb42-18"><a href="#cb42-18" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>lm_mcr <span class="ot">&lt;-</span> <span class="cf">function</span>(x, y, weights, intercept) {</span>
+<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a>    coef <span class="ot">&lt;-</span> <span class="fu">lm_coef</span>(x, y, weights, intercept)</span>
+<span id="cb43-4"><a href="#cb43-4" aria-hidden="true" tabindex="-1"></a>    rsq <span class="ot">&lt;-</span> <span class="fu">lm_rsq</span>(x, y, weights, intercept)</span>
+<span id="cb43-5"><a href="#cb43-5" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb43-6"><a href="#cb43-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (intercept) x <span class="ot">&lt;-</span> <span class="fu">model.matrix</span>(<span class="sc">~</span> x)</span>
+<span id="cb43-7"><a href="#cb43-7" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb43-8"><a href="#cb43-8" aria-hidden="true" tabindex="-1"></a>    sigma <span class="ot">&lt;-</span> <span class="fu">cov.wt</span>(<span class="fu">cbind</span>(x, y), <span class="at">wt =</span> weights, <span class="at">center =</span> intercept)<span class="sc">$</span>cov</span>
+<span id="cb43-9"><a href="#cb43-9" aria-hidden="true" tabindex="-1"></a>    mcr <span class="ot">&lt;-</span> coef <span class="sc">*</span> sigma[<span class="sc">-</span><span class="fu">ncol</span>(sigma), <span class="sc">-</span><span class="fu">ncol</span>(sigma)] <span class="sc">%*%</span> coef <span class="sc">/</span> <span class="fu">sqrt</span>(sigma[<span class="fu">ncol</span>(sigma), <span class="fu">ncol</span>(sigma)])</span>
+<span id="cb43-10"><a href="#cb43-10" aria-hidden="true" tabindex="-1"></a>    mcr_eps <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(sigma[<span class="fu">ncol</span>(sigma), <span class="fu">ncol</span>(sigma)]) <span class="sc">-</span> <span class="fu">sum</span>(mcr)</span>
+<span id="cb43-11"><a href="#cb43-11" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb43-12"><a href="#cb43-12" aria-hidden="true" tabindex="-1"></a>    result <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fu">sqrt</span>(sigma[<span class="fu">ncol</span>(sigma), <span class="fu">ncol</span>(sigma)]),</span>
+<span id="cb43-13"><a href="#cb43-13" aria-hidden="true" tabindex="-1"></a>                mcr,</span>
+<span id="cb43-14"><a href="#cb43-14" aria-hidden="true" tabindex="-1"></a>                mcr_eps)</span>
+<span id="cb43-15"><a href="#cb43-15" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb43-16"><a href="#cb43-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(result)</span>
+<span id="cb43-17"><a href="#cb43-17" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb43-18"><a href="#cb43-18" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="fu">lm_mcr</span>(overlap_x_xts, overlap_y_xts, weights, intercept) <span class="sc">*</span> <span class="fu">sqrt</span>(scale[[<span class="st">"periods"</span>]]) <span class="sc">*</span> <span class="fu">sqrt</span>(scale[[<span class="st">"overlap"</span>]])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a><span class="fu">lm_mcr</span>(overlap_x_xts, overlap_y_xts, weights, intercept) <span class="sc">*</span> <span class="fu">sqrt</span>(scale[[<span class="st">"periods"</span>]]) <span class="sc">*</span> <span class="fu">sqrt</span>(scale[[<span class="st">"overlap"</span>]])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 0.074128665 0.000000000 0.024263394 0.005033437 0.017959933 0.016036900
-[7] 0.010835000</code></pre>
+<pre><code>[1] 0.069436671 0.000000000 0.020628629 0.003807164 0.017666742 0.014831444
+[7] 0.012502692</code></pre>
 </div>
 </div>
 </section>
@@ -634,48 +638,48 @@ BAICX 0.6689196</code></pre>
 \end{aligned}
 \]</span></p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>implied_shocks <span class="ot">&lt;-</span> <span class="cf">function</span>(shocks, x, z, weights) {</span>
-<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a>    beta <span class="ot">&lt;-</span> <span class="fu">solve</span>(<span class="fu">crossprod</span>(z, <span class="fu">diag</span>(weights) <span class="sc">%*%</span> z)) <span class="sc">%*%</span> <span class="fu">crossprod</span>(z, <span class="fu">diag</span>(weights) <span class="sc">%*%</span> x)</span>
-<span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb45-5"><a href="#cb45-5" aria-hidden="true" tabindex="-1"></a>    result <span class="ot">&lt;-</span> shocks <span class="sc">%*%</span> beta</span>
-<span id="cb45-6"><a href="#cb45-6" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb45-7"><a href="#cb45-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(result)</span>
-<span id="cb45-8"><a href="#cb45-8" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb45-9"><a href="#cb45-9" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>implied_shocks <span class="ot">&lt;-</span> <span class="cf">function</span>(shocks, x, z, weights) {</span>
+<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a>    beta <span class="ot">&lt;-</span> <span class="fu">solve</span>(<span class="fu">crossprod</span>(z, <span class="fu">diag</span>(weights) <span class="sc">%*%</span> z)) <span class="sc">%*%</span> <span class="fu">crossprod</span>(z, <span class="fu">diag</span>(weights) <span class="sc">%*%</span> x)</span>
+<span id="cb46-4"><a href="#cb46-4" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb46-5"><a href="#cb46-5" aria-hidden="true" tabindex="-1"></a>    result <span class="ot">&lt;-</span> shocks <span class="sc">%*%</span> beta</span>
+<span id="cb46-6"><a href="#cb46-6" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb46-7"><a href="#cb46-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(result)</span>
+<span id="cb46-8"><a href="#cb46-8" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb46-9"><a href="#cb46-9" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>shocks <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="sc">-</span><span class="fl">0.1</span>, <span class="fl">0.1</span>)</span>
-<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a>overlap_z_xts <span class="ot">&lt;-</span> overlap_x_xts[ , <span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb47"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a>shocks <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="sc">-</span><span class="fl">0.1</span>, <span class="fl">0.1</span>)</span>
+<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a>overlap_z_xts <span class="ot">&lt;-</span> overlap_x_xts[ , <span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb47"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a><span class="fu">implied_shocks</span>(shocks, overlap_x_xts, overlap_z_xts, weights)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb48"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a><span class="fu">implied_shocks</span>(shocks, overlap_x_xts, overlap_z_xts, weights)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>     SP500 DTWEXAFEGS        DGS10 BAMLH0A0HYM2
-[1,]  -0.1        0.1 -0.009343047  -0.00506424</code></pre>
+[1,]  -0.1        0.1 -0.009266002 -0.004707667</code></pre>
 </div>
 </div>
 </section>
 <section id="stress-pl" class="level2">
 <h2 class="anchored" data-anchor-id="stress-pl">Stress P&amp;L</h2>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb49"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a>pnl_stress <span class="ot">&lt;-</span> <span class="cf">function</span>(shocks, x, y, z, weights, intercept) {</span>
-<span id="cb49-2"><a href="#cb49-2" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb49-3"><a href="#cb49-3" aria-hidden="true" tabindex="-1"></a>    coef <span class="ot">&lt;-</span> <span class="fu">lm_coef</span>(x, y, weights, intercept)</span>
-<span id="cb49-4"><a href="#cb49-4" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb49-5"><a href="#cb49-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (intercept) x <span class="ot">&lt;-</span> <span class="fu">model.matrix</span>(<span class="sc">~</span> x)</span>
-<span id="cb49-6"><a href="#cb49-6" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb49-7"><a href="#cb49-7" aria-hidden="true" tabindex="-1"></a>    result <span class="ot">&lt;-</span> <span class="fu">t</span>(coef) <span class="sc">*</span> <span class="fu">implied_shocks</span>(shocks, x, z, weights)</span>
-<span id="cb49-8"><a href="#cb49-8" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb49-9"><a href="#cb49-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(result)    </span>
-<span id="cb49-10"><a href="#cb49-10" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb49-11"><a href="#cb49-11" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb50"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>pnl_stress <span class="ot">&lt;-</span> <span class="cf">function</span>(shocks, x, y, z, weights, intercept) {</span>
+<span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb50-3"><a href="#cb50-3" aria-hidden="true" tabindex="-1"></a>    coef <span class="ot">&lt;-</span> <span class="fu">lm_coef</span>(x, y, weights, intercept)</span>
+<span id="cb50-4"><a href="#cb50-4" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb50-5"><a href="#cb50-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (intercept) x <span class="ot">&lt;-</span> <span class="fu">model.matrix</span>(<span class="sc">~</span> x)</span>
+<span id="cb50-6"><a href="#cb50-6" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb50-7"><a href="#cb50-7" aria-hidden="true" tabindex="-1"></a>    result <span class="ot">&lt;-</span> <span class="fu">t</span>(coef) <span class="sc">*</span> <span class="fu">implied_shocks</span>(shocks, x, z, weights)</span>
+<span id="cb50-8"><a href="#cb50-8" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb50-9"><a href="#cb50-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(result)    </span>
+<span id="cb50-10"><a href="#cb50-10" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb50-11"><a href="#cb50-11" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb50"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a><span class="fu">pnl_stress</span>(shocks, overlap_x_xts, overlap_y_xts, overlap_z_xts, weights, intercept)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb51"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a><span class="fu">pnl_stress</span>(shocks, overlap_x_xts, overlap_y_xts, overlap_z_xts, weights, intercept)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>       (Intercept)      xSP500 xDTWEXAFEGS      xDGS10 xBAMLH0A0HYM2
-BAICX 0.0001045179 -0.02187729 -0.01447544 -0.02571709  -0.008101559</code></pre>
+<pre><code>      (Intercept)      xSP500 xDTWEXAFEGS      xDGS10 xBAMLH0A0HYM2
+BAICX 0.000272796 -0.02076502 -0.01225253 -0.02773121  -0.008016955</code></pre>
 </div>
 </div>
 

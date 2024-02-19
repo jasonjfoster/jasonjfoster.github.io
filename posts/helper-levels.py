@@ -4,8 +4,6 @@ import statsmodels.api as sm
 import pandas_datareader as pdr # dev version
 from scipy.stats import norm, chi2
 
-factors_r = ["SP500", "DTWEXAFEGS"] # "SP500" does not contain dividends; note: "DTWEXM" discontinued as of Jan 2020
-factors_d = ["DGS10", "BAMLH0A0HYM2"]
 factors = factors_r + factors_d
 width = 252
 scale = {"periods": 252, "overlap": 5}

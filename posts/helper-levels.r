@@ -3,8 +3,6 @@ library(roll)
 library(data.table)
 options("getSymbols.warning4.0" = FALSE)
 
-factors_r <- c("SP500", "DTWEXAFEGS") # "SP500" does not contain dividends; note: "DTWEXM" discontinued as of Jan 2020
-factors_d <- c("DGS10", "BAMLH0A0HYM2")
 factors <- c(factors_r, factors_d)
 width <- 252
 scale <- list("periods" = 252, "overlap" = 5)

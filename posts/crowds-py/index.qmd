@@ -10,34 +10,20 @@ draft: true
 ---
 
 ```{python}
-import requests
-from lxml import html
-import numpy as np
-import pandas as pd
-import pandas_datareader as pdr
-```
-
-```{python}
 factors_r = ["SP500"] # "SP500" does not contain dividends
 factors_d = ["SOFR"]
-factors = factors_r + factors_d
-width = 20 * 3
-scale = {"periods": 252, "overlap": 5}
 ```
 
-```{python}
-levels_df = pdr.get_data_fred(factors, start = "1900-01-01")
+```{r, echo = FALSE, message = FALSE}
+library(reticulate)
+source_python("../helper-levels.py")
 ```
 
-```{python}
-returns_df = levels_df.apply(lambda x: np.log(x).diff() if x.name in factors_r else -x.diff() / 100)
-overlap_df = returns_df.rolling(scale["overlap"], min_periods = 1).mean()
-returns_df = pd.concat([returns_df, overlap_df], keys = ["returns", "overlap"], axis = 1)
-```
+# Parse web
 
 ```{python}
-import os
-import cvxpy as cp
+import requests
+from lxml import html
 ```
 
 ```{python}
@@ -108,33 +94,17 @@ mstar_df = get_mstar()
 
 ```{python}
 tickers = mstar_df.loc[mstar_df["type"] == "Tactical Allocation", "ticker"].tolist()
-prices_df = pdr.get_data_tiingo(tickers, start = "1900-01-01", api_key = os.getenv("TIINGO_API_KEY"))
-prices_df = prices_df.pivot_table(index = "date", columns = "symbol", values = "adjClose") \
-    .tz_localize(None)
-prices_df.sort_index(axis = 0, inplace = True)
-tickers = prices_df.columns
 ```
 
-```{python}
-returns_cols = [("returns", i) for i in tickers]
-overlap_cols = [("overlap", i) for i in tickers]
-returns_df[returns_cols] = np.log(prices_df).diff()
-returns_df[overlap_cols] = returns_df[returns_cols].rolling(scale["overlap"], min_periods = 1).mean()
-returns_df.sort_index(axis = 1, inplace = True)
-```
-
-```{python}
-overlap_df = returns_df.dropna()["overlap"]
-overlap_x_df = returns_df.dropna()["overlap"][factors][-width:]
-overlap_y_df = returns_df.dropna()["overlap"][tickers][-width:]
-```
-
-```{python}
-def pnl(x):
-    return np.nanprod(1 + x) - 1
+```{r, echo = FALSE, message = FALSE}
+source_python("../helper-prices.py")
 ```
 
 # Optimization
+
+```{python}
+import cvxpy as cp
+```
 
 ```{python}
 def min_rss_optim(x, y):

@@ -1,7 +1,6 @@
 import os
 
 # open issue: <https://github.com/pydata/pandas-datareader/issues/965>
-tickers = ["BAICX"] # fund inception date is "2011-11-28"
 prices_df = pdr.get_data_tiingo(tickers, start = "1900-01-01", api_key = os.getenv("TIINGO_API_KEY"))
 prices_df = prices_df.pivot_table(index = "date", columns = "symbol", values = "adjClose") \
     .tz_localize(None)
