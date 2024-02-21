@@ -11,7 +11,6 @@ categories:
 ```{python}
 factors_r = ["SP500", "DTWEXAFEGS"] # "SP500" does not contain dividends; note: "DTWEXM" discontinued as of Jan 2020
 factors_d = ["DGS10", "BAMLH0A0HYM2"]
-tickers = ["BAICX"] # fund inception date is "2011-11-28"
 ```
 
 ```{r, echo = FALSE, message = FALSE}
@@ -19,7 +18,6 @@ library(reticulate)
 library(data.table)
 source("../plot/theme_jjf.R")
 source_python("../helper-levels.py")
-source_python("../helper-prices.py")
 ```
 
 ```{r, echo = FALSE}
@@ -207,6 +205,14 @@ def geometric_mean(x, scale):
 -   <https://or.stackexchange.com/a/3738>
 -   <https://bookdown.org/compfinezbook/introFinRbook/Portfolio-Theory-with-Matrix-Algebra.html#algorithm-for-computing-efficient-frontier>
 -   <https://palomar.home.ece.ust.hk/MAFS6010R_lectures/slides_robust_portfolio.html>
+
+```{python}
+tickers = ["BAICX"] # fund inception date is "2011-11-28"
+```
+
+```{r, echo = FALSE, message = FALSE}
+source_python("../helper-prices.py")
+```
 
 ```{python}
 returns_x_df = returns_df.dropna()["returns"][factors]
