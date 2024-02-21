@@ -284,10 +284,6 @@ e^{T} & 0
 $$
 
 ```{python}
-target = 0.06
-```
-
-```{python}
 def max_mean_optim(mu, sigma, target):
     
     params = cp.Variable(len(mu))
@@ -302,6 +298,10 @@ def max_mean_optim(mu, sigma, target):
     prob.solve()
     
     return params.value
+```
+
+```{python}
+target = 0.06
 ```
 
 ```{python}
@@ -381,10 +381,6 @@ e^{T} & 0
 $$
 
 ```{python}
-target = 0.03
-```
-
-```{python}
 def min_var_optim(mu, sigma, target):
     
     params = cp.Variable(len(mu))
@@ -399,6 +395,10 @@ def min_var_optim(mu, sigma, target):
     prob.solve()
     
     return params.value
+```
+
+```{python}
+target = 0.03
 ```
 
 ```{python}
@@ -477,11 +477,6 @@ e^{T} & 0
 $$
 
 ```{python}
-ir = 0.5
-target = ir / 0.06 # ir / std (see Black-Litterman)
-```
-
-```{python}
 def max_utility_optim(mu, sigma, target):
     
     params = cp.Variable(len(mu))
@@ -495,6 +490,11 @@ def max_utility_optim(mu, sigma, target):
     prob.solve()
     
     return params.value
+```
+
+```{python}
+ir = 0.5
+target = ir / 0.06 # ir / std (see Black-Litterman)
 ```
 
 ```{python}
