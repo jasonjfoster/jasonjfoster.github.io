@@ -88,18 +88,6 @@ def get_mstar():
     return result
 ```
 
-```{python}
-mstar_df = get_mstar()
-```
-
-```{python}
-tickers = mstar_df.loc[mstar_df["type"] == "Tactical Allocation", "ticker"].tolist()
-```
-
-```{r, echo = FALSE, message = FALSE}
-source_python("../helper-prices.py")
-```
-
 # Optimization
 
 ```{python}
@@ -119,6 +107,18 @@ def min_rss_optim(x, y):
     problem.solve()
     
     return w.value
+```
+
+```{python}
+mstar_df = get_mstar()
+```
+
+```{python}
+tickers = mstar_df.loc[mstar_df["type"] == "Tactical Allocation", "ticker"].tolist()
+```
+
+```{r, echo = FALSE, message = FALSE}
+source_python("../helper-prices.py")
 ```
 
 ```{python}

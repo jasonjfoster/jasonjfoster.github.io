@@ -76,18 +76,6 @@ get_mstar <- function() {
 }
 ```
 
-```{r}
-mstar_df <- get_mstar()
-```
-
-```{r}
-tickers <- mstar_df[mstar_df$type == "Tactical Allocation", "ticker"]
-```
-
-```{r, echo = FALSE, message = FALSE}
-source("../helper-prices.R")
-```
-
 # Optimization
 
 ```{r, message = FALSE}
@@ -110,6 +98,18 @@ min_rss_optim <- function(x, y) {
     return(result)
 
 }
+```
+
+```{r}
+mstar_df <- get_mstar()
+```
+
+```{r}
+tickers <- mstar_df[mstar_df$type == "Tactical Allocation", "ticker"]
+```
+
+```{r, echo = FALSE, message = FALSE}
+source("../helper-prices.R")
 ```
 
 ```{r}
