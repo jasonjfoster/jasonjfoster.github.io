@@ -1,30 +1,25 @@
 library(ggplot2)
 library(GGally)
 
-theme_jjf <- function(base_size = 11, base_family = "",
-                      base_line_size = base_size / 22,
-                      base_rect_size = base_size / 22) {
+theme_jjf <- function(base_size = 11, base_family = "") {
   
   half_line <- base_size / 2
   
-  theme_gray(base_size = base_size, base_family = base_family,
-             base_line_size = base_line_size,
-             base_rect_size = base_rect_size) %+replace%
-    theme(line = element_line(colour = rgb(217, 217, 217, max = 255), linewidth = base_line_size,
+  theme_gray(base_size = base_size, base_family = base_family) %+replace%
+    theme(line = element_line(colour = rgb(217, 217, 217, max = 255), linewidth = base_size / 22,
                               linetype = 1, lineend = "butt"),
           axis.text = element_text(size = rel(0.8), colour = "black"),
           axis.ticks = element_blank(),
-          legend.margin = margin(0, 0, 0, 0),
+          legend.margin = margin(0),
           legend.key = element_blank(),
-          # legend.text.align = 0,
-          legend.text = element_text(hjust = 0), # NEW
+          legend.text = element_text(hjust = 0),
           legend.title = element_blank(),
           legend.position = "bottom",
           panel.background = element_blank(),
           panel.grid = element_line(),
           strip.background = element_blank(),
           plot.background = element_blank(),
-          plot.margin = margin(0, 0, 0, 0))
+          plot.margin = margin(0))
 }
 
 palette_jjf <- function(n_cols, n_rows = 1) {
@@ -120,14 +115,14 @@ plot_jjf <- function(dt, x, y, z, decomp, title, xlab, ylab, multiple, palette, 
       
       result <- result +
         scale_fill_manual(values = palette)
-        # scale_fill_manual(values = palette, guide_legend(order = 2)) +
-        # scale_color_manual(values = palette, guide_legend(order = 1))
+        # scale_fill_manual(values = palette, guide = guide_legend(order = 2)) +
+        # scale_color_manual(values = palette, guide = guide_legend(order = 1))
       
     } else {
       
       result <- result +
-        scale_fill_jjf(guide_legend(order = 2)) +
-        scale_color_manual(values = "black", guide_legend(order = 1))
+        scale_fill_jjf(guide = guide_legend(order = 2)) +
+        scale_color_manual(values = "black", guide = guide_legend(order = 1))
       
     }
     
