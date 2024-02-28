@@ -16,7 +16,8 @@ theme_jjf <- function(base_size = 11, base_family = "",
           axis.ticks = element_blank(),
           legend.margin = margin(0, 0, 0, 0),
           legend.key = element_blank(),
-          legend.text.align = 0,
+          # legend.text.align = 0,
+          legend.text = element_text(hjust = 0), # NEW
           legend.title = element_blank(),
           legend.position = "bottom",
           panel.background = element_blank(),
@@ -26,35 +27,73 @@ theme_jjf <- function(base_size = 11, base_family = "",
           plot.margin = margin(0, 0, 0, 0))
 }
 
-palette_jjf <- function(n) {
+palette_jjf <- function(n_cols, n_rows = 1) {
+  # if n_cols > length(colors) then repeat with transparency
+  # otherwise repeat n_rows with transparency
   
   colors_jjf <- c(rgb(236, 105,  65, max = 255),
                   rgb(253, 197, 129, max = 255),
                   rgb( 20,  76,  89, max = 255),
                   rgb( 22, 144, 133, max = 255))
   
-  result <- rep(colors_jjf, length.out = n)
+  rep_cols <- floor(n_cols / length(colors_jjf))
+  rep_rows <- n_rows - 1
+  
+  rep_alpha <- rep_cols + rep_rows + 1
+  a <- 1
+  b <- 1 / rep_alpha
+  
+  if (rep_cols > 0) {
+    
+    result <- colors_jjf
+    
+    for (j in 1:rep_cols) {
+      
+      a <- a - b
+      result <- c(result, scales::alpha(colors_jjf, alpha = a))
+      
+    }
+    
+    result <- result[1:n_cols]
+    
+  } else {
+    result <- colors_jjf[1:n_cols]
+  }
+  
+  if (rep_rows > 0) {
+    
+    result_ls <- list(result)
+    
+    for (i in 1:rep_rows) {
+      
+      a <- a - b
+      result_ls <- append(result_ls, list(scales::alpha(result_ls[[i]], alpha = a)))
+      
+    }
+    
+    result <- do.call(c, result_ls)
+    
+  }
+
   return(result)
   
 }
 
 scale_color_jjf <- function(...) {
   
-  discrete_scale("color", "jjf", palette_jjf, ...)
+  discrete_scale("color", palette = palette_jjf, ...)
   
 }
 
 scale_fill_jjf <- function(...) {
   
-  discrete_scale("fill", "jjf", palette_jjf, ...)
+  discrete_scale("fill", palette = palette_jjf, ...)
   
 }
 
-# https://ggplot2.tidyverse.org/reference/labeller.html
 capitalize <- function(string) {
   string <- as.character(string)
-  substr(string, 1, 1) <- toupper(substr(string, 1, 1))
-  string
+  gsub("^(\\w)", "\\U\\1", string, perl = TRUE)
 }
 
 plot_jjf <- function(dt, x, y, z, decomp, title, xlab, ylab, multiple, palette, stack) {
@@ -62,8 +101,7 @@ plot_jjf <- function(dt, x, y, z, decomp, title, xlab, ylab, multiple, palette, 
   if (!is.null(palette)) {
     dt[ , (z) := factor(get(z), levels = names(palette))]
   } else {
-    dt[ , (z) := capitalize(get(z))]
-    dt[ , (z) := factor(get(z), levels = unique(get(z)))]
+    dt[ , (z) := factor(capitalize(get(z)), levels = unique(get(z)))]
   }
   
   result <- ggplot() +
