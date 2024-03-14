@@ -20,16 +20,17 @@ theme_jjf <- function(base_size = 11, base_family = "") {
           strip.background = element_blank(),
           plot.background = element_blank(),
           plot.margin = margin(0))
+  
 }
 
 palette_jjf <- function(n_cols, n_rows = 1) {
   # if n_cols > length(colors) then repeat with transparency
   # otherwise repeat n_rows with transparency
   
-  colors_jjf <- c(rgb(236, 105,  65, max = 255),
-                  rgb(253, 197, 129, max = 255),
-                  rgb( 20,  76,  89, max = 255),
-                  rgb( 22, 144, 133, max = 255))
+  colors_jjf <- c(grDevices::rgb(236, 105,  65, maxColorValue = 255),
+                  grDevices::rgb(253, 197, 129, maxColorValue = 255),
+                  grDevices::rgb( 20,  76,  89, maxColorValue = 255),
+                  grDevices::rgb( 22, 144, 133, maxColorValue = 255))
   
   rep_cols <- floor(n_cols / length(colors_jjf))
   rep_rows <- n_rows - 1

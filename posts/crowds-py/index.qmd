@@ -72,8 +72,8 @@ def get_mstar():
             status = False
         else:
 
-            names_tickers = tree.xpath("//a[@class='mdc-link mds-link mds-link--data-table mdc-link--no-visited']")
-            types = tree.xpath("//span[@class='mdc-data-point mdc-data-point--string mdc-string']")
+            names_tickers = tree.xpath("//a[@class='mdc-link__mdc mdc-link--no-visited__mdc mdc-link--data-table__mdc']")
+            types = tree.xpath("//span[@class='mdc-locked-text__mdc mdc-string']")
             
         names_ls.extend(get_text(get_nth(names_tickers, 2)))
         tickers_ls.extend(get_text(get_nth(names_tickers, 2, 1)))

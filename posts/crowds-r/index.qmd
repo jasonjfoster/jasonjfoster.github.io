@@ -56,8 +56,8 @@ get_mstar <- function() {
       status <- FALSE
     } else {
       
-      names_tickers <- xml_text(xml_find_all(response, ".//a[@class='mdc-link mds-link mds-link--data-table mdc-link--no-visited']"))
-      types <- xml_text(xml_find_all(response, ".//span[@class='mdc-data-point mdc-data-point--string mdc-string']"))
+      names_tickers <- xml_text(xml_find_all(response, ".//a[@class='mdc-link__mdc mdc-link--no-visited__mdc mdc-link--data-table__mdc']"))
+      types <- xml_text(xml_find_all(response, ".//span[@class='mdc-locked-text__mdc mdc-string']"))
       
       names_ls <- append(names_ls, list(get_nth(names_tickers, 2)))
       tickers_ls <- append(tickers_ls, list(get_nth(names_tickers, 2, 1)))
