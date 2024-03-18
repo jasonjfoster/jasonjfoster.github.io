@@ -154,6 +154,7 @@ print(raw_plt)
 roll_eigen2 <- function(x, width, comp) {
     
     n_rows <- nrow(x)
+    evecs_ls <- list()
     result_ls <- list()
     
     for (i in width:n_rows) {
@@ -163,15 +164,14 @@ roll_eigen2 <- function(x, width, comp) {
                 
         if (i > width) {
           
-            similarity <- crossprod(evecs, result_ls[[length(result_ls)]])
-            order <- which.max(abs(similarity))
-            evec <- sign(similarity)[order] * evecs[ , order]
+            similarity <- crossprod(evecs, evecs_ls[[length(evecs_ls)]])
+            order <- apply(abs(similarity), 1, which.max)
+            evecs <- t(sign(diag(similarity[ , order])) * t(evecs[ , order]))
             
-            result_ls <- append(result_ls, list(evec))
-            
-        } else {
-            result_ls <- append(result_ls, list(evecs[ , comp]))
         }
+        
+        evecs_ls <- append(evecs_ls, list(evecs))
+        result_ls <- append(result_ls, list(evecs[ , comp]))
                 
     }
     
@@ -192,4 +192,57 @@ clean_df <- roll_eigen2(overlap_xts, width, comp)
 clean_mlt <- melt(as.data.table(clean_df), id.vars = "index")
 clean_plt <- plot_ts(clean_mlt, title = "Eigenvector 1Y")
 print(clean_plt)
+```
+
+# Implied shocks
+
+Product of the $n$th eigenvector and square root of the $n$th eigenvalue:
+
+```{r}
+roll_shocks <- function(x, width, comp) {
+  
+    n_rows <- nrow(x)
+    evecs_ls <- list()
+    result_ls <- list()
+    
+    for (i in width:n_rows) {
+        
+        idx <- max(i - width + 1, 1):i
+        
+        LV <- eigen(cov(x[idx, ]))
+        L <- LV$values
+        V <- LV$vectors
+        
+        if (length(evecs_ls) > 1) {
+          
+            similarity <- crossprod(V, evecs_ls[[length(evecs_ls)]])
+            order <- apply(abs(similarity), 1, which.max)
+            L <- L[order]
+            V <- t(sign(diag(similarity[ , order])) * t(V[ , order]))
+          
+        }
+        
+        shocks <- sqrt(L[comp]) * V[ , comp]
+        evecs_ls <- append(evecs_ls, list(V))
+        result_ls <- append(result_ls, list(shocks))
+                
+    }
+    
+    result <- do.call(rbind, result_ls)
+    result <- xts(result, index(x)[width:n_rows])
+    colnames(result) <- colnames(x)
+    
+    return(result)
+    
+}
+```
+
+```{r}
+shocks_xts <- roll_shocks(overlap_xts, width, comp) * sqrt(scale[["periods"]] * scale[["overlap"]])
+```
+
+```{r, echo = FALSE, fig.width = 6, fig.height = 3}
+shocks_mlt <- melt(as.data.table(shocks_xts), id.vars = "index")
+shocks_plt <- plot_ts(shocks_mlt, title = "Implied shocks 1Y using PC1 (%)", multiple = 100)
+print(shocks_plt)
 ```

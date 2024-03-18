@@ -157,6 +157,7 @@ print(raw_plt)
 def roll_eigen2(x, width, comp):
     
     n_rows = len(x)
+    evecs_ls = []
     result_ls = []
     
     for i in range(width - 1, n_rows):
@@ -166,14 +167,12 @@ def roll_eigen2(x, width, comp):
         
         if i > width - 1:
             
-            similarity = np.dot(evecs.T, result_ls[-1])
-            order = np.argmax(np.abs(similarity))
-            evec = np.multiply(np.sign(similarity[order]), evecs[:, order])
+            similarity = np.dot(evecs.T, evecs_ls[-1])
+            order = np.argmax(np.abs(similarity), axis = 1)
+            evecs = np.sign(np.diag(similarity[:, order])) * evecs[:, order]
             
-            result_ls.append(evec)
-            
-        else:
-            result_ls.append(evecs[:, comp - 1])
+        evecs_ls.append(evecs)
+        result_ls.append(evecs[:, comp - 1])
     
     result_df = pd.DataFrame(result_ls, index = x.index[(width - 1):],
                              columns = x.columns)
@@ -191,3 +190,54 @@ clean_mlt[ , index := as.Date(index)]
 clean_plt <- plot_ts(clean_mlt, title = "Eigenvector 1Y")
 print(clean_plt)
 ```
+
+# Implied shocks
+
+Product of the $n$th eigenvector and square root of the $n$th eigenvalue:
+
+```{python}
+def roll_shocks(x, width, comp):
+    
+    n_rows = len(x)
+    evecs_ls = []
+    result_ls = []
+    
+    for i in range(width - 1, n_rows):
+        
+        idx = range(max(i - width + 1, 0), i + 1)
+        
+        LV = eigen(x.iloc[idx])
+        L = LV["values"]
+        V = LV["vectors"]
+        
+        if len(evecs_ls) > 1:
+            
+            similarity = np.dot(V.T, evecs_ls[-1])
+            order = np.argmax(np.abs(similarity), axis = 1)
+            L = L[order]
+            V = np.sign(np.diag(similarity[:, order])) * V[:, order]
+        
+        shocks = np.sqrt(L[comp - 1]) * V[:, comp - 1]
+        evecs_ls.append(V)
+        result_ls.append(shocks)
+        
+    result_df = pd.DataFrame(result_ls, index = x.index[(width - 1):],
+                             columns = x.columns)
+    
+    return result_df
+```
+
+```{python}
+shocks_df = roll_shocks(overlap_df, width, comp) * np.sqrt(scale["periods"] * scale["overlap"])
+```
+
+```{r, echo = FALSE, fig.width = 6, fig.height = 3}
+shocks_mlt <- melt(as.data.table(py$shocks_df, keep.rownames = "index"), id.vars = "index")
+shocks_mlt[ , index := as.Date(index)]
+shocks_plt <- plot_ts(shocks_mlt, title = "Implied shocks 1Y using PC1 (%)", multiple = 100)
+print(shocks_plt)
+```
+
+
+
+
