@@ -44,8 +44,8 @@ $$
 eigen_decomp <- function(x, comps) {
     
     LV <- eigen(cov(x))
-    L <- LV$values[1:comps]
-    V <- LV$vectors[ , 1:comps]
+    L <- LV[["values"]][1:comps]
+    V <- LV[["vectors"]][ , 1:comps]
     
     result <- V %*% sweep(t(V), 1, L, "*")
     
@@ -80,7 +80,7 @@ $$
 variance_explained <- function(x) {
     
     LV <- eigen(cov(x))
-    L <- LV$values
+    L <- LV[["values"]]
     
     result <- cumsum(L) / sum(L)
     
@@ -112,9 +112,12 @@ roll_eigen1 <- function(x, width, comp) {
     for (i in width:n_rows) {
         
         idx <- max(i - width + 1, 1):i
-        evec <- eigen(cov(x[idx, ]))[["vectors"]][ , comp]
-        result_ls <- append(result_ls, list(evec))
-                
+        
+        LV <- eigen(cov(x[idx, ]))
+        V <- LV[["vectors"]]
+        
+        result_ls <- append(result_ls, list(V[ , comp]))
+        
     }
     
     result <- do.call(rbind, result_ls)
@@ -154,24 +157,26 @@ print(raw_plt)
 roll_eigen2 <- function(x, width, comp) {
     
     n_rows <- nrow(x)
-    evecs_ls <- list()
+    V_ls <- list()
     result_ls <- list()
     
     for (i in width:n_rows) {
         
         idx <- max(i - width + 1, 1):i
-        evecs <- eigen(cov(x[idx, ]))[["vectors"]]
+        
+        LV <- eigen(cov(x[idx, ]))
+        V <- LV[["vectors"]]
                 
         if (i > width) {
           
-            similarity <- crossprod(evecs, evecs_ls[[length(evecs_ls)]])
+            similarity <- crossprod(V, V_ls[[length(V_ls)]])
             order <- apply(abs(similarity), 1, which.max)
-            evecs <- t(sign(diag(similarity[ , order])) * t(evecs[ , order]))
+            V <- t(sign(diag(similarity[ , order])) * t(V[ , order]))
             
         }
         
-        evecs_ls <- append(evecs_ls, list(evecs))
-        result_ls <- append(result_ls, list(evecs[ , comp]))
+        V_ls <- append(V_ls, list(V))
+        result_ls <- append(result_ls, list(V[ , comp]))
                 
     }
     
@@ -202,7 +207,7 @@ Product of the $n$th eigenvector and square root of the $n$th eigenvalue:
 roll_shocks <- function(x, width, comp) {
   
     n_rows <- nrow(x)
-    evecs_ls <- list()
+    V_ls <- list()
     result_ls <- list()
     
     for (i in width:n_rows) {
@@ -210,12 +215,12 @@ roll_shocks <- function(x, width, comp) {
         idx <- max(i - width + 1, 1):i
         
         LV <- eigen(cov(x[idx, ]))
-        L <- LV$values
-        V <- LV$vectors
+        L <- LV[["values"]]
+        V <- LV[["vectors"]]
         
-        if (length(evecs_ls) > 1) {
+        if (length(V_ls) > 1) {
           
-            similarity <- crossprod(V, evecs_ls[[length(evecs_ls)]])
+            similarity <- crossprod(V, V_ls[[length(V_ls)]])
             order <- apply(abs(similarity), 1, which.max)
             L <- L[order]
             V <- t(sign(diag(similarity[ , order])) * t(V[ , order]))
@@ -223,7 +228,7 @@ roll_shocks <- function(x, width, comp) {
         }
         
         shocks <- sqrt(L[comp]) * V[ , comp]
-        evecs_ls <- append(evecs_ls, list(V))
+        V_ls <- append(V_ls, list(V))
         result_ls <- append(result_ls, list(shocks))
                 
     }

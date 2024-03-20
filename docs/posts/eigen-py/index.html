@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Jason Foster">
-<meta name="dcterms.date" content="2024-03-18">
+<meta name="dcterms.date" content="2024-03-20">
 
 <title>jasonjfoster.github.io - Eigen</title>
 <style>
@@ -191,7 +191,7 @@ window.Quarto = {
       <div>
       <div class="quarto-title-meta-heading">Published</div>
       <div class="quarto-title-meta-contents">
-        <p class="date">March 18, 2024</p>
+        <p class="date">March 20, 2024</p>
       </div>
     </div>
     
@@ -269,14 +269,14 @@ window.Quarto = {
 <div class="cell">
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>eigen_decomp(overlap_df, comps) <span class="op">*</span> scale[<span class="st">"periods"</span>] <span class="op">*</span> scale[<span class="st">"overlap"</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>array([[ 2.98499303e-02, -3.64332899e-03, -1.48825061e-04,
-         2.56023589e-03],
-       [-3.64332899e-03,  4.44686001e-04,  1.81648217e-05,
-        -3.12489228e-04],
-       [-1.48825061e-04,  1.81648217e-05,  7.42008395e-07,
-        -1.27647623e-05],
-       [ 2.56023589e-03, -3.12489228e-04, -1.27647623e-05,
-         2.19592065e-04]])</code></pre>
+<pre><code>array([[ 2.98380602e-02, -3.65933302e-03, -1.47878851e-04,
+         2.55557936e-03],
+       [-3.65933302e-03,  4.48779783e-04,  1.81358292e-05,
+        -3.13415681e-04],
+       [-1.47878851e-04,  1.81358292e-05,  7.32894651e-07,
+        -1.26655734e-05],
+       [ 2.55557936e-03, -3.13415681e-04, -1.26655734e-05,
+         2.18881048e-04]])</code></pre>
 </div>
 </div>
 <div class="cell">
@@ -304,7 +304,7 @@ window.Quarto = {
 <div class="cell">
 <div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>variance_explained(overlap_df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>array([0.87337347, 0.99216469, 0.99826819, 1.        ])</code></pre>
+<pre><code>array([0.87364043, 0.99215076, 0.99826523, 1.        ])</code></pre>
 </div>
 </div>
 </section>
@@ -325,13 +325,16 @@ window.Quarto = {
 <span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(width <span class="op">-</span> <span class="dv">1</span>, n_rows):</span>
 <span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>        </span>
 <span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>        idx <span class="op">=</span> <span class="bu">range</span>(<span class="bu">max</span>(i <span class="op">-</span> width <span class="op">+</span> <span class="dv">1</span>, <span class="dv">0</span>), i <span class="op">+</span> <span class="dv">1</span>)</span>
-<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>        evec <span class="op">=</span> eigen(x.iloc[idx])[<span class="st">"vectors"</span>][:, comp <span class="op">-</span> <span class="dv">1</span>]</span>
-<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>        result_ls.append(evec)</span>
-<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>    result_df <span class="op">=</span> pd.DataFrame(result_ls, index <span class="op">=</span> x.index[(width <span class="op">-</span> <span class="dv">1</span>):],</span>
-<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>                             columns <span class="op">=</span> x.columns)</span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>        LV <span class="op">=</span> eigen(x.iloc[idx])</span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>        V <span class="op">=</span> LV[<span class="st">"vectors"</span>]</span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>        result_ls.append(V[:, comp <span class="op">-</span> <span class="dv">1</span>])</span>
 <span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result_df  </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>    result_df <span class="op">=</span> pd.DataFrame(result_ls, index <span class="op">=</span> x.index[(width <span class="op">-</span> <span class="dv">1</span>):],</span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a>                             columns <span class="op">=</span> x.columns)</span>
+<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result_df  </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>comp <span class="op">=</span> <span class="dv">1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -356,27 +359,29 @@ window.Quarto = {
 <div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> roll_eigen2(x, width, comp):</span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>    </span>
 <span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>    n_rows <span class="op">=</span> <span class="bu">len</span>(x)</span>
-<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>    evecs_ls <span class="op">=</span> []</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>    V_ls <span class="op">=</span> []</span>
 <span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>    result_ls <span class="op">=</span> []</span>
 <span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>    </span>
 <span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(width <span class="op">-</span> <span class="dv">1</span>, n_rows):</span>
 <span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>        </span>
 <span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>        idx <span class="op">=</span> <span class="bu">range</span>(<span class="bu">max</span>(i <span class="op">-</span> width <span class="op">+</span> <span class="dv">1</span>, <span class="dv">0</span>), i <span class="op">+</span> <span class="dv">1</span>)</span>
-<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>        evecs <span class="op">=</span> eigen(x.iloc[idx])[<span class="st">"vectors"</span>]</span>
-<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> i <span class="op">&gt;</span> width <span class="op">-</span> <span class="dv">1</span>:</span>
-<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a>            </span>
-<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a>            similarity <span class="op">=</span> np.dot(evecs.T, evecs_ls[<span class="op">-</span><span class="dv">1</span>])</span>
-<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a>            order <span class="op">=</span> np.argmax(np.<span class="bu">abs</span>(similarity), axis <span class="op">=</span> <span class="dv">1</span>)</span>
-<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a>            evecs <span class="op">=</span> np.sign(np.diag(similarity[:, order])) <span class="op">*</span> evecs[:, order]</span>
-<span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a>            </span>
-<span id="cb14-18"><a href="#cb14-18" aria-hidden="true" tabindex="-1"></a>        evecs_ls.append(evecs)</span>
-<span id="cb14-19"><a href="#cb14-19" aria-hidden="true" tabindex="-1"></a>        result_ls.append(evecs[:, comp <span class="op">-</span> <span class="dv">1</span>])</span>
-<span id="cb14-20"><a href="#cb14-20" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb14-21"><a href="#cb14-21" aria-hidden="true" tabindex="-1"></a>    result_df <span class="op">=</span> pd.DataFrame(result_ls, index <span class="op">=</span> x.index[(width <span class="op">-</span> <span class="dv">1</span>):],</span>
-<span id="cb14-22"><a href="#cb14-22" aria-hidden="true" tabindex="-1"></a>                             columns <span class="op">=</span> x.columns)</span>
-<span id="cb14-23"><a href="#cb14-23" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb14-24"><a href="#cb14-24" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result_df</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>        LV <span class="op">=</span> eigen(x.iloc[idx])</span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>        V <span class="op">=</span> LV[<span class="st">"vectors"</span>]</span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> i <span class="op">&gt;</span> width <span class="op">-</span> <span class="dv">1</span>:</span>
+<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a>            </span>
+<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a>            similarity <span class="op">=</span> np.dot(V, V_ls[<span class="op">-</span><span class="dv">1</span>])</span>
+<span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a>            order <span class="op">=</span> np.argmax(np.<span class="bu">abs</span>(similarity), axis <span class="op">=</span> <span class="dv">1</span>)</span>
+<span id="cb14-18"><a href="#cb14-18" aria-hidden="true" tabindex="-1"></a>            V <span class="op">=</span> np.sign(np.diag(similarity[:, order])) <span class="op">*</span> V[:, order]</span>
+<span id="cb14-19"><a href="#cb14-19" aria-hidden="true" tabindex="-1"></a>            </span>
+<span id="cb14-20"><a href="#cb14-20" aria-hidden="true" tabindex="-1"></a>        V_ls.append(V)</span>
+<span id="cb14-21"><a href="#cb14-21" aria-hidden="true" tabindex="-1"></a>        result_ls.append(V[:, comp <span class="op">-</span> <span class="dv">1</span>])</span>
+<span id="cb14-22"><a href="#cb14-22" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb14-23"><a href="#cb14-23" aria-hidden="true" tabindex="-1"></a>    result_df <span class="op">=</span> pd.DataFrame(result_ls, index <span class="op">=</span> x.index[(width <span class="op">-</span> <span class="dv">1</span>):],</span>
+<span id="cb14-24"><a href="#cb14-24" aria-hidden="true" tabindex="-1"></a>                             columns <span class="op">=</span> x.columns)</span>
+<span id="cb14-25"><a href="#cb14-25" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb14-26"><a href="#cb14-26" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result_df</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>clean_df <span class="op">=</span> roll_eigen2(overlap_df, width, comp)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -398,7 +403,7 @@ window.Quarto = {
 <div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> roll_shocks(x, width, comp):</span>
 <span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>    </span>
 <span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>    n_rows <span class="op">=</span> <span class="bu">len</span>(x)</span>
-<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>    evecs_ls <span class="op">=</span> []</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>    V_ls <span class="op">=</span> []</span>
 <span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>    result_ls <span class="op">=</span> []</span>
 <span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>    </span>
 <span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(width <span class="op">-</span> <span class="dv">1</span>, n_rows):</span>
@@ -409,15 +414,15 @@ window.Quarto = {
 <span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a>        L <span class="op">=</span> LV[<span class="st">"values"</span>]</span>
 <span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a>        V <span class="op">=</span> LV[<span class="st">"vectors"</span>]</span>
 <span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="bu">len</span>(evecs_ls) <span class="op">&gt;</span> <span class="dv">1</span>:</span>
+<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="bu">len</span>(V_ls) <span class="op">&gt;</span> <span class="dv">1</span>:</span>
 <span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a>            </span>
-<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a>            similarity <span class="op">=</span> np.dot(V.T, evecs_ls[<span class="op">-</span><span class="dv">1</span>])</span>
+<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a>            similarity <span class="op">=</span> np.dot(V.T, V_ls[<span class="op">-</span><span class="dv">1</span>])</span>
 <span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a>            order <span class="op">=</span> np.argmax(np.<span class="bu">abs</span>(similarity), axis <span class="op">=</span> <span class="dv">1</span>)</span>
 <span id="cb16-19"><a href="#cb16-19" aria-hidden="true" tabindex="-1"></a>            L <span class="op">=</span> L[order]</span>
 <span id="cb16-20"><a href="#cb16-20" aria-hidden="true" tabindex="-1"></a>            V <span class="op">=</span> np.sign(np.diag(similarity[:, order])) <span class="op">*</span> V[:, order]</span>
 <span id="cb16-21"><a href="#cb16-21" aria-hidden="true" tabindex="-1"></a>        </span>
 <span id="cb16-22"><a href="#cb16-22" aria-hidden="true" tabindex="-1"></a>        shocks <span class="op">=</span> np.sqrt(L[comp <span class="op">-</span> <span class="dv">1</span>]) <span class="op">*</span> V[:, comp <span class="op">-</span> <span class="dv">1</span>]</span>
-<span id="cb16-23"><a href="#cb16-23" aria-hidden="true" tabindex="-1"></a>        evecs_ls.append(V)</span>
+<span id="cb16-23"><a href="#cb16-23" aria-hidden="true" tabindex="-1"></a>        V_ls.append(V)</span>
 <span id="cb16-24"><a href="#cb16-24" aria-hidden="true" tabindex="-1"></a>        result_ls.append(shocks)</span>
 <span id="cb16-25"><a href="#cb16-25" aria-hidden="true" tabindex="-1"></a>        </span>
 <span id="cb16-26"><a href="#cb16-26" aria-hidden="true" tabindex="-1"></a>    result_df <span class="op">=</span> pd.DataFrame(result_ls, index <span class="op">=</span> x.index[(width <span class="op">-</span> <span class="dv">1</span>):],</span>

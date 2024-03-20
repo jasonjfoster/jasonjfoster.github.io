@@ -126,8 +126,11 @@ def roll_eigen1(x, width, comp):
     for i in range(width - 1, n_rows):
         
         idx = range(max(i - width + 1, 0), i + 1)
-        evec = eigen(x.iloc[idx])["vectors"][:, comp - 1]
-        result_ls.append(evec)
+        
+        LV = eigen(x.iloc[idx])
+        V = LV["vectors"]
+        
+        result_ls.append(V[:, comp - 1])
     
     result_df = pd.DataFrame(result_ls, index = x.index[(width - 1):],
                              columns = x.columns)
@@ -157,22 +160,24 @@ print(raw_plt)
 def roll_eigen2(x, width, comp):
     
     n_rows = len(x)
-    evecs_ls = []
+    V_ls = []
     result_ls = []
     
     for i in range(width - 1, n_rows):
         
         idx = range(max(i - width + 1, 0), i + 1)
-        evecs = eigen(x.iloc[idx])["vectors"]
+        
+        LV = eigen(x.iloc[idx])
+        V = LV["vectors"]
         
         if i > width - 1:
             
-            similarity = np.dot(evecs.T, evecs_ls[-1])
+            similarity = np.dot(V, V_ls[-1])
             order = np.argmax(np.abs(similarity), axis = 1)
-            evecs = np.sign(np.diag(similarity[:, order])) * evecs[:, order]
+            V = np.sign(np.diag(similarity[:, order])) * V[:, order]
             
-        evecs_ls.append(evecs)
-        result_ls.append(evecs[:, comp - 1])
+        V_ls.append(V)
+        result_ls.append(V[:, comp - 1])
     
     result_df = pd.DataFrame(result_ls, index = x.index[(width - 1):],
                              columns = x.columns)
@@ -199,7 +204,7 @@ Product of the $n$th eigenvector and square root of the $n$th eigenvalue:
 def roll_shocks(x, width, comp):
     
     n_rows = len(x)
-    evecs_ls = []
+    V_ls = []
     result_ls = []
     
     for i in range(width - 1, n_rows):
@@ -210,15 +215,15 @@ def roll_shocks(x, width, comp):
         L = LV["values"]
         V = LV["vectors"]
         
-        if len(evecs_ls) > 1:
+        if len(V_ls) > 1:
             
-            similarity = np.dot(V.T, evecs_ls[-1])
+            similarity = np.dot(V.T, V_ls[-1])
             order = np.argmax(np.abs(similarity), axis = 1)
             L = L[order]
             V = np.sign(np.diag(similarity[:, order])) * V[:, order]
         
         shocks = np.sqrt(L[comp - 1]) * V[:, comp - 1]
-        evecs_ls.append(V)
+        V_ls.append(V)
         result_ls.append(shocks)
         
     result_df = pd.DataFrame(result_ls, index = x.index[(width - 1):],
@@ -237,7 +242,3 @@ shocks_mlt[ , index := as.Date(index)]
 shocks_plt <- plot_ts(shocks_mlt, title = "Implied shocks 1Y using PC1 (%)", multiple = 100)
 print(shocks_plt)
 ```
-
-
-
-
