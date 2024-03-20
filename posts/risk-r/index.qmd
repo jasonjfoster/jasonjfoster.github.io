@@ -323,7 +323,7 @@ lm_sar <- function(x, y, weights, intercept) {
 ```
 
 ```{r}
-lm_sar(overlap_x_xts, overlap_y_xts, weights, intercept) * sqrt(scale[["periods"]]) * sqrt(scale[["overlap"]])
+lm_sar(overlap_x_xts, overlap_y_xts, weights, intercept) * sqrt(scale[["periods"]] * scale[["overlap"]])
 ```
 
 ## Risk contribution
@@ -360,7 +360,7 @@ lm_mcr <- function(x, y, weights, intercept) {
 ```
 
 ```{r}
-lm_mcr(overlap_x_xts, overlap_y_xts, weights, intercept) * sqrt(scale[["periods"]]) * sqrt(scale[["overlap"]])
+lm_mcr(overlap_x_xts, overlap_y_xts, weights, intercept) * sqrt(scale[["periods"]] * scale[["overlap"]])
 ```
 
 # Scenario analysis

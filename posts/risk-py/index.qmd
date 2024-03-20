@@ -332,7 +332,7 @@ def lm_sar(x, y, weights, intercept):
 ```
 
 ```{python}
-lm_sar(overlap_x_df, overlap_y_df, weights, intercept) * np.sqrt(scale["periods"]) * np.sqrt(scale["overlap"])
+lm_sar(overlap_x_df, overlap_y_df, weights, intercept) * np.sqrt(scale["periods"] * scale["overlap"])
 ```
 
 ## Risk contribution
@@ -369,7 +369,7 @@ def lm_mcr(x, y, weights, intercept):
 ```
 
 ```{python}
-lm_mcr(overlap_x_df, overlap_y_df, weights, intercept) * np.sqrt(scale["periods"]) * np.sqrt(scale["overlap"])
+lm_mcr(overlap_x_df, overlap_y_df, weights, intercept) * np.sqrt(scale["periods"] * scale["overlap"])
 ```
 
 # Scenario analysis
