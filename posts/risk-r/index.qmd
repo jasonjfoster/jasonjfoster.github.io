@@ -157,6 +157,84 @@ lm_se(overlap_x_xts, overlap_y_xts, weights, intercept)
 coef(summary(fit))[ , "Std. Error"]
 ```
 
+### Shapley values
+
+$$
+{\displaystyle \varphi _{i}(v)=\sum _{S\subseteq N\setminus \{i\}}{\frac {|S|!\;(n-|S|-1)!}{n!}}(v(S\cup \{i\})-v(S))}
+$$
+
+```{r}
+lm_shap <- function(x, y, weights, intercept) {
+  
+  n_rows <- nrow(x)
+  n_cols <- ncol(x)
+  n_combn <- 2 ^ n_cols
+  n_vec <- array(0, n_combn)
+  ix_mat <- matrix(0, nrow = n_cols, ncol = n_combn)
+  rsq <- array(0, n_combn)
+  result <- array(0, n_cols)
+  
+  # number of binary combinations
+  for (k in 1:n_combn) {
+    
+    n <- 0
+    n_size <- k - 1
+    
+    # find the binary combination
+    for (j in 1:n_cols) {
+      
+      if (n_size %% 2 == 0) {
+        
+        n <- n + 1
+        
+        ix_mat[j, k] = j - 1 + 1
+        
+      }
+      
+      n_size <- n_size %/% 2
+      
+    }
+    
+    n_vec[k] <- n
+    
+    if (n > 0) {
+      
+      ix_subset<- which(ix_mat[ , k] != 0)
+      x_subset <- x[ , ix_subset]
+      
+      rsq[k] <- lm_rsq(x_subset, y, weights, intercept)
+
+    }
+    
+  }
+
+  # calculate the exact Shapley value for r-squared
+  for (j in 1:n_cols) {
+
+    ix_pos <- which(ix_mat[j, ] != 0)
+    ix_neg <- which(ix_mat[j, ] == 0)
+    ix_n <- n_vec[ix_neg]
+    rsq_diff <- rsq[ix_pos] - rsq[ix_neg]
+
+    for (k in 1:(n_combn / 2)) {
+
+      s <- ix_n[k]
+      weight <- factorial(s) * factorial((n_cols - s - 1)) / factorial(n_cols)
+      result[j]<- result[j] + weight * rsq_diff[k]
+
+    }
+    
+  }
+
+  return(result)
+  
+}
+```
+
+```{r}
+lm_shap(overlap_x_xts, overlap_y_xts, weights, intercept)
+```
+
 ## Principal component regression
 
 ```{r, message = FALSE}
@@ -184,7 +262,7 @@ pcr_coef <- function(x, y, comps) {
     
     x <- sweep(x, 2, colMeans(x), "-")
     LV <- eigen(cov(x))
-    V <- LV$vectors
+    V <- LV[["vectors"]]
     
     W <- x %*% V
     gamma <- solve(crossprod(W)) %*% (crossprod(W, y))
