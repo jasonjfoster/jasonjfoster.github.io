@@ -36,6 +36,10 @@ names(palette) <- c("Overall", py$factors)
 
 # Regression analysis
 
+```{python}
+import math
+```
+
 ## Ordinary least squares
 
 ### Coefficients
@@ -151,6 +155,73 @@ lm_se(overlap_x_df, overlap_y_df, weights, intercept)
 
 ```{python}
 np.array(fit.bse)
+```
+
+### Shapley values
+
+$$
+{\displaystyle \varphi _{i}(v)=\sum _{S\subseteq N\setminus \{i\}}{\frac {|S|!\;(n-|S|-1)!}{n!}}(v(S\cup \{i\})-v(S))}
+$$
+
+-   <https://real-statistics.com/multiple-regression/shapley-owen-decomposition/>
+
+```{python}
+def lm_shap(x, y, weights, intercept):
+  
+    n_rows = x.shape[0]
+    n_cols = x.shape[1]
+    n_combn = 2 ** n_cols
+    n_vec = np.zeros(n_combn)
+    ix_mat = np.zeros((n_cols, n_combn))
+    rsq = np.zeros(n_combn)
+    result = np.zeros(n_cols)
+    
+    # number of binary combinations
+    for k in range(n_combn):
+      
+        n = 0
+        n_size = k
+        
+        # find the binary combination
+        for j in range(n_cols):
+          
+            if n_size % 2 == 0:
+              
+                n += 1
+                
+                ix_mat[j, k] = j + 1
+                
+            n_size //= 2
+        
+        n_vec[k] = n
+        
+        if n > 0:
+          
+            ix_subset = np.where(ix_mat[:, k] != 0)[0]
+            x_subset = x.iloc[:, ix_subset]
+            
+            rsq[k] = lm_rsq(x_subset, y, weights, intercept)
+
+    # calculate the exact Shapley value for r-squared
+    for j in range(n_cols):
+      
+        ix_pos = np.where(ix_mat[j, :] != 0)[0]
+        ix_neg = np.where(ix_mat[j, :] == 0)[0]
+        ix_n = n_vec[ix_neg]
+        rsq_diff = rsq[ix_pos] - rsq[ix_neg]
+
+        for k in range(int(n_combn / 2)):
+          
+            s = int(ix_n[k])
+            weight = math.factorial(s) * math.factorial((n_cols - s - 1)) \
+                / math.factorial(n_cols)
+            result[j] += weight * rsq_diff[k]
+
+    return result
+```
+
+```{python}
+lm_shap(overlap_x_df, overlap_y_df, weights, intercept)
 ```
 
 ## Principal component regression

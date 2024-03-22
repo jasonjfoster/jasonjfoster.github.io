@@ -163,6 +163,8 @@ $$
 {\displaystyle \varphi _{i}(v)=\sum _{S\subseteq N\setminus \{i\}}{\frac {|S|!\;(n-|S|-1)!}{n!}}(v(S\cup \{i\})-v(S))}
 $$
 
+-   <https://real-statistics.com/multiple-regression/shapley-owen-decomposition/>
+
 ```{r}
 lm_shap <- function(x, y, weights, intercept) {
   
@@ -220,7 +222,7 @@ lm_shap <- function(x, y, weights, intercept) {
 
       s <- ix_n[k]
       weight <- factorial(s) * factorial((n_cols - s - 1)) / factorial(n_cols)
-      result[j]<- result[j] + weight * rsq_diff[k]
+      result[j] <- result[j] + weight * rsq_diff[k]
 
     }
     

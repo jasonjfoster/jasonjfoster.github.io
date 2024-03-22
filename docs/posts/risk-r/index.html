@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Jason Foster">
-<meta name="dcterms.date" content="2024-03-21">
+<meta name="dcterms.date" content="2024-03-22">
 
 <title>jasonjfoster.github.io - Risk</title>
 <style>
@@ -191,7 +191,7 @@ window.Quarto = {
       <div>
       <div class="quarto-title-meta-heading">Published</div>
       <div class="quarto-title-meta-contents">
-        <p class="date">March 21, 2024</p>
+        <p class="date">March 22, 2024</p>
       </div>
     </div>
     
@@ -404,6 +404,9 @@ BAICX 0.8110302</code></pre>
 <p><span class="math display">\[
 {\displaystyle \varphi _{i}(v)=\sum _{S\subseteq N\setminus \{i\}}{\frac {|S|!\;(n-|S|-1)!}{n!}}(v(S\cup \{i\})-v(S))}
 \]</span></p>
+<ul>
+<li><a href="https://real-statistics.com/multiple-regression/shapley-owen-decomposition/" class="uri">https://real-statistics.com/multiple-regression/shapley-owen-decomposition/</a></li>
+</ul>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>lm_shap <span class="ot">&lt;-</span> <span class="cf">function</span>(x, y, weights, intercept) {</span>
 <span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>  </span>
@@ -461,7 +464,7 @@ BAICX 0.8110302</code></pre>
 <span id="cb19-54"><a href="#cb19-54" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb19-55"><a href="#cb19-55" aria-hidden="true" tabindex="-1"></a>      s <span class="ot">&lt;-</span> ix_n[k]</span>
 <span id="cb19-56"><a href="#cb19-56" aria-hidden="true" tabindex="-1"></a>      weight <span class="ot">&lt;-</span> <span class="fu">factorial</span>(s) <span class="sc">*</span> <span class="fu">factorial</span>((n_cols <span class="sc">-</span> s <span class="sc">-</span> <span class="dv">1</span>)) <span class="sc">/</span> <span class="fu">factorial</span>(n_cols)</span>
-<span id="cb19-57"><a href="#cb19-57" aria-hidden="true" tabindex="-1"></a>      result[j]<span class="ot">&lt;-</span> result[j] <span class="sc">+</span> weight <span class="sc">*</span> rsq_diff[k]</span>
+<span id="cb19-57"><a href="#cb19-57" aria-hidden="true" tabindex="-1"></a>      result[j] <span class="ot">&lt;-</span> result[j] <span class="sc">+</span> weight <span class="sc">*</span> rsq_diff[k]</span>
 <span id="cb19-58"><a href="#cb19-58" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb19-59"><a href="#cb19-59" aria-hidden="true" tabindex="-1"></a>    }</span>
 <span id="cb19-60"><a href="#cb19-60" aria-hidden="true" tabindex="-1"></a>    </span>
