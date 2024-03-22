@@ -221,7 +221,7 @@ lm_shap <- function(x, y, weights, intercept) {
     for (k in 1:(n_combn / 2)) {
 
       s <- ix_n[k]
-      weight <- factorial(s) * factorial((n_cols - s - 1)) / factorial(n_cols)
+      weight <- factorial(s) * factorial(n_cols - s - 1) / factorial(n_cols)
       result[j] <- result[j] + weight * rsq_diff[k]
 
     }

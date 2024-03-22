@@ -214,7 +214,7 @@ def lm_shap(x, y, weights, intercept):
         for k in range(int(n_combn / 2)):
           
             s = int(ix_n[k])
-            weight = math.factorial(s) * math.factorial((n_cols - s - 1)) \
+            weight = math.factorial(s) * math.factorial(n_cols - s - 1) \
                 / math.factorial(n_cols)
             result[j] += weight * rsq_diff[k]
 
