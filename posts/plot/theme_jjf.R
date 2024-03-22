@@ -97,7 +97,7 @@ plot_jjf <- function(dt, x, y, z, decomp, title, xlab, ylab, multiple, palette, 
   if (!is.null(palette)) {
     dt[ , (z) := factor(get(z), levels = names(palette))]
   } else {
-    dt[ , (z) := factor(capitalize(get(z)), levels = unique(get(z)))]
+    dt[ , (z) := factor(capitalize(get(z)), levels = unique(capitalize(get(z))))]
   }
   
   result <- ggplot() +

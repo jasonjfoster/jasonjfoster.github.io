@@ -33,6 +33,10 @@ sd_df = returns_df["overlap"].rolling(width, min_periods = 1).std() * \
 # Black-Scholes model
 
 ```{python}
+from scipy.stats import norm
+```
+
+```{python}
 def level_shock(shock, S, tau, sigma):
     
     result = S * (1 + shock * sigma * np.sqrt(tau))

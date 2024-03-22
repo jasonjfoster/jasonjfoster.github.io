@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Jason Foster">
-<meta name="dcterms.date" content="2024-02-20">
+<meta name="dcterms.date" content="2024-03-22">
 
 <title>jasonjfoster.github.io - Securities</title>
 <style>
@@ -191,7 +191,7 @@ window.Quarto = {
       <div>
       <div class="quarto-title-meta-heading">Published</div>
       <div class="quarto-title-meta-contents">
-        <p class="date">February 20, 2024</p>
+        <p class="date">March 22, 2024</p>
       </div>
     </div>
     
@@ -264,31 +264,34 @@ window.Quarto = {
 <section id="black-scholes-model" class="level1">
 <h1>Black-Scholes model</h1>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> level_shock(shock, S, tau, sigma):</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> S <span class="op">*</span> (<span class="dv">1</span> <span class="op">+</span> shock <span class="op">*</span> sigma <span class="op">*</span> np.sqrt(tau))</span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> scipy.stats <span class="im">import</span> norm</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> level_shock(shock, S, tau, sigma):</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> S <span class="op">*</span> (<span class="dv">1</span> <span class="op">+</span> shock <span class="op">*</span> sigma <span class="op">*</span> np.sqrt(tau))</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <ul>
 <li><a href="https://en.wikipedia.org/wiki/Greeks_(finance)" class="uri">https://en.wikipedia.org/wiki/Greeks_(finance)</a></li>
 <li><a href="https://www.wolframalpha.com/input/?i=option+pricing+formula" class="uri">https://www.wolframalpha.com/input/?i=option+pricing+formula</a></li>
 </ul>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>factor <span class="op">=</span> <span class="st">"SP500"</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>types <span class="op">=</span> [<span class="st">"call"</span>, <span class="st">"put"</span>]</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>S <span class="op">=</span> levels_df.ffill()[factor].iloc[<span class="op">-</span><span class="dv">1</span>]</span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>K <span class="op">=</span> S</span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>r <span class="op">=</span> <span class="dv">0</span> <span class="co"># use "USD3MTD156N"</span></span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>q <span class="op">=</span> <span class="dv">0</span> <span class="co"># see https://stackoverflow.com/a/11286679 </span></span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>tau <span class="op">=</span> <span class="dv">1</span> <span class="co"># = 252 / 252</span></span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>sigma <span class="op">=</span> sd_df[factor].iloc[<span class="op">-</span><span class="dv">1</span>] <span class="co"># use "VIXCLS"</span></span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>shocks <span class="op">=</span> [x <span class="op">/</span> <span class="dv">2</span> <span class="cf">for</span> x <span class="kw">in</span> <span class="bu">range</span>(<span class="op">-</span><span class="dv">6</span>, <span class="dv">7</span>)]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>factor <span class="op">=</span> <span class="st">"SP500"</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>types <span class="op">=</span> [<span class="st">"call"</span>, <span class="st">"put"</span>]</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>S <span class="op">=</span> levels_df.ffill()[factor].iloc[<span class="op">-</span><span class="dv">1</span>]</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>K <span class="op">=</span> S</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>r <span class="op">=</span> <span class="dv">0</span> <span class="co"># use "USD3MTD156N"</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>q <span class="op">=</span> <span class="dv">0</span> <span class="co"># see https://stackoverflow.com/a/11286679 </span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>tau <span class="op">=</span> <span class="dv">1</span> <span class="co"># = 252 / 252</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>sigma <span class="op">=</span> sd_df[factor].iloc[<span class="op">-</span><span class="dv">1</span>] <span class="co"># use "VIXCLS"</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>shocks <span class="op">=</span> [x <span class="op">/</span> <span class="dv">2</span> <span class="cf">for</span> x <span class="kw">in</span> <span class="bu">range</span>(<span class="op">-</span><span class="dv">6</span>, <span class="dv">7</span>)]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>greeks_df <span class="op">=</span> pd.DataFrame([(x, y) <span class="cf">for</span> x <span class="kw">in</span> types <span class="cf">for</span> y <span class="kw">in</span> shocks], </span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    columns <span class="op">=</span> [<span class="st">"type"</span>, <span class="st">"shock"</span>])</span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>greeks_df[<span class="st">"spot"</span>] <span class="op">=</span> level_shock(greeks_df[<span class="st">"shock"</span>], S, tau, sigma)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>greeks_df <span class="op">=</span> pd.DataFrame([(x, y) <span class="cf">for</span> x <span class="kw">in</span> types <span class="cf">for</span> y <span class="kw">in</span> shocks], </span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    columns <span class="op">=</span> [<span class="st">"type"</span>, <span class="st">"shock"</span>])</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>greeks_df[<span class="st">"spot"</span>] <span class="op">=</span> level_shock(greeks_df[<span class="st">"shock"</span>], S, tau, sigma)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <section id="value" class="level2">
 <h2 class="anchored" data-anchor-id="value">Value</h2>
@@ -300,26 +303,26 @@ V_{p}&amp;=e^{-r\tau}K\Phi(-d_{2})-Se^{-q\tau}\Phi(-d_{1})
 \end{aligned}
 \]</span></p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> bs_value(<span class="bu">type</span>, S, K, r, q, tau, sigma, d1, d2):</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="bu">type</span> <span class="op">==</span> <span class="st">"call"</span>):</span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>        result <span class="op">=</span>  S <span class="op">*</span> np.exp(<span class="op">-</span>q <span class="op">*</span> tau) <span class="op">*</span> Phi(d1) <span class="op">-</span> np.exp(<span class="op">-</span>r <span class="op">*</span> tau) <span class="op">*</span> K <span class="op">*</span> Phi(d2)</span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">elif</span> (<span class="bu">type</span> <span class="op">==</span> <span class="st">"put"</span>):</span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>        result <span class="op">=</span> np.exp(<span class="op">-</span>r <span class="op">*</span> tau) <span class="op">*</span> K <span class="op">*</span> Phi(<span class="op">-</span>d2) <span class="op">-</span> S <span class="op">*</span> np.exp(<span class="op">-</span>q <span class="op">*</span> tau) <span class="op">*</span> Phi(<span class="op">-</span>d1)</span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<div class="cell">
 <div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> bs_value(<span class="bu">type</span>, S, K, r, q, tau, sigma, d1, d2):</span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    r_df <span class="op">=</span> np.exp(<span class="op">-</span>r <span class="op">*</span> tau)</span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    q_df <span class="op">=</span> np.exp(<span class="op">-</span>q <span class="op">*</span> tau)</span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>    call_value <span class="op">=</span> S <span class="op">*</span> q_df <span class="op">*</span> Phi(d1) <span class="op">-</span> r_df <span class="op">*</span> K <span class="op">*</span> Phi(d2)</span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>    put_value <span class="op">=</span> r_df <span class="op">*</span> K <span class="op">*</span> Phi(<span class="op">-</span>d2) <span class="op">-</span> S <span class="op">*</span> q_df <span class="op">*</span> Phi(<span class="op">-</span>d1)</span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> np.where(<span class="bu">type</span> <span class="op">==</span> <span class="st">"call"</span>, call_value, put_value)</span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="bu">type</span> <span class="op">==</span> <span class="st">"call"</span>):</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>        result <span class="op">=</span>  S <span class="op">*</span> np.exp(<span class="op">-</span>q <span class="op">*</span> tau) <span class="op">*</span> Phi(d1) <span class="op">-</span> np.exp(<span class="op">-</span>r <span class="op">*</span> tau) <span class="op">*</span> K <span class="op">*</span> Phi(d2)</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">elif</span> (<span class="bu">type</span> <span class="op">==</span> <span class="st">"put"</span>):</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>        result <span class="op">=</span> np.exp(<span class="op">-</span>r <span class="op">*</span> tau) <span class="op">*</span> K <span class="op">*</span> Phi(<span class="op">-</span>d2) <span class="op">-</span> S <span class="op">*</span> np.exp(<span class="op">-</span>q <span class="op">*</span> tau) <span class="op">*</span> Phi(<span class="op">-</span>d1)</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> bs_value(<span class="bu">type</span>, S, K, r, q, tau, sigma, d1, d2):</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    r_df <span class="op">=</span> np.exp(<span class="op">-</span>r <span class="op">*</span> tau)</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    q_df <span class="op">=</span> np.exp(<span class="op">-</span>q <span class="op">*</span> tau)</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>    call_value <span class="op">=</span> S <span class="op">*</span> q_df <span class="op">*</span> Phi(d1) <span class="op">-</span> r_df <span class="op">*</span> K <span class="op">*</span> Phi(d2)</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>    put_value <span class="op">=</span> r_df <span class="op">*</span> K <span class="op">*</span> Phi(<span class="op">-</span>d2) <span class="op">-</span> S <span class="op">*</span> q_df <span class="op">*</span> Phi(<span class="op">-</span>d1)</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> np.where(<span class="bu">type</span> <span class="op">==</span> <span class="st">"call"</span>, call_value, put_value)</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>where</p>
 <p><span class="math display">\[
@@ -331,35 +334,35 @@ d_{2}&amp;={\frac{\ln(S/K)+(r-q-\sigma^{2}/2)\tau}{\sigma{\sqrt{\tau}}}}=d_{1}-\
 \end{aligned}
 \]</span></p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> bs_d1(S, K, r, q, tau, sigma):</span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> (np.log(S <span class="op">/</span> K) <span class="op">+</span> (r <span class="op">-</span> q <span class="op">+</span> sigma <span class="op">**</span> <span class="dv">2</span> <span class="op">/</span> <span class="dv">2</span>) <span class="op">*</span> tau) <span class="op">/</span> (sigma <span class="op">*</span> np.sqrt(tau))</span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result</span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> bs_d2(S, K, r, q, tau, sigma):</span>
-<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> (np.log(S <span class="op">/</span> K) <span class="op">+</span> (r <span class="op">-</span> q <span class="op">-</span> sigma <span class="op">**</span> <span class="dv">2</span> <span class="op">/</span> <span class="dv">2</span>) <span class="op">*</span> tau) <span class="op">/</span> (sigma <span class="op">*</span> np.sqrt(tau))</span>
-<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result</span>
-<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> phi(x):</span>
-<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> norm.pdf(x)</span>
-<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result</span>
-<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> Phi(x):</span>
-<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> norm.cdf(x)</span>
-<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> bs_d1(S, K, r, q, tau, sigma):</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> (np.log(S <span class="op">/</span> K) <span class="op">+</span> (r <span class="op">-</span> q <span class="op">+</span> sigma <span class="op">**</span> <span class="dv">2</span> <span class="op">/</span> <span class="dv">2</span>) <span class="op">*</span> tau) <span class="op">/</span> (sigma <span class="op">*</span> np.sqrt(tau))</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> bs_d2(S, K, r, q, tau, sigma):</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> (np.log(S <span class="op">/</span> K) <span class="op">+</span> (r <span class="op">-</span> q <span class="op">-</span> sigma <span class="op">**</span> <span class="dv">2</span> <span class="op">/</span> <span class="dv">2</span>) <span class="op">*</span> tau) <span class="op">/</span> (sigma <span class="op">*</span> np.sqrt(tau))</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result</span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> phi(x):</span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> norm.pdf(x)</span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result</span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> Phi(x):</span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> norm.cdf(x)</span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>greeks_df[<span class="st">"d1"</span>] <span class="op">=</span> bs_d1(greeks_df[<span class="st">"spot"</span>], K, r, q, tau, sigma)</span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>greeks_df[<span class="st">"d2"</span>] <span class="op">=</span> bs_d2(greeks_df[<span class="st">"spot"</span>], K, r, q, tau, sigma)</span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>greeks_df[<span class="st">"value"</span>] <span class="op">=</span> bs_value(greeks_df[<span class="st">"type"</span>], greeks_df[<span class="st">"spot"</span>], K, r, q, tau, sigma,</span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>                              greeks_df[<span class="st">"d1"</span>], greeks_df[<span class="st">"d2"</span>]) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>greeks_df[<span class="st">"d1"</span>] <span class="op">=</span> bs_d1(greeks_df[<span class="st">"spot"</span>], K, r, q, tau, sigma)</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>greeks_df[<span class="st">"d2"</span>] <span class="op">=</span> bs_d2(greeks_df[<span class="st">"spot"</span>], K, r, q, tau, sigma)</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>greeks_df[<span class="st">"value"</span>] <span class="op">=</span> bs_value(greeks_df[<span class="st">"type"</span>], greeks_df[<span class="st">"spot"</span>], K, r, q, tau, sigma,</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>                              greeks_df[<span class="st">"d1"</span>], greeks_df[<span class="st">"d2"</span>]) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="first-order" class="level2">
@@ -373,19 +376,19 @@ d_{2}&amp;={\frac{\ln(S/K)+(r-q-\sigma^{2}/2)\tau}{\sigma{\sqrt{\tau}}}}=d_{1}-\
 \end{aligned}
 \]</span></p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> bs_delta(<span class="bu">type</span>, S, K, r, q, tau, sigma, d1, d2):</span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    q_df <span class="op">=</span> np.exp(<span class="op">-</span>q <span class="op">*</span> tau)</span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>    call_value <span class="op">=</span> q_df <span class="op">*</span> Phi(d1)</span>
-<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>    put_value <span class="op">=</span> <span class="op">-</span>q_df <span class="op">*</span> Phi(<span class="op">-</span>d1)</span>
-<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> np.where(<span class="bu">type</span> <span class="op">==</span> <span class="st">"call"</span>, call_value, put_value)</span>
-<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> bs_delta(<span class="bu">type</span>, S, K, r, q, tau, sigma, d1, d2):</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>    q_df <span class="op">=</span> np.exp(<span class="op">-</span>q <span class="op">*</span> tau)</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>    call_value <span class="op">=</span> q_df <span class="op">*</span> Phi(d1)</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>    put_value <span class="op">=</span> <span class="op">-</span>q_df <span class="op">*</span> Phi(<span class="op">-</span>d1)</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> np.where(<span class="bu">type</span> <span class="op">==</span> <span class="st">"call"</span>, call_value, put_value)</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>greeks_df[<span class="st">"delta"</span>] <span class="op">=</span> bs_delta(greeks_df[<span class="st">"type"</span>], greeks_df[<span class="st">"spot"</span>], K, r, q, tau, sigma,</span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>                              greeks_df[<span class="st">"d1"</span>], greeks_df[<span class="st">"d2"</span>]) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>greeks_df[<span class="st">"delta"</span>] <span class="op">=</span> bs_delta(greeks_df[<span class="st">"type"</span>], greeks_df[<span class="st">"spot"</span>], K, r, q, tau, sigma,</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>                              greeks_df[<span class="st">"d1"</span>], greeks_df[<span class="st">"d2"</span>]) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="delta-beta" class="level3">
@@ -401,50 +404,50 @@ d_{2}&amp;={\frac{\ln(S/K)+(r-q-\sigma^{2}/2)\tau}{\sigma{\sqrt{\tau}}}}=d_{1}-\
 <li><a href="https://en.wikipedia.org/wiki/Notional_amount" class="uri">https://en.wikipedia.org/wiki/Notional_amount</a></li>
 </ul>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> bs_delta_diff(<span class="bu">type</span>, S, K, r, q, tau, sigma, delta0):</span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>    d1 <span class="op">=</span> bs_d1(S, K, r, q, tau, sigma)</span>
-<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>    d2 <span class="op">=</span> bs_d2(S, K, r, q, tau, sigma)</span>
-<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>    delta <span class="op">=</span> bs_delta(<span class="bu">type</span>, S, K, r, q, tau, sigma, d1, d2)</span>
-<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>    call_value <span class="op">=</span> delta <span class="op">-</span> delta0</span>
-<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>    put_value <span class="op">=</span> delta0 <span class="op">-</span> delta</span>
-<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> np.where(<span class="bu">type</span> <span class="op">==</span> <span class="st">"call"</span>, call_value, put_value)</span>
-<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> bs_delta_diff(<span class="bu">type</span>, S, K, r, q, tau, sigma, delta0):</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>    d1 <span class="op">=</span> bs_d1(S, K, r, q, tau, sigma)</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>    d2 <span class="op">=</span> bs_d2(S, K, r, q, tau, sigma)</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>    delta <span class="op">=</span> bs_delta(<span class="bu">type</span>, S, K, r, q, tau, sigma, d1, d2)</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>    call_value <span class="op">=</span> delta <span class="op">-</span> delta0</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>    put_value <span class="op">=</span> delta0 <span class="op">-</span> delta</span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> np.where(<span class="bu">type</span> <span class="op">==</span> <span class="st">"call"</span>, call_value, put_value)</span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>beta <span class="op">=</span> <span class="fl">0.35</span></span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="bu">type</span> <span class="op">=</span> <span class="st">"call"</span></span>
-<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>n <span class="op">=</span> <span class="dv">1</span></span>
-<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>multiple <span class="op">=</span> <span class="dv">100</span></span>
-<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>total <span class="op">=</span> <span class="dv">1000000</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>beta <span class="op">=</span> <span class="fl">0.35</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="bu">type</span> <span class="op">=</span> <span class="st">"call"</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>n <span class="op">=</span> <span class="dv">1</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>multiple <span class="op">=</span> <span class="dv">100</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>total <span class="op">=</span> <span class="dv">1000000</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>d1 <span class="op">=</span> bs_d1(S, K, r, q, tau, sigma)</span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>d2 <span class="op">=</span> bs_d2(S, K, r, q, tau, sigma)</span>
-<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>sec <span class="op">=</span> {</span>
-<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">"n"</span>: n,</span>
-<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">"multiple"</span>: multiple,</span>
-<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>    <span class="st">"S"</span>: S,</span>
-<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>    <span class="st">"delta"</span>: bs_delta(<span class="bu">type</span>, S, K, r, q, tau, sigma, d1, d2),</span>
-<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>    <span class="st">"beta"</span>: <span class="dv">1</span></span>
-<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>d1 <span class="op">=</span> bs_d1(S, K, r, q, tau, sigma)</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>d2 <span class="op">=</span> bs_d2(S, K, r, q, tau, sigma)</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>sec <span class="op">=</span> {</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">"n"</span>: n,</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">"multiple"</span>: multiple,</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>    <span class="st">"S"</span>: S,</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>    <span class="st">"delta"</span>: bs_delta(<span class="bu">type</span>, S, K, r, q, tau, sigma, d1, d2),</span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>    <span class="st">"beta"</span>: <span class="dv">1</span></span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>beta_df <span class="op">=</span> pd.DataFrame([(x, y) <span class="cf">for</span> x <span class="kw">in</span> types <span class="cf">for</span> y <span class="kw">in</span> shocks], </span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>    columns <span class="op">=</span> [<span class="st">"type"</span>, <span class="st">"shock"</span>])</span>
-<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>beta_df[<span class="st">"spot"</span>] <span class="op">=</span> level_shock(beta_df[<span class="st">"shock"</span>], S, tau, sigma)</span>
-<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>beta_df[<span class="st">"static"</span>] <span class="op">=</span> beta</span>
-<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>beta_df[<span class="st">"diff"</span>] <span class="op">=</span> bs_delta_diff(<span class="bu">type</span>, beta_df[<span class="st">"spot"</span>], K, r, q, tau, sigma, sec[<span class="st">"delta"</span>])</span>
-<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>beta_df[<span class="st">"dynamic"</span>] <span class="op">=</span> beta <span class="op">+</span> sec[<span class="st">"n"</span>] <span class="op">*</span> sec[<span class="st">"multiple"</span>] <span class="op">*</span> sec[<span class="st">"S"</span>] <span class="op">*</span> sec[<span class="st">"beta"</span>] <span class="op">*</span> beta_df[<span class="st">"diff"</span>] <span class="op">/</span> total</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>beta_df <span class="op">=</span> pd.DataFrame([(x, y) <span class="cf">for</span> x <span class="kw">in</span> types <span class="cf">for</span> y <span class="kw">in</span> shocks], </span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>    columns <span class="op">=</span> [<span class="st">"type"</span>, <span class="st">"shock"</span>])</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>beta_df[<span class="st">"spot"</span>] <span class="op">=</span> level_shock(beta_df[<span class="st">"shock"</span>], S, tau, sigma)</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>beta_df[<span class="st">"static"</span>] <span class="op">=</span> beta</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>beta_df[<span class="st">"diff"</span>] <span class="op">=</span> bs_delta_diff(<span class="bu">type</span>, beta_df[<span class="st">"spot"</span>], K, r, q, tau, sigma, sec[<span class="st">"delta"</span>])</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>beta_df[<span class="st">"dynamic"</span>] <span class="op">=</span> beta <span class="op">+</span> sec[<span class="st">"n"</span>] <span class="op">*</span> sec[<span class="st">"multiple"</span>] <span class="op">*</span> sec[<span class="st">"S"</span>] <span class="op">*</span> sec[<span class="st">"beta"</span>] <span class="op">*</span> beta_df[<span class="st">"diff"</span>] <span class="op">/</span> total</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/unnamed-chunk-18-1.png" class="img-fluid figure-img" width="384"></p>
+<p><img src="index_files/figure-html/unnamed-chunk-19-1.png" class="img-fluid figure-img" width="384"></p>
 </figure>
 </div>
 </div>
@@ -464,16 +467,16 @@ d_{2}&amp;={\frac{\ln(S/K)+(r-q-\sigma^{2}/2)\tau}{\sigma{\sqrt{\tau}}}}=d_{1}-\
 \end{aligned}
 \]</span></p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> bs_vega(<span class="bu">type</span>, S, K, r, q, tau, sigma, d1, d2):</span>
-<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>    q_df <span class="op">=</span> np.exp(<span class="op">-</span>q <span class="op">*</span> tau)</span>
-<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> S <span class="op">*</span> q_df <span class="op">*</span> phi(d1) <span class="op">*</span> np.sqrt(tau)</span>
-<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> bs_vega(<span class="bu">type</span>, S, K, r, q, tau, sigma, d1, d2):</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>    q_df <span class="op">=</span> np.exp(<span class="op">-</span>q <span class="op">*</span> tau)</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> S <span class="op">*</span> q_df <span class="op">*</span> phi(d1) <span class="op">*</span> np.sqrt(tau)</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>greeks_df[<span class="st">"vega"</span>] <span class="op">=</span> bs_vega(greeks_df[<span class="st">"type"</span>], greeks_df[<span class="st">"spot"</span>], K, r, q, tau, sigma,</span>
-<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>                            greeks_df[<span class="st">"d1"</span>], greeks_df[<span class="st">"d2"</span>]) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>greeks_df[<span class="st">"vega"</span>] <span class="op">=</span> bs_vega(greeks_df[<span class="st">"type"</span>], greeks_df[<span class="st">"spot"</span>], K, r, q, tau, sigma,</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>                            greeks_df[<span class="st">"d1"</span>], greeks_df[<span class="st">"d2"</span>]) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="theta" class="level3">
@@ -485,24 +488,24 @@ d_{2}&amp;={\frac{\ln(S/K)+(r-q-\sigma^{2}/2)\tau}{\sigma{\sqrt{\tau}}}}=d_{1}-\
 \end{aligned}
 \]</span></p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> bs_theta(<span class="bu">type</span>, S, K, r, q, tau, sigma, d1, d2):</span>
-<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>    r_df <span class="op">=</span> np.exp(<span class="op">-</span>r <span class="op">*</span> tau)</span>
-<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>    q_df <span class="op">=</span> np.exp(<span class="op">-</span>q <span class="op">*</span> tau)</span>
-<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>    call_value <span class="op">=</span> <span class="op">-</span>q_df <span class="op">*</span> S <span class="op">*</span> phi(d1) <span class="op">*</span> sigma <span class="op">/</span> (<span class="dv">2</span> <span class="op">*</span> np.sqrt(tau)) <span class="op">-</span> <span class="op">\</span></span>
-<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>        r <span class="op">*</span> K <span class="op">*</span> r_df <span class="op">*</span> Phi(d2) <span class="op">+</span> q <span class="op">*</span> S <span class="op">*</span> q_df <span class="op">*</span> Phi(d1)</span>
-<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>    put_value <span class="op">=</span> <span class="op">-</span>q_df <span class="op">*</span> S <span class="op">*</span> phi(d1) <span class="op">*</span> sigma <span class="op">/</span> (<span class="dv">2</span> <span class="op">*</span> np.sqrt(tau)) <span class="op">+</span> <span class="op">\</span></span>
-<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>        r <span class="op">*</span> K <span class="op">*</span> r_df <span class="op">*</span> Phi(<span class="op">-</span>d2) <span class="op">-</span> q <span class="op">*</span> S <span class="op">*</span> q_df <span class="op">*</span> Phi(<span class="op">-</span>d1)</span>
-<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> np.where(<span class="bu">type</span> <span class="op">==</span> <span class="st">"call"</span>, call_value, put_value)</span>
-<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> bs_theta(<span class="bu">type</span>, S, K, r, q, tau, sigma, d1, d2):</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>    r_df <span class="op">=</span> np.exp(<span class="op">-</span>r <span class="op">*</span> tau)</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>    q_df <span class="op">=</span> np.exp(<span class="op">-</span>q <span class="op">*</span> tau)</span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>    call_value <span class="op">=</span> <span class="op">-</span>q_df <span class="op">*</span> S <span class="op">*</span> phi(d1) <span class="op">*</span> sigma <span class="op">/</span> (<span class="dv">2</span> <span class="op">*</span> np.sqrt(tau)) <span class="op">-</span> <span class="op">\</span></span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>        r <span class="op">*</span> K <span class="op">*</span> r_df <span class="op">*</span> Phi(d2) <span class="op">+</span> q <span class="op">*</span> S <span class="op">*</span> q_df <span class="op">*</span> Phi(d1)</span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>    put_value <span class="op">=</span> <span class="op">-</span>q_df <span class="op">*</span> S <span class="op">*</span> phi(d1) <span class="op">*</span> sigma <span class="op">/</span> (<span class="dv">2</span> <span class="op">*</span> np.sqrt(tau)) <span class="op">+</span> <span class="op">\</span></span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a>        r <span class="op">*</span> K <span class="op">*</span> r_df <span class="op">*</span> Phi(<span class="op">-</span>d2) <span class="op">-</span> q <span class="op">*</span> S <span class="op">*</span> q_df <span class="op">*</span> Phi(<span class="op">-</span>d1)</span>
+<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> np.where(<span class="bu">type</span> <span class="op">==</span> <span class="st">"call"</span>, call_value, put_value)</span>
+<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb18-14"><a href="#cb18-14" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>greeks_df[<span class="st">"theta"</span>] <span class="op">=</span> bs_theta(greeks_df[<span class="st">"type"</span>], greeks_df[<span class="st">"spot"</span>], K, r, q, tau, sigma,</span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>                              greeks_df[<span class="st">"d1"</span>], greeks_df[<span class="st">"d2"</span>]) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>greeks_df[<span class="st">"theta"</span>] <span class="op">=</span> bs_theta(greeks_df[<span class="st">"type"</span>], greeks_df[<span class="st">"spot"</span>], K, r, q, tau, sigma,</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>                              greeks_df[<span class="st">"d1"</span>], greeks_df[<span class="st">"d2"</span>]) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 </section>
@@ -516,23 +519,23 @@ d_{2}&amp;={\frac{\ln(S/K)+(r-q-\sigma^{2}/2)\tau}{\sigma{\sqrt{\tau}}}}=d_{1}-\
 \end{aligned}
 \]</span></p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> bs_gamma(<span class="bu">type</span>, S, K, r, q, tau, sigma, d1, d2):</span>
-<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>    q_df <span class="op">=</span> np.exp(<span class="op">-</span>q <span class="op">*</span> tau)</span>
-<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> q_df <span class="op">*</span> phi(d1) <span class="op">/</span> (S <span class="op">*</span> sigma <span class="op">*</span> np.sqrt(tau))</span>
-<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> bs_gamma(<span class="bu">type</span>, S, K, r, q, tau, sigma, d1, d2):</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>    q_df <span class="op">=</span> np.exp(<span class="op">-</span>q <span class="op">*</span> tau)</span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> q_df <span class="op">*</span> phi(d1) <span class="op">/</span> (S <span class="op">*</span> sigma <span class="op">*</span> np.sqrt(tau))</span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>greeks_df[<span class="st">"gamma"</span>] <span class="op">=</span> bs_gamma(greeks_df[<span class="st">"type"</span>], greeks_df[<span class="st">"spot"</span>], K, r, q, tau, sigma,</span>
-<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>                              greeks_df[<span class="st">"d1"</span>], greeks_df[<span class="st">"d2"</span>]) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>greeks_df[<span class="st">"gamma"</span>] <span class="op">=</span> bs_gamma(greeks_df[<span class="st">"type"</span>], greeks_df[<span class="st">"spot"</span>], K, r, q, tau, sigma,</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>                              greeks_df[<span class="st">"d1"</span>], greeks_df[<span class="st">"d2"</span>]) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/unnamed-chunk-25-1.png" class="img-fluid figure-img" width="960"></p>
+<p><img src="index_files/figure-html/unnamed-chunk-26-1.png" class="img-fluid figure-img" width="960"></p>
 </figure>
 </div>
 </div>
@@ -562,20 +565,20 @@ P(y+\Delta y)-P(y)&amp;\approx{\frac{P'(y)}{1!}}\Delta y+{\frac{P''(y)}{2!}}(\De
 \]</span></p>
 <p>Because of market conventions, use the following formula: <span class="math inline">\(P(y+\Delta y)-P(y)\approx -D\Delta y +{\frac{C\times 100}{2!}}(\Delta y)^{2}\)</span></p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> pnl_bond(duration, convexity, dy):</span>
-<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>    duration_pnl <span class="op">=</span> <span class="op">-</span>duration <span class="op">*</span> dy</span>
-<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>    convexity_pnl <span class="op">=</span> (convexity <span class="op">*</span> <span class="dv">100</span> <span class="op">/</span> <span class="dv">2</span>) <span class="op">*</span> dy <span class="op">**</span> <span class="dv">2</span></span>
-<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>    income_pnl <span class="op">=</span> dy</span>
-<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> pd.DataFrame({</span>
-<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>        <span class="st">"total"</span>: duration_pnl <span class="op">+</span> convexity_pnl <span class="op">+</span> income_pnl,</span>
-<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>        <span class="st">"duration"</span>: duration_pnl,</span>
-<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a>        <span class="st">"convexity"</span>: convexity_pnl,</span>
-<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a>        <span class="st">"income"</span>: income_pnl</span>
-<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a>    })</span>
-<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> pnl_bond(duration, convexity, dy):</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>    duration_pnl <span class="op">=</span> <span class="op">-</span>duration <span class="op">*</span> dy</span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>    convexity_pnl <span class="op">=</span> (convexity <span class="op">*</span> <span class="dv">100</span> <span class="op">/</span> <span class="dv">2</span>) <span class="op">*</span> dy <span class="op">**</span> <span class="dv">2</span></span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>    income_pnl <span class="op">=</span> dy</span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> pd.DataFrame({</span>
+<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a>        <span class="st">"total"</span>: duration_pnl <span class="op">+</span> convexity_pnl <span class="op">+</span> income_pnl,</span>
+<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a>        <span class="st">"duration"</span>: duration_pnl,</span>
+<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a>        <span class="st">"convexity"</span>: convexity_pnl,</span>
+<span id="cb22-11"><a href="#cb22-11" aria-hidden="true" tabindex="-1"></a>        <span class="st">"income"</span>: income_pnl</span>
+<span id="cb22-12"><a href="#cb22-12" aria-hidden="true" tabindex="-1"></a>    })</span>
+<span id="cb22-13"><a href="#cb22-13" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb22-14"><a href="#cb22-14" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <ul>
 <li><a href="https://engineering.nyu.edu/sites/default/files/2021-07/CarWuRF2021.pdf" class="uri">https://engineering.nyu.edu/sites/default/files/2021-07/CarWuRF2021.pdf</a></li>
@@ -583,26 +586,26 @@ P(y+\Delta y)-P(y)&amp;\approx{\frac{P'(y)}{1!}}\Delta y+{\frac{P''(y)}{2!}}(\De
 <li><a href="https://www.investopedia.com/terms/c/convexity-adjustment.asp" class="uri">https://www.investopedia.com/terms/c/convexity-adjustment.asp</a></li>
 </ul>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>factor <span class="op">=</span> <span class="st">"DGS10"</span></span>
-<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>duration <span class="op">=</span> <span class="fl">6.5</span></span>
-<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>convexity <span class="op">=</span> <span class="fl">0.65</span></span>
-<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>y <span class="op">=</span> levels_df.ffill()[factor].iloc[<span class="op">-</span>width]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>factor <span class="op">=</span> <span class="st">"DGS10"</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>duration <span class="op">=</span> <span class="fl">6.5</span></span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>convexity <span class="op">=</span> <span class="fl">0.65</span></span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>y <span class="op">=</span> levels_df.ffill()[factor].iloc[<span class="op">-</span>width]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>bond_df <span class="op">=</span> pd.DataFrame({</span>
-<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">"duration"</span>: duration,</span>
-<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">"convexity"</span>: convexity,</span>
-<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">"dy"</span>: (levels_df.ffill()[factor].iloc[<span class="op">-</span>width:] <span class="op">-</span> y) <span class="op">/</span> <span class="dv">100</span></span>
-<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>bond_df <span class="op">=</span> pd.DataFrame({</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">"duration"</span>: duration,</span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">"convexity"</span>: convexity,</span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">"dy"</span>: (levels_df.ffill()[factor].iloc[<span class="op">-</span>width:] <span class="op">-</span> y) <span class="op">/</span> <span class="dv">100</span></span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>attrib_df <span class="op">=</span> pnl_bond(bond_df[<span class="st">"duration"</span>], bond_df[<span class="st">"convexity"</span>], bond_df[<span class="st">"dy"</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>attrib_df <span class="op">=</span> pnl_bond(bond_df[<span class="st">"duration"</span>], bond_df[<span class="st">"convexity"</span>], bond_df[<span class="st">"dy"</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/unnamed-chunk-30-1.png" class="img-fluid figure-img" width="576"></p>
+<p><img src="index_files/figure-html/unnamed-chunk-31-1.png" class="img-fluid figure-img" width="576"></p>
 </figure>
 </div>
 </div>
@@ -620,42 +623,42 @@ P(y+\Delta y)-P(y)&amp;\approx{\frac{P'(y)}{1!}}\Delta y+{\frac{P''(y)}{2!}}(\De
 \]</span></p>
 <p>Because of market conventions, use the following formula: <span class="math inline">\(\text{Drift}=\frac{1}{100}\left(C\times 100-D^{2}\right)=C-\frac{D^{2}}{100}\)</span></p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> yield_shock(shock, tau, sigma):</span>
-<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> shock <span class="op">*</span> sigma <span class="op">*</span> np.sqrt(tau)</span>
-<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> duration_drift(duration, convexity, dy):</span>
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> yield_shock(shock, tau, sigma):</span>
 <span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>    drift <span class="op">=</span> convexity <span class="op">-</span> duration <span class="op">**</span> <span class="dv">2</span> <span class="op">/</span> <span class="dv">100</span></span>
-<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>    change <span class="op">=</span> <span class="op">-</span>drift <span class="op">*</span> dy <span class="op">*</span> <span class="dv">100</span></span>
-<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> {</span>
-<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a>        <span class="st">"drift"</span>: drift,</span>
-<span id="cb26-8"><a href="#cb26-8" aria-hidden="true" tabindex="-1"></a>        <span class="st">"change"</span>: change</span>
-<span id="cb26-9"><a href="#cb26-9" aria-hidden="true" tabindex="-1"></a>    }</span>
-<span id="cb26-10"><a href="#cb26-10" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb26-11"><a href="#cb26-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> shock <span class="op">*</span> sigma <span class="op">*</span> np.sqrt(tau)</span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="co"># "Risk Management: Approaches for Fixed Income Markets" (page 45)</span></span>
-<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>factor <span class="op">=</span> <span class="st">"DGS10"</span></span>
-<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>sigma <span class="op">=</span> sd_df[factor].iloc[<span class="op">-</span><span class="dv">1</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> duration_drift(duration, convexity, dy):</span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>    drift <span class="op">=</span> convexity <span class="op">-</span> duration <span class="op">**</span> <span class="dv">2</span> <span class="op">/</span> <span class="dv">100</span></span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>    change <span class="op">=</span> <span class="op">-</span>drift <span class="op">*</span> dy <span class="op">*</span> <span class="dv">100</span></span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> {</span>
+<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a>        <span class="st">"drift"</span>: drift,</span>
+<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a>        <span class="st">"change"</span>: change</span>
+<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb27-10"><a href="#cb27-10" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb27-11"><a href="#cb27-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>duration_df <span class="op">=</span> pd.DataFrame(shocks).rename(columns <span class="op">=</span> {<span class="dv">0</span>: <span class="st">"shock"</span>})</span>
-<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>duration_df[<span class="st">"spot"</span>] <span class="op">=</span> yield_shock(duration_df[<span class="st">"shock"</span>], tau, sigma)</span>
-<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>duration_df[<span class="st">"static"</span>] <span class="op">=</span> duration</span>
-<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>duration_df[<span class="st">"dynamic"</span>] <span class="op">=</span> duration <span class="op">+</span> <span class="op">\</span></span>
-<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>    duration_drift(duration, convexity, duration_df[<span class="st">"spot"</span>])[<span class="st">"change"</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="co"># "Risk Management: Approaches for Fixed Income Markets" (page 45)</span></span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>factor <span class="op">=</span> <span class="st">"DGS10"</span></span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>sigma <span class="op">=</span> sd_df[factor].iloc[<span class="op">-</span><span class="dv">1</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>duration_df <span class="op">=</span> pd.DataFrame(shocks).rename(columns <span class="op">=</span> {<span class="dv">0</span>: <span class="st">"shock"</span>})</span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>duration_df[<span class="st">"spot"</span>] <span class="op">=</span> yield_shock(duration_df[<span class="st">"shock"</span>], tau, sigma)</span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>duration_df[<span class="st">"static"</span>] <span class="op">=</span> duration</span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>duration_df[<span class="st">"dynamic"</span>] <span class="op">=</span> duration <span class="op">+</span> <span class="op">\</span></span>
+<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a>    duration_drift(duration, convexity, duration_df[<span class="st">"spot"</span>])[<span class="st">"change"</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/unnamed-chunk-35-1.png" class="img-fluid figure-img" width="384"></p>
+<p><img src="index_files/figure-html/unnamed-chunk-36-1.png" class="img-fluid figure-img" width="384"></p>
 </figure>
 </div>
 </div>
@@ -684,58 +687,58 @@ V(S+\Delta S,\sigma+\Delta\sigma,t+\Delta t)-V(S,\sigma,t)&amp;\approx{\frac{\pa
 <li><a href="https://quant-next.com/option-greeks-and-pl-decomposition-part-1/" class="uri">https://quant-next.com/option-greeks-and-pl-decomposition-part-1/</a></li>
 </ul>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> pnl_option(<span class="bu">type</span>, S, K, r, q, tau, sigma, dS, dt, dsigma):</span>
-<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>    d1 <span class="op">=</span> bs_d1(S, K, r, q, tau, sigma)</span>
-<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>    d2 <span class="op">=</span> bs_d2(S, K, r, q, tau, sigma)</span>
-<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a>    value <span class="op">=</span> bs_value(<span class="bu">type</span>, S, K, r, q, tau, sigma, d1, d2)</span>
-<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a>    delta <span class="op">=</span> bs_delta(<span class="bu">type</span>, S, K, r, q, tau, sigma, d1, d2)</span>
-<span id="cb29-7"><a href="#cb29-7" aria-hidden="true" tabindex="-1"></a>    vega <span class="op">=</span> bs_vega(<span class="bu">type</span>, S, K, r, q, tau, sigma, d1, d2)</span>
-<span id="cb29-8"><a href="#cb29-8" aria-hidden="true" tabindex="-1"></a>    theta <span class="op">=</span> bs_theta(<span class="bu">type</span>, S, K, r, q, tau, sigma, d1, d2)</span>
-<span id="cb29-9"><a href="#cb29-9" aria-hidden="true" tabindex="-1"></a>    gamma <span class="op">=</span> bs_gamma(<span class="bu">type</span>, S, K, r, q, tau, sigma, d1, d2)</span>
-<span id="cb29-10"><a href="#cb29-10" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb29-11"><a href="#cb29-11" aria-hidden="true" tabindex="-1"></a>    delta_pnl <span class="op">=</span> delta <span class="op">*</span> dS <span class="op">/</span> value</span>
-<span id="cb29-12"><a href="#cb29-12" aria-hidden="true" tabindex="-1"></a>    gamma_pnl <span class="op">=</span> gamma <span class="op">/</span> <span class="dv">2</span> <span class="op">*</span> dS <span class="op">**</span> <span class="dv">2</span> <span class="op">/</span> value</span>
-<span id="cb29-13"><a href="#cb29-13" aria-hidden="true" tabindex="-1"></a>    vega_pnl <span class="op">=</span> vega <span class="op">*</span> dsigma <span class="op">/</span> value</span>
-<span id="cb29-14"><a href="#cb29-14" aria-hidden="true" tabindex="-1"></a>    theta_pnl <span class="op">=</span> theta <span class="op">*</span> dt <span class="op">/</span> value</span>
-<span id="cb29-15"><a href="#cb29-15" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb29-16"><a href="#cb29-16" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> pd.DataFrame({</span>
-<span id="cb29-17"><a href="#cb29-17" aria-hidden="true" tabindex="-1"></a>        <span class="st">"total"</span>: delta_pnl <span class="op">+</span> gamma_pnl <span class="op">+</span> vega_pnl <span class="op">+</span> theta_pnl,</span>
-<span id="cb29-18"><a href="#cb29-18" aria-hidden="true" tabindex="-1"></a>        <span class="st">"delta"</span>: delta_pnl,</span>
-<span id="cb29-19"><a href="#cb29-19" aria-hidden="true" tabindex="-1"></a>        <span class="st">"gamma"</span>: gamma_pnl,</span>
-<span id="cb29-20"><a href="#cb29-20" aria-hidden="true" tabindex="-1"></a>        <span class="st">"vega"</span>: vega_pnl,</span>
-<span id="cb29-21"><a href="#cb29-21" aria-hidden="true" tabindex="-1"></a>        <span class="st">"theta"</span>: theta_pnl</span>
-<span id="cb29-22"><a href="#cb29-22" aria-hidden="true" tabindex="-1"></a>    })</span>
-<span id="cb29-23"><a href="#cb29-23" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb29-24"><a href="#cb29-24" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> pnl_option(<span class="bu">type</span>, S, K, r, q, tau, sigma, dS, dt, dsigma):</span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>    d1 <span class="op">=</span> bs_d1(S, K, r, q, tau, sigma)</span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>    d2 <span class="op">=</span> bs_d2(S, K, r, q, tau, sigma)</span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a>    value <span class="op">=</span> bs_value(<span class="bu">type</span>, S, K, r, q, tau, sigma, d1, d2)</span>
+<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a>    delta <span class="op">=</span> bs_delta(<span class="bu">type</span>, S, K, r, q, tau, sigma, d1, d2)</span>
+<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a>    vega <span class="op">=</span> bs_vega(<span class="bu">type</span>, S, K, r, q, tau, sigma, d1, d2)</span>
+<span id="cb30-8"><a href="#cb30-8" aria-hidden="true" tabindex="-1"></a>    theta <span class="op">=</span> bs_theta(<span class="bu">type</span>, S, K, r, q, tau, sigma, d1, d2)</span>
+<span id="cb30-9"><a href="#cb30-9" aria-hidden="true" tabindex="-1"></a>    gamma <span class="op">=</span> bs_gamma(<span class="bu">type</span>, S, K, r, q, tau, sigma, d1, d2)</span>
+<span id="cb30-10"><a href="#cb30-10" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb30-11"><a href="#cb30-11" aria-hidden="true" tabindex="-1"></a>    delta_pnl <span class="op">=</span> delta <span class="op">*</span> dS <span class="op">/</span> value</span>
+<span id="cb30-12"><a href="#cb30-12" aria-hidden="true" tabindex="-1"></a>    gamma_pnl <span class="op">=</span> gamma <span class="op">/</span> <span class="dv">2</span> <span class="op">*</span> dS <span class="op">**</span> <span class="dv">2</span> <span class="op">/</span> value</span>
+<span id="cb30-13"><a href="#cb30-13" aria-hidden="true" tabindex="-1"></a>    vega_pnl <span class="op">=</span> vega <span class="op">*</span> dsigma <span class="op">/</span> value</span>
+<span id="cb30-14"><a href="#cb30-14" aria-hidden="true" tabindex="-1"></a>    theta_pnl <span class="op">=</span> theta <span class="op">*</span> dt <span class="op">/</span> value</span>
+<span id="cb30-15"><a href="#cb30-15" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb30-16"><a href="#cb30-16" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> pd.DataFrame({</span>
+<span id="cb30-17"><a href="#cb30-17" aria-hidden="true" tabindex="-1"></a>        <span class="st">"total"</span>: delta_pnl <span class="op">+</span> gamma_pnl <span class="op">+</span> vega_pnl <span class="op">+</span> theta_pnl,</span>
+<span id="cb30-18"><a href="#cb30-18" aria-hidden="true" tabindex="-1"></a>        <span class="st">"delta"</span>: delta_pnl,</span>
+<span id="cb30-19"><a href="#cb30-19" aria-hidden="true" tabindex="-1"></a>        <span class="st">"gamma"</span>: gamma_pnl,</span>
+<span id="cb30-20"><a href="#cb30-20" aria-hidden="true" tabindex="-1"></a>        <span class="st">"vega"</span>: vega_pnl,</span>
+<span id="cb30-21"><a href="#cb30-21" aria-hidden="true" tabindex="-1"></a>        <span class="st">"theta"</span>: theta_pnl</span>
+<span id="cb30-22"><a href="#cb30-22" aria-hidden="true" tabindex="-1"></a>    })</span>
+<span id="cb30-23"><a href="#cb30-23" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb30-24"><a href="#cb30-24" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>factor <span class="op">=</span> <span class="st">"SP500"</span></span>
-<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a><span class="bu">type</span> <span class="op">=</span> <span class="st">"call"</span></span>
-<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>S <span class="op">=</span> levels_df.ffill()[factor].iloc[<span class="op">-</span>width]</span>
-<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>K <span class="op">=</span> S <span class="co"># * (1 + 0.05)</span></span>
-<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a>tau <span class="op">=</span> <span class="dv">1</span> <span class="co"># = 252 / 252</span></span>
-<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a>sigma <span class="op">=</span> sd_df[factor].iloc[<span class="op">-</span>width]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>factor <span class="op">=</span> <span class="st">"SP500"</span></span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a><span class="bu">type</span> <span class="op">=</span> <span class="st">"call"</span></span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>S <span class="op">=</span> levels_df.ffill()[factor].iloc[<span class="op">-</span>width]</span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a>K <span class="op">=</span> S <span class="co"># * (1 + 0.05)</span></span>
+<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a>tau <span class="op">=</span> <span class="dv">1</span> <span class="co"># = 252 / 252</span></span>
+<span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a>sigma <span class="op">=</span> sd_df[factor].iloc[<span class="op">-</span>width]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>options_df <span class="op">=</span> pd.DataFrame({</span>
-<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">"spot"</span>: levels_df.ffill()[factor].iloc[<span class="op">-</span>width:],</span>
-<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">"sigma"</span>: sd_df[factor].iloc[<span class="op">-</span>width:]</span>
-<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a>})</span>
-<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a>options_df[<span class="st">"dS"</span>] <span class="op">=</span> options_df[<span class="st">"spot"</span>] <span class="op">-</span> S</span>
-<span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a>options_df[<span class="st">"dt_diff"</span>] <span class="op">=</span> (options_df.index <span class="op">-</span> options_df.index[<span class="dv">0</span>]).days</span>
-<span id="cb31-7"><a href="#cb31-7" aria-hidden="true" tabindex="-1"></a>options_df[<span class="st">"dt"</span>] <span class="op">=</span> options_df[<span class="st">"dt_diff"</span>] <span class="op">/</span> options_df[<span class="st">"dt_diff"</span>].iloc[<span class="op">-</span><span class="dv">1</span>]</span>
-<span id="cb31-8"><a href="#cb31-8" aria-hidden="true" tabindex="-1"></a>options_df[<span class="st">"dsigma"</span>] <span class="op">=</span> options_df[<span class="st">"sigma"</span>] <span class="op">-</span> sigma</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>options_df <span class="op">=</span> pd.DataFrame({</span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">"spot"</span>: levels_df.ffill()[factor].iloc[<span class="op">-</span>width:],</span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">"sigma"</span>: sd_df[factor].iloc[<span class="op">-</span>width:]</span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>})</span>
+<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a>options_df[<span class="st">"dS"</span>] <span class="op">=</span> options_df[<span class="st">"spot"</span>] <span class="op">-</span> S</span>
+<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a>options_df[<span class="st">"dt_diff"</span>] <span class="op">=</span> (options_df.index <span class="op">-</span> options_df.index[<span class="dv">0</span>]).days</span>
+<span id="cb32-7"><a href="#cb32-7" aria-hidden="true" tabindex="-1"></a>options_df[<span class="st">"dt"</span>] <span class="op">=</span> options_df[<span class="st">"dt_diff"</span>] <span class="op">/</span> options_df[<span class="st">"dt_diff"</span>].iloc[<span class="op">-</span><span class="dv">1</span>]</span>
+<span id="cb32-8"><a href="#cb32-8" aria-hidden="true" tabindex="-1"></a>options_df[<span class="st">"dsigma"</span>] <span class="op">=</span> options_df[<span class="st">"sigma"</span>] <span class="op">-</span> sigma</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>attrib_df <span class="op">=</span> pnl_option(<span class="bu">type</span>, S, K, r, q, tau, sigma,</span>
-<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>                       options_df[<span class="st">"dS"</span>], options_df[<span class="st">"dt"</span>], options_df[<span class="st">"dsigma"</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>attrib_df <span class="op">=</span> pnl_option(<span class="bu">type</span>, S, K, r, q, tau, sigma,</span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>                       options_df[<span class="st">"dS"</span>], options_df[<span class="st">"dt"</span>], options_df[<span class="st">"dsigma"</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/unnamed-chunk-40-1.png" class="img-fluid figure-img" width="576"></p>
+<p><img src="index_files/figure-html/unnamed-chunk-41-1.png" class="img-fluid figure-img" width="576"></p>
 </figure>
 </div>
 </div>
@@ -795,12 +798,12 @@ S(t_{i+1})&amp;=S(t_{i})\exp\left(\sigma\sqrt{t_{i+1}-t_{i}}Z_{i+1}+\left[\mu-{\
 \]</span></p>
 <p>where <span class="math inline">\(Z_{1},Z_{2},\ldots,Z_{n}\)</span> are independent standard normals.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> sim_gbm(n_sim, S, mu, sigma, dt):</span>
-<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> S <span class="op">*</span> np.exp(np.cumsum(sigma <span class="op">*</span> np.sqrt(dt) <span class="op">*</span> np.random.normal(size <span class="op">=</span> n_sim)) <span class="op">+</span> <span class="op">\</span></span>
-<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>                        (mu <span class="op">-</span> <span class="fl">0.5</span> <span class="op">*</span> sigma <span class="op">**</span> <span class="dv">2</span>) <span class="op">*</span> dt)</span>
-<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb33-6"><a href="#cb33-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> sim_gbm(n_sim, S, mu, sigma, dt):</span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> S <span class="op">*</span> np.exp(np.cumsum(sigma <span class="op">*</span> np.sqrt(dt) <span class="op">*</span> np.random.normal(size <span class="op">=</span> n_sim)) <span class="op">+</span> <span class="op">\</span></span>
+<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a>                        (mu <span class="op">-</span> <span class="fl">0.5</span> <span class="op">*</span> sigma <span class="op">**</span> <span class="dv">2</span>) <span class="op">*</span> dt)</span>
+<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb34-6"><a href="#cb34-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>This leads to an algorithm for simulating a multidimensional geometric Brownian motion:</p>
 <p><span class="math display">\[
@@ -810,16 +813,16 @@ S_{k}(t_{i+1})&amp;=S_{k}(t_{i})\exp\left(\sqrt{t_{i+1}-t_{i}}\sum_{j=1}^{d}{A_{
 \]</span></p>
 <p>where <span class="math inline">\(A\)</span> is the Cholesky factor of <span class="math inline">\(\Sigma\)</span>, i.e.&nbsp;<span class="math inline">\(A\)</span> is any matrix for which <span class="math inline">\(AA^\mathrm{T}=\Sigma\)</span>.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> sim_multi_gbm(n_sim, S, mu, sigma, dt):</span>
-<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>    n_cols <span class="op">=</span> sigma.shape[<span class="dv">1</span>]</span>
-<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a>    Z <span class="op">=</span> np.random.normal(size <span class="op">=</span> n_sim <span class="op">*</span> n_cols).reshape((n_sim, n_cols))</span>
-<span id="cb34-6"><a href="#cb34-6" aria-hidden="true" tabindex="-1"></a>    X <span class="op">=</span> np.sqrt(dt) <span class="op">*</span> Z <span class="op">@</span> np.linalg.cholesky(sigma).T <span class="op">+</span> (mu <span class="op">-</span> <span class="fl">0.5</span> <span class="op">*</span> np.diag(sigma)) <span class="op">*</span> dt</span>
-<span id="cb34-7"><a href="#cb34-7" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb34-8"><a href="#cb34-8" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> S <span class="op">*</span> np.exp(X.cumsum(axis <span class="op">=</span> <span class="dv">0</span>))</span>
-<span id="cb34-9"><a href="#cb34-9" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb34-10"><a href="#cb34-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> np.asmatrix(result)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> sim_multi_gbm(n_sim, S, mu, sigma, dt):</span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>    n_cols <span class="op">=</span> sigma.shape[<span class="dv">1</span>]</span>
+<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a>    Z <span class="op">=</span> np.random.normal(size <span class="op">=</span> n_sim <span class="op">*</span> n_cols).reshape((n_sim, n_cols))</span>
+<span id="cb35-6"><a href="#cb35-6" aria-hidden="true" tabindex="-1"></a>    X <span class="op">=</span> np.sqrt(dt) <span class="op">*</span> Z <span class="op">@</span> np.linalg.cholesky(sigma).T <span class="op">+</span> (mu <span class="op">-</span> <span class="fl">0.5</span> <span class="op">*</span> np.diag(sigma)) <span class="op">*</span> dt</span>
+<span id="cb35-7"><a href="#cb35-7" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb35-8"><a href="#cb35-8" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> S <span class="op">*</span> np.exp(X.cumsum(axis <span class="op">=</span> <span class="dv">0</span>))</span>
+<span id="cb35-9"><a href="#cb35-9" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb35-10"><a href="#cb35-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> np.asmatrix(result)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <ul>
 <li><a href="https://arxiv.org/pdf/0812.4210.pdf" class="uri">https://arxiv.org/pdf/0812.4210.pdf</a></li>
@@ -829,64 +832,64 @@ S_{k}(t_{i+1})&amp;=S_{k}(t_{i})\exp\left(\sqrt{t_{i+1}-t_{i}}\sum_{j=1}^{d}{A_{
 <li><a href="https://quant.stackexchange.com/questions/35194/estimating-the-historical-drift-and-volatility/" class="uri">https://quant.stackexchange.com/questions/35194/estimating-the-historical-drift-and-volatility/</a></li>
 </ul>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>S <span class="op">=</span> [<span class="dv">1</span>] <span class="op">*</span> <span class="bu">len</span>(factors)</span>
-<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>sigma <span class="op">=</span> np.cov(returns_df[<span class="st">"returns"</span>].dropna().T, ddof <span class="op">=</span> <span class="dv">1</span>) <span class="op">*</span> scale[<span class="st">"periods"</span>]</span>
-<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>mu <span class="op">=</span> np.array(returns_df[<span class="st">"returns"</span>].dropna().mean()) <span class="op">*</span> scale[<span class="st">"periods"</span>]</span>
-<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a>mu <span class="op">=</span> mu <span class="op">+</span> np.diag(sigma) <span class="op">/</span> <span class="dv">2</span> <span class="co"># drift</span></span>
-<span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a>dt <span class="op">=</span> <span class="dv">1</span> <span class="op">/</span> scale[<span class="st">"periods"</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>S <span class="op">=</span> [<span class="dv">1</span>] <span class="op">*</span> <span class="bu">len</span>(factors)</span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>sigma <span class="op">=</span> np.cov(returns_df[<span class="st">"returns"</span>].dropna().T, ddof <span class="op">=</span> <span class="dv">1</span>) <span class="op">*</span> scale[<span class="st">"periods"</span>]</span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>mu <span class="op">=</span> np.array(returns_df[<span class="st">"returns"</span>].dropna().mean()) <span class="op">*</span> scale[<span class="st">"periods"</span>]</span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a>mu <span class="op">=</span> mu <span class="op">+</span> np.diag(sigma) <span class="op">/</span> <span class="dv">2</span> <span class="co"># drift</span></span>
+<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a>dt <span class="op">=</span> <span class="dv">1</span> <span class="op">/</span> scale[<span class="st">"periods"</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>mu_ls <span class="op">=</span> []</span>
-<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>sigma_ls <span class="op">=</span> []</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>mu_ls <span class="op">=</span> []</span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>sigma_ls <span class="op">=</span> []</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">10000</span>): <span class="co"># "TypeError: 'float' object cannot be interpreted as an integer"</span></span>
-<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a>    <span class="co"># assumes underlying stock price follows geometric Brownian motion with constant volatility</span></span>
-<span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a>    levels_sim <span class="op">=</span> pd.DataFrame(sim_multi_gbm(width <span class="op">+</span> <span class="dv">1</span>, S, mu, sigma, dt))</span>
-<span id="cb37-5"><a href="#cb37-5" aria-hidden="true" tabindex="-1"></a>    returns_sim <span class="op">=</span> np.log(levels_sim).diff()</span>
-<span id="cb37-6"><a href="#cb37-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-7"><a href="#cb37-7" aria-hidden="true" tabindex="-1"></a>    mu_sim <span class="op">=</span> returns_sim.mean() <span class="op">*</span> scale[<span class="st">"periods"</span>]</span>
-<span id="cb37-8"><a href="#cb37-8" aria-hidden="true" tabindex="-1"></a>    sigma_sim <span class="op">=</span> returns_sim.std() <span class="op">*</span> np.sqrt(scale[<span class="st">"periods"</span>])</span>
-<span id="cb37-9"><a href="#cb37-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-10"><a href="#cb37-10" aria-hidden="true" tabindex="-1"></a>    mu_ls.append(mu_sim)</span>
-<span id="cb37-11"><a href="#cb37-11" aria-hidden="true" tabindex="-1"></a>    sigma_ls.append(sigma_sim)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">10000</span>): <span class="co"># "TypeError: 'float' object cannot be interpreted as an integer"</span></span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>    <span class="co"># assumes underlying stock price follows geometric Brownian motion with constant volatility</span></span>
+<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a>    levels_sim <span class="op">=</span> pd.DataFrame(sim_multi_gbm(width <span class="op">+</span> <span class="dv">1</span>, S, mu, sigma, dt))</span>
+<span id="cb38-5"><a href="#cb38-5" aria-hidden="true" tabindex="-1"></a>    returns_sim <span class="op">=</span> np.log(levels_sim).diff()</span>
+<span id="cb38-6"><a href="#cb38-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-7"><a href="#cb38-7" aria-hidden="true" tabindex="-1"></a>    mu_sim <span class="op">=</span> returns_sim.mean() <span class="op">*</span> scale[<span class="st">"periods"</span>]</span>
+<span id="cb38-8"><a href="#cb38-8" aria-hidden="true" tabindex="-1"></a>    sigma_sim <span class="op">=</span> returns_sim.std() <span class="op">*</span> np.sqrt(scale[<span class="st">"periods"</span>])</span>
+<span id="cb38-9"><a href="#cb38-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-10"><a href="#cb38-10" aria-hidden="true" tabindex="-1"></a>    mu_ls.append(mu_sim)</span>
+<span id="cb38-11"><a href="#cb38-11" aria-hidden="true" tabindex="-1"></a>    sigma_ls.append(sigma_sim)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>mu_df <span class="op">=</span> pd.DataFrame(mu_ls)</span>
-<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>sigma_df <span class="op">=</span> pd.DataFrame(sigma_ls)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>mu_df <span class="op">=</span> pd.DataFrame(mu_ls)</span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>sigma_df <span class="op">=</span> pd.DataFrame(sigma_ls)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>pd.DataFrame({</span>
-<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">"empirical"</span>: np.array(returns_df[<span class="st">"returns"</span>].dropna().mean()) <span class="op">*</span> scale[<span class="st">"periods"</span>],</span>
-<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">"theoretical"</span>: mu_df.mean()</span>
-<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>pd.DataFrame({</span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">"empirical"</span>: np.array(returns_df[<span class="st">"returns"</span>].dropna().mean()) <span class="op">*</span> scale[<span class="st">"periods"</span>],</span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">"theoretical"</span>: mu_df.mean()</span>
+<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>   empirical  theoretical
-0   0.094942     0.095052
-1   0.015083     0.015193
-2  -0.000477    -0.000522
-3   0.001322     0.001153</code></pre>
+0   0.099978     0.099587
+1   0.014793     0.015007
+2  -0.000606    -0.000502
+3   0.001559     0.001614</code></pre>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>pd.DataFrame({</span>
-<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">"empirical"</span>: np.sqrt(np.diag(sigma)),</span>
-<span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">"theoretical"</span>: sigma_df.mean()</span>
-<span id="cb41-4"><a href="#cb41-4" aria-hidden="true" tabindex="-1"></a>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>pd.DataFrame({</span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">"empirical"</span>: np.sqrt(np.diag(sigma)),</span>
+<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">"theoretical"</span>: sigma_df.mean()</span>
+<span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>   empirical  theoretical
-0   0.179302     0.179184
-1   0.062612     0.062535
-2   0.008296     0.008293
-3   0.016952     0.016935</code></pre>
+0   0.179423     0.179104
+1   0.062498     0.062422
+2   0.008300     0.008293
+3   0.016946     0.016916</code></pre>
 </div>
 </div>
 </section>
 <section id="vasicek-model" class="level3">
 <h3 class="anchored" data-anchor-id="vasicek-model">Vasicek model</h3>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="co"># assumes interest rates follow mean-reverting process with stochastic volatility</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a><span class="co"># assumes interest rates follow mean-reverting process with stochastic volatility</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 </section>
@@ -908,49 +911,49 @@ x_{n+1}=x_{n}-{\frac{f(x_{n})}{f'(x_{n})}}
 \end{aligned}
 \]</span></p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> implied_vol_newton(params, <span class="bu">type</span>, S, K, r, q, tau):</span>
-<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a>    target0 <span class="op">=</span> <span class="dv">0</span></span>
-<span id="cb44-4"><a href="#cb44-4" aria-hidden="true" tabindex="-1"></a>    sigma <span class="op">=</span> params[<span class="st">"sigma"</span>]</span>
-<span id="cb44-5"><a href="#cb44-5" aria-hidden="true" tabindex="-1"></a>    sigma0 <span class="op">=</span> sigma</span>
-<span id="cb44-6"><a href="#cb44-6" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb44-7"><a href="#cb44-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">while</span> (<span class="bu">abs</span>(target0 <span class="op">-</span> params[<span class="st">"target"</span>]) <span class="op">&gt;</span> params[<span class="st">"tol"</span>]):</span>
-<span id="cb44-8"><a href="#cb44-8" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb44-9"><a href="#cb44-9" aria-hidden="true" tabindex="-1"></a>        d1 <span class="op">=</span> bs_d1(S, K, r, q, tau, sigma0)</span>
-<span id="cb44-10"><a href="#cb44-10" aria-hidden="true" tabindex="-1"></a>        d2 <span class="op">=</span> bs_d2(S, K, r, q, tau, sigma0)</span>
-<span id="cb44-11"><a href="#cb44-11" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb44-12"><a href="#cb44-12" aria-hidden="true" tabindex="-1"></a>        target0 <span class="op">=</span> bs_value(<span class="bu">type</span>, S, K, r, q, tau, sigma0, d1, d2)</span>
-<span id="cb44-13"><a href="#cb44-13" aria-hidden="true" tabindex="-1"></a>        vega0 <span class="op">=</span> bs_vega(<span class="bu">type</span>, S, K, r, q, tau, sigma0, d1, d2)</span>
-<span id="cb44-14"><a href="#cb44-14" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb44-15"><a href="#cb44-15" aria-hidden="true" tabindex="-1"></a>        sigma <span class="op">=</span> sigma0 <span class="op">-</span> (target0 <span class="op">-</span> params[<span class="st">"target"</span>]) <span class="op">/</span> vega0</span>
-<span id="cb44-16"><a href="#cb44-16" aria-hidden="true" tabindex="-1"></a>        sigma0 <span class="op">=</span> sigma</span>
-<span id="cb44-17"><a href="#cb44-17" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb44-18"><a href="#cb44-18" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> sigma</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> implied_vol_newton(params, <span class="bu">type</span>, S, K, r, q, tau):</span>
+<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a>    target0 <span class="op">=</span> <span class="dv">0</span></span>
+<span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a>    sigma <span class="op">=</span> params[<span class="st">"sigma"</span>]</span>
+<span id="cb45-5"><a href="#cb45-5" aria-hidden="true" tabindex="-1"></a>    sigma0 <span class="op">=</span> sigma</span>
+<span id="cb45-6"><a href="#cb45-6" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb45-7"><a href="#cb45-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">while</span> (<span class="bu">abs</span>(target0 <span class="op">-</span> params[<span class="st">"target"</span>]) <span class="op">&gt;</span> params[<span class="st">"tol"</span>]):</span>
+<span id="cb45-8"><a href="#cb45-8" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb45-9"><a href="#cb45-9" aria-hidden="true" tabindex="-1"></a>        d1 <span class="op">=</span> bs_d1(S, K, r, q, tau, sigma0)</span>
+<span id="cb45-10"><a href="#cb45-10" aria-hidden="true" tabindex="-1"></a>        d2 <span class="op">=</span> bs_d2(S, K, r, q, tau, sigma0)</span>
+<span id="cb45-11"><a href="#cb45-11" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb45-12"><a href="#cb45-12" aria-hidden="true" tabindex="-1"></a>        target0 <span class="op">=</span> bs_value(<span class="bu">type</span>, S, K, r, q, tau, sigma0, d1, d2)</span>
+<span id="cb45-13"><a href="#cb45-13" aria-hidden="true" tabindex="-1"></a>        vega0 <span class="op">=</span> bs_vega(<span class="bu">type</span>, S, K, r, q, tau, sigma0, d1, d2)</span>
+<span id="cb45-14"><a href="#cb45-14" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb45-15"><a href="#cb45-15" aria-hidden="true" tabindex="-1"></a>        sigma <span class="op">=</span> sigma0 <span class="op">-</span> (target0 <span class="op">-</span> params[<span class="st">"target"</span>]) <span class="op">/</span> vega0</span>
+<span id="cb45-16"><a href="#cb45-16" aria-hidden="true" tabindex="-1"></a>        sigma0 <span class="op">=</span> sigma</span>
+<span id="cb45-17"><a href="#cb45-17" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb45-18"><a href="#cb45-18" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> sigma</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <ul>
 <li><a href="http://www.aspenres.com/documents/help/userguide/help/bopthelp/bopt2Implied_Volatility_Formula.html" class="uri">http://www.aspenres.com/documents/help/userguide/help/bopthelp/bopt2Implied_Volatility_Formula.html</a></li>
 <li><a href="https://books.google.com/books?id=VLi61POD61IC&amp;pg=PA104" class="uri">https://books.google.com/books?id=VLi61POD61IC&amp;pg=PA104</a></li>
 </ul>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>S <span class="op">=</span> levels_df.ffill()[factor].iloc[<span class="op">-</span><span class="dv">1</span>]</span>
-<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a>K <span class="op">=</span> S <span class="co"># * (1 + 0.05)</span></span>
-<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a>sigma <span class="op">=</span> sd_df[factor].iloc[<span class="op">-</span><span class="dv">1</span>] <span class="co"># overrides matrix</span></span>
-<span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a>start <span class="op">=</span> <span class="fl">0.2</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>S <span class="op">=</span> levels_df.ffill()[factor].iloc[<span class="op">-</span><span class="dv">1</span>]</span>
+<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a>K <span class="op">=</span> S <span class="co"># * (1 + 0.05)</span></span>
+<span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a>sigma <span class="op">=</span> sd_df[factor].iloc[<span class="op">-</span><span class="dv">1</span>] <span class="co"># overrides matrix</span></span>
+<span id="cb46-4"><a href="#cb46-4" aria-hidden="true" tabindex="-1"></a>start <span class="op">=</span> <span class="fl">0.2</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>d1 <span class="op">=</span> bs_d1(S, K, r, q, tau, sigma)</span>
-<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a>d2 <span class="op">=</span> bs_d2(S, K, r, q, tau, sigma)</span>
-<span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a>target <span class="op">=</span> bs_value(<span class="bu">type</span>, S, K, r, q, tau, sigma, d1, d2)</span>
-<span id="cb46-4"><a href="#cb46-4" aria-hidden="true" tabindex="-1"></a>params <span class="op">=</span> {</span>
-<span id="cb46-5"><a href="#cb46-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">"target"</span>: target,</span>
-<span id="cb46-6"><a href="#cb46-6" aria-hidden="true" tabindex="-1"></a>    <span class="st">"sigma"</span>: start,</span>
-<span id="cb46-7"><a href="#cb46-7" aria-hidden="true" tabindex="-1"></a>    <span class="st">"tol"</span>: <span class="fl">1e-4</span> <span class="co"># np.finfo(float).eps</span></span>
-<span id="cb46-8"><a href="#cb46-8" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb47"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a>d1 <span class="op">=</span> bs_d1(S, K, r, q, tau, sigma)</span>
+<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a>d2 <span class="op">=</span> bs_d2(S, K, r, q, tau, sigma)</span>
+<span id="cb47-3"><a href="#cb47-3" aria-hidden="true" tabindex="-1"></a>target <span class="op">=</span> bs_value(<span class="bu">type</span>, S, K, r, q, tau, sigma, d1, d2)</span>
+<span id="cb47-4"><a href="#cb47-4" aria-hidden="true" tabindex="-1"></a>params <span class="op">=</span> {</span>
+<span id="cb47-5"><a href="#cb47-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">"target"</span>: target,</span>
+<span id="cb47-6"><a href="#cb47-6" aria-hidden="true" tabindex="-1"></a>    <span class="st">"sigma"</span>: start,</span>
+<span id="cb47-7"><a href="#cb47-7" aria-hidden="true" tabindex="-1"></a>    <span class="st">"tol"</span>: <span class="fl">1e-4</span> <span class="co"># np.finfo(float).eps</span></span>
+<span id="cb47-8"><a href="#cb47-8" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb47"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a>implied_vol_newton(params, <span class="bu">type</span>, S, K, r, q, tau) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb48"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>implied_vol_newton(params, <span class="bu">type</span>, S, K, r, q, tau) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>0.12817029137884053</code></pre>
+<pre><code>0.12102159931820798</code></pre>
 </div>
 </div>
 </section>
@@ -961,32 +964,32 @@ x_{n+1}=x_{n}-{\frac{f(x_{n})}{f'(x_{n})}}
 <section id="optimization" class="level1">
 <h1>Optimization</h1>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb49"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> scipy.optimize <span class="im">import</span> minimize</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb50"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> scipy.optimize <span class="im">import</span> minimize</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <section id="implied-volatility-1" class="level2">
 <h2 class="anchored" data-anchor-id="implied-volatility-1">Implied volatility</h2>
 <p>If the derivative is unknown, try optimization:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb50"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> implied_vol_obj(param, <span class="bu">type</span>, S, K, r, q, tau, target):</span>
-<span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb50-3"><a href="#cb50-3" aria-hidden="true" tabindex="-1"></a>    d1 <span class="op">=</span> bs_d1(S, K, r, q, tau, param)</span>
-<span id="cb50-4"><a href="#cb50-4" aria-hidden="true" tabindex="-1"></a>    d2 <span class="op">=</span> bs_d2(S, K, r, q, tau, param)</span>
-<span id="cb50-5"><a href="#cb50-5" aria-hidden="true" tabindex="-1"></a>    target0 <span class="op">=</span> bs_value(<span class="bu">type</span>, S, K, r, q, tau, param, d1, d2)</span>
-<span id="cb50-6"><a href="#cb50-6" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb50-7"><a href="#cb50-7" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> <span class="bu">abs</span>(target0 <span class="op">-</span> target)</span>
-<span id="cb50-8"><a href="#cb50-8" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb50-9"><a href="#cb50-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result</span>
-<span id="cb50-10"><a href="#cb50-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb50-11"><a href="#cb50-11" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> implied_vol_optim(param, <span class="bu">type</span>, S, K, r, q, tau, target):</span>
-<span id="cb50-12"><a href="#cb50-12" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb50-13"><a href="#cb50-13" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> minimize(implied_vol_obj, param, args <span class="op">=</span> (<span class="bu">type</span>, S, K, r, q, tau, target))</span>
-<span id="cb50-14"><a href="#cb50-14" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb50-15"><a href="#cb50-15" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result.x.item()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb51"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> implied_vol_obj(param, <span class="bu">type</span>, S, K, r, q, tau, target):</span>
+<span id="cb51-2"><a href="#cb51-2" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb51-3"><a href="#cb51-3" aria-hidden="true" tabindex="-1"></a>    d1 <span class="op">=</span> bs_d1(S, K, r, q, tau, param)</span>
+<span id="cb51-4"><a href="#cb51-4" aria-hidden="true" tabindex="-1"></a>    d2 <span class="op">=</span> bs_d2(S, K, r, q, tau, param)</span>
+<span id="cb51-5"><a href="#cb51-5" aria-hidden="true" tabindex="-1"></a>    target0 <span class="op">=</span> bs_value(<span class="bu">type</span>, S, K, r, q, tau, param, d1, d2)</span>
+<span id="cb51-6"><a href="#cb51-6" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb51-7"><a href="#cb51-7" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> <span class="bu">abs</span>(target0 <span class="op">-</span> target)</span>
+<span id="cb51-8"><a href="#cb51-8" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb51-9"><a href="#cb51-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result</span>
+<span id="cb51-10"><a href="#cb51-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb51-11"><a href="#cb51-11" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> implied_vol_optim(param, <span class="bu">type</span>, S, K, r, q, tau, target):</span>
+<span id="cb51-12"><a href="#cb51-12" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb51-13"><a href="#cb51-13" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> minimize(implied_vol_obj, param, args <span class="op">=</span> (<span class="bu">type</span>, S, K, r, q, tau, target))</span>
+<span id="cb51-14"><a href="#cb51-14" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb51-15"><a href="#cb51-15" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result.x.item()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb51"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a>implied_vol_optim(start, <span class="bu">type</span>, S, K, r, q, tau, target)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb52"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a>implied_vol_optim(start, <span class="bu">type</span>, S, K, r, q, tau, target)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>0.128170288426253</code></pre>
+<pre><code>0.1210215937669012</code></pre>
 </div>
 </div>
 </section>
