@@ -2,7 +2,6 @@ import pandas as pd
 import numpy as np
 import statsmodels.api as sm
 import pandas_datareader as pdr # dev version
-from scipy.stats import norm, chi2
 
 factors = factors_r + factors_d
 width = 252
