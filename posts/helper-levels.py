@@ -1,6 +1,5 @@
 import pandas as pd
 import numpy as np
-import statsmodels.api as sm
 import pandas_datareader as pdr # dev version
 
 factors = factors_r + factors_d
