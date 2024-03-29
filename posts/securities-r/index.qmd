@@ -747,22 +747,22 @@ implied_vol_newton <- function(params, type, S, K, r, q, tau) {
 S <- coredata(na.locf(levels_xts)[nrow(levels_xts), factor])
 K <- S # * (1 + 0.05)
 sigma <- coredata(sd_xts[nrow(sd_xts), factor]) # overrides matrix
-start <- 0.2
+start1 <- 0.2
 ```
 
 ```{r}
 d1 <- bs_d1(S, K, r, q, tau, sigma)
 d2 <- bs_d2(S, K, r, q, tau, sigma)
-target <- bs_value(type, S, K, r, q, tau, sigma, d1, d2)
-params <- list(
-    "target" = target,
-    "sigma" = start,
+target1 <- bs_value(type, S, K, r, q, tau, sigma, d1, d2)
+params1 <- list(
+    "target" = target1,
+    "sigma" = start1,
     "tol" = 1e-4 # .Machine$double.eps
 )
 ```
 
 ```{r}
-implied_vol_newton(params, type, S, K, r, q, tau)
+implied_vol_newton(params1, type, S, K, r, q, tau)
 ```
 
 ## Yield-to-maturity
@@ -770,31 +770,31 @@ implied_vol_newton(params, type, S, K, r, q, tau)
 ```{r}
 yld_newton <- function(params, cash_flows) {
   
-  target0 <- 0
-  yld <- params[["yld"]]
-  yld0 <- yld
-  
-  while (abs(target0 - params[["target"]]) > params[["tol"]]) {
-    
     target0 <- 0
-    prime0 <- 0
+    yld <- params[["yld"]]
+    yld0 <- yld
     
-    for (i in 1:length(cash_flows)) {
+    while (abs(target0 - params[["target"]]) > params[["tol"]]) {
       
-      # present value of cash flows
-      target0 <- target0 + cash_flows[i] / (1 + yld0) ^ i
+      target0 <- 0
+      prime0 <- 0
       
-      # derivative of present value of cash flows
-      prime0 <- prime0 - (i + 1) * cash_flows[i] / (1 + yld0) ^ (i + 2)
+      for (i in 1:length(cash_flows)) {
+        
+        # present value of cash flows
+        target0 <- target0 + cash_flows[i] / (1 + yld0) ^ i
+        
+        # derivative of present value of cash flows
+        prime0 <- prime0 - (i + 1) * cash_flows[i] / (1 + yld0) ^ (i + 2)
+        
+      }
+      
+      yld <- yld0 - (target0 - params[["target"]]) / prime0
+      yld0 <- yld
       
     }
     
-    yld <- yld0 - (target0 - params[["target"]]) / prime0
-    yld0 <- yld
-    
-  }
-  
-  return(yld)
+    return(yld)
   
 }
 ```
@@ -802,22 +802,22 @@ yld_newton <- function(params, cash_flows) {
 -   <https://www.bloomberg.com/markets/rates-bonds/government-bonds/us>
 
 ```{r}
-target <- 0.9839 * 1000 # present value
-start <- 0.04 # coupon
-cash_flows <- rep(start * 1000, 10)
+target2 <- 0.9839 * 1000 # present value
+start2 <- 0.04 # coupon
+cash_flows <- rep(start2 * 1000, 10)
 cash_flows[10] <- cash_flows[10] + 1000
 ```
 
 ```{r}
-params <- list(
-    "target" = target,
-    "yld" = start,
+params2 <- list(
+    "target" = target2,
+    "yld" = start2,
     "tol" = 1e-4 # .Machine$double.eps
 )
 ```
 
 ```{r}
-yld_newton(params, cash_flows)
+yld_newton(params2, cash_flows)
 ```
 
 # Optimization
@@ -850,7 +850,36 @@ implied_vol_optim <- function(param, type, S, K, r, q, tau, target) {
 ```
 
 ```{r}
-implied_vol_optim(start, type, S, K, r, q, tau, target)
+implied_vol_optim(start1, type, S, K, r, q, tau, target1)
 ```
 
 ## Yield-to-maturity
+
+```{r}
+yld_obj <- function(param, cash_flows, target) {
+    
+    target0 <- 0
+        
+    for (i in 1:length(cash_flows)) {
+      target0 <- target0 + cash_flows[i] / (1 + param) ^ i
+    }
+  
+    result <- abs(target0 - target)
+    
+    return(result)
+    
+}
+
+yld_optim <- function(param, cash_flows, target) {
+    
+    result <- optim(param, yld_obj, target = target, cash_flows = cash_flows,
+                    method = "Brent", lower = 0, upper = 1)
+    
+    return(result$par)
+    
+}
+```
+
+```{r}
+yld_optim(start2, cash_flows, target2)
+```

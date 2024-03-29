@@ -749,22 +749,22 @@ def implied_vol_newton(params, type, S, K, r, q, tau):
 S = levels_df.ffill()[factor].iloc[-1]
 K = S # * (1 + 0.05)
 sigma = sd_df[factor].iloc[-1] # overrides matrix
-start = 0.2
+start1 = 0.2
 ```
 
 ```{python}
 d1 = bs_d1(S, K, r, q, tau, sigma)
 d2 = bs_d2(S, K, r, q, tau, sigma)
-target = bs_value(type, S, K, r, q, tau, sigma, d1, d2)
-params = {
-    "target": target,
-    "sigma": start,
+target1 = bs_value(type, S, K, r, q, tau, sigma, d1, d2)
+params1 = {
+    "target": target1,
+    "sigma": start1,
     "tol": 1e-4 # np.finfo(float).eps
 }
 ```
 
 ```{python}
-implied_vol_newton(params, type, S, K, r, q, tau) 
+implied_vol_newton(params1, type, S, K, r, q, tau) 
 ```
 
 ## Yield-to-maturity
@@ -798,22 +798,22 @@ def yld_newton(params, cash_flows):
 -   <https://www.bloomberg.com/markets/rates-bonds/government-bonds/us>
 
 ```{python}
-target = 0.9839 * 1000 # present value
-start = 0.04 # coupon
-cash_flows = [start * 1000] * 10
+target2 = 0.9839 * 1000 # present value
+start2 = 0.04 # coupon
+cash_flows = [start2 * 1000] * 10
 cash_flows[-1] += 1000
 ```
 
 ```{python}
-params = {
-    "target": target,
-    "yld": start,
+params2 = {
+    "target": target2,
+    "yld": start2,
     "tol": 1e-4 # np.finfo(float).eps
 }
 ```
 
 ```{python}
-yld_newton(params, cash_flows)
+yld_newton(params2, cash_flows)
 ```
 
 # Optimization
@@ -845,7 +845,31 @@ def implied_vol_optim(param, type, S, K, r, q, tau, target):
 ```
 
 ```{python}
-implied_vol_optim(start, type, S, K, r, q, tau, target)
+implied_vol_optim(start1, type, S, K, r, q, tau, target1)
 ```
 
 ## Yield-to-maturity
+
+```{python}
+def yld_obj(param, cash_flows, target):
+    
+    target0 = 0
+    
+    for i in range(len(cash_flows)):
+        
+        target0 += cash_flows[i] / (1 + param) ** (i + 1)
+    
+    target0 = abs(target0 - target)
+    
+    return target0
+  
+def yld_optim(param, cash_flows, target):
+    
+    result = minimize(yld_obj, param, args = (cash_flows, target))
+    
+    return result.x.item()
+```
+
+```{python}
+yld_optim(start2, cash_flows, target2)
+```
