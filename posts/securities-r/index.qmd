@@ -728,9 +728,9 @@ implied_vol_newton <- function(params, type, S, K, r, q, tau) {
         d2 <- bs_d2(S, K, r, q, tau, sigma0)
         
         target0 <- bs_value(type, S, K, r, q, tau, sigma0, d1, d2)
-        vega0 <- bs_vega(type, S, K, r, q, tau, sigma0, d1, d2)
+        prime0 <- bs_vega(type, S, K, r, q, tau, sigma0, d1, d2)
         
-        sigma <- sigma0 - (target0 - params[["target"]]) / vega0
+        sigma <- sigma0 - (target0 - params[["target"]]) / prime0
         sigma0 <- sigma
         
     }
@@ -766,6 +766,59 @@ implied_vol_newton(params, type, S, K, r, q, tau)
 ```
 
 ## Yield-to-maturity
+
+```{r}
+yld_newton <- function(params, cash_flows) {
+  
+  target0 <- 0
+  yld <- params[["yld"]]
+  yld0 <- yld
+  
+  while (abs(target0 - params[["target"]]) > params[["tol"]]) {
+    
+    target0 <- 0
+    prime0 <- 0
+    
+    for (i in 1:length(cash_flows)) {
+      
+      # present value of cash flows
+      target0 <- target0 + cash_flows[i] / (1 + yld0) ^ i
+      
+      # derivative of present value of cash flows
+      prime0 <- prime0 - (i + 1) * cash_flows[i] / (1 + yld0) ^ (i + 2)
+      
+    }
+    
+    yld <- yld0 - (target0 - params[["target"]]) / prime0
+    yld0 <- yld
+    
+  }
+  
+  return(yld)
+  
+}
+```
+
+-   <https://www.bloomberg.com/markets/rates-bonds/government-bonds/us>
+
+```{r}
+target <- 0.9839 * 1000 # present value
+start <- 0.04 # coupon
+cash_flows <- rep(start * 1000, 10)
+cash_flows[10] <- cash_flows[10] + 1000
+```
+
+```{r}
+params <- list(
+    "target" = target,
+    "yld" = start,
+    "tol" = 1e-4 # .Machine$double.eps
+)
+```
+
+```{r}
+yld_newton(params, cash_flows)
+```
 
 # Optimization
 
