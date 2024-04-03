@@ -118,6 +118,21 @@ $$
 $$
 
 ```{python}
+def similarity(x, y):
+  
+    n_cols_x = x.shape[1]
+    n_cols_y = y.shape[1]
+    result = np.zeros((n_cols_x, n_cols_y))
+    
+    for i in range(n_cols_x):
+        for j in range(n_cols_y):
+            result[i, j] = np.dot(x[:, i], y[:, j]) / \
+                np.sqrt(np.dot(x[:, i], x[:, i]) * np.dot(y[:, j], y[:, j]))
+    
+    return result
+```
+
+```{python}
 def roll_eigen1(x, width, comp):
     
     n_rows = len(x)
@@ -172,7 +187,7 @@ def roll_eigen2(x, width, comp):
         
         if i > width - 1:
             
-            similarity = np.dot(V, V_ls[-1])
+            similarity = np.dot(V.T, V_ls[-1])
             order = np.argmax(np.abs(similarity), axis = 1)
             V = np.sign(np.diag(similarity[:, order])) * V[:, order]
             

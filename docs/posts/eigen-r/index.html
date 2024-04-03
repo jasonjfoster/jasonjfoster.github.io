@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Jason Foster">
-<meta name="dcterms.date" content="2024-03-20">
+<meta name="dcterms.date" content="2024-04-03">
 
 <title>jasonjfoster.github.io - Eigen</title>
 <style>
@@ -191,7 +191,7 @@ window.Quarto = {
       <div>
       <div class="quarto-title-meta-heading">Published</div>
       <div class="quarto-title-meta-contents">
-        <p class="date">March 20, 2024</p>
+        <p class="date">April 3, 2024</p>
       </div>
     </div>
     
@@ -257,10 +257,10 @@ window.Quarto = {
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">eigen_decomp</span>(overlap_xts, comps) <span class="sc">*</span> scale[[<span class="st">"periods"</span>]] <span class="sc">*</span> scale[[<span class="st">"overlap"</span>]]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>              [,1]          [,2]          [,3]          [,4]
-[1,]  0.0298380602 -3.659333e-03 -1.478789e-04  2.555579e-03
-[2,] -0.0036593330  4.487798e-04  1.813583e-05 -3.134157e-04
-[3,] -0.0001478789  1.813583e-05  7.328947e-07 -1.266557e-05
-[4,]  0.0025555794 -3.134157e-04 -1.266557e-05  2.188810e-04</code></pre>
+[1,]  0.0300096494 -3.631058e-03 -1.473326e-04  2.557586e-03
+[2,] -0.0036310576  4.393447e-04  1.782671e-05 -3.094585e-04
+[3,] -0.0001473326  1.782671e-05  7.233306e-07 -1.255649e-05
+[4,]  0.0025575856 -3.094585e-04 -1.255649e-05  2.179714e-04</code></pre>
 </div>
 </div>
 <div class="cell">
@@ -290,7 +290,7 @@ window.Quarto = {
 <div class="cell">
 <div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">variance_explained</span>(overlap_xts)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 0.8736404 0.9921508 0.9982652 1.0000000</code></pre>
+<pre><code>[1] 0.8740437 0.9921600 0.9982693 1.0000000</code></pre>
 </div>
 </div>
 </section>
@@ -303,47 +303,65 @@ window.Quarto = {
 \end{aligned}
 \]</span></p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>roll_eigen1 <span class="ot">&lt;-</span> <span class="cf">function</span>(x, width, comp) {</span>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>similarity <span class="ot">&lt;-</span> <span class="cf">function</span>(x, y) {</span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>    n_rows <span class="ot">&lt;-</span> <span class="fu">nrow</span>(x)</span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>    result_ls <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
-<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> (i <span class="cf">in</span> width<span class="sc">:</span>n_rows) {</span>
-<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>        idx <span class="ot">&lt;-</span> <span class="fu">max</span>(i <span class="sc">-</span> width <span class="sc">+</span> <span class="dv">1</span>, <span class="dv">1</span>)<span class="sc">:</span>i</span>
-<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>        LV <span class="ot">&lt;-</span> <span class="fu">eigen</span>(<span class="fu">cov</span>(x[idx, ]))</span>
-<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>        V <span class="ot">&lt;-</span> LV[[<span class="st">"vectors"</span>]]</span>
-<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>        result_ls <span class="ot">&lt;-</span> <span class="fu">append</span>(result_ls, <span class="fu">list</span>(V[ , comp]))</span>
-<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>    }</span>
-<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>    result <span class="ot">&lt;-</span> <span class="fu">do.call</span>(rbind, result_ls)</span>
-<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>    result <span class="ot">&lt;-</span> <span class="fu">xts</span>(result, <span class="fu">index</span>(x)[width<span class="sc">:</span>n_rows])</span>
-<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a>    <span class="fu">colnames</span>(result) <span class="ot">&lt;-</span> <span class="fu">colnames</span>(x)</span>
-<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(result)</span>
-<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>    n_cols_x <span class="ot">&lt;-</span> <span class="fu">ncols</span>(x)</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>    n_cols_y <span class="ot">&lt;-</span> <span class="fu">ncols</span>(y)</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>    result <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="dv">0</span>, <span class="at">nrow =</span> n_cols_x, <span class="at">ncol =</span> n_cols_y)</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>n_cols_x) {</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>      <span class="cf">for</span> (j <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>n_cols_y) {</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>        result[i, j] <span class="ot">&lt;-</span> <span class="fu">crossprod</span>(x[ , i], y[ , j]) <span class="sc">/</span></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>            <span class="fu">sqrt</span>(<span class="fu">crossprod</span>(x[ , i]) <span class="sc">*</span> <span class="fu">crossprod</span>(y[ , j]))</span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>      }</span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(result)</span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>comp <span class="ot">&lt;-</span> <span class="dv">1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>roll_eigen1 <span class="ot">&lt;-</span> <span class="cf">function</span>(x, width, comp) {</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>    n_rows <span class="ot">&lt;-</span> <span class="fu">nrow</span>(x)</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>    result_ls <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> (i <span class="cf">in</span> width<span class="sc">:</span>n_rows) {</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>        idx <span class="ot">&lt;-</span> <span class="fu">max</span>(i <span class="sc">-</span> width <span class="sc">+</span> <span class="dv">1</span>, <span class="dv">1</span>)<span class="sc">:</span>i</span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>        LV <span class="ot">&lt;-</span> <span class="fu">eigen</span>(<span class="fu">cov</span>(x[idx, ]))</span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>        V <span class="ot">&lt;-</span> LV[[<span class="st">"vectors"</span>]]</span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>        result_ls <span class="ot">&lt;-</span> <span class="fu">append</span>(result_ls, <span class="fu">list</span>(V[ , comp]))</span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a>    result <span class="ot">&lt;-</span> <span class="fu">do.call</span>(rbind, result_ls)</span>
+<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a>    result <span class="ot">&lt;-</span> <span class="fu">xts</span>(result, <span class="fu">index</span>(x)[width<span class="sc">:</span>n_rows])</span>
+<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a>    <span class="fu">colnames</span>(result) <span class="ot">&lt;-</span> <span class="fu">colnames</span>(x)</span>
+<span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb11-21"><a href="#cb11-21" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(result)</span>
+<span id="cb11-22"><a href="#cb11-22" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb11-23"><a href="#cb11-23" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>raw_df <span class="ot">&lt;-</span> <span class="fu">roll_eigen1</span>(overlap_xts, width, comp)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>comp <span class="ot">&lt;-</span> <span class="dv">1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># # install.packages("devtools")</span></span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="co"># devtools::install_github("jjf234/rolleigen") # roll (&gt;= 1.1.7)</span></span>
-<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="co"># library(rolleigen)</span></span>
-<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="co"># raw_df &lt;- roll_eigen(overlap_xts, width)[["vectors"]][ , comp, ]</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>raw_df <span class="ot">&lt;-</span> <span class="fu">roll_eigen1</span>(overlap_xts, width, comp)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># # install.packages("devtools")</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="co"># devtools::install_github("jjf234/rolleigen") # roll (&gt;= 1.1.7)</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="co"># library(rolleigen)</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a><span class="co"># raw_df &lt;- roll_eigen(overlap_xts, width)[["vectors"]][ , comp, ]</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/unnamed-chunk-15-1.png" class="img-fluid figure-img" width="576"></p>
+<p><img src="index_files/figure-html/unnamed-chunk-16-1.png" class="img-fluid figure-img" width="576"></p>
 </figure>
 </div>
 </div>
@@ -353,48 +371,48 @@ window.Quarto = {
 <li><a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=4400158" class="uri">https://papers.ssrn.com/sol3/papers.cfm?abstract_id=4400158</a></li>
 </ul>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>roll_eigen2 <span class="ot">&lt;-</span> <span class="cf">function</span>(x, width, comp) {</span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>    n_rows <span class="ot">&lt;-</span> <span class="fu">nrow</span>(x)</span>
-<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>    V_ls <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
-<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>    result_ls <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
-<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> (i <span class="cf">in</span> width<span class="sc">:</span>n_rows) {</span>
-<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>        idx <span class="ot">&lt;-</span> <span class="fu">max</span>(i <span class="sc">-</span> width <span class="sc">+</span> <span class="dv">1</span>, <span class="dv">1</span>)<span class="sc">:</span>i</span>
-<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>        LV <span class="ot">&lt;-</span> <span class="fu">eigen</span>(<span class="fu">cov</span>(x[idx, ]))</span>
-<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>        V <span class="ot">&lt;-</span> LV[[<span class="st">"vectors"</span>]]</span>
-<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a>                </span>
-<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> (i <span class="sc">&gt;</span> width) {</span>
-<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a>          </span>
-<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a>            similarity <span class="ot">&lt;-</span> <span class="fu">crossprod</span>(V, V_ls[[<span class="fu">length</span>(V_ls)]])</span>
-<span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a>            order <span class="ot">&lt;-</span> <span class="fu">apply</span>(<span class="fu">abs</span>(similarity), <span class="dv">1</span>, which.max)</span>
-<span id="cb14-18"><a href="#cb14-18" aria-hidden="true" tabindex="-1"></a>            V <span class="ot">&lt;-</span> <span class="fu">t</span>(<span class="fu">sign</span>(<span class="fu">diag</span>(similarity[ , order])) <span class="sc">*</span> <span class="fu">t</span>(V[ , order]))</span>
-<span id="cb14-19"><a href="#cb14-19" aria-hidden="true" tabindex="-1"></a>            </span>
-<span id="cb14-20"><a href="#cb14-20" aria-hidden="true" tabindex="-1"></a>        }</span>
-<span id="cb14-21"><a href="#cb14-21" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb14-22"><a href="#cb14-22" aria-hidden="true" tabindex="-1"></a>        V_ls <span class="ot">&lt;-</span> <span class="fu">append</span>(V_ls, <span class="fu">list</span>(V))</span>
-<span id="cb14-23"><a href="#cb14-23" aria-hidden="true" tabindex="-1"></a>        result_ls <span class="ot">&lt;-</span> <span class="fu">append</span>(result_ls, <span class="fu">list</span>(V[ , comp]))</span>
-<span id="cb14-24"><a href="#cb14-24" aria-hidden="true" tabindex="-1"></a>                </span>
-<span id="cb14-25"><a href="#cb14-25" aria-hidden="true" tabindex="-1"></a>    }</span>
-<span id="cb14-26"><a href="#cb14-26" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb14-27"><a href="#cb14-27" aria-hidden="true" tabindex="-1"></a>    result <span class="ot">&lt;-</span> <span class="fu">do.call</span>(rbind, result_ls)</span>
-<span id="cb14-28"><a href="#cb14-28" aria-hidden="true" tabindex="-1"></a>    result <span class="ot">&lt;-</span> <span class="fu">xts</span>(result, <span class="fu">index</span>(x)[width<span class="sc">:</span>n_rows])</span>
-<span id="cb14-29"><a href="#cb14-29" aria-hidden="true" tabindex="-1"></a>    <span class="fu">colnames</span>(result) <span class="ot">&lt;-</span> <span class="fu">colnames</span>(x)</span>
-<span id="cb14-30"><a href="#cb14-30" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb14-31"><a href="#cb14-31" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(result)</span>
-<span id="cb14-32"><a href="#cb14-32" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb14-33"><a href="#cb14-33" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>roll_eigen2 <span class="ot">&lt;-</span> <span class="cf">function</span>(x, width, comp) {</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>    n_rows <span class="ot">&lt;-</span> <span class="fu">nrow</span>(x)</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>    V_ls <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>    result_ls <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> (i <span class="cf">in</span> width<span class="sc">:</span>n_rows) {</span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>        idx <span class="ot">&lt;-</span> <span class="fu">max</span>(i <span class="sc">-</span> width <span class="sc">+</span> <span class="dv">1</span>, <span class="dv">1</span>)<span class="sc">:</span>i</span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>        LV <span class="ot">&lt;-</span> <span class="fu">eigen</span>(<span class="fu">cov</span>(x[idx, ]))</span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>        V <span class="ot">&lt;-</span> LV[[<span class="st">"vectors"</span>]]</span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a>                </span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> (i <span class="sc">&gt;</span> width) {</span>
+<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a>          </span>
+<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a>            similarity <span class="ot">&lt;-</span> <span class="fu">crossprod</span>(V, V_ls[[<span class="fu">length</span>(V_ls)]])</span>
+<span id="cb15-17"><a href="#cb15-17" aria-hidden="true" tabindex="-1"></a>            order <span class="ot">&lt;-</span> <span class="fu">apply</span>(<span class="fu">abs</span>(similarity), <span class="dv">1</span>, which.max)</span>
+<span id="cb15-18"><a href="#cb15-18" aria-hidden="true" tabindex="-1"></a>            V <span class="ot">&lt;-</span> <span class="fu">t</span>(<span class="fu">sign</span>(<span class="fu">diag</span>(similarity[ , order])) <span class="sc">*</span> <span class="fu">t</span>(V[ , order]))</span>
+<span id="cb15-19"><a href="#cb15-19" aria-hidden="true" tabindex="-1"></a>            </span>
+<span id="cb15-20"><a href="#cb15-20" aria-hidden="true" tabindex="-1"></a>        }</span>
+<span id="cb15-21"><a href="#cb15-21" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb15-22"><a href="#cb15-22" aria-hidden="true" tabindex="-1"></a>        V_ls <span class="ot">&lt;-</span> <span class="fu">append</span>(V_ls, <span class="fu">list</span>(V))</span>
+<span id="cb15-23"><a href="#cb15-23" aria-hidden="true" tabindex="-1"></a>        result_ls <span class="ot">&lt;-</span> <span class="fu">append</span>(result_ls, <span class="fu">list</span>(V[ , comp]))</span>
+<span id="cb15-24"><a href="#cb15-24" aria-hidden="true" tabindex="-1"></a>                </span>
+<span id="cb15-25"><a href="#cb15-25" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb15-26"><a href="#cb15-26" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb15-27"><a href="#cb15-27" aria-hidden="true" tabindex="-1"></a>    result <span class="ot">&lt;-</span> <span class="fu">do.call</span>(rbind, result_ls)</span>
+<span id="cb15-28"><a href="#cb15-28" aria-hidden="true" tabindex="-1"></a>    result <span class="ot">&lt;-</span> <span class="fu">xts</span>(result, <span class="fu">index</span>(x)[width<span class="sc">:</span>n_rows])</span>
+<span id="cb15-29"><a href="#cb15-29" aria-hidden="true" tabindex="-1"></a>    <span class="fu">colnames</span>(result) <span class="ot">&lt;-</span> <span class="fu">colnames</span>(x)</span>
+<span id="cb15-30"><a href="#cb15-30" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb15-31"><a href="#cb15-31" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(result)</span>
+<span id="cb15-32"><a href="#cb15-32" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb15-33"><a href="#cb15-33" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>clean_df <span class="ot">&lt;-</span> <span class="fu">roll_eigen2</span>(overlap_xts, width, comp)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>clean_df <span class="ot">&lt;-</span> <span class="fu">roll_eigen2</span>(overlap_xts, width, comp)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/unnamed-chunk-18-1.png" class="img-fluid figure-img" width="576"></p>
+<p><img src="index_files/figure-html/unnamed-chunk-19-1.png" class="img-fluid figure-img" width="576"></p>
 </figure>
 </div>
 </div>
@@ -404,51 +422,51 @@ window.Quarto = {
 <h1>Implied shocks</h1>
 <p>Product of the <span class="math inline">\(n\)</span>th eigenvector and square root of the <span class="math inline">\(n\)</span>th eigenvalue:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>roll_shocks <span class="ot">&lt;-</span> <span class="cf">function</span>(x, width, comp) {</span>
-<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>    n_rows <span class="ot">&lt;-</span> <span class="fu">nrow</span>(x)</span>
-<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>    V_ls <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
-<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>    result_ls <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
-<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> (i <span class="cf">in</span> width<span class="sc">:</span>n_rows) {</span>
-<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>        idx <span class="ot">&lt;-</span> <span class="fu">max</span>(i <span class="sc">-</span> width <span class="sc">+</span> <span class="dv">1</span>, <span class="dv">1</span>)<span class="sc">:</span>i</span>
-<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>        LV <span class="ot">&lt;-</span> <span class="fu">eigen</span>(<span class="fu">cov</span>(x[idx, ]))</span>
-<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a>        L <span class="ot">&lt;-</span> LV[[<span class="st">"values"</span>]]</span>
-<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a>        V <span class="ot">&lt;-</span> LV[[<span class="st">"vectors"</span>]]</span>
-<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> (<span class="fu">length</span>(V_ls) <span class="sc">&gt;</span> <span class="dv">1</span>) {</span>
-<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a>          </span>
-<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a>            similarity <span class="ot">&lt;-</span> <span class="fu">crossprod</span>(V, V_ls[[<span class="fu">length</span>(V_ls)]])</span>
-<span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a>            order <span class="ot">&lt;-</span> <span class="fu">apply</span>(<span class="fu">abs</span>(similarity), <span class="dv">1</span>, which.max)</span>
-<span id="cb16-19"><a href="#cb16-19" aria-hidden="true" tabindex="-1"></a>            L <span class="ot">&lt;-</span> L[order]</span>
-<span id="cb16-20"><a href="#cb16-20" aria-hidden="true" tabindex="-1"></a>            V <span class="ot">&lt;-</span> <span class="fu">t</span>(<span class="fu">sign</span>(<span class="fu">diag</span>(similarity[ , order])) <span class="sc">*</span> <span class="fu">t</span>(V[ , order]))</span>
-<span id="cb16-21"><a href="#cb16-21" aria-hidden="true" tabindex="-1"></a>          </span>
-<span id="cb16-22"><a href="#cb16-22" aria-hidden="true" tabindex="-1"></a>        }</span>
-<span id="cb16-23"><a href="#cb16-23" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb16-24"><a href="#cb16-24" aria-hidden="true" tabindex="-1"></a>        shocks <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(L[comp]) <span class="sc">*</span> V[ , comp]</span>
-<span id="cb16-25"><a href="#cb16-25" aria-hidden="true" tabindex="-1"></a>        V_ls <span class="ot">&lt;-</span> <span class="fu">append</span>(V_ls, <span class="fu">list</span>(V))</span>
-<span id="cb16-26"><a href="#cb16-26" aria-hidden="true" tabindex="-1"></a>        result_ls <span class="ot">&lt;-</span> <span class="fu">append</span>(result_ls, <span class="fu">list</span>(shocks))</span>
-<span id="cb16-27"><a href="#cb16-27" aria-hidden="true" tabindex="-1"></a>                </span>
-<span id="cb16-28"><a href="#cb16-28" aria-hidden="true" tabindex="-1"></a>    }</span>
-<span id="cb16-29"><a href="#cb16-29" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb16-30"><a href="#cb16-30" aria-hidden="true" tabindex="-1"></a>    result <span class="ot">&lt;-</span> <span class="fu">do.call</span>(rbind, result_ls)</span>
-<span id="cb16-31"><a href="#cb16-31" aria-hidden="true" tabindex="-1"></a>    result <span class="ot">&lt;-</span> <span class="fu">xts</span>(result, <span class="fu">index</span>(x)[width<span class="sc">:</span>n_rows])</span>
-<span id="cb16-32"><a href="#cb16-32" aria-hidden="true" tabindex="-1"></a>    <span class="fu">colnames</span>(result) <span class="ot">&lt;-</span> <span class="fu">colnames</span>(x)</span>
-<span id="cb16-33"><a href="#cb16-33" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb16-34"><a href="#cb16-34" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(result)</span>
-<span id="cb16-35"><a href="#cb16-35" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb16-36"><a href="#cb16-36" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>roll_shocks <span class="ot">&lt;-</span> <span class="cf">function</span>(x, width, comp) {</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>    n_rows <span class="ot">&lt;-</span> <span class="fu">nrow</span>(x)</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>    V_ls <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>    result_ls <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> (i <span class="cf">in</span> width<span class="sc">:</span>n_rows) {</span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>        idx <span class="ot">&lt;-</span> <span class="fu">max</span>(i <span class="sc">-</span> width <span class="sc">+</span> <span class="dv">1</span>, <span class="dv">1</span>)<span class="sc">:</span>i</span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>        LV <span class="ot">&lt;-</span> <span class="fu">eigen</span>(<span class="fu">cov</span>(x[idx, ]))</span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a>        L <span class="ot">&lt;-</span> LV[[<span class="st">"values"</span>]]</span>
+<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a>        V <span class="ot">&lt;-</span> LV[[<span class="st">"vectors"</span>]]</span>
+<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb17-15"><a href="#cb17-15" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> (<span class="fu">length</span>(V_ls) <span class="sc">&gt;</span> <span class="dv">1</span>) {</span>
+<span id="cb17-16"><a href="#cb17-16" aria-hidden="true" tabindex="-1"></a>          </span>
+<span id="cb17-17"><a href="#cb17-17" aria-hidden="true" tabindex="-1"></a>            similarity <span class="ot">&lt;-</span> <span class="fu">crossprod</span>(V, V_ls[[<span class="fu">length</span>(V_ls)]])</span>
+<span id="cb17-18"><a href="#cb17-18" aria-hidden="true" tabindex="-1"></a>            order <span class="ot">&lt;-</span> <span class="fu">apply</span>(<span class="fu">abs</span>(similarity), <span class="dv">1</span>, which.max)</span>
+<span id="cb17-19"><a href="#cb17-19" aria-hidden="true" tabindex="-1"></a>            L <span class="ot">&lt;-</span> L[order]</span>
+<span id="cb17-20"><a href="#cb17-20" aria-hidden="true" tabindex="-1"></a>            V <span class="ot">&lt;-</span> <span class="fu">t</span>(<span class="fu">sign</span>(<span class="fu">diag</span>(similarity[ , order])) <span class="sc">*</span> <span class="fu">t</span>(V[ , order]))</span>
+<span id="cb17-21"><a href="#cb17-21" aria-hidden="true" tabindex="-1"></a>          </span>
+<span id="cb17-22"><a href="#cb17-22" aria-hidden="true" tabindex="-1"></a>        }</span>
+<span id="cb17-23"><a href="#cb17-23" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb17-24"><a href="#cb17-24" aria-hidden="true" tabindex="-1"></a>        shocks <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(L[comp]) <span class="sc">*</span> V[ , comp]</span>
+<span id="cb17-25"><a href="#cb17-25" aria-hidden="true" tabindex="-1"></a>        V_ls <span class="ot">&lt;-</span> <span class="fu">append</span>(V_ls, <span class="fu">list</span>(V))</span>
+<span id="cb17-26"><a href="#cb17-26" aria-hidden="true" tabindex="-1"></a>        result_ls <span class="ot">&lt;-</span> <span class="fu">append</span>(result_ls, <span class="fu">list</span>(shocks))</span>
+<span id="cb17-27"><a href="#cb17-27" aria-hidden="true" tabindex="-1"></a>                </span>
+<span id="cb17-28"><a href="#cb17-28" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb17-29"><a href="#cb17-29" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb17-30"><a href="#cb17-30" aria-hidden="true" tabindex="-1"></a>    result <span class="ot">&lt;-</span> <span class="fu">do.call</span>(rbind, result_ls)</span>
+<span id="cb17-31"><a href="#cb17-31" aria-hidden="true" tabindex="-1"></a>    result <span class="ot">&lt;-</span> <span class="fu">xts</span>(result, <span class="fu">index</span>(x)[width<span class="sc">:</span>n_rows])</span>
+<span id="cb17-32"><a href="#cb17-32" aria-hidden="true" tabindex="-1"></a>    <span class="fu">colnames</span>(result) <span class="ot">&lt;-</span> <span class="fu">colnames</span>(x)</span>
+<span id="cb17-33"><a href="#cb17-33" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb17-34"><a href="#cb17-34" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(result)</span>
+<span id="cb17-35"><a href="#cb17-35" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb17-36"><a href="#cb17-36" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>shocks_xts <span class="ot">&lt;-</span> <span class="fu">roll_shocks</span>(overlap_xts, width, comp) <span class="sc">*</span> <span class="fu">sqrt</span>(scale[[<span class="st">"periods"</span>]] <span class="sc">*</span> scale[[<span class="st">"overlap"</span>]])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>shocks_xts <span class="ot">&lt;-</span> <span class="fu">roll_shocks</span>(overlap_xts, width, comp) <span class="sc">*</span> <span class="fu">sqrt</span>(scale[[<span class="st">"periods"</span>]] <span class="sc">*</span> scale[[<span class="st">"overlap"</span>]])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/unnamed-chunk-21-1.png" class="img-fluid figure-img" width="576"></p>
+<p><img src="index_files/figure-html/unnamed-chunk-22-1.png" class="img-fluid figure-img" width="576"></p>
 </figure>
 </div>
 </div>

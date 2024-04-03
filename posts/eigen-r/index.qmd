@@ -104,6 +104,25 @@ $$
 $$
 
 ```{r}
+similarity <- function(x, y) {
+    
+    n_cols_x <- ncols(x)
+    n_cols_y <- ncols(y)
+    result <- matrix(0, nrow = n_cols_x, ncol = n_cols_y)
+    
+    for (i in 1:n_cols_x) {
+      for (j in 1:n_cols_y) {
+        result[i, j] <- crossprod(x[ , i], y[ , j]) /
+            sqrt(crossprod(x[ , i]) * crossprod(y[ , j]))
+      }
+    }
+    
+    return(result)
+    
+}
+```
+
+```{r}
 roll_eigen1 <- function(x, width, comp) {
     
     n_rows <- nrow(x)
