@@ -118,16 +118,16 @@ $$
 $$
 
 ```{python}
-def similarity(x, y):
+def similarity(V, V0):
   
-    n_cols_x = x.shape[1]
-    n_cols_y = y.shape[1]
-    result = np.zeros((n_cols_x, n_cols_y))
+    n_cols_v = V.shape[1]
+    n_cols_v0 = V0.shape[1]
+    result = np.zeros((n_cols_v, n_cols_v0))
     
-    for i in range(n_cols_x):
-        for j in range(n_cols_y):
-            result[i, j] = np.dot(x[:, i], y[:, j]) / \
-                np.sqrt(np.dot(x[:, i], x[:, i]) * np.dot(y[:, j], y[:, j]))
+    for i in range(n_cols_v):
+        for j in range(n_cols_v0):
+            result[i, j] = np.dot(V[:, i], V0[:, j]) / \
+                np.sqrt(np.dot(V[:, i], V[:, i]) * np.dot(V0[:, j], V0[:, j]))
     
     return result
 ```
@@ -187,9 +187,10 @@ def roll_eigen2(x, width, comp):
         
         if i > width - 1:
             
-            similarity = np.dot(V.T, V_ls[-1])
-            order = np.argmax(np.abs(similarity), axis = 1)
-            V = np.sign(np.diag(similarity[:, order])) * V[:, order]
+            # cosine = np.dot(V.T, V_ls[-1])
+            cosine = similarity(V.T, V_ls[-1])
+            order = np.argmax(np.abs(cosine), axis = 1)
+            V = np.sign(np.diag(cosine[:, order])) * V[:, order]
             
         V_ls.append(V)
         result_ls.append(V[:, comp - 1])
@@ -232,10 +233,11 @@ def roll_shocks(x, width, comp):
         
         if len(V_ls) > 1:
             
-            similarity = np.dot(V.T, V_ls[-1])
-            order = np.argmax(np.abs(similarity), axis = 1)
+            # cosine = np.dot(V.T, V_ls[-1])
+            cosine = similarity(V.T, V_ls[-1])
+            order = np.argmax(np.abs(cosine), axis = 1)
             L = L[order]
-            V = np.sign(np.diag(similarity[:, order])) * V[:, order]
+            V = np.sign(np.diag(cosine[:, order])) * V[:, order]
         
         shocks = np.sqrt(L[comp - 1]) * V[:, comp - 1]
         V_ls.append(V)

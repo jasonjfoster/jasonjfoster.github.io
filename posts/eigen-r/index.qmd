@@ -104,16 +104,16 @@ $$
 $$
 
 ```{r}
-similarity <- function(x, y) {
+similarity <- function(V, V0) {
     
-    n_cols_x <- ncols(x)
-    n_cols_y <- ncols(y)
-    result <- matrix(0, nrow = n_cols_x, ncol = n_cols_y)
+    n_cols_v <- ncol(V)
+    n_cols_v0 <- ncol(V0)
+    result <- matrix(0, nrow = n_cols_v, ncol = n_cols_v0)
     
-    for (i in 1:n_cols_x) {
-      for (j in 1:n_cols_y) {
-        result[i, j] <- crossprod(x[ , i], y[ , j]) /
-            sqrt(crossprod(x[ , i]) * crossprod(y[ , j]))
+    for (i in 1:n_cols_v) {
+      for (j in 1:n_cols_v0) {
+        result[i, j] <- crossprod(V[ , i], V0[ , j]) /
+            sqrt(crossprod(V[ , i]) * crossprod(V0[ , j]))
       }
     }
     
@@ -188,9 +188,10 @@ roll_eigen2 <- function(x, width, comp) {
                 
         if (i > width) {
           
-            similarity <- crossprod(V, V_ls[[length(V_ls)]])
-            order <- apply(abs(similarity), 1, which.max)
-            V <- t(sign(diag(similarity[ , order])) * t(V[ , order]))
+            # cosine <- crossprod(V, V_ls[[length(V_ls)]])
+            cosine <- similarity(V, V_ls[[length(V_ls)]])
+            order <- apply(abs(cosine), 1, which.max)
+            V <- t(sign(diag(cosine[ , order])) * t(V[ , order]))
             
         }
         
@@ -239,10 +240,11 @@ roll_shocks <- function(x, width, comp) {
         
         if (length(V_ls) > 1) {
           
-            similarity <- crossprod(V, V_ls[[length(V_ls)]])
-            order <- apply(abs(similarity), 1, which.max)
+            # cosine <- crossprod(V, V_ls[[length(V_ls)]])
+            cosine <- similarity(V, V_ls[[length(V_ls)]])
+            order <- apply(abs(cosine), 1, which.max)
             L <- L[order]
-            V <- t(sign(diag(similarity[ , order])) * t(V[ , order]))
+            V <- t(sign(diag(cosine[ , order])) * t(V[ , order]))
           
         }
         
