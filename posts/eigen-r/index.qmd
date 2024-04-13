@@ -160,7 +160,9 @@ raw_df <- roll_eigen1(overlap_xts, width, comp)
 # # install.packages("devtools")
 # devtools::install_github("jasonjfoster/rolleigen") # roll (>= 1.1.7)
 # library(rolleigen)
-# raw_df <- roll_eigen(overlap_xts, width)[["vectors"]][ , comp, ]
+# raw_df <- roll_eigen(overlap_xts, width, order = TRUE)[["vectors"]][ , comp, ]
+# raw_df <- xts(t(raw_df), index(overlap_xts))
+# colnames(raw_df) <- colnames(overlap_xts)
 ```
 
 ```{r, echo = FALSE, fig.width = 6, fig.height = 3}
