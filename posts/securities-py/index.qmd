@@ -773,7 +773,7 @@ implied_vol_newton(params1, type, S, K, r, q, tau)
 def yld_newton(params, cash_flows):
     
     target0 = 0
-    yld0 = params["yld"]
+    yld0 = params["yld"] / params["freq"]
     yld = yld0
     
     while (abs(target0 - params["target"]) > params["tol"]):
@@ -783,11 +783,13 @@ def yld_newton(params, cash_flows):
         
         for i in range(len(cash_flows)):
           
+            t = (i + 1) / params["freq"]
+          
             # present value of cash flows
-            target0 += cash_flows[i] / (1 + yld0) ** (i + 1)
+            target0 += cash_flows[i] / (1 + yld0) ** t
             
             # derivative of present value of cash flows
-            prime0 -= (i + 1) * cash_flows[i] / (1 + yld0) ** (i + 2)
+            prime0 -= t * cash_flows[i] / (1 + yld0) ** (t + 1)
         
         yld = yld0 - (target0 - params["target"]) / prime0
         yld0 = yld
@@ -798,8 +800,8 @@ def yld_newton(params, cash_flows):
 -   <https://www.bloomberg.com/markets/rates-bonds/government-bonds/us>
 
 ```{python}
-target2 = 0.9839 * 1000 # present value
-start2 = 0.04 # coupon
+target2 = 0.9928 * 1000 # present value
+start2 = 0.0438 # coupon
 cash_flows = [start2 * 1000] * 10
 cash_flows[-1] += 1000
 ```
@@ -808,6 +810,7 @@ cash_flows[-1] += 1000
 params2 = {
     "target": target2,
     "yld": start2,
+    "freq": 1,
     "tol": 1e-4 # np.finfo(float).eps
 }
 ```

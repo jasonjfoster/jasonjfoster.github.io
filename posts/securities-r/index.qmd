@@ -781,11 +781,13 @@ yld_newton <- function(params, cash_flows) {
       
       for (i in 1:length(cash_flows)) {
         
+        t <- i / params[["freq"]]
+        
         # present value of cash flows
-        target0 <- target0 + cash_flows[i] / (1 + yld0) ^ i
+        target0 <- target0 + cash_flows[i] / (1 + yld0) ^ t
         
         # derivative of present value of cash flows
-        prime0 <- prime0 - (i + 1) * cash_flows[i] / (1 + yld0) ^ (i + 2)
+        prime0 <- prime0 - t * cash_flows[i] / (1 + yld0) ^ (t + 1)
         
       }
       
@@ -802,8 +804,8 @@ yld_newton <- function(params, cash_flows) {
 -   <https://www.bloomberg.com/markets/rates-bonds/government-bonds/us>
 
 ```{r}
-target2 <- 0.9839 * 1000 # present value
-start2 <- 0.04 # coupon
+target2 <- 0.9928 * 1000 # present value
+start2 <- 0.0438 # coupon
 cash_flows <- rep(start2 * 1000, 10)
 cash_flows[10] <- cash_flows[10] + 1000
 ```
@@ -812,6 +814,7 @@ cash_flows[10] <- cash_flows[10] + 1000
 params2 <- list(
     "target" = target2,
     "yld" = start2,
+    "freq" = 1,
     "tol" = 1e-4 # .Machine$double.eps
 )
 ```
