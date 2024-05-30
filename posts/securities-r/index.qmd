@@ -361,10 +361,12 @@ pnl_bond <- function(duration, convexity, dy) {
     convexity_pnl <- (convexity * 100 / 2) * dy ^ 2
     income_pnl <- dy
     
-    result <- list("total" = duration_pnl + convexity_pnl + income_pnl,
-                   "duration" = duration_pnl,
-                   "convexity" = convexity_pnl,
-                   "income" = income_pnl)
+    result <- list(
+        "total" = duration_pnl + convexity_pnl + income_pnl,
+        "duration" = duration_pnl,
+        "convexity" = convexity_pnl,
+        "income" = income_pnl
+    )
     
     return(result)
     
@@ -430,8 +432,10 @@ duration_drift <- function(duration, convexity, dy) {
     drift <- convexity - duration ^ 2 / 100
     change <- -drift * dy * 100
     
-    result <- list("drift" = drift,
-                   "change" = change)
+    result <- list(
+        "drift" = drift,
+        "change" = change
+    )
     
     return(result)
     
@@ -498,11 +502,13 @@ pnl_option <- function(type, S, K, r, q, tau, sigma, dS, dt, dsigma) {
     vega_pnl <- vega * dsigma / value
     theta_pnl <- theta * dt / value
     
-    result <- list("total" = delta_pnl + gamma_pnl + vega_pnl + theta_pnl,
-                   "delta" = delta_pnl,
-                   "gamma" = gamma_pnl,
-                   "vega" = vega_pnl,
-                   "theta" = theta_pnl)
+    result <- list(
+        "total" = delta_pnl + gamma_pnl + vega_pnl + theta_pnl,
+        "delta" = delta_pnl,
+        "gamma" = gamma_pnl,
+        "vega" = vega_pnl,
+        "theta" = theta_pnl
+    )
     
     return(result)    
     
@@ -680,13 +686,17 @@ for (i in 1:1e4) {
 ```
 
 ```{r}
-data.frame("empirical" = colMeans(na.omit(returns_xts)) * scale[["periods"]],
-           "theoretical" = colMeans(do.call(rbind, mu_ls)))
+data.frame(
+    "empirical" = colMeans(na.omit(returns_xts)) * scale[["periods"]],
+    "theoretical" = colMeans(do.call(rbind, mu_ls)
+))
 ```
 
 ```{r}
-data.frame("empirical" = sqrt(diag(sigma)),
-           "theoretical" = colMeans(do.call(rbind, sigma_ls)))
+data.frame(
+    "empirical" = sqrt(diag(sigma)),
+    "theoretical" = colMeans(do.call(rbind, sigma_ls))
+)
 ```
 
 ### Vasicek model
@@ -788,7 +798,7 @@ yld_newton <- function(params, cash_flows) {
         target0 <- target0 + cash_flows[i] / (1 + yld0) ^ t
         
         # first derivative of present value of cash flows
-        d_target0 <- d_target0 - t * cash_flows[i] / (1 + yld0) ^ (t + 1)
+        d_target0 <- d_target0 - t * cash_flows[i] / (1 + yld0) ^ (t + 1) # use t for Macaulay duration
         
         # second derivative of present value of cash flows
         dd_target0 <- dd_target0 - t * (t + 1) * cash_flows[i] / (1 + yld0) ^ (t + 2)

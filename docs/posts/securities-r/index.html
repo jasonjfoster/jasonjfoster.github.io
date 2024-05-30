@@ -574,14 +574,16 @@ P(y+\Delta y)-P(y)&amp;\approx{\frac{P'(y)}{1!}}\Delta y+{\frac{P''(y)}{2!}}(\De
 <span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>    convexity_pnl <span class="ot">&lt;-</span> (convexity <span class="sc">*</span> <span class="dv">100</span> <span class="sc">/</span> <span class="dv">2</span>) <span class="sc">*</span> dy <span class="sc">^</span> <span class="dv">2</span></span>
 <span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>    income_pnl <span class="ot">&lt;-</span> dy</span>
 <span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>    result <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="st">"total"</span> <span class="ot">=</span> duration_pnl <span class="sc">+</span> convexity_pnl <span class="sc">+</span> income_pnl,</span>
-<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a>                   <span class="st">"duration"</span> <span class="ot">=</span> duration_pnl,</span>
-<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a>                   <span class="st">"convexity"</span> <span class="ot">=</span> convexity_pnl,</span>
-<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a>                   <span class="st">"income"</span> <span class="ot">=</span> income_pnl)</span>
-<span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb20-12"><a href="#cb20-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(result)</span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>    result <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a>        <span class="st">"total"</span> <span class="ot">=</span> duration_pnl <span class="sc">+</span> convexity_pnl <span class="sc">+</span> income_pnl,</span>
+<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a>        <span class="st">"duration"</span> <span class="ot">=</span> duration_pnl,</span>
+<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a>        <span class="st">"convexity"</span> <span class="ot">=</span> convexity_pnl,</span>
+<span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a>        <span class="st">"income"</span> <span class="ot">=</span> income_pnl</span>
+<span id="cb20-12"><a href="#cb20-12" aria-hidden="true" tabindex="-1"></a>    )</span>
 <span id="cb20-13"><a href="#cb20-13" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb20-14"><a href="#cb20-14" aria-hidden="true" tabindex="-1"></a>} </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb20-14"><a href="#cb20-14" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(result)</span>
+<span id="cb20-15"><a href="#cb20-15" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb20-16"><a href="#cb20-16" aria-hidden="true" tabindex="-1"></a>} </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <ul>
 <li><a href="https://engineering.nyu.edu/sites/default/files/2021-07/CarWuRF2021.pdf" class="uri">https://engineering.nyu.edu/sites/default/files/2021-07/CarWuRF2021.pdf</a></li>
@@ -640,12 +642,14 @@ P(y+\Delta y)-P(y)&amp;\approx{\frac{P'(y)}{1!}}\Delta y+{\frac{P''(y)}{2!}}(\De
 <span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>    drift <span class="ot">&lt;-</span> convexity <span class="sc">-</span> duration <span class="sc">^</span> <span class="dv">2</span> <span class="sc">/</span> <span class="dv">100</span></span>
 <span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>    change <span class="ot">&lt;-</span> <span class="sc">-</span>drift <span class="sc">*</span> dy <span class="sc">*</span> <span class="dv">100</span></span>
 <span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a>    result <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="st">"drift"</span> <span class="ot">=</span> drift,</span>
-<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a>                   <span class="st">"change"</span> <span class="ot">=</span> change)</span>
-<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(result)</span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a>    result <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a>        <span class="st">"drift"</span> <span class="ot">=</span> drift,</span>
+<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a>        <span class="st">"change"</span> <span class="ot">=</span> change</span>
+<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a>    )</span>
 <span id="cb25-10"><a href="#cb25-10" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb25-11"><a href="#cb25-11" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb25-11"><a href="#cb25-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(result)</span>
+<span id="cb25-12"><a href="#cb25-12" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb25-13"><a href="#cb25-13" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="co"># "Risk Management: Approaches for Fixed Income Markets" (page 45)</span></span>
@@ -706,15 +710,17 @@ V(S+\Delta S,\sigma+\Delta\sigma,t+\Delta t)-V(S,\sigma,t)&amp;\approx{\frac{\pa
 <span id="cb28-13"><a href="#cb28-13" aria-hidden="true" tabindex="-1"></a>    vega_pnl <span class="ot">&lt;-</span> vega <span class="sc">*</span> dsigma <span class="sc">/</span> value</span>
 <span id="cb28-14"><a href="#cb28-14" aria-hidden="true" tabindex="-1"></a>    theta_pnl <span class="ot">&lt;-</span> theta <span class="sc">*</span> dt <span class="sc">/</span> value</span>
 <span id="cb28-15"><a href="#cb28-15" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb28-16"><a href="#cb28-16" aria-hidden="true" tabindex="-1"></a>    result <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="st">"total"</span> <span class="ot">=</span> delta_pnl <span class="sc">+</span> gamma_pnl <span class="sc">+</span> vega_pnl <span class="sc">+</span> theta_pnl,</span>
-<span id="cb28-17"><a href="#cb28-17" aria-hidden="true" tabindex="-1"></a>                   <span class="st">"delta"</span> <span class="ot">=</span> delta_pnl,</span>
-<span id="cb28-18"><a href="#cb28-18" aria-hidden="true" tabindex="-1"></a>                   <span class="st">"gamma"</span> <span class="ot">=</span> gamma_pnl,</span>
-<span id="cb28-19"><a href="#cb28-19" aria-hidden="true" tabindex="-1"></a>                   <span class="st">"vega"</span> <span class="ot">=</span> vega_pnl,</span>
-<span id="cb28-20"><a href="#cb28-20" aria-hidden="true" tabindex="-1"></a>                   <span class="st">"theta"</span> <span class="ot">=</span> theta_pnl)</span>
-<span id="cb28-21"><a href="#cb28-21" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb28-22"><a href="#cb28-22" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(result)    </span>
+<span id="cb28-16"><a href="#cb28-16" aria-hidden="true" tabindex="-1"></a>    result <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb28-17"><a href="#cb28-17" aria-hidden="true" tabindex="-1"></a>        <span class="st">"total"</span> <span class="ot">=</span> delta_pnl <span class="sc">+</span> gamma_pnl <span class="sc">+</span> vega_pnl <span class="sc">+</span> theta_pnl,</span>
+<span id="cb28-18"><a href="#cb28-18" aria-hidden="true" tabindex="-1"></a>        <span class="st">"delta"</span> <span class="ot">=</span> delta_pnl,</span>
+<span id="cb28-19"><a href="#cb28-19" aria-hidden="true" tabindex="-1"></a>        <span class="st">"gamma"</span> <span class="ot">=</span> gamma_pnl,</span>
+<span id="cb28-20"><a href="#cb28-20" aria-hidden="true" tabindex="-1"></a>        <span class="st">"vega"</span> <span class="ot">=</span> vega_pnl,</span>
+<span id="cb28-21"><a href="#cb28-21" aria-hidden="true" tabindex="-1"></a>        <span class="st">"theta"</span> <span class="ot">=</span> theta_pnl</span>
+<span id="cb28-22"><a href="#cb28-22" aria-hidden="true" tabindex="-1"></a>    )</span>
 <span id="cb28-23"><a href="#cb28-23" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb28-24"><a href="#cb28-24" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb28-24"><a href="#cb28-24" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(result)    </span>
+<span id="cb28-25"><a href="#cb28-25" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb28-26"><a href="#cb28-26" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>factor <span class="ot">&lt;-</span> <span class="st">"SP500"</span></span>
@@ -866,25 +872,29 @@ S_{k}(t_{i+1})&amp;=S_{k}(t_{i})\exp\left(\sqrt{t_{i+1}-t_{i}}\sum_{j=1}^{d}{A_{
 <span id="cb36-13"><a href="#cb36-13" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="fu">data.frame</span>(<span class="st">"empirical"</span> <span class="ot">=</span> <span class="fu">colMeans</span>(<span class="fu">na.omit</span>(returns_xts)) <span class="sc">*</span> scale[[<span class="st">"periods"</span>]],</span>
-<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>           <span class="st">"theoretical"</span> <span class="ot">=</span> <span class="fu">colMeans</span>(<span class="fu">do.call</span>(rbind, mu_ls)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="fu">data.frame</span>(</span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">"empirical"</span> <span class="ot">=</span> <span class="fu">colMeans</span>(<span class="fu">na.omit</span>(returns_xts)) <span class="sc">*</span> scale[[<span class="st">"periods"</span>]],</span>
+<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">"theoretical"</span> <span class="ot">=</span> <span class="fu">colMeans</span>(<span class="fu">do.call</span>(rbind, mu_ls)</span>
+<span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>                empirical  theoretical
-SP500         0.101231898  0.105568780
-DTWEXAFEGS    0.016680838  0.015938555
-DGS10        -0.000886867 -0.001069920
-BAMLH0A0HYM2  0.001643948  0.001898898</code></pre>
+<pre><code>                empirical   theoretical
+SP500         0.101231898  0.1028166334
+DTWEXAFEGS    0.016680838  0.0164170494
+DGS10        -0.000886867 -0.0009605514
+BAMLH0A0HYM2  0.001643948  0.0018126511</code></pre>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="fu">data.frame</span>(<span class="st">"empirical"</span> <span class="ot">=</span> <span class="fu">sqrt</span>(<span class="fu">diag</span>(sigma)),</span>
-<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>           <span class="st">"theoretical"</span> <span class="ot">=</span> <span class="fu">colMeans</span>(<span class="fu">do.call</span>(rbind, sigma_ls)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="fu">data.frame</span>(</span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">"empirical"</span> <span class="ot">=</span> <span class="fu">sqrt</span>(<span class="fu">diag</span>(sigma)),</span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">"theoretical"</span> <span class="ot">=</span> <span class="fu">colMeans</span>(<span class="fu">do.call</span>(rbind, sigma_ls))</span>
+<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>               empirical theoretical
-SP500        0.179440907 0.179339799
-DTWEXAFEGS   0.062625910 0.062589026
-DGS10        0.008346445 0.008337595
-BAMLH0A0HYM2 0.016956423 0.016942633</code></pre>
+SP500        0.179440907  0.17929226
+DTWEXAFEGS   0.062625910  0.06258519
+DGS10        0.008346445  0.00834120
+BAMLH0A0HYM2 0.016956423  0.01694201</code></pre>
 </div>
 </div>
 </section>
@@ -987,7 +997,7 @@ x_{n+1}=x_{n}-{\frac{f(x_{n})}{f'(x_{n})}}
 <span id="cb47-18"><a href="#cb47-18" aria-hidden="true" tabindex="-1"></a>        target0 <span class="ot">&lt;-</span> target0 <span class="sc">+</span> cash_flows[i] <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">+</span> yld0) <span class="sc">^</span> t</span>
 <span id="cb47-19"><a href="#cb47-19" aria-hidden="true" tabindex="-1"></a>        </span>
 <span id="cb47-20"><a href="#cb47-20" aria-hidden="true" tabindex="-1"></a>        <span class="co"># first derivative of present value of cash flows</span></span>
-<span id="cb47-21"><a href="#cb47-21" aria-hidden="true" tabindex="-1"></a>        d_target0 <span class="ot">&lt;-</span> d_target0 <span class="sc">-</span> t <span class="sc">*</span> cash_flows[i] <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">+</span> yld0) <span class="sc">^</span> (t <span class="sc">+</span> <span class="dv">1</span>)</span>
+<span id="cb47-21"><a href="#cb47-21" aria-hidden="true" tabindex="-1"></a>        d_target0 <span class="ot">&lt;-</span> d_target0 <span class="sc">-</span> t <span class="sc">*</span> cash_flows[i] <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">+</span> yld0) <span class="sc">^</span> (t <span class="sc">+</span> <span class="dv">1</span>) <span class="co"># use t for Macaulay duration</span></span>
 <span id="cb47-22"><a href="#cb47-22" aria-hidden="true" tabindex="-1"></a>        </span>
 <span id="cb47-23"><a href="#cb47-23" aria-hidden="true" tabindex="-1"></a>        <span class="co"># second derivative of present value of cash flows</span></span>
 <span id="cb47-24"><a href="#cb47-24" aria-hidden="true" tabindex="-1"></a>        dd_target0 <span class="ot">&lt;-</span> dd_target0 <span class="sc">-</span> t <span class="sc">*</span> (t <span class="sc">+</span> <span class="dv">1</span>) <span class="sc">*</span> cash_flows[i] <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">+</span> yld0) <span class="sc">^</span> (t <span class="sc">+</span> <span class="dv">2</span>)</span>
