@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Jason Foster">
-<meta name="dcterms.date" content="2024-05-24">
+<meta name="dcterms.date" content="2024-05-29">
 
 <title>jasonjfoster.github.io - Securities</title>
 <style>
@@ -191,7 +191,7 @@ window.Quarto = {
       <div>
       <div class="quarto-title-meta-heading">Published</div>
       <div class="quarto-title-meta-contents">
-        <p class="date">May 24, 2024</p>
+        <p class="date">May 29, 2024</p>
       </div>
     </div>
     
@@ -869,11 +869,11 @@ S_{k}(t_{i+1})&amp;=S_{k}(t_{i})\exp\left(\sqrt{t_{i+1}-t_{i}}\sum_{j=1}^{d}{A_{
 <div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="fu">data.frame</span>(<span class="st">"empirical"</span> <span class="ot">=</span> <span class="fu">colMeans</span>(<span class="fu">na.omit</span>(returns_xts)) <span class="sc">*</span> scale[[<span class="st">"periods"</span>]],</span>
 <span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>           <span class="st">"theoretical"</span> <span class="ot">=</span> <span class="fu">colMeans</span>(<span class="fu">do.call</span>(rbind, mu_ls)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>                 empirical   theoretical
-SP500         0.1019474288  0.1030999324
-DTWEXAFEGS    0.0162592450  0.0153993417
-DGS10        -0.0008010309 -0.0007659348
-BAMLH0A0HYM2  0.0016778351  0.0016907521</code></pre>
+<pre><code>                empirical  theoretical
+SP500         0.101231898  0.105568780
+DTWEXAFEGS    0.016680838  0.015938555
+DGS10        -0.000886867 -0.001069920
+BAMLH0A0HYM2  0.001643948  0.001898898</code></pre>
 </div>
 </div>
 <div class="cell">
@@ -881,10 +881,10 @@ BAMLH0A0HYM2  0.0016778351  0.0016907521</code></pre>
 <span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>           <span class="st">"theoretical"</span> <span class="ot">=</span> <span class="fu">colMeans</span>(<span class="fu">do.call</span>(rbind, sigma_ls)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>               empirical theoretical
-SP500        0.179490946 0.179398450
-DTWEXAFEGS   0.062647429 0.062542012
-DGS10        0.008352659 0.008339354
-BAMLH0A0HYM2 0.016963919 0.016942951</code></pre>
+SP500        0.179440907 0.179339799
+DTWEXAFEGS   0.062625910 0.062589026
+DGS10        0.008346445 0.008337595
+BAMLH0A0HYM2 0.016956423 0.016942633</code></pre>
 </div>
 </div>
 </section>
@@ -925,9 +925,9 @@ x_{n+1}=x_{n}-{\frac{f(x_{n})}{f'(x_{n})}}
 <span id="cb42-10"><a href="#cb42-10" aria-hidden="true" tabindex="-1"></a>        d2 <span class="ot">&lt;-</span> <span class="fu">bs_d2</span>(S, K, r, q, tau, sigma0)</span>
 <span id="cb42-11"><a href="#cb42-11" aria-hidden="true" tabindex="-1"></a>        </span>
 <span id="cb42-12"><a href="#cb42-12" aria-hidden="true" tabindex="-1"></a>        target0 <span class="ot">&lt;-</span> <span class="fu">bs_value</span>(type, S, K, r, q, tau, sigma0, d1, d2)</span>
-<span id="cb42-13"><a href="#cb42-13" aria-hidden="true" tabindex="-1"></a>        prime0 <span class="ot">&lt;-</span> <span class="fu">bs_vega</span>(type, S, K, r, q, tau, sigma0, d1, d2)</span>
+<span id="cb42-13"><a href="#cb42-13" aria-hidden="true" tabindex="-1"></a>        d_target0 <span class="ot">&lt;-</span> <span class="fu">bs_vega</span>(type, S, K, r, q, tau, sigma0, d1, d2)</span>
 <span id="cb42-14"><a href="#cb42-14" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb42-15"><a href="#cb42-15" aria-hidden="true" tabindex="-1"></a>        sigma <span class="ot">&lt;-</span> sigma0 <span class="sc">-</span> (target0 <span class="sc">-</span> params[[<span class="st">"target"</span>]]) <span class="sc">/</span> prime0</span>
+<span id="cb42-15"><a href="#cb42-15" aria-hidden="true" tabindex="-1"></a>        sigma <span class="ot">&lt;-</span> sigma0 <span class="sc">-</span> (target0 <span class="sc">-</span> params[[<span class="st">"target"</span>]]) <span class="sc">/</span> d_target0</span>
 <span id="cb42-16"><a href="#cb42-16" aria-hidden="true" tabindex="-1"></a>        sigma0 <span class="ot">&lt;-</span> sigma</span>
 <span id="cb42-17"><a href="#cb42-17" aria-hidden="true" tabindex="-1"></a>        </span>
 <span id="cb42-18"><a href="#cb42-18" aria-hidden="true" tabindex="-1"></a>    }</span>
@@ -960,7 +960,7 @@ x_{n+1}=x_{n}-{\frac{f(x_{n})}{f'(x_{n})}}
 <div class="sourceCode cell-code" id="cb45"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="fu">implied_vol_newton</span>(params1, type, S, K, r, q, tau)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>         SP500
-[1,] 0.1273322</code></pre>
+[1,] 0.1268896</code></pre>
 </div>
 </div>
 </section>
@@ -970,56 +970,79 @@ x_{n+1}=x_{n}-{\frac{f(x_{n})}{f'(x_{n})}}
 <div class="sourceCode cell-code" id="cb47"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a>yld_newton <span class="ot">&lt;-</span> <span class="cf">function</span>(params, cash_flows) {</span>
 <span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a>  </span>
 <span id="cb47-3"><a href="#cb47-3" aria-hidden="true" tabindex="-1"></a>    target0 <span class="ot">&lt;-</span> <span class="dv">0</span></span>
-<span id="cb47-4"><a href="#cb47-4" aria-hidden="true" tabindex="-1"></a>    yld <span class="ot">&lt;-</span> params[[<span class="st">"yld"</span>]]</span>
+<span id="cb47-4"><a href="#cb47-4" aria-hidden="true" tabindex="-1"></a>    yld <span class="ot">&lt;-</span> params[[<span class="st">"cpn"</span>]]</span>
 <span id="cb47-5"><a href="#cb47-5" aria-hidden="true" tabindex="-1"></a>    yld0 <span class="ot">&lt;-</span> yld</span>
 <span id="cb47-6"><a href="#cb47-6" aria-hidden="true" tabindex="-1"></a>    </span>
 <span id="cb47-7"><a href="#cb47-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">while</span> (<span class="fu">abs</span>(target0 <span class="sc">-</span> params[[<span class="st">"target"</span>]]) <span class="sc">&gt;</span> params[[<span class="st">"tol"</span>]]) {</span>
 <span id="cb47-8"><a href="#cb47-8" aria-hidden="true" tabindex="-1"></a>      </span>
 <span id="cb47-9"><a href="#cb47-9" aria-hidden="true" tabindex="-1"></a>      target0 <span class="ot">&lt;-</span> <span class="dv">0</span></span>
-<span id="cb47-10"><a href="#cb47-10" aria-hidden="true" tabindex="-1"></a>      prime0 <span class="ot">&lt;-</span> <span class="dv">0</span></span>
-<span id="cb47-11"><a href="#cb47-11" aria-hidden="true" tabindex="-1"></a>      </span>
-<span id="cb47-12"><a href="#cb47-12" aria-hidden="true" tabindex="-1"></a>      <span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(cash_flows)) {</span>
-<span id="cb47-13"><a href="#cb47-13" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb47-14"><a href="#cb47-14" aria-hidden="true" tabindex="-1"></a>        t <span class="ot">&lt;-</span> i <span class="sc">/</span> params[[<span class="st">"freq"</span>]]</span>
-<span id="cb47-15"><a href="#cb47-15" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb47-16"><a href="#cb47-16" aria-hidden="true" tabindex="-1"></a>        <span class="co"># present value of cash flows</span></span>
-<span id="cb47-17"><a href="#cb47-17" aria-hidden="true" tabindex="-1"></a>        target0 <span class="ot">&lt;-</span> target0 <span class="sc">+</span> cash_flows[i] <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">+</span> yld0) <span class="sc">^</span> t</span>
-<span id="cb47-18"><a href="#cb47-18" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb47-19"><a href="#cb47-19" aria-hidden="true" tabindex="-1"></a>        <span class="co"># derivative of present value of cash flows</span></span>
-<span id="cb47-20"><a href="#cb47-20" aria-hidden="true" tabindex="-1"></a>        prime0 <span class="ot">&lt;-</span> prime0 <span class="sc">-</span> t <span class="sc">*</span> cash_flows[i] <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">+</span> yld0) <span class="sc">^</span> (t <span class="sc">+</span> <span class="dv">1</span>)</span>
-<span id="cb47-21"><a href="#cb47-21" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb47-22"><a href="#cb47-22" aria-hidden="true" tabindex="-1"></a>      }</span>
-<span id="cb47-23"><a href="#cb47-23" aria-hidden="true" tabindex="-1"></a>      </span>
-<span id="cb47-24"><a href="#cb47-24" aria-hidden="true" tabindex="-1"></a>      yld <span class="ot">&lt;-</span> yld0 <span class="sc">-</span> (target0 <span class="sc">-</span> params[[<span class="st">"target"</span>]]) <span class="sc">/</span> prime0</span>
-<span id="cb47-25"><a href="#cb47-25" aria-hidden="true" tabindex="-1"></a>      yld0 <span class="ot">&lt;-</span> yld</span>
-<span id="cb47-26"><a href="#cb47-26" aria-hidden="true" tabindex="-1"></a>      </span>
-<span id="cb47-27"><a href="#cb47-27" aria-hidden="true" tabindex="-1"></a>    }</span>
-<span id="cb47-28"><a href="#cb47-28" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb47-29"><a href="#cb47-29" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(yld)</span>
-<span id="cb47-30"><a href="#cb47-30" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb47-31"><a href="#cb47-31" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb47-10"><a href="#cb47-10" aria-hidden="true" tabindex="-1"></a>      d_target0 <span class="ot">&lt;-</span> <span class="dv">0</span></span>
+<span id="cb47-11"><a href="#cb47-11" aria-hidden="true" tabindex="-1"></a>      dd_target0 <span class="ot">&lt;-</span> <span class="dv">0</span></span>
+<span id="cb47-12"><a href="#cb47-12" aria-hidden="true" tabindex="-1"></a>      </span>
+<span id="cb47-13"><a href="#cb47-13" aria-hidden="true" tabindex="-1"></a>      <span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(cash_flows)) {</span>
+<span id="cb47-14"><a href="#cb47-14" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb47-15"><a href="#cb47-15" aria-hidden="true" tabindex="-1"></a>        t <span class="ot">&lt;-</span> i</span>
+<span id="cb47-16"><a href="#cb47-16" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb47-17"><a href="#cb47-17" aria-hidden="true" tabindex="-1"></a>        <span class="co"># present value of cash flows</span></span>
+<span id="cb47-18"><a href="#cb47-18" aria-hidden="true" tabindex="-1"></a>        target0 <span class="ot">&lt;-</span> target0 <span class="sc">+</span> cash_flows[i] <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">+</span> yld0) <span class="sc">^</span> t</span>
+<span id="cb47-19"><a href="#cb47-19" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb47-20"><a href="#cb47-20" aria-hidden="true" tabindex="-1"></a>        <span class="co"># first derivative of present value of cash flows</span></span>
+<span id="cb47-21"><a href="#cb47-21" aria-hidden="true" tabindex="-1"></a>        d_target0 <span class="ot">&lt;-</span> d_target0 <span class="sc">-</span> t <span class="sc">*</span> cash_flows[i] <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">+</span> yld0) <span class="sc">^</span> (t <span class="sc">+</span> <span class="dv">1</span>)</span>
+<span id="cb47-22"><a href="#cb47-22" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb47-23"><a href="#cb47-23" aria-hidden="true" tabindex="-1"></a>        <span class="co"># second derivative of present value of cash flows</span></span>
+<span id="cb47-24"><a href="#cb47-24" aria-hidden="true" tabindex="-1"></a>        dd_target0 <span class="ot">&lt;-</span> dd_target0 <span class="sc">-</span> t <span class="sc">*</span> (t <span class="sc">+</span> <span class="dv">1</span>) <span class="sc">*</span> cash_flows[i] <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">+</span> yld0) <span class="sc">^</span> (t <span class="sc">+</span> <span class="dv">2</span>)</span>
+<span id="cb47-25"><a href="#cb47-25" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb47-26"><a href="#cb47-26" aria-hidden="true" tabindex="-1"></a>      }</span>
+<span id="cb47-27"><a href="#cb47-27" aria-hidden="true" tabindex="-1"></a>      </span>
+<span id="cb47-28"><a href="#cb47-28" aria-hidden="true" tabindex="-1"></a>      yld <span class="ot">&lt;-</span> yld0 <span class="sc">-</span> (target0 <span class="sc">-</span> params[[<span class="st">"target"</span>]]) <span class="sc">/</span> d_target0</span>
+<span id="cb47-29"><a href="#cb47-29" aria-hidden="true" tabindex="-1"></a>      yld0 <span class="ot">&lt;-</span> yld</span>
+<span id="cb47-30"><a href="#cb47-30" aria-hidden="true" tabindex="-1"></a>      </span>
+<span id="cb47-31"><a href="#cb47-31" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb47-32"><a href="#cb47-32" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb47-33"><a href="#cb47-33" aria-hidden="true" tabindex="-1"></a>    result <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb47-34"><a href="#cb47-34" aria-hidden="true" tabindex="-1"></a>        <span class="st">"price"</span> <span class="ot">=</span> target0,</span>
+<span id="cb47-35"><a href="#cb47-35" aria-hidden="true" tabindex="-1"></a>        <span class="st">"yield"</span> <span class="ot">=</span> yld <span class="sc">*</span> params[[<span class="st">"freq"</span>]],</span>
+<span id="cb47-36"><a href="#cb47-36" aria-hidden="true" tabindex="-1"></a>        <span class="st">"duration"</span> <span class="ot">=</span> <span class="sc">-</span>d_target0 <span class="sc">/</span> params[[<span class="st">"target"</span>]] <span class="sc">/</span> params[[<span class="st">"freq"</span>]],</span>
+<span id="cb47-37"><a href="#cb47-37" aria-hidden="true" tabindex="-1"></a>        <span class="st">"convexity"</span> <span class="ot">=</span> <span class="sc">-</span>dd_target0 <span class="sc">/</span> params[[<span class="st">"target"</span>]] <span class="sc">/</span> params[[<span class="st">"freq"</span>]] <span class="sc">^</span> <span class="dv">2</span></span>
+<span id="cb47-38"><a href="#cb47-38" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb47-39"><a href="#cb47-39" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb47-40"><a href="#cb47-40" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(result)</span>
+<span id="cb47-41"><a href="#cb47-41" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb47-42"><a href="#cb47-42" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <ul>
 <li><a href="https://www.bloomberg.com/markets/rates-bonds/government-bonds/us" class="uri">https://www.bloomberg.com/markets/rates-bonds/government-bonds/us</a></li>
+<li><a href="https://quant.stackexchange.com/a/61025" class="uri">https://quant.stackexchange.com/a/61025</a></li>
+<li><a href="https://pages.stern.nyu.edu/~igiddy/spreadsheets/duration-convexity.xls" class="uri">https://pages.stern.nyu.edu/~igiddy/spreadsheets/duration-convexity.xls</a></li>
 </ul>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb48"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>target2 <span class="ot">&lt;-</span> <span class="fl">0.9928</span> <span class="sc">*</span> <span class="dv">1000</span> <span class="co"># present value</span></span>
 <span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a>start2 <span class="ot">&lt;-</span> <span class="fl">0.0438</span> <span class="co"># coupon</span></span>
-<span id="cb48-3"><a href="#cb48-3" aria-hidden="true" tabindex="-1"></a>cash_flows <span class="ot">&lt;-</span> <span class="fu">rep</span>(start2 <span class="sc">*</span> <span class="dv">1000</span>, <span class="dv">10</span>)</span>
-<span id="cb48-4"><a href="#cb48-4" aria-hidden="true" tabindex="-1"></a>cash_flows[<span class="dv">10</span>] <span class="ot">&lt;-</span> cash_flows[<span class="dv">10</span>] <span class="sc">+</span> <span class="dv">1000</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb48-3"><a href="#cb48-3" aria-hidden="true" tabindex="-1"></a>cash_flows <span class="ot">&lt;-</span> <span class="fu">rep</span>(start2 <span class="sc">*</span> <span class="dv">1000</span> <span class="sc">/</span> <span class="dv">2</span>, <span class="dv">10</span> <span class="sc">*</span> <span class="dv">2</span>)</span>
+<span id="cb48-4"><a href="#cb48-4" aria-hidden="true" tabindex="-1"></a>cash_flows[<span class="dv">10</span> <span class="sc">*</span> <span class="dv">2</span>] <span class="ot">&lt;-</span> cash_flows[<span class="dv">10</span> <span class="sc">*</span> <span class="dv">2</span>] <span class="sc">+</span> <span class="dv">1000</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb49"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a>params2 <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
 <span id="cb49-2"><a href="#cb49-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">"target"</span> <span class="ot">=</span> target2,</span>
-<span id="cb49-3"><a href="#cb49-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">"yld"</span> <span class="ot">=</span> start2,</span>
-<span id="cb49-4"><a href="#cb49-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">"freq"</span> <span class="ot">=</span> <span class="dv">1</span>,</span>
+<span id="cb49-3"><a href="#cb49-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">"cpn"</span> <span class="ot">=</span> start2,</span>
+<span id="cb49-4"><a href="#cb49-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">"freq"</span> <span class="ot">=</span> <span class="dv">2</span>,</span>
 <span id="cb49-5"><a href="#cb49-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">"tol"</span> <span class="ot">=</span> <span class="fl">1e-4</span> <span class="co"># .Machine$double.eps</span></span>
 <span id="cb49-6"><a href="#cb49-6" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb50"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a><span class="fu">yld_newton</span>(params2, cash_flows)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 0.04470862</code></pre>
+<pre><code>$price
+[1] 992.8
+
+$yield
+[1] 0.04470076
+
+$duration
+[1] 8.016596
+
+$convexity
+[1] 76.6811</code></pre>
 </div>
 </div>
 </section>
@@ -1054,7 +1077,7 @@ x_{n+1}=x_{n}-{\frac{f(x_{n})}{f'(x_{n})}}
 <div class="cell">
 <div class="sourceCode cell-code" id="cb53"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a><span class="fu">implied_vol_optim</span>(start1, type, S, K, r, q, tau, target1)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 0.1273323</code></pre>
+<pre><code>[1] 0.1268896</code></pre>
 </div>
 </div>
 </section>
@@ -1075,19 +1098,19 @@ x_{n+1}=x_{n}-{\frac{f(x_{n})}{f'(x_{n})}}
 <span id="cb55-12"><a href="#cb55-12" aria-hidden="true" tabindex="-1"></a>    </span>
 <span id="cb55-13"><a href="#cb55-13" aria-hidden="true" tabindex="-1"></a>}</span>
 <span id="cb55-14"><a href="#cb55-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb55-15"><a href="#cb55-15" aria-hidden="true" tabindex="-1"></a>yld_optim <span class="ot">&lt;-</span> <span class="cf">function</span>(param, cash_flows, target) {</span>
+<span id="cb55-15"><a href="#cb55-15" aria-hidden="true" tabindex="-1"></a>yld_optim <span class="ot">&lt;-</span> <span class="cf">function</span>(params, cash_flows, target) {</span>
 <span id="cb55-16"><a href="#cb55-16" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb55-17"><a href="#cb55-17" aria-hidden="true" tabindex="-1"></a>    result <span class="ot">&lt;-</span> <span class="fu">optim</span>(param, yld_obj, <span class="at">target =</span> target, <span class="at">cash_flows =</span> cash_flows,</span>
+<span id="cb55-17"><a href="#cb55-17" aria-hidden="true" tabindex="-1"></a>    result <span class="ot">&lt;-</span> <span class="fu">optim</span>(params[[<span class="st">"cpn"</span>]], yld_obj, <span class="at">target =</span> target, <span class="at">cash_flows =</span> cash_flows,</span>
 <span id="cb55-18"><a href="#cb55-18" aria-hidden="true" tabindex="-1"></a>                    <span class="at">method =</span> <span class="st">"Brent"</span>, <span class="at">lower =</span> <span class="dv">0</span>, <span class="at">upper =</span> <span class="dv">1</span>)</span>
 <span id="cb55-19"><a href="#cb55-19" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb55-20"><a href="#cb55-20" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(result<span class="sc">$</span>par)</span>
+<span id="cb55-20"><a href="#cb55-20" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(result<span class="sc">$</span>par <span class="sc">*</span> params[[<span class="st">"freq"</span>]])</span>
 <span id="cb55-21"><a href="#cb55-21" aria-hidden="true" tabindex="-1"></a>    </span>
 <span id="cb55-22"><a href="#cb55-22" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb56"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a><span class="fu">yld_optim</span>(start2, cash_flows, target2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb56"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a><span class="fu">yld_optim</span>(params2, cash_flows, target2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 0.04470863</code></pre>
+<pre><code>[1] 0.04470077</code></pre>
 </div>
 </div>
 

@@ -734,9 +734,9 @@ def implied_vol_newton(params, type, S, K, r, q, tau):
         d2 = bs_d2(S, K, r, q, tau, sigma0)
         
         target0 = bs_value(type, S, K, r, q, tau, sigma0, d1, d2)
-        prime0 = bs_vega(type, S, K, r, q, tau, sigma0, d1, d2)
+        d_target0 = bs_vega(type, S, K, r, q, tau, sigma0, d1, d2)
         
-        sigma = sigma0 - (target0 - params["target"]) / prime0
+        sigma = sigma0 - (target0 - params["target"]) / d_target0
         sigma0 = sigma
         
     return sigma
@@ -773,44 +773,57 @@ implied_vol_newton(params1, type, S, K, r, q, tau)
 def yld_newton(params, cash_flows):
     
     target0 = 0
-    yld0 = params["yld"] / params["freq"]
-    yld = yld0
+    yld0 = params["cpn"] / params["freq"]
+    yld = yld0 # assignment to `yield` variable is not possible
     
     while (abs(target0 - params["target"]) > params["tol"]):
         
         target0 = 0
-        prime0 = 0
+        d_target0 = 0
+        dd_target0 = 0
         
         for i in range(len(cash_flows)):
           
-            t = (i + 1) / params["freq"]
+            t = i + 1
           
             # present value of cash flows
             target0 += cash_flows[i] / (1 + yld0) ** t
             
-            # derivative of present value of cash flows
-            prime0 -= t * cash_flows[i] / (1 + yld0) ** (t + 1)
+            # first derivative of present value of cash flows
+            d_target0 -= t * cash_flows[i] / (1 + yld0) ** (t + 1) # use t for Macaulay duration
+            
+            # second derivative of present value of cash flows
+            dd_target0 -= t * (t + 1) * cash_flows[i] / (1 + yld0) ** (t + 2)
         
-        yld = yld0 - (target0 - params["target"]) / prime0
+        yld = yld0 - (target0 - params["target"]) / d_target0
         yld0 = yld
         
-    return yld
+    result = {
+        "price": target0,
+        "yield": yld * params["freq"],
+        "duration": -d_target0 / params["target"] / params["freq"],
+        "convexity": -dd_target0 / params["target"] / params["freq"] ** 2
+    }
+        
+    return result
 ```
 
 -   <https://www.bloomberg.com/markets/rates-bonds/government-bonds/us>
+-   <https://quant.stackexchange.com/a/61025>
+-   <https://pages.stern.nyu.edu/~igiddy/spreadsheets/duration-convexity.xls>
 
 ```{python}
 target2 = 0.9928 * 1000 # present value
 start2 = 0.0438 # coupon
-cash_flows = [start2 * 1000] * 10
+cash_flows = [start2 * 1000 / 2] * 10 * 2
 cash_flows[-1] += 1000
 ```
 
 ```{python}
 params2 = {
     "target": target2,
-    "yld": start2,
-    "freq": 1,
+    "cpn": start2,
+    "freq": 2,
     "tol": 1e-4 # np.finfo(float).eps
 }
 ```
@@ -866,13 +879,13 @@ def yld_obj(param, cash_flows, target):
     
     return target0
   
-def yld_optim(param, cash_flows, target):
+def yld_optim(params, cash_flows, target):
     
-    result = minimize(yld_obj, param, args = (cash_flows, target))
+    result = minimize(yld_obj, params["cpn"], args = (cash_flows, target))
     
-    return result.x.item()
+    return result.x.item() * params["freq"]
 ```
 
 ```{python}
-yld_optim(start2, cash_flows, target2)
+yld_optim(params2, cash_flows, target2)
 ```
