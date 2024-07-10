@@ -152,20 +152,22 @@ print(result)
 # Rolling medians
 
 ```{r}
-result <- microbenchmark("125" = roll_median(x, width = 125, min_obs = 1, weights = weights),
-                         "250" = roll_median(x, width = 250, min_obs = 1, weights = weights),
-                         "500" = roll_median(x, width = 500, min_obs = 1, weights = weights),
-                         "1000" = roll_median(x, width = 1000, min_obs = 1, weights = weights))
+# "'online' is only supported for equal 'weights'"
+result <- microbenchmark("125" = roll_median(x, width = 125, min_obs = 1),
+                         "250" = roll_median(x, width = 250, min_obs = 1),
+                         "500" = roll_median(x, width = 500, min_obs = 1),
+                         "1000" = roll_median(x, width = 1000, min_obs = 1))
 print(result)
 ```
 
 # Rolling quantiles
 
 ```{r}
-result <- microbenchmark("125" = roll_quantile(x, width = 125, min_obs = 1, weights = weights),
-                         "250" = roll_quantile(x, width = 250, min_obs = 1, weights = weights),
-                         "500" = roll_quantile(x, width = 500, min_obs = 1, weights = weights),
-                         "1000" = roll_quantile(x, width = 1000, min_obs = 1, weights = weights))
+# "'online' is only supported for equal 'weights'"
+result <- microbenchmark("125" = roll_quantile(x, width = 125, min_obs = 1),
+                         "250" = roll_quantile(x, width = 250, min_obs = 1),
+                         "500" = roll_quantile(x, width = 500, min_obs = 1),
+                         "1000" = roll_quantile(x, width = 1000, min_obs = 1))
 print(result)
 ```
 
