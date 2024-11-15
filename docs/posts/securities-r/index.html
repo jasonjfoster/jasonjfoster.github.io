@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Jason Foster">
-<meta name="dcterms.date" content="2024-05-30">
+<meta name="dcterms.date" content="2024-11-15">
 
 <title>jasonjfoster.github.io - Securities</title>
 <style>
@@ -191,7 +191,7 @@ window.Quarto = {
       <div>
       <div class="quarto-title-meta-heading">Published</div>
       <div class="quarto-title-meta-contents">
-        <p class="date">May 30, 2024</p>
+        <p class="date">November 15, 2024</p>
       </div>
     </div>
     
@@ -566,12 +566,11 @@ P(y+\Delta y)-P(y)&amp;\approx{\frac{P'(y)}{1!}}\Delta y+{\frac{P''(y)}{2!}}(\De
 &amp;\approx -D\Delta y +{\frac{C}{2!}}(\Delta y)^{2}
 \end{aligned}
 \]</span></p>
-<p>Because of market conventions, use the following formula: <span class="math inline">\(P(y+\Delta y)-P(y)\approx -D\Delta y +{\frac{C\times 100}{2!}}(\Delta y)^{2}\)</span></p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>pnl_bond <span class="ot">&lt;-</span> <span class="cf">function</span>(duration, convexity, dy) {</span>
 <span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>    </span>
 <span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>    duration_pnl <span class="ot">&lt;-</span> <span class="sc">-</span>duration <span class="sc">*</span> dy</span>
-<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>    convexity_pnl <span class="ot">&lt;-</span> (convexity <span class="sc">*</span> <span class="dv">100</span> <span class="sc">/</span> <span class="dv">2</span>) <span class="sc">*</span> dy <span class="sc">^</span> <span class="dv">2</span></span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>    convexity_pnl <span class="ot">&lt;-</span> (convexity <span class="sc">/</span> <span class="dv">2</span>) <span class="sc">*</span> dy <span class="sc">^</span> <span class="dv">2</span></span>
 <span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>    income_pnl <span class="ot">&lt;-</span> dy</span>
 <span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>    </span>
 <span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>    result <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
@@ -621,12 +620,12 @@ P(y+\Delta y)-P(y)&amp;\approx{\frac{P'(y)}{1!}}\Delta y+{\frac{P''(y)}{2!}}(\De
 <p>The derivative of duration with respect to interest rates gives:</p>
 <p><span class="math display">\[
 \begin{aligned}
-\text{Drift}&amp;=-\frac{\partial D}{\partial y}\\
-&amp;=\frac{1}{P}\frac{\partial^{2}P}{\partial y^{2}}-\frac{1}{P^{2}}\frac{\partial P}{\partial y}\frac{\partial P}{\partial y}\\
-&amp;=C-D^{2}
+\text{Drift}&amp;=\frac{\partial D}{\partial y}=\frac{\partial}{\partial y}\left(-\frac{1}{P}\frac{\partial D}{\partial y}\right)\\
+&amp;=-\frac{1}{P}\frac{\partial^{2}P}{\partial y^{2}}+\frac{1}{P^{2}}\frac{\partial P}{\partial y}\frac{\partial P}{\partial y}\\
+&amp;=-C+D^{2}
 \end{aligned}
 \]</span></p>
-<p>Because of market conventions, use the following formula: <span class="math inline">\(\text{Drift}=\frac{1}{100}\left(C\times 100-D^{2}\right)=C-\frac{D^{2}}{100}\)</span></p>
+<p>Because of market conventions, use the following formula: <span class="math inline">\(\text{Drift}=\frac{1}{100}\left(-C\times 100+D^{2}\right)=-C+\frac{D^{2}}{100}\)</span>. For example, if convexity and yield are percent then <span class="math inline">\(\text{Drift}=\left(-0.65+\frac{6.5^{2}}{100}\right)\partial y\times100\)</span> or basis points then <span class="math inline">\(\text{Drift}=\left(-65+6.5^{2}\right)\partial y\)</span>.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>yield_shock <span class="ot">&lt;-</span> <span class="cf">function</span>(shock, tau, sigma) {</span>
 <span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>    </span>
@@ -639,8 +638,8 @@ P(y+\Delta y)-P(y)&amp;\approx{\frac{P'(y)}{1!}}\Delta y+{\frac{P''(y)}{2!}}(\De
 <div class="cell">
 <div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>duration_drift <span class="ot">&lt;-</span> <span class="cf">function</span>(duration, convexity, dy) {</span>
 <span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>    drift <span class="ot">&lt;-</span> convexity <span class="sc">-</span> duration <span class="sc">^</span> <span class="dv">2</span> <span class="sc">/</span> <span class="dv">100</span></span>
-<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>    change <span class="ot">&lt;-</span> <span class="sc">-</span>drift <span class="sc">*</span> dy <span class="sc">*</span> <span class="dv">100</span></span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>    drift <span class="ot">&lt;-</span> <span class="sc">-</span>convexity <span class="sc">+</span> duration <span class="sc">^</span> <span class="dv">2</span> <span class="sc">/</span> <span class="dv">100</span></span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>    change <span class="ot">&lt;-</span> drift <span class="sc">*</span> dy <span class="sc">*</span> <span class="dv">100</span></span>
 <span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>    </span>
 <span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a>    result <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
 <span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a>        <span class="st">"drift"</span> <span class="ot">=</span> drift,</span>
@@ -877,11 +876,11 @@ S_{k}(t_{i+1})&amp;=S_{k}(t_{i})\exp\left(\sqrt{t_{i+1}-t_{i}}\sum_{j=1}^{d}{A_{
 <span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">"theoretical"</span> <span class="ot">=</span> <span class="fu">colMeans</span>(<span class="fu">do.call</span>(rbind, mu_ls)</span>
 <span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>                empirical   theoretical
-SP500         0.101231898  0.0992648154
-DTWEXAFEGS    0.016680838  0.0157032765
-DGS10        -0.000886867 -0.0008281663
-BAMLH0A0HYM2  0.001643948  0.0017239335</code></pre>
+<pre><code>                 empirical   theoretical
+SP500         0.1078316273  0.1079650820
+DTWEXAFEGS    0.0090684920  0.0091329604
+DGS10        -0.0008338633 -0.0007659181
+BAMLH0A0HYM2  0.0030538891  0.0030345937</code></pre>
 </div>
 </div>
 <div class="cell">
@@ -891,10 +890,10 @@ BAMLH0A0HYM2  0.001643948  0.0017239335</code></pre>
 <span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>               empirical theoretical
-SP500        0.179440907 0.179230664
-DTWEXAFEGS   0.062625910 0.062572269
-DGS10        0.008346445 0.008335456
-BAMLH0A0HYM2 0.016956423 0.016939967</code></pre>
+SP500        0.180452966 0.180321730
+DTWEXAFEGS   0.062864853 0.062808607
+DGS10        0.008495318 0.008486097
+BAMLH0A0HYM2 0.016954635 0.016936793</code></pre>
 </div>
 </div>
 </section>
@@ -970,7 +969,7 @@ x_{n+1}=x_{n}-{\frac{f(x_{n})}{f'(x_{n})}}
 <div class="sourceCode cell-code" id="cb45"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="fu">implied_vol_newton</span>(params1, type, S, K, r, q, tau)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>         SP500
-[1,] 0.1268896</code></pre>
+[1,] 0.1265163</code></pre>
 </div>
 </div>
 </section>
@@ -1078,7 +1077,7 @@ x_{n+1}=x_{n}-{\frac{f(x_{n})}{f'(x_{n})}}
 <div class="cell">
 <div class="sourceCode cell-code" id="cb53"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a><span class="fu">implied_vol_optim</span>(start1, type, S, K, r, q, tau, target1)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 0.1268896</code></pre>
+<pre><code>[1] 0.1265163</code></pre>
 </div>
 </div>
 </section>

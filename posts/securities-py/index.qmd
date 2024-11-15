@@ -354,13 +354,11 @@ P(y+\Delta y)-P(y)&\approx{\frac{P'(y)}{1!}}\Delta y+{\frac{P''(y)}{2!}}(\Delta 
 \end{aligned}
 $$
 
-Because of market conventions, use the following formula: $P(y+\Delta y)-P(y)\approx -D\Delta y +{\frac{C\times 100}{2!}}(\Delta y)^{2}$
-
 ```{python}
 def pnl_bond(duration, convexity, dy):
     
     duration_pnl = -duration * dy
-    convexity_pnl = (convexity * 100 / 2) * dy ** 2
+    convexity_pnl = (convexity / 2) * dy ** 2
     income_pnl = dy
     
     result = pd.DataFrame({
@@ -409,13 +407,13 @@ The derivative of duration with respect to interest rates gives:
 
 $$
 \begin{aligned}
-\text{Drift}&=-\frac{\partial D}{\partial y}\\
-&=\frac{1}{P}\frac{\partial^{2}P}{\partial y^{2}}-\frac{1}{P^{2}}\frac{\partial P}{\partial y}\frac{\partial P}{\partial y}\\
-&=C-D^{2}
+\text{Drift}&=\frac{\partial D}{\partial y}=\frac{\partial}{\partial y}\left(-\frac{1}{P}\frac{\partial D}{\partial y}\right)\\
+&=-\frac{1}{P}\frac{\partial^{2}P}{\partial y^{2}}+\frac{1}{P^{2}}\frac{\partial P}{\partial y}\frac{\partial P}{\partial y}\\
+&=-C+D^{2}
 \end{aligned}
 $$
 
-Because of market conventions, use the following formula: $\text{Drift}=\frac{1}{100}\left(C\times 100-D^{2}\right)=C-\frac{D^{2}}{100}$
+Because of market conventions, use the following formula: $\text{Drift}=\frac{1}{100}\left(-C\times 100+D^{2}\right)=-C+\frac{D^{2}}{100}$. For example, if convexity and yield are percent then $\text{Drift}=\left(-0.65+\frac{6.5^{2}}{100}\right)\partial y\times100$ or basis points then $\text{Drift}=\left(-65+6.5^{2}\right)\partial y$.
 
 ```{python}
 def yield_shock(shock, tau, sigma):
@@ -428,8 +426,8 @@ def yield_shock(shock, tau, sigma):
 ```{python}
 def duration_drift(duration, convexity, dy):
     
-    drift = convexity - duration ** 2 / 100
-    change = -drift * dy * 100
+    drift = -convexity + duration ** 2 / 100
+    change = drift * dy * 100
     
     result = {
         "drift": drift,
