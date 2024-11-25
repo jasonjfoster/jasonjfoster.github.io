@@ -11,7 +11,7 @@ draft: true
 
 ```{r}
 factors_r <- c("SP500") # "SP500" does not contain dividends
-factors_d <- c("SOFR")
+factors_d <- c("DTB3")
 ```
 
 ```{r, echo = FALSE, message = FALSE}
@@ -21,13 +21,29 @@ source("../helper-levels.R")
 # Parse web
 
 ```{r, message = FALSE}
-library(xml2)
-```
-
-```{r}
-get_nth <- function(x, n, offset = 0) {
+get_crumb_and_cookie <- function() {
   
-  result <- x[seq(offset + 1, length(x), by = n)]
+  handle <- curl::new_handle()
+  
+  headers <- c(
+    `Accept` = "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
+    `User-Agent` = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36"
+  )
+  
+  curl::handle_setheaders(handle, .list = headers)
+  
+  response <- curl::curl_fetch_memory("https://query1.finance.yahoo.com/v1/test/getcrumb", handle = handle)
+  
+  crumb <- rawToChar(response$content)
+  
+  cookies <- curl::handle_cookies(handle)
+  a1_cookie <- cookies[cookies$name == "A1", "value"]
+  
+  result <- list(
+    handle = handle,
+    crumb = crumb,
+    cookie = a1_cookie
+  )
   
   return(result)
   
@@ -35,41 +51,67 @@ get_nth <- function(x, n, offset = 0) {
 ```
 
 ```{r}
-get_mstar <- function() {
+build_query_string <- function(params) {
+  paste0("?", paste(names(params), params, sep = "=", collapse = "&"))
+}
+```
+
+```{r}
+get_yhoo <- function() {
   
-  i <- 0
-  status <- TRUE
-  names_ls <- list()
-  tickers_ls <- list()
-  types_ls <- list()
+  session <- get_crumb_and_cookie()
+  crumb <- session[["crumb"]]
+  cookie <- session[["cookie"]]
+  handle <- session[["handle"]]
   
-  while(status) {
-    
-    i <- i + 1
-    
-    url <- "https://www.morningstar.com/asset-allocation-funds?page="
-    response <- read_html(paste0(url, i))
-    
-    table <- xml_find_all(response, ".//div[@class='topic__table-container']")
-    
-    if (length(table) == 0) {
-      status <- FALSE
-    } else {
-      
-      names_tickers <- xml_text(xml_find_all(response, ".//a[@class='mdc-link__mdc mdc-link--no-visited__mdc mdc-link--data-table__mdc']"))
-      types <- xml_text(xml_find_all(response, ".//span[@class='mdc-locked-text__mdc mdc-string']"))
-      
-      names_ls <- append(names_ls, list(get_nth(names_tickers, 2)))
-      tickers_ls <- append(tickers_ls, list(get_nth(names_tickers, 2, 1)))
-      types_ls <- append(types_ls, list(get_nth(types, 5, 2)))
-      
-    }
-    
-  }
+  params <- list(
+    crumb = crumb,
+    lang = "en-US",
+    region = "US",
+    formatted = "true",
+    corsDomain = "finance.yahoo.com"
+  )
   
-  result <- data.frame("name" = do.call(c, names_ls),
-                       "ticker" = do.call(c, tickers_ls),
-                       "type" = do.call(c, types_ls))
+  api_url <- paste0("https://query1.finance.yahoo.com/v1/finance/screener", build_query_string(params))
+  
+  payload <- list(
+    size = 25,
+    offset = 0,
+    sortField = "fundnetassets",
+    sortType = "DESC",
+    quoteType = "MUTUALFUND",
+    topOperator = "AND",
+    query = list(
+      operator = "AND",
+      operands = list(
+        list(
+          operator = "or",
+          operands = list(
+            list(
+              operator = "EQ",
+              operands = c("categoryname", "Tactical Allocation")
+            )
+          )
+        )
+      )
+    ),
+    userId = "",
+    userIdType = "guid"
+  )
+  
+  json_payload <- jsonlite::toJSON(payload, auto_unbox = TRUE)
+  
+  headers <- c(
+    `Content-Type` = "application/json",
+    `Cookie` = paste0("A1=", cookie)
+  )
+  
+  curl::handle_setopt(handle, postfields = json_payload)
+  curl::handle_setheaders(handle, .list = headers)
+  
+  response <- curl::curl(api_url, handle = handle)
+  
+  result <- jsonlite::fromJSON(response)
   
   return(result)
   
@@ -101,45 +143,83 @@ min_rss_optim <- function(x, y) {
 ```
 
 ```{r}
-mstar_df <- get_mstar()
+yhoo_ls <- get_yhoo()
+yhoo_df <- yhoo_ls[["finance"]][["result"]][["quotes"]]
 ```
 
 ```{r}
-tickers <- mstar_df[mstar_df$type == "Tactical Allocation", "ticker"]
-```
-
-```{r, echo = FALSE, message = FALSE}
-source("../helper-prices.R")
+sorted_df <- yhoo_df[[1]][order(yhoo_df[[1]][["netAssets"]][["raw"]],
+                                yhoo_df[[1]][["firstTradeDateMilliseconds"]]), ]
+tickers <- sorted_df[!duplicated(sorted_df[["netAssets"]][["raw"]]), "symbol"]
 ```
 
 ```{r}
-# n_rows <- nrow(overlap_xts)
+allocations <- c("AOK", "AOM", "AOR", "AOA")
+tickers <- c(tickers, allocations)
+```
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE}
+# select tickers are not included in tiingo's free subscription
+# source("../helper-prices.R")
+invisible(getSymbols(tickers, adjust = TRUE))
+prices_xts <- do.call(merge, c(lapply(tickers, function(i) Cl(get(i))), all = TRUE))
+colnames(prices_xts) <- tickers
+index(prices_xts) <- as.Date(index(prices_xts))
+
+returns_xts <- merge(returns_xts, diff(log(prices_xts)))
+overlap_xts <- merge(overlap_xts, roll_mean(returns_xts[ , tickers], scale[["overlap"]], min_obs = 1))
+
+# weights <- 0.9 ^ ((width - 1):0)
+weights <- rep(1, width)
+
+# overlap_xts <- na.omit(overlap_xts)
+overlap_x_xts <- overlap_xts[ , factors]
+overlap_y_xts <- overlap_xts[ , tickers]
+overlap_z_xts <- overlap_xts[ , allocations]
+```
+
+```{r}
+n_rows <- nrow(overlap_xts)
 result_ls <- list()
+index_ls <- list()
 
 # for (i in width:n_rows) {
-for (i in width) {
+for (i in n_rows) {
     
     idx <- max(i - width + 1, 1):i
-    x_subset <- overlap_x_xts[idx, ]
-    y_subset <- overlap_y_xts[idx, ]
+    x_subset <- coredata(overlap_x_xts[idx, ])
+    y_subset <- coredata(overlap_y_xts[idx, ])
     params_ls <- list()
     
-    for (j in tickers) {
+    for (j in tickers[!tickers %in% allocations]) {
         
-        params <- t(min_rss_optim(coredata(x_subset), coredata(y_subset[ , j])))
-        params_ls <- append(params_ls, list(params))
+        idx <- complete.cases(x_subset, y_subset[ , j])
+        x_complete <- x_subset[idx, , drop = FALSE]
+        y_complete <- y_subset[idx, j]
+        
+        if ((nrow(x_complete) > 0) && (length(y_complete) > 0)) {
+            
+            params <- t(min_rss_optim(x_complete, y_complete))
+            params_ls <- append(params_ls, list(params))
+            
+        }
         
     }
     
-    result <- colMeans(do.call(rbind, params_ls))
-    result_ls <- append(result_ls, list(result))
+    if (length(params_ls) > 0) {
+        
+        result <- colMeans(do.call(rbind, params_ls), na.rm = TRUE)
+        result_ls <- append(result_ls, list(result))
+        index_ls <- append(index_ls, list(index(overlap_xts)[i]))
+        
+    }
     
 }
 ```
 
 ```{r}
 position <- do.call(rbind, result_ls)
-# position_xts <- xts(position, index(overlap_xts)[width:n_rows])
+# position_xts <- xts(position, as.Date(do.call(rbind, index_ls)))
 position_xts <- xts(position, tail(index(overlap_xts), 1))
 colnames(position_xts) <- factors
 ```

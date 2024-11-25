@@ -11,7 +11,7 @@ draft: true
 
 ```{python}
 factors_r = ["SP500"] # "SP500" does not contain dividends
-factors_d = ["SOFR"]
+factors_d = ["DTB3"]
 ```
 
 ```{r, echo = FALSE, message = FALSE}
@@ -23,75 +23,87 @@ source_python("../helper-levels.py")
 
 ```{python}
 import requests
-from lxml import html
 ```
 
 ```{python}
-def get_nth(x, n, offset = 0):
+def get_crumb_and_cookie():
     
-    result = x[offset::n]
+    session = requests.Session()
     
-    return result
+    headers = {
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36"
+    }
+    
+    session.headers.update(headers)
+
+    response = session.get("https://query1.finance.yahoo.com/v1/test/getcrumb")
+
+    crumb = response.text.strip()
+    cookie = session.cookies.get_dict()
+
+    return crumb, cookie
 ```
 
 ```{python}
-def get_text(x, n = 0):
-    
-    result_ls = []
-    
-    for i in x:
-      
-        if (len(i) == 0):
-            result_ls.append(i.text_content()) # types
-        else:
-            result_ls.append(i[n].text_content()) # names and tickers
-    
-    return result_ls
-```
+def get_yhoo():
 
-```{python}
-def get_mstar():
+    crumb, cookie = get_crumb_and_cookie()
     
-    i = 0
-    status = True
-    names_ls = []
-    tickers_ls = []
-    types_ls = []
-
-    while status:
-
-        i += 1
-
-        url = "https://www.morningstar.com/asset-allocation-funds?page=" + str(i)
-        response = requests.get(url)
+    params = {
+        "crumb": crumb,
+        "lang": "en-US",
+        "region": "US",
+        "formatted": "true",
+        "corsDomain": "finance.yahoo.com",
+    }
+    
+    api_url = "https://query1.finance.yahoo.com/v1/finance/screener"
+    
+    payload = {
+        "size": 250,
+        "offset": 0,
+        "sortField": "fundnetassets",
+        "sortType": "DESC",
+        "quoteType": "MUTUALFUND",
+        "topOperator": "AND",
+        "query": {
+            "operator": "AND",
+            "operands": [
+                {
+                    "operator": "or",
+                    "operands": [
+                        {
+                            "operator": "EQ",
+                            "operands": ["categoryname", "Tactical Allocation"]
+                        }
+                    ]
+                }
+            ]
+        },
+        "userId": "",
+        "userIdType": "guid"
+    }
+    
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36"
+    } 
+    
+    with requests.session() as s:
         
-        tree = html.fromstring(response.content)
-        table = tree.xpath("//div[@class='topic__table-container']")
-
-        if (len(table) == 0):
-            status = False
-        else:
-
-            names_tickers = tree.xpath("//a[@class='mdc-link__mdc mdc-link--no-visited__mdc mdc-link--data-table__mdc']")
-            types = tree.xpath("//span[@class='mdc-locked-text__mdc mdc-string']")
+        for key, value in cookie.items():
+            s.cookies.set(key, value)
             
-        names_ls.extend(get_text(get_nth(names_tickers, 2)))
-        tickers_ls.extend(get_text(get_nth(names_tickers, 2, 1)))
-        types_ls.extend(get_text(get_nth(types, 5, 2)))
+        response = s.post(api_url, params = params, json = payload, headers = headers)
 
-    result = pd.DataFrame({
-      "name": names_ls,
-      "ticker": tickers_ls,
-      "type": types_ls
-    })
-    
-    return result
+        return response.json()
 ```
 
 # Optimization
 
 ```{python}
 import cvxpy as cp
+import yfinance as yf
 ```
 
 ```{python}
@@ -110,40 +122,73 @@ def min_rss_optim(x, y):
 ```
 
 ```{python}
-mstar_df = get_mstar()
+yhoo_ls = get_yhoo()
+yhoo_df = pd.DataFrame(yhoo_ls["finance"]["result"][0]["quotes"])
 ```
 
 ```{python}
-tickers = mstar_df.loc[mstar_df["type"] == "Tactical Allocation", "ticker"].tolist()
-```
-
-```{r, echo = FALSE, message = FALSE}
-source_python("../helper-prices.py")
+yhoo_df["netAssets_raw"] = yhoo_df["netAssets"].apply(lambda x: x["raw"])
+sorted_df = yhoo_df.sort_values(by = ["netAssets_raw", "firstTradeDateMilliseconds"])
+tickers = sorted_df.loc[~sorted_df["netAssets_raw"].duplicated(), "symbol"].tolist()
 ```
 
 ```{python}
-# n_rows = overlap_df.shape[0]
+allocations = ["AOK", "AOM", "AOR", "AOA"]
+tickers = tickers + allocations
+```
+
+```{python, echo = FALSE, message = FALSE, warning = FALSE}
+# select tickers are not included in tiingo's free subscription
+# source_python("../helper-prices.py")
+prices_df = yf.download(tickers, start = "1900-01-01", progress = False)["Adj Close"]
+
+returns_cols = [("returns", i) for i in tickers]
+overlap_cols = [("overlap", i) for i in tickers]
+returns_df[returns_cols] = np.log(prices_df).diff()
+returns_df[overlap_cols] = returns_df[returns_cols].rolling(scale["overlap"], min_periods = 1).mean()
+returns_df.sort_index(axis = 1, inplace = True)
+
+# weights = np.array([0.9 ** i for i in range(width - 1, -1, -1)]).reshape((width, 1))
+weights = np.array([1] * width).reshape((width, 1))
+
+# overlap_df = returns_df["overlap"]
+overlap_x_df = returns_df["overlap"][factors]
+overlap_y_df = returns_df["overlap"][tickers]
+overlap_z_df = returns_df["overlap"][allocations]
+```
+
+```{python}
+n_rows = overlap_df.shape[0]
 result_ls = []
+index_ls = []
 
 # for i in range(width - 1, n_rows):
-for i in range(width - 1, width):
+for i in range(n_rows - 1, n_rows):
   
   idx = range(max(i - width + 1, 0), i + 1)
   x_subset = overlap_x_df.iloc[idx]
   y_subset = overlap_y_df.iloc[idx]
   params_ls = []
   
-  for j in tickers:
+  for j in [ticker for ticker in tickers if ticker not in allocations]:
+    
+    idx = ~np.isnan(x_subset).any(axis = 1) & ~np.isnan(y_subset[j])
+    x_complete = x_subset[idx].values
+    y_complete = y_subset.loc[idx, j].values
+    
+    if (x_complete.shape[0] > 0) and (y_complete.size > 0):
+        
+      params = min_rss_optim(x_complete, y_complete)
+      params_ls.append(params)
   
-    params = min_rss_optim(x_subset.values, y_subset.loc[:, j].values)
-    params_ls.append(params)
-  
-  result_ls.append(np.mean(params_ls, axis = 0))
+  if params_ls:
+    
+    result_ls.append(np.mean(params_ls, axis = 0))
+    index_ls.append(overlap_x_df.index[i])
 ```
 
 ```{python}
-# position_df = pd.DataFrame(result_ls, index = overlap_df.index[(width - 1):],
-#                            columns = factors)
+# position_df = pd.DataFrame(result_ls, index = index_ls, columns = factors)
 position_df = pd.DataFrame(result_ls, index = [overlap_df.index[-1]],
                            columns = factors)
 ```
