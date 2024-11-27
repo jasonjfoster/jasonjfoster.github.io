@@ -75,7 +75,7 @@ get_yhoo <- function() {
   api_url <- paste0("https://query1.finance.yahoo.com/v1/finance/screener", build_query_string(params))
   
   payload <- list(
-    size = 25,
+    size = 250,
     offset = 0,
     sortField = "fundnetassets",
     sortType = "DESC",
@@ -154,8 +154,8 @@ tickers <- sorted_df[!duplicated(sorted_df[["netAssets"]][["raw"]]), "symbol"]
 ```
 
 ```{r}
-allocations <- c("AOK", "AOM", "AOR", "AOA")
-tickers <- c(tickers, allocations)
+# allocations <- c("AOK", "AOM", "AOR", "AOA")
+# tickers <- c(tickers, allocations)
 ```
 
 ```{r, echo = FALSE, message = FALSE, warning = FALSE}
@@ -175,7 +175,7 @@ weights <- rep(1, width)
 # overlap_xts <- na.omit(overlap_xts)
 overlap_x_xts <- overlap_xts[ , factors]
 overlap_y_xts <- overlap_xts[ , tickers]
-overlap_z_xts <- overlap_xts[ , allocations]
+# overlap_z_xts <- overlap_xts[ , allocations]
 ```
 
 ```{r}
@@ -191,8 +191,8 @@ for (i in n_rows) {
     y_subset <- coredata(overlap_y_xts[idx, ])
     params_ls <- list()
     
-    for (j in tickers[!tickers %in% allocations]) {
-        
+    # for (j in tickers[!tickers %in% allocations]) {
+    for (j in tickers) {
         idx <- complete.cases(x_subset, y_subset[ , j])
         x_complete <- x_subset[idx, , drop = FALSE]
         y_complete <- y_subset[idx, j]
@@ -218,12 +218,12 @@ for (i in n_rows) {
 ```
 
 ```{r}
-position <- do.call(rbind, result_ls)
-# position_xts <- xts(position, as.Date(do.call(rbind, index_ls)))
-position_xts <- xts(position, tail(index(overlap_xts), 1))
-colnames(position_xts) <- factors
+weights <- do.call(rbind, result_ls)
+# weights_xts <- xts(weights, as.Date(do.call(rbind, index_ls)))
+weights_xts <- xts(weights, tail(index(overlap_xts), 1))
+colnames(weights_xts) <- factors
 ```
 
 ```{r}
-tail(position_xts)
+tail(weights_xts)
 ```

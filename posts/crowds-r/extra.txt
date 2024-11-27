@@ -1,0 +1,116 @@
+# Benchmark
+
+```{r}
+calc_metrics <- function(x) {
+  
+  mean_x <- mean(x, na.rm = TRUE) * scale[["periods"]]
+  sd_x <- sd(x, na.rm = TRUE) * sqrt(scale[["periods"]] * scale[["overlap"]])
+  ratio_x <- mean_x / sd_x
+  
+  result <- list(
+    mean = mean_x,
+    sd = sd_x,
+    ratio = ratio_x
+  )
+  
+  return(result)
+  
+}
+```
+
+```{r}
+bench_df <- t(apply(overlap_z_xts, 2, function(j) {
+  
+  
+  metrics <- calc_metrics(j)
+  
+  result <- c(
+    mean = metrics[["mean"]],
+    sd = metrics[["sd"]],
+    ratio = metrics[["ratio"]]
+  )
+  
+  return(result)
+  
+}))
+```
+
+```{r}
+eval_switch <- function(x, z, levels, min_obs) {
+  
+  names_z <- colnames(z)
+  idx <- as.Date(intersect(index(x), index(z)))
+  x_subset <- coredata(x[idx, ])
+  z_subset <- coredata(z[idx, ])
+  params_ls <- list()
+  
+  for (i in names_z) {
+    for (j in names_z) {
+      if(i != j) {
+        
+        idx <- complete.cases(x_subset, z_subset[ , i], z_subset[ , j])
+        x_complete <- x_subset[idx, , drop = FALSE]
+        z_complete <- z_subset[idx, c(i, j)]
+        
+        for (level in levels) {
+          
+          upper_idx <- x_complete > level
+          lower_idx <- x_complete <= level
+          
+          n_upper <- sum(upper_idx)
+          n_lower <- sum(lower_idx)
+          
+          if ((n_upper >= min_obs) && (n_lower >= min_obs)) {
+            
+            switch <- ifelse(upper_idx, z_complete[ , j], z_complete[ , i])
+            metrics <- calc_metrics(switch)
+            
+            params <- data.frame(
+              z1 = i,
+              z2 = j,
+              level = level,
+              mean = metrics[["mean"]],
+              sd = metrics[["sd"]],
+              ratio = metrics[["ratio"]]
+            )
+            
+            params_ls <- append(params_ls, list(params))
+            
+          }
+          
+        }
+      }
+    }
+  }
+  
+  result <- do.call(rbind, params_ls)
+  return(result)
+  
+}
+```
+
+```{r}
+levels <- seq(0, 1, 0.01)
+min_obs <- 252
+```
+
+```{r}
+port_df <- eval_switch(weights_xts[ , 1], overlap_z_xts, levels, min_obs)
+```
+
+```{r}
+sort_bench <- bench_df[order(bench_df[ , "ratio"], decreasing = TRUE), ]
+sort_port <- port_df[order(port_df[ , "ratio"], decreasing = TRUE), ]
+```
+
+```{r}
+print(head(sort_bench))
+print(head(sort_port))
+```
+
+```{r}
+library(ggplot2)
+
+ggplot(port_df, aes(x = level, y = ratio, fill = interaction(z1, z2))) +
+  geom_area(position = "identity")
+```

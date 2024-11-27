@@ -133,8 +133,8 @@ tickers = sorted_df.loc[~sorted_df["netAssets_raw"].duplicated(), "symbol"].toli
 ```
 
 ```{python}
-allocations = ["AOK", "AOM", "AOR", "AOA"]
-tickers = tickers + allocations
+# allocations = ["AOK", "AOM", "AOR", "AOA"]
+# tickers = tickers + allocations
 ```
 
 ```{python, echo = FALSE, message = FALSE, warning = FALSE}
@@ -154,7 +154,7 @@ weights = np.array([1] * width).reshape((width, 1))
 # overlap_df = returns_df["overlap"]
 overlap_x_df = returns_df["overlap"][factors]
 overlap_y_df = returns_df["overlap"][tickers]
-overlap_z_df = returns_df["overlap"][allocations]
+# overlap_z_df = returns_df["overlap"][allocations]
 ```
 
 ```{python}
@@ -170,15 +170,16 @@ for i in range(n_rows - 1, n_rows):
   y_subset = overlap_y_df.iloc[idx]
   params_ls = []
   
-  for j in [ticker for ticker in tickers if ticker not in allocations]:
-    
+  # for j in [ticker for ticker in tickers if ticker not in allocations]:
+  for j in tickers:
+      
     idx = ~np.isnan(x_subset).any(axis = 1) & ~np.isnan(y_subset[j])
-    x_complete = x_subset[idx].values
-    y_complete = y_subset.loc[idx, j].values
+    x_complete = x_subset.loc[idx]
+    y_complete = y_subset.loc[idx, j]
     
     if (x_complete.shape[0] > 0) and (y_complete.size > 0):
         
-      params = min_rss_optim(x_complete, y_complete)
+      params = min_rss_optim(x_complete.values, y_complete.values)
       params_ls.append(params)
   
   if params_ls:
@@ -188,11 +189,11 @@ for i in range(n_rows - 1, n_rows):
 ```
 
 ```{python}
-# position_df = pd.DataFrame(result_ls, index = index_ls, columns = factors)
-position_df = pd.DataFrame(result_ls, index = [overlap_df.index[-1]],
-                           columns = factors)
+# weights_df = pd.DataFrame(result_ls, index = index_ls, columns = factors)
+weights_df = pd.DataFrame(result_ls, index = [overlap_df.index[-1]],
+                          columns = factors)
 ```
 
 ```{python}
-position_df.tail()
+weights_df.tail()
 ```
