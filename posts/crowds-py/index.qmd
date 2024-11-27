@@ -41,14 +41,21 @@ def get_crumb_and_cookie():
 
     crumb = response.text.strip()
     cookie = session.cookies.get_dict()
+    
+    result = {
+      "crumb": crumb,
+      "cookie": cookie
+    }
 
-    return crumb, cookie
+    return result
 ```
 
 ```{python}
 def get_yhoo():
 
-    crumb, cookie = get_crumb_and_cookie()
+    session = get_crumb_and_cookie()
+    crumb = session["crumb"]
+    cookie = session["cookie"]
     
     params = {
         "crumb": crumb,
@@ -89,12 +96,12 @@ def get_yhoo():
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36"
     } 
     
-    with requests.session() as s:
+    with requests.session() as session:
         
         for key, value in cookie.items():
-            s.cookies.set(key, value)
+            session.cookies.set(key, value)
             
-        response = s.post(api_url, params = params, json = payload, headers = headers)
+        response = session.post(api_url, params = params, json = payload, headers = headers)
 
         return response.json()
 ```
@@ -172,8 +179,8 @@ for i in range(n_rows - 1, n_rows):
   
   # for j in [ticker for ticker in tickers if ticker not in allocations]:
   for j in tickers:
-      
-    idx = ~np.isnan(x_subset).any(axis = 1) & ~np.isnan(y_subset[j])
+    
+    idx = ~x_subset.isna().any(axis = 1) & ~y_subset[j].isna()
     x_complete = x_subset.loc[idx]
     y_complete = y_subset.loc[idx, j]
     
