@@ -162,6 +162,7 @@ tickers <- sorted_df[!duplicated(sorted_df[["netAssets"]][["raw"]]), "symbol"]
 # select tickers are not included in tiingo's free subscription
 # source("../helper-prices.R")
 invisible(getSymbols(tickers, adjust = TRUE))
+tickers <- tickers[tickers %in% ls()]
 prices_xts <- do.call(merge, c(lapply(tickers, function(i) Cl(get(i))), all = TRUE))
 colnames(prices_xts) <- tickers
 index(prices_xts) <- as.Date(index(prices_xts))
