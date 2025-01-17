@@ -16,37 +16,93 @@ factors_d <- c("DTB3")
 
 ```{r, echo = FALSE, message = FALSE}
 source("../helper-levels.R")
+width <- 20 * 3
 ```
 
 # Parse web
 
-```{r, message = FALSE}
-get_crumb_and_cookie <- function() {
-  
+```{r}
+process_filter <- function(filter) {
+
+  result <- list(
+    operator = filter[[1]],
+    operands = lapply(filter[[2]], function(operand) {
+      if (is.list(operand)) {
+        process_filter(operand)
+      } else {
+        operand
+      }
+    })
+  )
+
+  return(result)
+
+}
+```
+
+```{r}
+create_query <- function(filters = list(list("or", list(list("eq", list("region", "us"))))),
+                         top_operator = "and") {
+
+  result <- list(
+    operator = top_operator,
+    operands = lapply(filters, process_filter)
+  )
+
+  return(result)
+
+}
+```
+
+```{r}
+create_payload <- function(quote_type = "equity", query = create_query(),
+                           size = 25, offset = 0,
+                           sort_field = NULL, sort_type = NULL,
+                           top_operator = "and") {
+
+  result <- list(
+    includeFields = NULL, # unable to modify the result
+    offset = offset,
+    query = query,
+    quoteType = quote_type,
+    size = size,
+    sortField = sort_field,
+    sortType = sort_type,
+    topOperator = top_operator
+  )
+
+  return(result)
+
+}
+```
+
+```{r}
+get_crumb_and_cookies <- function() {
+
   handle <- curl::new_handle()
-  
+
+  api_url <- "https://query1.finance.yahoo.com/v1/test/getcrumb"
+
   headers <- c(
     `Accept` = "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
     `User-Agent` = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36"
   )
-  
+
   curl::handle_setheaders(handle, .list = headers)
-  
-  response <- curl::curl_fetch_memory("https://query1.finance.yahoo.com/v1/test/getcrumb", handle = handle)
-  
+
+  response <- curl::curl_fetch_memory(api_url, handle = handle)
   crumb <- rawToChar(response$content)
-  
+
   cookies <- curl::handle_cookies(handle)
-  a1_cookie <- cookies[cookies$name == "A1", "value"]
-  
+
   result <- list(
     handle = handle,
     crumb = crumb,
-    cookie = a1_cookie
+    cookies = cookies
   )
-  
+
   return(result)
-  
+
 }
 ```
 
@@ -57,13 +113,14 @@ build_query_string <- function(params) {
 ```
 
 ```{r}
-get_yhoo <- function() {
-  
-  session <- get_crumb_and_cookie()
+get_screen <- function(payload = create_payload()) {
+
+  session <- get_crumb_and_cookies()
+
   crumb <- session[["crumb"]]
-  cookie <- session[["cookie"]]
+  cookies <- session[["cookies"]]
   handle <- session[["handle"]]
-  
+
   params <- list(
     crumb = crumb,
     lang = "en-US",
@@ -71,50 +128,71 @@ get_yhoo <- function() {
     formatted = "true",
     corsDomain = "finance.yahoo.com"
   )
-  
+
   api_url <- paste0("https://query1.finance.yahoo.com/v1/finance/screener", build_query_string(params))
-  
-  payload <- list(
-    size = 250,
-    offset = 0,
-    sortField = "fundnetassets",
-    sortType = "DESC",
-    quoteType = "MUTUALFUND",
-    topOperator = "AND",
-    query = list(
-      operator = "AND",
-      operands = list(
-        list(
-          operator = "or",
-          operands = list(
-            list(
-              operator = "EQ",
-              operands = c("categoryname", "Tactical Allocation")
-            )
-          )
-        )
-      )
-    ),
-    userId = "",
-    userIdType = "guid"
-  )
-  
+
   json_payload <- jsonlite::toJSON(payload, auto_unbox = TRUE)
   
   headers <- c(
     `Content-Type` = "application/json",
-    `Cookie` = paste0("A1=", cookie)
+    `Cookie` = paste0(cookies[["name"]], "=", cookies[["value"]], collapse = "; ")
   )
-  
-  curl::handle_setopt(handle, postfields = json_payload)
-  curl::handle_setheaders(handle, .list = headers)
-  
-  response <- curl::curl(api_url, handle = handle)
-  
-  result <- jsonlite::fromJSON(response)
-  
+
+  max_size <- 250
+  size <- payload[["size"]]
+  offset <- payload[["offset"]]
+
+  result_cols <- NULL
+  result_ls <- list()
+
+  while (size > 0) {
+
+    chunk_size <- min(size, max_size)
+    payload[["size"]] <- chunk_size
+    payload[["offset"]] <- offset
+
+    json_payload <- jsonlite::toJSON(payload, auto_unbox = TRUE)
+
+    curl::handle_setopt(handle, postfields = json_payload)
+    curl::handle_setheaders(handle, .list = headers)
+
+    response <- curl::curl(api_url, handle = handle)
+
+    result <- jsonlite::fromJSON(response)
+    result_df <- result[["finance"]][["result"]][["quotes"]][[1]]
+
+    if (!is.null(result_df)) {
+
+      result_df <- jsonlite::flatten(result_df)
+
+      result_ls <- append(result_ls, list(result_df))
+      result_cols <- union(result_cols, colnames(result_df))
+
+      offset <- offset + chunk_size
+      size <- size - chunk_size
+
+    } else {
+      size <- 0
+    }
+
+  }
+
+  result_ls <- lapply(result_ls, function(x) {
+
+    cols_na <- setdiff(result_cols, colnames(x))
+
+    for (j in cols_na) {
+      x[[j]] <- NA
+    }
+
+    x <- x[ , result_cols]
+
+  })
+
+  result <- do.call(rbind, result_ls)
+
   return(result)
-  
+
 }
 ```
 
@@ -143,14 +221,15 @@ min_rss_optim <- function(x, y) {
 ```
 
 ```{r}
-yhoo_ls <- get_yhoo()
-yhoo_df <- yhoo_ls[["finance"]][["result"]][["quotes"]]
+query <- create_query(filters = list(list("or", list(list("eq", list("categoryname", "Tactical Allocation"))))))
+payload <- create_payload(quote_type = "mutualfund", query = query, size = 250, 
+                          sort_field = "fundnetassets")
+screen <- get_screen(payload)
 ```
 
 ```{r}
-sorted_df <- yhoo_df[[1]][order(yhoo_df[[1]][["netAssets"]][["raw"]],
-                                yhoo_df[[1]][["firstTradeDateMilliseconds"]]), ]
-tickers <- sorted_df[!duplicated(sorted_df[["netAssets"]][["raw"]]), "symbol"]
+sorted_df <- screen[order(screen[["netAssets.raw"]], screen[["firstTradeDateMilliseconds"]]), ]
+tickers <- sorted_df[!duplicated(sorted_df[["netAssets.raw"]]), "symbol"]
 ```
 
 ```{r}
@@ -180,6 +259,10 @@ overlap_y_xts <- overlap_xts[ , tickers]
 ```
 
 ```{r}
+performance_xts <- roll_prod(1 + returns_xts, width, min_obs = 1) - 1
+```
+
+```{r}
 n_rows <- nrow(overlap_xts)
 result_ls <- list()
 index_ls <- list()
@@ -191,9 +274,12 @@ for (i in n_rows) {
     x_subset <- coredata(overlap_x_xts[idx, ])
     y_subset <- coredata(overlap_y_xts[idx, ])
     params_ls <- list()
+    tickers_ls <- list()
+    performance_ls <- list()
     
     # for (j in tickers[!tickers %in% allocations]) {
     for (j in tickers) {
+      
         idx <- complete.cases(x_subset, y_subset[ , j])
         x_complete <- x_subset[idx, , drop = FALSE]
         y_complete <- y_subset[idx, j]
@@ -203,13 +289,21 @@ for (i in n_rows) {
             params <- t(min_rss_optim(x_complete, y_complete))
             params_ls <- append(params_ls, list(params))
             
+            tickers_ls <- append(tickers_ls, list(j))
+            
+            performance_ls <- append(performance_ls, list(performance_xts[i, j]))
+            
         }
         
     }
     
     if (length(params_ls) > 0) {
         
-        result <- colMeans(do.call(rbind, params_ls), na.rm = TRUE)
+        result <- do.call(rbind, params_ls)
+        rownames(result) <- unlist(tickers_ls)
+        
+        result <- cbind(result, performance = unlist(performance_ls))
+        
         result_ls <- append(result_ls, list(result))
         index_ls <- append(index_ls, list(index(overlap_xts)[i]))
         
@@ -219,10 +313,15 @@ for (i in n_rows) {
 ```
 
 ```{r}
+# saveRDS(result_ls, file = "result_ls.rds")
+# saveRDS(index_ls, file = "index_ls.rds")
+```
+
+```{r}
 weights <- do.call(rbind, result_ls)
 # weights_xts <- xts(weights, as.Date(do.call(rbind, index_ls)))
-weights_xts <- xts(weights, tail(index(overlap_xts), 1))
-colnames(weights_xts) <- factors
+weights_xts <- xts(matrix(colMeans(weights), nrow = 1), tail(index(overlap_xts), 1))
+colnames(weights_xts) <- c(factors, "performance")
 ```
 
 ```{r}
