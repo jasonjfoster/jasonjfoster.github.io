@@ -317,13 +317,55 @@ for (i in n_rows) {
 # saveRDS(index_ls, file = "index_ls.rds")
 ```
 
+# Performance
+
 ```{r}
-weights <- do.call(rbind, result_ls)
-# weights_xts <- xts(weights, as.Date(do.call(rbind, index_ls)))
-weights_xts <- xts(matrix(colMeans(weights), nrow = 1), tail(index(overlap_xts), 1))
-colnames(weights_xts) <- c(factors, "performance")
+# result_ls <- readRDS("./posts/crowds-r/result_ls.rds")
+# index_ls <- readRDS("./posts/crowds-r/index_ls.rds")
 ```
 
 ```{r}
-tail(weights_xts)
+quantile_cut <- function(x) {
+  cut(
+    -x,
+    breaks = quantile(-x, probs = c(0, 0.25, 0.5, 0.75, 1)),
+    labels = c("Q1", "Q2", "Q3", "Q4"),
+    include.lowest = TRUE
+  )
+}
+```
+
+```{r}
+n_rows <- length(result_ls)
+score_ls <- list()
+
+for (i in 1:n_rows) {
+  
+  score_df <- data.frame(result_ls[[i]])
+  colnames(score_df) <- c(factors, "performance")
+  
+  score_df[["date"]] <- index_ls[[i]]
+  score_df[["quantile"]] <- quantile_cut(score_df[["performance"]])
+  
+  score <- aggregate(
+    cbind(weight = get(factors[1]), performance) ~ date + quantile,
+    score_df, mean
+  )
+  
+  overall <- data.frame(
+    date = index_ls[[i]],
+    quantile = "Overall",
+    weight = mean(score_df[[factors[1]]]),
+    performance = mean(score_df[["performance"]])
+  )
+  
+  score <- rbind(score, overall)
+  
+  score_ls <- append(score_ls, list(score))
+  
+}
+```
+
+```{r}
+do.call(rbind, score_ls)
 ```
