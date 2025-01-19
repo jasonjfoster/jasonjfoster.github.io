@@ -27,89 +27,180 @@ import requests
 ```
 
 ```{python}
-def get_crumb_and_cookie():
-    
-    session = requests.Session()
-    
-    headers = {
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36"
-    }
-    
-    session.headers.update(headers)
-
-    response = session.get("https://query1.finance.yahoo.com/v1/test/getcrumb")
-
-    crumb = response.text.strip()
-    cookie = session.cookies.get_dict()
+class Filter:
+  
+  @staticmethod
+  def process(filter):
+  
+    operator, operands = filter
     
     result = {
-      "crumb": crumb,
-      "cookie": cookie
+      "operator": operator,
+      "operands": [
+          {"operator": operand[0], "operands": operand[1]} for operand in operands
+      ],
+    }
+    
+    return result
+```
+
+```{python}
+class Query:
+  
+  @staticmethod
+  def create(filters = [("or", [("eq", ["region", "us"])])],
+             top_operator = "and"):
+    
+    result = {
+      "operator": top_operator,
+      "operands": [Filter.process(filter) for filter in filters],
     }
 
     return result
 ```
 
 ```{python}
-def get_yhoo():
+class Payload:
+  
+  @staticmethod
+  def create(quote_type = "equity", query = Query.create(),
+             size = 25, offset = 0,
+             sort_field = None, sort_type = None,
+             top_operator = "and"):
+    
+    result = {
+      "includeFields": None,  # unable to modify the result
+      "offset": offset,
+      "query": query,
+      "quoteType": quote_type,
+      "size": size,
+      "sortField": sort_field,
+      "sortType": sort_type,
+      "topOperator": top_operator,
+    }
+    
+    return result
+```
 
-    session = get_crumb_and_cookie()
-    crumb = session["crumb"]
-    cookie = session["cookie"]
+```{python}
+class Session:
+  
+  @staticmethod
+  def get():
     
-    params = {
-        "crumb": crumb,
-        "lang": "en-US",
-        "region": "US",
-        "formatted": "true",
-        "corsDomain": "finance.yahoo.com",
-    }
+    session = requests.Session()
     
-    api_url = "https://query1.finance.yahoo.com/v1/finance/screener"
-    
-    payload = {
-        "size": 250,
-        "offset": 0,
-        "sortField": "fundnetassets",
-        "sortType": "DESC",
-        "quoteType": "MUTUALFUND",
-        "topOperator": "AND",
-        "query": {
-            "operator": "AND",
-            "operands": [
-                {
-                    "operator": "or",
-                    "operands": [
-                        {
-                            "operator": "EQ",
-                            "operands": ["categoryname", "Tactical Allocation"]
-                        }
-                    ]
-                }
-            ]
-        },
-        "userId": "",
-        "userIdType": "guid"
-    }
+    api_url = "https://query1.finance.yahoo.com/v1/test/getcrumb"
     
     headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36"
-    } 
+      "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
+    }
     
-    with requests.session() as session:
-        
-        for key, value in cookie.items():
-            session.cookies.set(key, value)
-            
-        response = session.post(api_url, params = params, json = payload, headers = headers)
+    session.headers.update(headers)
+  
+    response = session.get(api_url)
+    
+    crumb = response.text.strip()
+    cookies = session.cookies.get_dict()
+  
+    result = {
+      "handle": session,
+      "crumb": crumb,
+      "cookies": cookies
+    }
+    
+    return result
+```
 
-        return response.json()
+```{python}
+class Screen:
+  
+  # @staticmethod
+  # def encode(params):
+  #   
+  #   result = "?" + "&".join(f"{key}={value}" for key, value in params.items())
+  #   
+  #   return result
+  
+  @staticmethod
+  def get(payload = Payload.create()):
+  
+    session = Session.get()
+    crumb = session["crumb"]
+    cookies = session["cookies"]
+    handle = session["handle"]
+  
+    params = {
+      "crumb": crumb,
+      "lang": "en-US",
+      "region": "US",
+      "formatted": "true",
+      "corsDomain": "finance.yahoo.com",
+    }
+  
+    api_url = "https://query1.finance.yahoo.com/v1/finance/screener" # + Screen.encode(params)
+  
+    headers = {
+      # "Content-Type": "application/json",
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
+    }
+  
+    max_size = 250
+    size = payload["size"]
+    offset = payload["offset"]
+    
+    result_cols = set()
+    result_ls = []
+
+    while size > 0:
+  
+      chunk_size = min(size, max_size)
+      payload["size"] = chunk_size
+      payload["offst"] = offset
+  
+      for key, value in cookies.items():
+        handle.cookies.set(key, value)
+  
+      response = handle.post(api_url, params = params, json = payload, headers = headers)
+  
+      result = response.json()
+      result_df = result["finance"]["result"][0]["quotes"]
+  
+      if (result_df is not None):
+        
+        result_df = pd.json_normalize(result_df)
+        
+        result_ls.append(result_df)
+        result_cols.update(result_df.columns)
+  
+        size -= chunk_size
+        offset += chunk_size
+  
+      else:
+        size = 0
+        
+    result_cols = list(result_cols)
+    
+    for i in range(len(result_ls)):
+      
+      x = result_ls[i]
+      cols_na = set(result_cols) - set(x.columns)
+      
+      for j in cols_na:
+        x[j] = None
+        
+      result_ls[i] = x[result_cols]
+    
+    result = pd.concat(result_ls, ignore_index = True)
+    
+    return result
 ```
 
 # Optimization
 
 ```{python}
+import json
 import cvxpy as cp
 import yfinance as yf
 ```
@@ -130,14 +221,16 @@ def min_rss_optim(x, y):
 ```
 
 ```{python}
-yhoo_ls = get_yhoo()
-yhoo_df = pd.DataFrame(yhoo_ls["finance"]["result"][0]["quotes"])
+filters = [("or", [("eq", ["categoryname", "Tactical Allocation"])])]
+query = Query.create(filters)
+payload = Payload.create(quote_type = "mutualfund", query = query, size = 250,
+                         sort_field = "fundnetassets")
+screen = Screen.get(payload)
 ```
 
 ```{python}
-yhoo_df["netAssets_raw"] = yhoo_df["netAssets"].apply(lambda x: x["raw"])
-sorted_df = yhoo_df.sort_values(by = ["netAssets_raw", "firstTradeDateMilliseconds"])
-tickers = sorted_df.loc[~sorted_df["netAssets_raw"].duplicated(), "symbol"].tolist()
+sorted_df = screen.sort_values(by = ["netAssets.raw", "firstTradeDateMilliseconds"])
+tickers = sorted_df.loc[~sorted_df["netAssets.raw"].duplicated(), "symbol"].tolist()
 ```
 
 ```{python}
@@ -166,6 +259,15 @@ overlap_y_df = returns_df["overlap"][tickers]
 ```
 
 ```{python}
+def pnl(x):
+    return np.nanprod(1 + x) - 1
+```
+
+```{python}
+performance_df = returns_df["returns"].rolling(width, min_periods = 1).apply(pnl, raw = False)
+```
+
+```{python}
 n_rows = overlap_df.shape[0]
 result_ls = []
 index_ls = []
@@ -177,6 +279,8 @@ for i in range(n_rows - 1, n_rows):
   x_subset = overlap_x_df.iloc[idx]
   y_subset = overlap_y_df.iloc[idx]
   params_ls = []
+  tickers_ls = []
+  performance_ls = []
   
   # for j in [ticker for ticker in tickers if ticker not in allocations]:
   for j in tickers:
@@ -189,19 +293,28 @@ for i in range(n_rows - 1, n_rows):
         
       params = min_rss_optim(x_complete.values, y_complete.values)
       params_ls.append(params)
-  
+      
+      tickers_ls.append(j)
+      
+      performance_ls.append(performance_df[j].iloc[i])
+
   if params_ls:
     
-    result_ls.append(np.mean(params_ls, axis = 0))
+    result = pd.DataFrame(params_ls, index = tickers_ls)
+    result["performance"] = performance_ls
+    
+    result_ls.append(result)
     index_ls.append(overlap_x_df.index[i])
 ```
 
 ```{python}
-# weights_df = pd.DataFrame(result_ls, index = index_ls, columns = factors)
-weights_df = pd.DataFrame(result_ls, index = [overlap_df.index[-1]],
-                          columns = factors)
+# json.dump([x.to_dict() for x in result_ls], open("result_ls.json", "w"))
+# json.dump([x.isoformat() for x in index_ls], open("index_ls.json", "w"))
 ```
 
+# Performance
+
 ```{python}
-weights_df.tail()
+# result_ls = [pd.DataFrame(x) for x in json.load(open("result_ls.json", "r"))]
+# index_ls = [pd.Timestamp(x) for x in json.load(open("index_ls.json", "r"))]
 ```

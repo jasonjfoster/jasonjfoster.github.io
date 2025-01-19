@@ -77,7 +77,7 @@ create_payload <- function(quote_type = "equity", query = create_query(),
 ```
 
 ```{r}
-get_crumb_and_cookies <- function() {
+get_session <- function() {
 
   handle <- curl::new_handle()
 
@@ -115,7 +115,7 @@ build_query_string <- function(params) {
 ```{r}
 get_screen <- function(payload = create_payload()) {
 
-  session <- get_crumb_and_cookies()
+  session <- get_session()
 
   crumb <- session[["crumb"]]
   cookies <- session[["cookies"]]
@@ -221,7 +221,8 @@ min_rss_optim <- function(x, y) {
 ```
 
 ```{r}
-query <- create_query(filters = list(list("or", list(list("eq", list("categoryname", "Tactical Allocation"))))))
+filters <- list(list("or", list(list("eq", list("categoryname", "Tactical Allocation")))))
+query <- create_query(filters)
 payload <- create_payload(quote_type = "mutualfund", query = query, size = 250, 
                           sort_field = "fundnetassets")
 screen <- get_screen(payload)

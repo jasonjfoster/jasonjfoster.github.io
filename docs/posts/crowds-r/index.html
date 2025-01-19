@@ -250,7 +250,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>get_crumb_and_cookies <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>get_session <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  handle <span class="ot">&lt;-</span> curl<span class="sc">::</span><span class="fu">new_handle</span>()</span>
 <span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a></span>
@@ -286,7 +286,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell">
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>get_screen <span class="ot">&lt;-</span> <span class="cf">function</span>(<span class="at">payload =</span> <span class="fu">create_payload</span>()) {</span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  session <span class="ot">&lt;-</span> <span class="fu">get_crumb_and_cookies</span>()</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  session <span class="ot">&lt;-</span> <span class="fu">get_session</span>()</span>
 <span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  crumb <span class="ot">&lt;-</span> session[[<span class="st">"crumb"</span>]]</span>
 <span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  cookies <span class="ot">&lt;-</span> session[[<span class="st">"cookies"</span>]]</span>
@@ -390,10 +390,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>query <span class="ot">&lt;-</span> <span class="fu">create_query</span>(<span class="at">filters =</span> <span class="fu">list</span>(<span class="fu">list</span>(<span class="st">"or"</span>, <span class="fu">list</span>(<span class="fu">list</span>(<span class="st">"eq"</span>, <span class="fu">list</span>(<span class="st">"categoryname"</span>, <span class="st">"Tactical Allocation"</span>))))))</span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>payload <span class="ot">&lt;-</span> <span class="fu">create_payload</span>(<span class="at">quote_type =</span> <span class="st">"mutualfund"</span>, <span class="at">query =</span> query, <span class="at">size =</span> <span class="dv">250</span>, </span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>                          <span class="at">sort_field =</span> <span class="st">"fundnetassets"</span>)</span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>screen <span class="ot">&lt;-</span> <span class="fu">get_screen</span>(payload)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>filters <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="fu">list</span>(<span class="st">"or"</span>, <span class="fu">list</span>(<span class="fu">list</span>(<span class="st">"eq"</span>, <span class="fu">list</span>(<span class="st">"categoryname"</span>, <span class="st">"Tactical Allocation"</span>)))))</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>query <span class="ot">&lt;-</span> <span class="fu">create_query</span>(filters)</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>payload <span class="ot">&lt;-</span> <span class="fu">create_payload</span>(<span class="at">quote_type =</span> <span class="st">"mutualfund"</span>, <span class="at">query =</span> query, <span class="at">size =</span> <span class="dv">250</span>, </span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>                          <span class="at">sort_field =</span> <span class="st">"fundnetassets"</span>)</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>screen <span class="ot">&lt;-</span> <span class="fu">get_screen</span>(payload)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>sorted_df <span class="ot">&lt;-</span> screen[<span class="fu">order</span>(screen[[<span class="st">"netAssets.raw"</span>]], screen[[<span class="st">"firstTradeDateMilliseconds"</span>]]), ]</span>
@@ -513,8 +514,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 1 2025-01-17       Q1 0.7537439  0.039388582
 2 2025-01-17       Q2 0.5772177  0.005570699
 3 2025-01-17       Q3 0.6183606 -0.006813639
-4 2025-01-17       Q4 0.8012893 -0.071774361
-5 2025-01-17  Overall 0.6884304 -0.007844877</code></pre>
+4 2025-01-17       Q4 0.8010988 -0.071608670
+5 2025-01-17  Overall 0.6883834 -0.007803942</code></pre>
 </div>
 </div>
 
