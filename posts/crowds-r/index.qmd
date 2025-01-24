@@ -243,7 +243,7 @@ tickers <- sorted_df[!duplicated(sorted_df[["netAssets.raw"]]), "symbol"]
 # source("../helper-prices.R")
 invisible(getSymbols(tickers, adjust = TRUE))
 tickers <- tickers[tickers %in% ls()]
-prices_xts <- do.call(merge, c(lapply(tickers, function(i) Cl(get(i))), all = TRUE))
+prices_xts <- do.call(merge, c(lapply(tickers, function(i) Ad(get(i))), all = TRUE))
 colnames(prices_xts) <- tickers
 index(prices_xts) <- as.Date(index(prices_xts))
 
@@ -327,12 +327,16 @@ for (i in n_rows) {
 
 ```{r}
 quantile_cut <- function(x) {
-  cut(
+  
+  result <- cut(
     -x,
     breaks = quantile(-x, probs = c(0, 0.25, 0.5, 0.75, 1)),
     labels = c("Q1", "Q2", "Q3", "Q4"),
     include.lowest = TRUE
   )
+  
+  return(result)
+  
 }
 ```
 

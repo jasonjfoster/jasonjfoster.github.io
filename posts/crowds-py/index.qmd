@@ -17,7 +17,10 @@ factors_d = ["DTB3"]
 ```{r, echo = FALSE, message = FALSE}
 library(reticulate)
 source_python("../helper-levels.py")
-width <- 20 * 3
+```
+
+```{python, echo = FALSE}
+width = 20 * 3
 ```
 
 # Parse web
@@ -243,19 +246,16 @@ tickers = sorted_df.loc[~sorted_df["netAssets.raw"].duplicated(), "symbol"].toli
 # source_python("../helper-prices.py")
 prices_df = yf.download(tickers, start = "1900-01-01", progress = False)["Adj Close"]
 
-returns_cols = [("returns", i) for i in tickers]
-overlap_cols = [("overlap", i) for i in tickers]
-returns_df[returns_cols] = np.log(prices_df).diff()
-returns_df[overlap_cols] = returns_df[returns_cols].rolling(scale["overlap"], min_periods = 1).mean()
-returns_df.sort_index(axis = 1, inplace = True)
+returns_df = pd.concat([returns_df["returns"], np.log(prices_df).diff()], axis = 1)
+overlap_df = pd.concat([overlap_df, returns_df[tickers].rolling(scale["overlap"],min_periods = 1).mean()], axis = 1)
 
 # weights = np.array([0.9 ** i for i in range(width - 1, -1, -1)]).reshape((width, 1))
 weights = np.array([1] * width).reshape((width, 1))
 
-# overlap_df = returns_df["overlap"]
-overlap_x_df = returns_df["overlap"][factors]
-overlap_y_df = returns_df["overlap"][tickers]
-# overlap_z_df = returns_df["overlap"][allocations]
+# overlap_df = overlap_df.dropna()
+overlap_x_df = overlap_df[factors]
+overlap_y_df = overlap_df[tickers]
+# overlap_z_df = overlap_df[allocations]
 ```
 
 ```{python}
@@ -264,7 +264,7 @@ def pnl(x):
 ```
 
 ```{python}
-performance_df = returns_df["returns"].rolling(width, min_periods = 1).apply(pnl, raw = False)
+performance_df = returns_df.rolling(width, min_periods = 1).apply(pnl, raw = False)
 ```
 
 ```{python}
@@ -317,4 +317,49 @@ for i in range(n_rows - 1, n_rows):
 ```{python}
 # result_ls = [pd.DataFrame(x) for x in json.load(open("result_ls.json", "r"))]
 # index_ls = [pd.Timestamp(x) for x in json.load(open("index_ls.json", "r"))]
+```
+
+```{python}
+def quantile_cut(x):
+  
+  result = pd.qcut(
+    -x,
+    q = [0, 0.25, 0.5, 0.75, 1],
+    labels = ["Q1", "Q2", "Q3", "Q4"]
+  )
+  
+  return result
+```
+
+```{python}
+n_rows = len(result_ls)
+score_ls = []
+
+for i in range(n_rows):
+  
+  score_df = pd.DataFrame(result_ls[i])
+  score_df.columns = factors + ["performance"]
+  
+  score_df["date"] = index_ls[i]
+  score_df["quantile"] = quantile_cut(score_df["performance"])
+  
+  score = score_df.groupby(["date", "quantile"]).agg(
+    weight = (factors[0], "mean"),
+    performance = ("performance", "mean")
+  ).reset_index()
+  
+  overall = pd.DataFrame({
+    "date": [index_ls[i]],
+    "quantile": ["Overall"],
+    "weight": [score_df[factors[0]].mean()],
+    "performance": [score_df["performance"].mean()]
+  })
+  
+  score = pd.concat([score, overall], ignore_index = True)
+  
+  score_ls.append(score)
+```
+
+```{python}
+pd.concat(score_ls, ignore_index = True)
 ```
