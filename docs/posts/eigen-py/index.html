@@ -2,12 +2,12 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.4.546">
+<meta name="generator" content="quarto-1.4.554">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Jason Foster">
-<meta name="dcterms.date" content="2024-04-04">
+<meta name="dcterms.date" content="2025-01-24">
 
 <title>jasonjfoster.github.io - Eigen</title>
 <style>
@@ -191,7 +191,7 @@ window.Quarto = {
       <div>
       <div class="quarto-title-meta-heading">Published</div>
       <div class="quarto-title-meta-contents">
-        <p class="date">April 4, 2024</p>
+        <p class="date">January 24, 2025</p>
       </div>
     </div>
     
@@ -269,14 +269,14 @@ window.Quarto = {
 <div class="cell">
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>eigen_decomp(overlap_df, comps) <span class="op">*</span> scale[<span class="st">"periods"</span>] <span class="op">*</span> scale[<span class="st">"overlap"</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>array([[ 2.99142972e-02, -3.64057676e-03, -1.43401778e-04,
-         2.56192976e-03],
-       [-3.64057676e-03,  4.43059017e-04,  1.74520289e-05,
-        -3.11787433e-04],
-       [-1.43401778e-04,  1.74520289e-05,  6.87432830e-07,
-        -1.22812607e-05],
-       [ 2.56192976e-03, -3.11787433e-04, -1.22812607e-05,
-         2.19409604e-04]])</code></pre>
+<pre><code>array([[ 3.10579127e-02, -3.95706391e-03, -8.73651146e-05,
+         2.50920893e-03],
+       [-3.95706391e-03,  5.04166359e-04,  1.11311196e-05,
+        -3.19696310e-04],
+       [-8.73651146e-05,  1.11311196e-05,  2.45755834e-07,
+        -7.05834058e-06],
+       [ 2.50920893e-03, -3.19696310e-04, -7.05834058e-06,
+         2.02722234e-04]])</code></pre>
 </div>
 </div>
 <div class="cell">
@@ -304,7 +304,7 @@ window.Quarto = {
 <div class="cell">
 <div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>variance_explained(overlap_df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>array([0.87372155, 0.99215925, 0.99826262, 1.        ])</code></pre>
+<pre><code>array([0.87724722, 0.99230722, 0.99823631, 1.        ])</code></pre>
 </div>
 </div>
 </section>
@@ -542,6 +542,24 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     // clear code selection
     e.clearSelection();
   });
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
   function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
     const config = {
       allowHTML: true,
@@ -576,7 +594,11 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       try { href = new URL(href).hash; } catch {}
       const id = href.replace(/^#\/?/, "");
       const note = window.document.getElementById(id);
-      return note.innerHTML;
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
     });
   }
   const xrefs = window.document.querySelectorAll('a.quarto-xref');
