@@ -246,7 +246,7 @@ tickers = sorted_df.loc[~sorted_df["netAssets.raw"].duplicated(), "symbol"].toli
 # source_python("../helper-prices.py")
 prices_df = yf.download(tickers, start = "1900-01-01", progress = False)["Adj Close"]
 
-returns_df = pd.concat([returns_df["returns"], np.log(prices_df).diff()], axis = 1)
+returns_df = pd.concat([returns_df, np.log(prices_df).diff()], axis = 1)
 overlap_df = pd.concat([overlap_df, returns_df[tickers].rolling(scale["overlap"],min_periods = 1).mean()], axis = 1)
 
 # weights = np.array([0.9 ** i for i in range(width - 1, -1, -1)]).reshape((width, 1))

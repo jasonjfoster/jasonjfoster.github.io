@@ -1,5 +1,5 @@
-invisible(getSymbols(tickers, src = "tiingo", api.key = Sys.getenv("TIINGO_API_KEY"), adjust = TRUE))
-prices_xts <- do.call(merge, c(lapply(tickers, function(i) Cl(get(i))), all = TRUE))
+invisible(getSymbols(tickers, src = "tiingo", api.key = Sys.getenv("TIINGO_API_KEY")))
+prices_xts <- do.call(merge, c(lapply(tickers, function(i) Ad(get(i))), all = TRUE))
 colnames(prices_xts) <- tickers
 index(prices_xts) <- as.Date(index(prices_xts))
 

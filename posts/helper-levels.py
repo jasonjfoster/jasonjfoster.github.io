@@ -12,4 +12,4 @@ levels_df.sort_index(axis = 0, inplace = True)
 
 returns_df = levels_df.apply(lambda x: np.log(x).diff() if x.name in factors_r else -x.diff() / 100)
 overlap_df = returns_df.rolling(scale["overlap"], min_periods = 1).mean()
-returns_df = pd.concat([returns_df, overlap_df], keys = ["returns", "overlap"], axis = 1)
+# returns_df = pd.concat([returns_df, overlap_df], keys = ["returns", "overlap"], axis = 1)
