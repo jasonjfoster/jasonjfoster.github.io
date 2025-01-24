@@ -40,7 +40,7 @@ order = 20
 ```
 
 ```{python}
-momentum_df = returns_df["returns"].shift(order).rolling(width - order, min_periods = 1).apply(pnl, raw = False).dropna()
+momentum_df = returns_df.shift(order).rolling(width - order, min_periods = 1).apply(pnl, raw = False).dropna()
 ```
 
 ```{r, echo = FALSE, fig.width = 8, fig.height = 4}
