@@ -26,7 +26,7 @@ names(palette) <- c("Overall", py$factors)
 ```
 
 ```{python, echo = FALSE}
-sd_df = returns_df["overlap"].rolling(width, min_periods = 1).std() * \
+sd_df = overlap_df.rolling(width, min_periods = 1).std() * \
     np.sqrt(scale["periods"]) * np.sqrt(scale["overlap"])
 ```
 
@@ -649,8 +649,8 @@ def sim_multi_gbm(n_sim, S, mu, sigma, dt):
 
 ```{python}
 S = [1] * len(factors)
-sigma = np.cov(returns_df["returns"].dropna().T, ddof = 1) * scale["periods"]
-mu = np.array(returns_df["returns"].dropna().mean()) * scale["periods"]
+sigma = np.cov(returns_df.dropna().T, ddof = 1) * scale["periods"]
+mu = np.array(returns_df.dropna().mean()) * scale["periods"]
 mu = mu + np.diag(sigma) / 2 # drift
 dt = 1 / scale["periods"]
 ```
@@ -681,7 +681,7 @@ sigma_df = pd.DataFrame(sigma_ls)
 
 ```{python}
 pd.DataFrame({
-    "empirical": np.array(returns_df["returns"].dropna().mean()) * scale["periods"],
+    "empirical": np.array(returns_df.dropna().mean()) * scale["periods"],
     "theoretical": mu_df.mean()
 })
 ```
@@ -737,7 +737,7 @@ def implied_vol_newton(params, type, S, K, r, q, tau):
         sigma = sigma0 - (target0 - params["target"]) / d_target0
         sigma0 = sigma
         
-    return sigma
+    return sigma.item()
 ```
 
 -   <http://www.aspenres.com/documents/help/userguide/help/bopthelp/bopt2Implied_Volatility_Formula.html>
