@@ -14,9 +14,8 @@ factors_r = ["SP500"] # "SP500" does not contain dividends
 factors_d = ["DTB3"]
 ```
 
-```{r, echo = FALSE, message = FALSE}
-library(reticulate)
-source_python("../helper-levels.py")
+```{python, echo = FALSE}
+exec(open("../helper-levels.py").read())
 ```
 
 ```{python, echo = FALSE}
@@ -240,17 +239,12 @@ tickers = sorted_df.loc[~sorted_df["netAssets.raw"].duplicated(), "symbol"].toli
 # tickers = tickers + allocations
 ```
 
-```{python, echo = FALSE, message = FALSE, warning = FALSE}
-# select tickers are not included in tiingo's free subscription
-# source_python("../helper-prices.py")
-prices_df = yf.download(tickers, start = "1900-01-01", progress = False)["Adj Close"]
-tickers = prices_df.columns
+```{python, echo = FALSE}
+exec(open("../helper-prices.py").read())
+```
 
-returns_df = pd.concat([returns_df, np.log(prices_df).diff()], axis = 1)
-overlap_df = pd.concat([overlap_df, returns_df[tickers].rolling(scale["overlap"],min_periods = 1).mean()], axis = 1)
-
-# weights = np.array([0.9 ** i for i in range(width - 1, -1, -1)]).reshape((width, 1))
-weights = np.array([1] * width).reshape((width, 1))
+```{python, echo = FALSE}
+overlap_df = returns_df.rolling(scale["overlap"],min_periods = 1).mean()
 
 # overlap_df = overlap_df.dropna()
 overlap_x_df = overlap_df[factors]

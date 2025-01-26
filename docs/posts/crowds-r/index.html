@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Jason Foster">
-<meta name="dcterms.date" content="2025-01-25">
+<meta name="dcterms.date" content="2025-01-26">
 
 <title>jasonjfoster.github.io - Crowds</title>
 <style>
@@ -162,7 +162,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <div>
       <div class="quarto-title-meta-heading">Published</div>
       <div class="quarto-title-meta-contents">
-        <p class="date">January 25, 2025</p>
+        <p class="date">January 26, 2025</p>
       </div>
     </div>
     
@@ -515,12 +515,16 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">do.call</span>(rbind, score_ls)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>        date quantile    weight performance
-1 2025-01-23       Q1 0.8595592 0.085919745
-2 2025-01-23       Q2 0.7930736 0.044944715
-3 2025-01-23       Q3 0.5718877 0.024443126
-4 2025-01-23       Q4 0.3777037 0.005116275
-5 2025-01-23  Overall 0.6530149 0.040644951</code></pre>
+1 2025-01-24       Q1 0.8467175  0.08017613
+2 2025-01-24       Q2 0.8062885  0.04112626
+3 2025-01-24       Q3 0.5703027  0.02449007
+4 2025-01-24       Q4 0.3688480  0.00697664
+5 2025-01-24  Overall 0.6503766  0.03868620</code></pre>
 </div>
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="co"># score_xts &lt;- do.call(rbind, score_ls)</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="co"># score_xts &lt;- xts(score_xts[score_xts[["quantile"]] == "Q1", "weight"],</span></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a><span class="co">#                  score_xts[score_xts[["quantile"]] == "Q1", "date"])</span></span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a><span class="co"># plot(score_xts)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 
 
