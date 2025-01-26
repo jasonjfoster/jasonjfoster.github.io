@@ -205,7 +205,6 @@ class Screen:
 ```{python}
 import json
 import cvxpy as cp
-import yfinance as yf
 ```
 
 ```{python}
@@ -245,6 +244,7 @@ tickers = sorted_df.loc[~sorted_df["netAssets.raw"].duplicated(), "symbol"].toli
 # select tickers are not included in tiingo's free subscription
 # source_python("../helper-prices.py")
 prices_df = yf.download(tickers, start = "1900-01-01", progress = False)["Adj Close"]
+tickers = prices_df.columns
 
 returns_df = pd.concat([returns_df, np.log(prices_df).diff()], axis = 1)
 overlap_df = pd.concat([overlap_df, returns_df[tickers].rolling(scale["overlap"],min_periods = 1).mean()], axis = 1)

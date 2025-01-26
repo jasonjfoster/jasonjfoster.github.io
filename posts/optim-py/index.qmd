@@ -215,7 +215,7 @@ source_python("../helper-prices.py")
 ```
 
 ```{python}
-returns_x_df = returns_df.dropna()["returns"][factors]
+returns_x_df = returns_df.dropna()[factors]
 mu = returns_x_df.apply(geometric_mean, axis = 0, scale = scale["periods"])
 sigma = np.cov(overlap_x_df.T, ddof = 1) * scale["periods"] * scale["overlap"]
 ```

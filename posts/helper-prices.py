@@ -1,10 +1,6 @@
-import os
+import yfinance as yf
 
-# open issue: <https://github.com/pydata/pandas-datareader/issues/965>
-prices_df = pdr.get_data_tiingo(tickers, start = "1900-01-01", api_key = os.getenv("TIINGO_API_KEY"))
-prices_df = prices_df.pivot_table(index = "date", columns = "symbol", values = "adjClose") \
-    .tz_localize(None)
-prices_df.sort_index(axis = 0, inplace = True)
+prices_df = yf.download(tickers, start = "1900-01-01", progress = False)["Adj Close"]
 tickers = prices_df.columns
 
 returns_df = pd.concat([returns_df, np.log(prices_df).diff()], axis = 1)

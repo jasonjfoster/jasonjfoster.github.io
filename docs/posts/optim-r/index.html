@@ -2,12 +2,12 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.4.546">
+<meta name="generator" content="quarto-1.4.554">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Jason Foster">
-<meta name="dcterms.date" content="2024-02-21">
+<meta name="dcterms.date" content="2025-01-24">
 
 <title>jasonjfoster.github.io - Optimization</title>
 <style>
@@ -191,7 +191,7 @@ window.Quarto = {
       <div>
       <div class="quarto-title-meta-heading">Published</div>
       <div class="quarto-title-meta-contents">
-        <p class="date">February 21, 2024</p>
+        <p class="date">January 24, 2025</p>
       </div>
     </div>
     
@@ -522,15 +522,15 @@ e^{T} &amp; 0
 <div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>params1 <span class="ot">&lt;-</span> <span class="fu">t</span>(<span class="fu">max_mean_optim</span>(mu, sigma, target))</span>
 <span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>params1</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>          [,1]      [,2]         [,3]         [,4]
-[1,] 0.4961023 0.5038977 7.919319e-09 4.929859e-09</code></pre>
+<pre><code>          [,1]      [,2]      [,3]         [,4]
+[1,] 0.4818745 0.3813092 0.1368158 4.544784e-07</code></pre>
 </div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>params1 <span class="sc">%*%</span> mu</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>          [,1]
-[1,] 0.0472976</code></pre>
+<pre><code>           [,1]
+[1,] 0.04796185</code></pre>
 </div>
 </div>
 <div class="cell">
@@ -635,8 +635,8 @@ e^{T} &amp; 0
 <div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>params2 <span class="ot">&lt;-</span> <span class="fu">t</span>(<span class="fu">min_var_optim</span>(mu, sigma, target))</span>
 <span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>params2</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>        [,1]      [,2]      [,3]         [,4]
-[1,] 0.29584 0.4463629 0.2577972 1.877369e-21</code></pre>
+<pre><code>          [,1]      [,2]      [,3]       [,4]
+[1,] 0.3011723 0.2718717 0.3376254 0.08933059</code></pre>
 </div>
 </div>
 <div class="cell">
@@ -649,8 +649,8 @@ e^{T} &amp; 0
 <div class="cell">
 <div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sqrt</span>(params2 <span class="sc">%*%</span> sigma <span class="sc">%*%</span> <span class="fu">t</span>(params2))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>          [,1]
-[1,] 0.0372178</code></pre>
+<pre><code>           [,1]
+[1,] 0.03819576</code></pre>
 </div>
 </div>
 <div class="cell">
@@ -737,22 +737,22 @@ e^{T} &amp; 0
 <div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>params3 <span class="ot">&lt;-</span> <span class="fu">t</span>(<span class="fu">max_utility_optim</span>(mu, sigma, target))</span>
 <span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>params3</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>          [,1]      [,2]         [,3]         [,4]
-[1,] 0.5584661 0.4415339 9.327449e-23 4.233534e-23</code></pre>
+<pre><code>          [,1]      [,2]        [,3]          [,4]
+[1,] 0.7212784 0.2787216 1.89488e-24 -8.545144e-24</code></pre>
 </div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>params3 <span class="sc">%*%</span> mu </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>           [,1]
-[1,] 0.05158278</code></pre>
+[1,] 0.07115885</code></pre>
 </div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sqrt</span>(params3 <span class="sc">%*%</span> sigma <span class="sc">%*%</span> <span class="fu">t</span>(params3))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>          [,1]
-[1,] 0.0672845</code></pre>
+<pre><code>           [,1]
+[1,] 0.08927915</code></pre>
 </div>
 </div>
 <div class="cell">
@@ -838,22 +838,22 @@ X^{T}y \\
 <div class="sourceCode cell-code" id="cb48"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>params4 <span class="ot">&lt;-</span> <span class="fu">t</span>(<span class="fu">min_rss_optim1</span>(<span class="fu">crossprod</span>(overlap_x_xts, overlap_y_xts), <span class="fu">crossprod</span>(overlap_x_xts)))</span>
 <span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a>params4</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>         [,1]         [,2]     [,3]         [,4]
-[1,] 0.374955 7.191451e-23 0.625045 2.959672e-23</code></pre>
+<pre><code>          [,1]         [,2]      [,3]        [,4]
+[1,] 0.2747327 4.021173e-23 0.7252673 2.43413e-23</code></pre>
 </div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb50"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>params4 <span class="sc">%*%</span> mu </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>           [,1]
-[1,] 0.03039745</code></pre>
+<pre><code>          [,1]
+[1,] 0.0256603</code></pre>
 </div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb52"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sqrt</span>(params4 <span class="sc">%*%</span> sigma <span class="sc">%*%</span> <span class="fu">t</span>(params4))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>           [,1]
-[1,] 0.05050206</code></pre>
+[1,] 0.03609715</code></pre>
 </div>
 </div>
 <div class="cell">
@@ -880,22 +880,22 @@ X^{T}y \\
 <div class="sourceCode cell-code" id="cb56"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a>params5 <span class="ot">&lt;-</span> <span class="fu">t</span>(<span class="fu">min_rss_optim2</span>(<span class="fu">coredata</span>(overlap_x_xts), <span class="fu">coredata</span>(overlap_y_xts)))</span>
 <span id="cb56-2"><a href="#cb56-2" aria-hidden="true" tabindex="-1"></a>params5</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>         [,1]          [,2]     [,3]          [,4]
-[1,] 0.374955 -1.364843e-20 0.625045 -8.927092e-21</code></pre>
+<pre><code>          [,1]          [,2]      [,3]          [,4]
+[1,] 0.2747327 -2.270178e-20 0.7252673 -1.839983e-20</code></pre>
 </div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb58"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a>params5 <span class="sc">%*%</span> mu </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>           [,1]
-[1,] 0.03039745</code></pre>
+<pre><code>          [,1]
+[1,] 0.0256603</code></pre>
 </div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb60"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sqrt</span>(params5 <span class="sc">%*%</span> sigma <span class="sc">%*%</span> <span class="fu">t</span>(params5))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>           [,1]
-[1,] 0.05050206</code></pre>
+[1,] 0.03609715</code></pre>
 </div>
 </div>
 <div class="cell">
@@ -906,10 +906,10 @@ X^{T}y \\
 <span id="cb62-5"><a href="#cb62-5" aria-hidden="true" tabindex="-1"></a>                 <span class="st">"min_rss2"</span> <span class="ot">=</span> <span class="fu">t</span>(params5) <span class="sc">*</span> <span class="dv">100</span>), <span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>  max_pnl min_risk max_utility min_rss1 min_rss2
-1   49.61    29.58       55.85     37.5     37.5
-2   50.39    44.64       44.15      0.0      0.0
-3    0.00    25.78        0.00     62.5     62.5
-4    0.00     0.00        0.00      0.0      0.0</code></pre>
+1   48.19    30.12       72.13    27.47    27.47
+2   38.13    27.19       27.87     0.00     0.00
+3   13.68    33.76        0.00    72.53    72.53
+4    0.00     8.93        0.00     0.00     0.00</code></pre>
 </div>
 </div>
 
@@ -997,6 +997,24 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     // clear code selection
     e.clearSelection();
   });
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
   function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
     const config = {
       allowHTML: true,
@@ -1031,7 +1049,11 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       try { href = new URL(href).hash; } catch {}
       const id = href.replace(/^#\/?/, "");
       const note = window.document.getElementById(id);
-      return note.innerHTML;
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
     });
   }
   const xrefs = window.document.querySelectorAll('a.quarto-xref');
