@@ -1,0 +1,172 @@
+---
+title: "Data"
+author: "[Jason Foster](mailto:jason.j.foster@gmail.com)"
+date: last-modified
+categories:
+  - analysis
+  - finance
+  - python
+draft: true
+---
+
+```{python}
+# !pip install --index-url=https://blpapi.bloomberg.com/repository/releases/python/simple/ blpapi
+import blpapi
+import pandas as pd
+```
+
+# Static query
+
+-   <https://www.bloomberg.com/professional/support/api-library/>
+-   Page 80: <https://bloomberg.github.io/blpapi-docs/>
+
+```{python}
+def create_session(host = "localhost", port = 8194):
+  
+  options = blpapi.SessionOptions()
+  options.setServerHost(host)
+  options.setServerPort(port)
+  
+  session = blpapi.Session(options)
+  session.start()
+  session.openService("//blp/refdata")
+  
+  return session
+```
+
+```{python}
+def process_response(event, fields, start_date = None, end_date = None):
+  
+  data_ls = []
+  
+  for msg in event:
+    
+    security_data = msg.getElement("securityData")
+    
+    if (start_date):
+      
+      security = security_data.getElementAsString("security")
+      field_data = security_data.getElement("fieldData")
+      
+      for x in field_data:
+        
+        record = {"security": security, "date": x.getElementAsDatetime("date")}
+        
+        for field in fields:
+          record[field] = x.getElement(field).getValue()
+        
+        data_ls.append(record)
+        
+    else:
+      
+      for x in security_data.values():
+        
+        security = x.getElementAsString("security")
+        field_data = x.getElement("fieldData")
+        record = {"security": security}
+        
+        for field in fields:
+          record[field] = field_data.getElement(field).getValue()
+        
+        data_ls.append(record)
+    
+  return pd.DataFrame(data_ls)
+```
+
+# Data point
+
+```{python}
+def bdp(securities, fields):
+  
+  session = create_session()
+  service = session.getService("//blp/refdata")
+  request = service.createRequest("ReferenceDataRequest")
+  
+  for security in securities:
+    request.append("securities", security)
+  
+  for field in fields:
+    request.append("fields", field)
+    
+  session.sendRequest(request)
+  
+  status = True
+  result = pd.DataFrame()
+  
+  while status:
+    
+    event = session.nextEvent()
+    
+    if (event.eventType() in [blpapi.Event.RESPONSE, blpapi.Event.PARTIAL_RESPONSE]):
+      result = pd.concat([result, process_response(event, fields)], ignore_index = True)
+      
+    if (event.eventType() == blpapi.Event.RESPONSE):
+      status = False
+  
+  session.stop()
+  
+  return result
+```
+
+```{python}
+securities = ["IBM US Equity", "GOOG US Equity", "MSFT US Equity", "BA US Equity"]
+fields = ["MARKET_SECTOR_DES", "GICS_SECTOR_NAME", "ID_CUSIP", "PX_LAST"]
+```
+
+```{python}
+#| eval: false
+bdp_df = bdp(securities, fields)
+print(bdp_df)
+```
+
+# Data history
+
+```{python}
+def bdh(securities, fields, start_date, end_date = None):
+  
+  session = create_session()
+  service = session.getService("//blp/refdata")
+  request = service.createRequest("HistoricalDataRequest")
+  
+  for security in securities:
+    request.append("securities", security)
+    
+  for field in fields:
+    request.append("fields", field)
+
+  request.set("startDate", start_date)
+  
+  if (end_date):
+    request.set("endDate", end_date)
+  
+  session.sendRequest(request)
+  
+  status = True
+  result = pd.DataFrame()
+  
+  while status:
+    
+    event = session.nextEvent()
+    
+    if (event.eventType() in [blpapi.Event.RESPONSE, blpapi.Event.PARTIAL_RESPONSE]):
+      result = pd.concat([result, process_response(event, fields, start_date, end_date)], ignore_index = True)
+    
+    if (event.eventType() == blpapi.Event.RESPONSE):
+      status = False
+      
+  session.stop()
+  
+  return result
+```
+
+```{python}
+fields = ["PX_LAST", "PX_BID", "PX_ASK"]
+start_date = "20231201"
+end_date = "20231205"
+```
+
+```{python}
+#| eval: false
+bdh_df = bdh(securities, fields, start_date, end_date)
+print(bdh_df)
+```
