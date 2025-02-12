@@ -53,7 +53,10 @@ def process_response(event, fields, start_date = None, end_date = None):
         record = {"security": security, "date": x.getElementAsDatetime("date")}
         
         for field in fields:
-          record[field] = x.getElement(field).getValue()
+          try:
+            record[field] = x.getElement(field).getValue()
+          except:
+            pass
         
         data_ls.append(record)
         
@@ -66,7 +69,10 @@ def process_response(event, fields, start_date = None, end_date = None):
         record = {"security": security}
         
         for field in fields:
-          record[field] = field_data.getElement(field).getValue()
+          try:
+            record[field] = field_data.getElement(field).getValue()
+          except:
+            pass
         
         data_ls.append(record)
     
@@ -77,6 +83,12 @@ def process_response(event, fields, start_date = None, end_date = None):
 
 ```{python}
 def bdp(securities, fields):
+  
+  if isinstance(securities, str):
+    securities = [securities]
+  
+  if isinstance(fields, str):
+    fields = [fields]
   
   session = create_session()
   service = session.getService("//blp/refdata")
@@ -124,6 +136,12 @@ print(bdp_df)
 ```{python}
 def bdh(securities, fields, start_date, end_date = None):
   
+  if isinstance(securities, str):
+    securities = [securities]
+  
+  if isinstance(fields, str):
+    fields = [fields]
+  
   session = create_session()
   service = session.getService("//blp/refdata")
   request = service.createRequest("HistoricalDataRequest")
@@ -138,6 +156,9 @@ def bdh(securities, fields, start_date, end_date = None):
   
   if (end_date):
     request.set("endDate", end_date)
+    
+  request.set("nonTradingDayFillOption", "ALL_CALENDAR_DAYS") # "NON_TRADING_WEEKDAYS", "ALL_CALENDAR_DAYS", "ACTIVE_DAYS_ONLY"
+  request.set("nonTradingDayFillMethod", "NIL_VALUE") # "PREVIOUS_VALUE", "NIL_VALUE" 
   
   session.sendRequest(request)
   
