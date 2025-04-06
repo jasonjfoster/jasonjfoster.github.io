@@ -7,6 +7,8 @@ categories:
   - finance
   - r
 draft: true
+editor: 
+  mode: source
 ---
 
 ```{r}
@@ -14,7 +16,7 @@ factors_r <- c("SP500") # "SP500" does not contain dividends
 factors_d <- c("DTB3")
 ```
 
-```{r, echo = FALSE, message = FALSE}
+```{r, echo = FALSE, message = FALSE, warning = FALSE}
 source("../helper-levels.R")
 width <- 20 * 3
 ```
@@ -248,7 +250,9 @@ colnames(prices_xts) <- tickers
 index(prices_xts) <- as.Date(index(prices_xts))
 
 returns_xts <- merge(returns_xts, diff(log(prices_xts)))
+colnames(returns_xts) <- c(factors, tickers) # fix for colnames that start with number after merge
 overlap_xts <- merge(overlap_xts, roll_mean(returns_xts[ , tickers], scale[["overlap"]], min_obs = 1))
+colnames(overlap_xts) <- c(factors, tickers)
 
 # weights <- 0.9 ^ ((width - 1):0)
 weights <- rep(1, width)
