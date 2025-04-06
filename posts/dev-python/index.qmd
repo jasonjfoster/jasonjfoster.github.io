@@ -1,0 +1,57 @@
+---
+title: "Software"
+author: "[Jason Foster](mailto:jason.j.foster@gmail.com)"
+date: last-modified
+categories:
+  - development
+  - python
+execute:
+  eval: false
+draft: true
+---
+
+# System setup
+
+`C:\Users\username\AppData\Local\Programs\Python\Python123\Lib\site-packages`
+
+## Version labels
+
+| Version     | Interpreted As         |
+|-------------|------------------------|
+| 0.1.0a1     | Alpha 1                |
+| 0.1.0b1     | Beta 1                 |
+| 0.1.0rc1    | Release Candidate 1    |
+| 0.1.0       | Final release          |
+
+# PyPI
+
+- <https://pypi.org/search/>
+- <https://pypi.org/classifiers/>
+- <https://packaging.python.org/en/latest/tutorials/packaging-projects/>
+
+Build the package:
+
+```
+cd path/to/mypackage/
+python -m build
+```
+
+Upload to TestPyPI: <https://test.pypi.org/project/mypackage/1.2.3/>
+
+```
+pip install --upgrade twine
+twine upload --repository testpypi dist/*
+```
+
+Then install from TestPyPI:
+
+```
+pip install -i https://test.pypi.org/simple/ mypackage
+```
+
+Upload to PyPI: 
+
+```
+twine upload dist/*
+```
+
