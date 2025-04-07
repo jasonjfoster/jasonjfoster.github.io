@@ -9,7 +9,7 @@
 <meta name="author" content="Jason Foster">
 <meta name="dcterms.date" content="2025-04-06">
 
-<title>jasonjfoster.github.io - Cloud</title>
+<title>jasonjfoster.github.io - Software</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -106,11 +106,10 @@ ul.task-list li input[type="checkbox"] {
 <header id="title-block-header" class="quarto-title-block default page-columns page-full">
   <div class="quarto-title-banner page-columns page-full">
     <div class="quarto-title column-body">
-      <h1 class="title">Cloud</h1>
+      <h1 class="title">Software</h1>
                                 <div class="quarto-categories">
-                <div class="quarto-category">computing</div>
+                <div class="quarto-category">development</div>
                 <div class="quarto-category">python</div>
-                <div class="quarto-category">r</div>
               </div>
                   </div>
   </div>
@@ -144,13 +143,11 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#amazon-elastic-compute-cloud-ec2" id="toc-amazon-elastic-compute-cloud-ec2" class="nav-link active" data-scroll-target="#amazon-elastic-compute-cloud-ec2">Amazon Elastic Compute Cloud (EC2)</a>
+  <li><a href="#system-setup" id="toc-system-setup" class="nav-link active" data-scroll-target="#system-setup">System setup</a>
   <ul class="collapse">
-  <li><a href="#secure-shell" id="toc-secure-shell" class="nav-link" data-scroll-target="#secure-shell">Secure Shell</a></li>
-  <li><a href="#jupyter-server" id="toc-jupyter-server" class="nav-link" data-scroll-target="#jupyter-server">Jupyter Server</a></li>
-  <li><a href="#rstudio-server" id="toc-rstudio-server" class="nav-link" data-scroll-target="#rstudio-server">RStudio Server</a></li>
+  <li><a href="#version-labels" id="toc-version-labels" class="nav-link" data-scroll-target="#version-labels">Version labels</a></li>
   </ul></li>
-  <li><a href="#amazon-route-53" id="toc-amazon-route-53" class="nav-link" data-scroll-target="#amazon-route-53">Amazon Route 53</a></li>
+  <li><a href="#pypi" id="toc-pypi" class="nav-link" data-scroll-target="#pypi">PyPI</a></li>
   </ul>
 </nav>
     </div>
@@ -161,137 +158,56 @@ ul.task-list li input[type="checkbox"] {
 
 
 
-<section id="amazon-elastic-compute-cloud-ec2" class="level1">
-<h1>Amazon Elastic Compute Cloud (EC2)</h1>
-<section id="secure-shell" class="level2">
-<h2 class="anchored" data-anchor-id="secure-shell">Secure Shell</h2>
-<p><code>EC2 &gt; Network &amp; Security &gt; Key Pairs &gt; Create Key Pair &gt; *.pem</code></p>
-<p><code>PuTTYgen &gt; Load an existing private key file &gt; Save private key &gt; *.ppk</code></p>
-<p>Host Name: <code>ec2-user\@ec2-1-23-456-789.us-east-2.compute.amazonaws.com</code></p>
-<p><code>Connection &gt; SSH &gt; Auth &amp; WinSCP &gt; Auth &gt; Private key file for authentication</code></p>
-<pre><code>sudo yum update</code></pre>
-</section>
-<section id="jupyter-server" class="level2">
-<h2 class="anchored" data-anchor-id="jupyter-server">Jupyter Server</h2>
-<p>Install <code>Amazon Linux 2</code></p>
-<pre><code>wget https://repo.anaconda.com/archive/Anaconda3-2023.03-Linux-x86_64.sh
-
-bash Anaconda3-2023.03-Linux-x86_64.sh</code></pre>
-<p>Then close and re-open current shell</p>
-<ul>
-<li><p><a href="https://pypi.org/project/ipython/#history" class="uri">https://pypi.org/project/ipython/#history</a></p></li>
-<li><p><a href="https://stackoverflow.com/a/76521018" class="uri">https://stackoverflow.com/a/76521018</a></p></li>
-<li><p><a href="https://stackoverflow.com/a/77117477" class="uri">https://stackoverflow.com/a/77117477</a></p></li>
-</ul>
-<pre><code>pip install 'ipython==7.34.0' --force-reinstall
-ipython
-from IPython.lib import passwd
-passwd("12345")
-# sha1:asdfasdf:asfasdfasdf
-exit()</code></pre>
-<pre><code>jupyter notebook --generate-config 
-vi ~/.jupyter/jupyter_notebook_config.py
-
-# [i]
-c = get_config()  # Get the config object.
-# c.NotebookApp.certfile = u'/home/ubuntu/ssl/cert.pem' # path to the certificate we generated
-# c.NotebookApp.keyfile = u'/home/ubuntu/ssl/cert.key' # path to the certificate key we generated
-c.NotebookApp.ip = '0.0.0.0' # serve notebooks locally
-c.NotebookApp.open_browser = False # do not open a browser window by default when using notebooks.
-c.NotebookApp.password = 'sha1:asdfasdf:asfasdfasdf'
-# [ESC][:wq][ENTER]</code></pre>
-<pre><code># nohup jupyter notebook
-nohup jupyter lab</code></pre>
-<p>Then close and re-open current shell</p>
-<pre><code>jupyter nbconvert --to python &lt;notebook&gt;.ipynb
-sudo service crond start
-crontab -e
-# [i]
-# https://crontab.guru/
-# * * * * * /home/ec2-user/anaconda3/bin/python /home/ec2-user/&lt;notebook&gt;.py
-# [ESC][:wq][ENTER]</code></pre>
-<ul>
-<li><a href="http://1.23.456.789:8888" class="uri">http://1.23.456.789:8888</a></li>
-</ul>
-</section>
-<section id="rstudio-server" class="level2">
-<h2 class="anchored" data-anchor-id="rstudio-server">RStudio Server</h2>
-<ul>
-<li><a href="https://aws.amazon.com/blogs/big-data/running-r-on-aws/" class="uri">https://aws.amazon.com/blogs/big-data/running-r-on-aws/</a></li>
-</ul>
-<p>Install <code>R</code></p>
-<pre><code>sudo su
-# yum install -y R # Amazon Linux
-# amazon-linux-extras list
-sudo amazon-linux-extras install R3.4 # Amazon Linux 2</code></pre>
-<p>Install <code>RStudio Server</code></p>
-<ul>
-<li><a href="https://posit.co/download/rstudio-server/" class="uri">https://posit.co/download/rstudio-server/</a></li>
-</ul>
-<pre><code>wget https://download2.rstudio.org/server/centos6/x86_64/rstudio-server-rhel-1.2.5019-x86_64.rpm
-yum install rstudio-server-rhel-1.2.5019-x86_64.rpm
-rm rstudio-server-rhel-1.2.5019-x86_64.rpm</code></pre>
-<p>Install <code>Shiny Server</code></p>
-<ul>
-<li><a href="https://posit.co/download/shiny-server/" class="uri">https://posit.co/download/shiny-server/</a></li>
-</ul>
-<pre><code>R -e "install.packages('shiny', repos = 'http://cran.rstudio.com/')"
-wget https://download3.rstudio.org/centos6.3/x86_64/shiny-server-1.5.12.933-x86_64.rpm
-yum install --nogpgcheck shiny-server-1.5.12.933-x86_64.rpm
-rm shiny-server-1.5.12.933-x86_64.rpm</code></pre>
-<p>Add user(s)</p>
-<pre><code>useradd -m jjf234
-sudo passwd jjf234 # prompt to enter password</code></pre>
-<p>Need to create <code>/ShinyApps</code> under <code>/ec2-user</code> and then subfolders with code, e.g.&nbsp;<code>/home/ec2-user/ShinyApps/hello</code></p>
-<pre><code># sudo /opt/shiny-server/bin/deploy-example user-dirs
-# mkdir ~/ShinyApps
-# sudo cp -R /opt/shiny-server/samples/sample-apps/hello ~/ShinyApps</code></pre>
-<p>Install <code>devtools</code></p>
-<pre><code>sudo yum install libcurl-devel
-sudo yum install openssl-devel
-sudo yum install libxml2-devel
-R -e "install.packages('devtools', repos = 'http://cran.rstudio.com/')"</code></pre>
-<p>Install <code>RcppParallel</code></p>
-<pre><code>R -e "install.packages('RcppParallel', repos = 'http://cran.rstudio.com/')"</code></pre>
-<p>Install <code>RcppArmadillo</code></p>
-<pre><code>R -e "install.packages('RcppArmadillo', repos = 'http://cran.rstudio.com/')"</code></pre>
-<p>Install other packages</p>
-<pre><code>R -e "install.packages(c('data.table', 'xts', 'testthat', 'microbenchmark'),
-repos = 'http://cran.rstudio.com/')"</code></pre>
-<p>Install <code>roll</code></p>
-<pre><code>R -e "devtools::install_github('jjf234/roll')"</code></pre>
-<ul>
-<li><a href="http://1.23.456.789:8787/" class="uri">http://1.23.456.789:8787/</a></li>
-<li><a href="http://1.23.456.789:3838/ec2-user/hello/" class="uri">http://1.23.456.789:3838/ec2-user/hello/</a></li>
-</ul>
+<section id="system-setup" class="level1">
+<h1>System setup</h1>
+<p><code>C:\Users\username\AppData\Local\Programs\Python\Python123\Lib\site-packages</code></p>
+<section id="version-labels" class="level2">
+<h2 class="anchored" data-anchor-id="version-labels">Version labels</h2>
+<table class="table">
+<thead>
+<tr class="header">
+<th>Version</th>
+<th>Interpreted as</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>0.1.0a1</td>
+<td>Alpha 1</td>
+</tr>
+<tr class="even">
+<td>0.1.0b1</td>
+<td>Beta 1</td>
+</tr>
+<tr class="odd">
+<td>0.1.0rc1</td>
+<td>Release Candidate 1</td>
+</tr>
+<tr class="even">
+<td>0.1.0</td>
+<td>Final release</td>
+</tr>
+</tbody>
+</table>
 </section>
 </section>
-<section id="amazon-route-53" class="level1">
-<h1>Amazon Route 53</h1>
+<section id="pypi" class="level1">
+<h1>PyPI</h1>
 <ul>
-<li><a href="https://www.clickittech.com/aws/migrate-godaddy-to-aws-route53/" class="uri">https://www.clickittech.com/aws/migrate-godaddy-to-aws-route53/</a></li>
-<li><a href="https://blog.shikisoft.com/transferring-domain-registrations-from-godaddy-to-amazon-route-53/" class="uri">https://blog.shikisoft.com/transferring-domain-registrations-from-godaddy-to-amazon-route-53/</a></li>
+<li><a href="https://pypi.org/search/" class="uri">https://pypi.org/search/</a></li>
+<li><a href="https://pypi.org/classifiers/" class="uri">https://pypi.org/classifiers/</a></li>
+<li><a href="https://packaging.python.org/en/latest/tutorials/packaging-projects/" class="uri">https://packaging.python.org/en/latest/tutorials/packaging-projects/</a></li>
 </ul>
-<p>Use Amazon Route 53 as the DNS service provider:</p>
-<ul>
-<li>Click <code>Create Hosted Zone</code> in AWS</li>
-<li>Click <code>Create Record Set</code> in AWS: copy existing records from GoDaddy to AWS</li>
-<li>Change nameserver types in GoDaddy</li>
-</ul>
-<p>Transfer registration for a domain to Amazon Route 53:</p>
-<ul>
-<li>Remove privacy and turn off <code>Domain Lock</code> in GoDaddy</li>
-<li>Wait until email is received that the domain status changed</li>
-<li>Get authorization code from GoDaddy</li>
-<li>Go to <code>Domains &gt; Registered domains &gt; Transfer Domain</code> in AWS</li>
-<li>Type the authorization codes and nameserver options</li>
-<li>Select <code>Import name servers from a Route 53 hosted zone that has the same name as the domain</code></li>
-<li><code>Monitor Domains &gt; Pending requests: 'Domain transfer in progress'</code></li>
-<li>Wait until email is received to authorize the transfer or status is changed</li>
-<li><code>Domain transfer in progress: Waiting for the current registrar to approve the transfer. This can take up to 10 days depending on the TLD and the current registrar</code></li>
-<li>Go to <code>My Domains &gt; Pending transfer out &gt; View details</code> in GoDaddy</li>
-<li>Click <code>Accept or decline &gt; Accept transfer</code></li>
-</ul>
+<p>Build the package:</p>
+<pre><code>cd path/to/mypackage/
+python -m build</code></pre>
+<p>Upload to TestPyPI: <a href="https://test.pypi.org/project/mypackage/1.2.3/" class="uri">https://test.pypi.org/project/mypackage/1.2.3/</a></p>
+<pre><code>pip install --upgrade twine
+twine upload --repository testpypi dist/*</code></pre>
+<p>Then install from TestPyPI:</p>
+<pre><code>pip install -i https://test.pypi.org/simple/ mypackage</code></pre>
+<p>Upload to PyPI:</p>
+<pre><code>twine upload dist/*</code></pre>
 
 
 </section>
