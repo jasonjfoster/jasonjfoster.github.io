@@ -46,26 +46,32 @@ tickers <- sorted_df[!duplicated(sorted_df[["netAssets.raw"]]), "symbol"]
 
 # Optimization
 
+```{r}
+# install.packages("devtools")
+# devtools::install_github("jasonjfoster/rolloptim")
+```
+
 ```{r, message = FALSE}
-library(CVXR)
+# library(CVXR)
+library(rolloptim)
 ```
 
 ```{r}
-min_rss_optim <- function(x, y) {
-    
-    params <- Variable(ncol(x))
-    
-    obj <- Minimize(sum_squares(y - x %*% params))
-    
-    cons <- list(sum(params) == 1, params >= 0, params <= 1)
-    
-    prob <- Problem(obj, cons)
-        
-    result <- solve(prob)$getValue(params)
-    
-    return(result)
-
-}
+# min_rss_optim <- function(x, y) {
+#     
+#     params <- Variable(ncol(x))
+#     
+#     obj <- Minimize(sum_squares(y - x %*% params))
+#     
+#     cons <- list(sum(params) == 1, params >= 0, params <= 1)
+#     
+#     prob <- Problem(obj, cons)
+#         
+#     result <- solve(prob)$getValue(params)
+#     
+#     return(result)
+# 
+# }
 ```
 
 ```{r, echo = FALSE, message = FALSE, warning = FALSE}
@@ -119,7 +125,13 @@ for (i in n_rows) {
         
         if ((nrow(x_complete) > 0) && (length(y_complete) > 0)) {
             
-            params <- t(min_rss_optim(x_complete, y_complete))
+            # params <- t(min_rss_optim(x_complete, y_complete))
+            # params_ls <- append(params_ls, list(params))
+          
+            xx <- roll_crossprod(x_complete, x_complete, width = nrow(x_complete))
+            xy <- roll_crossprod(x_complete, y_complete, width = nrow(x_complete))
+            
+            params <- roll_min_rss(xx, xy, total = 1, lower = 0, upper = 1)[nrow(x_complete), ]
             params_ls <- append(params_ls, list(params))
             
             tickers_ls <- append(tickers_ls, list(j))
