@@ -1,0 +1,13 @@
+```{r}
+lower_var <- LPM(degree = 2, target = mean(sp500_xts), sp500_xts)
+upper_var <- UPM(degree = 2, target = mean(sp500_xts), sp500_xts)
+```
+
+```{r}
+var(sp500_xts)
+```
+
+```{r}
+n <- length(sp500_xts)
+(lower_var + upper_var) * (n / (n - 1))
+```

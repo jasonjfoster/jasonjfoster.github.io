@@ -1,0 +1,234 @@
+---
+title: "Nonlinear Nonparametric Statistics"
+author: "[Jason Foster](mailto:jason.j.foster@gmail.com)"
+date: last-modified
+categories:
+  - analysis
+  - finance
+  - r
+draft: true
+editor: 
+  mode: source
+---
+
+```{r}
+factors_r <- c("SP500", "DTWEXAFEGS") # "SP500" does not contain dividends; note: "DTWEXM" discontinued as of Jan 2020
+factors_d <- c("DGS10", "BAMLH0A0HYM2")
+```
+
+```{r, echo = FALSE, output = FALSE}
+# source("../helper-levels.R")
+library(quantmod)
+options("getSymbols.warning4.0" = FALSE)
+
+factors <- c(factors_r, factors_d)
+
+getSymbols(factors, src = "FRED")
+levels_xts <- do.call(merge, c(lapply(factors, function(i) get(i)), all = TRUE))
+
+returns_xts <- do.call(merge, lapply(factors, function(i) {
+  if (i %in% factors_r) {
+    diff(log((levels_xts[ , i]))) # price
+  } else if (i %in% factors_d) {
+    # -diff(levels_xts[ , i]) / 100 # price
+    diff(levels_xts[ , i]) / 100 # yield
+  }    
+}))
+```
+
+```{r, echo = FALSE}
+returns_xts <- na.omit(returns_xts)
+```
+
+```{r, echo = FALSE}
+# align factors such that "up is good and down is bad"
+returns_z <- returns_xts
+returns_z[ , c("DTWEXAFEGS", "BAMLH0A0HYM2")] <- -returns_z[ , c("DTWEXAFEGS", "BAMLH0A0HYM2")]
+```
+
+# Partial moments
+
+```{r}
+library(NNS)
+```
+
+## Multivariate
+
+-   <https://cran.r-project.org/web/packages/NNS/vignettes/NNSvignette_Partial_Moments.html>
+
+```{r}
+sigma <- cov(returns_z)
+```
+
+```{r}
+pm <- PM.matrix(LPM_degree = 1, UPM_degree = 1, target = "mean",
+                variable = returns_z, pop_adj = TRUE)
+```
+
+```{r}
+all.equal(sigma, pm$cov.matrix)
+```
+
+```{r}
+cl_pm <- pm$clpm
+cu_pm <- pm$cupm
+dl_pm <- pm$dlpm
+du_pm <- pm$dupm
+```
+
+```{r}
+all.equal(sigma, (cl_pm + cu_pm) - (dl_pm + du_pm))
+```
+
+### Stress P&L
+
+```{r}
+factor <- "SP500"
+```
+
+```{r}
+c_cov <- cl_pm + cu_pm
+d_cov <- dl_pm + du_pm
+```
+
+```{r}
+factor_var <- sigma[factor, factor]
+x_factors <- factors[factors != factor]
+```
+
+```{r}
+beta <- sigma[factor, x_factors] / factor_var
+c_beta <- c_cov[factor, x_factors] / factor_var
+d_beta <- d_cov[factor, x_factors] / factor_var
+```
+
+```{r}
+all.equal(beta, c_beta - d_beta)
+```
+
+```{r}
+pm_beta <- (c_cov - d_cov)[factor, x_factors] / (c_cov - d_cov)[factor, factor]
+all.equal(beta, pm_beta)
+```
+
+```{r}
+shock <- -0.1
+implied_shocks <- beta * shock
+implied_shocks_c <- c_beta * shock
+implied_shocks_d <- d_beta * shock
+```
+
+```{r}
+all.equal(implied_shocks, implied_shocks_c - implied_shocks_d)
+```
+
+```{r}
+all.equal(implied_shocks, pm_beta * shock)
+```
+
+```{r}
+# data: returns_xts
+# positive correlation: implied_shocks_c
+# negative correlation: implied_shocks_d (note: negative sign)
+
+# # price
+# implied_shocks_pm <- c(
+#   -implied_shocks_d["DTWEXAFEGS"],
+#   -implied_shocks_d["DGS10"],
+#   implied_shocks_c["BAMLH0A0HYM2"]
+# )
+
+# # price and yield
+# implied_shocks_pm <- c(
+#   -implied_shocks_d["DTWEXAFEGS"],
+#   implied_shocks_c["DGS10"],
+#   -implied_shocks_d["BAMLH0A0HYM2"]
+# )
+```
+
+```{r}
+# data: returns_z
+# price and yield
+implied_shocks <- c(
+  -implied_shocks["DTWEXAFEGS"],
+  implied_shocks["DGS10"],
+  -implied_shocks["BAMLH0A0HYM2"]
+)
+
+# price and yield
+implied_shocks_pm <- c(
+  -implied_shocks_c["DTWEXAFEGS"],
+  implied_shocks_c["DGS10"],
+  -implied_shocks_c["BAMLH0A0HYM2"]
+)
+```
+
+```{r}
+round(data.frame(
+  implied_shocks = implied_shocks,
+  implied_shocks_pm = implied_shocks_pm
+) * 100, 2)
+```
+
+## Bootstrap
+
+- <https://github.com/OVVO-Financial/Finance/blob/main/stress_test.md>
+- <https://cran.r-project.org/web/packages/NNS/vignettes/NNSvignette_Sampling.html>
+
+```{r}
+target <- 0
+n_samples <- 1e6
+```
+
+```{r}
+# idx <- which(returns_z[ , factor] < target)
+# idx <- which(rowSums(returns_z < target) >= floor(length(factors) * 0.75))
+idx <- which(rowSums(returns_z < target) == length(factors))
+```
+
+```{r}
+returns_x <- apply(returns_z[idx, x_factors], 2, function(x) {
+  result <- NNS.meboot(as.vector(x),
+                       reps = ceiling(n_samples / length(idx)),
+                       rho = 1,
+                       type = "pearson")["replicates", ]$replicates
+  tail(as.vector(result), n_samples)
+})
+```
+
+## Cross-validation
+
+- <https://cran.r-project.org/web/packages/NNS/vignettes/NNSvignette_Clustering_and_Regression.html>
+
+```{r, output = FALSE}
+returns_y <- NNS.stack(
+  IVs.train = returns_z[idx, x_factors],
+  DV.train = returns_z[idx, factor],
+  IVs.test = returns_x,
+  method = 1
+)$stack
+```
+
+```{r}
+returns_y <- data.frame(returns_y)
+colnames(returns_y) <- factor
+```
+
+```{r}
+# revert factors to original direction
+returns_x[ , c("DTWEXAFEGS", "BAMLH0A0HYM2")] <- -returns_x[ , c("DTWEXAFEGS", "BAMLH0A0HYM2")]
+```
+
+```{r}
+sigma_clpm <- cov(cbind(returns_y, returns_x))
+beta_clpm <- sigma_clpm[factor, x_factors] / as.vector(var(returns_y))
+implied_shocks_clpm <- beta_clpm * shock
+```
+
+```{r}
+round(data.frame(
+  implied_shocks = implied_shocks,
+  implied_shocks_pm = implied_shocks_pm,
+  implied_shocks_clpm = implied_shocks_clpm
+) * 100, 2)
+```
