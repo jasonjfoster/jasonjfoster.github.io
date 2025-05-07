@@ -11,3 +11,40 @@ var(sp500_xts)
 n <- length(sp500_xts)
 (lower_var + upper_var) * (n / (n - 1))
 ```
+
+```{r}
+# data: returns_xts
+# positive correlation: implied_shocks_c
+# negative correlation: implied_shocks_d (note: negative sign)
+
+# # price
+# implied_shocks_pm <- c(
+#   -implied_shocks_d["DTWEXAFEGS"],
+#   -implied_shocks_d["DGS10"],
+#   implied_shocks_c["BAMLH0A0HYM2"]
+# )
+
+# # price and yield
+# implied_shocks_pm <- c(
+#   -implied_shocks_d["DTWEXAFEGS"],
+#   implied_shocks_c["DGS10"],
+#   -implied_shocks_d["BAMLH0A0HYM2"]
+# )
+```
+
+```{r}
+# data: returns_z
+# price and yield
+implied_shocks <- c(
+  -implied_shocks["DTWEXAFEGS"],
+  implied_shocks["DGS10"],
+  -implied_shocks["BAMLH0A0HYM2"]
+)
+
+# price and yield
+implied_shocks_pm <- c(
+  -implied_shocks_c["DTWEXAFEGS"],
+  implied_shocks_c["DGS10"],
+  -implied_shocks_c["BAMLH0A0HYM2"]
+)
+```
