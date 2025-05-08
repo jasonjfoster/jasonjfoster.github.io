@@ -30,20 +30,15 @@ returns_xts <- do.call(merge, lapply(factors, function(i) {
   if (i %in% factors_r) {
     diff(log((levels_xts[ , i]))) # price
   } else if (i %in% factors_d) {
-    diff(levels_xts[ , i]) / 100 # yield
+    -diff(levels_xts[ , i]) / 100 # price
   }    
 }))
+
+risk_sign <- c(SP500 = 1, DTWEXAFEGS = 1, DGS10 = -1, BAMLH0A0HYM2 = -1)
 ```
 
 ```{r, echo = FALSE}
 returns_xts <- na.omit(returns_xts)
-```
-
-```{r, echo = FALSE}
-# align factors such that "up is good and down is bad"
-risk_sign <- c(SP500 = 1, DTWEXAFEGS = -1, DGS10 = 1, BAMLH0A0HYM2 = -1)
-returns_z <- returns_xts %*% diag(risk_sign)
-colnames(returns_z) <- factors
 ```
 
 # Partial moments
@@ -57,12 +52,12 @@ library(NNS)
 -   <https://cran.r-project.org/web/packages/NNS/vignettes/NNSvignette_Partial_Moments.html>
 
 ```{r}
-sigma <- cov(returns_z)
+sigma <- cov(returns_xts)
 ```
 
 ```{r}
 pm <- PM.matrix(LPM_degree = 1, UPM_degree = 1, target = "mean",
-                variable = returns_z, pop_adj = TRUE)
+                variable = returns_xts, pop_adj = TRUE)
 ```
 
 ```{r}
@@ -80,66 +75,40 @@ du_pm <- pm$dupm
 all.equal(sigma, (cl_pm + cu_pm) - (dl_pm + du_pm))
 ```
 
-### Stress P&L
-
-```{r}
-factor <- "SP500"
-```
-
-```{r}
-c_cov <- cl_pm + cu_pm
-d_cov <- dl_pm + du_pm
-```
-
-```{r}
-factor_var <- sigma[factor, factor]
-x_factors <- factors[factors != factor]
-```
-
-```{r}
-beta <- sigma[factor, x_factors] / factor_var
-c_beta <- c_cov[factor, x_factors] / factor_var
-d_beta <- d_cov[factor, x_factors] / factor_var
-```
-
-```{r}
-all.equal(beta, c_beta - d_beta)
-```
-
-```{r}
-pm_beta <- (c_cov - d_cov)[factor, x_factors] / (c_cov - d_cov)[factor, factor]
-all.equal(beta, pm_beta)
-```
+## Stress P&L
 
 ```{r}
 shock <- -0.1
-implied_shocks <- beta * shock
-implied_shocks_c <- c_beta * shock
-implied_shocks_d <- d_beta * shock
+comp <- 1
+```
+
+### Eigenanalysis
+
+```{r}
+LV <- eigen(cov(returns_xts))
+L <- LV[["values"]]
+V <- LV[["vectors"]]
+scale <- shock / (sqrt(L[comp]) * V[ , comp])[1]
+implied_shocks <- scale * (sqrt(L[comp]) * V[ , comp]) * risk_sign
 ```
 
 ```{r}
-all.equal(implied_shocks, implied_shocks_c - implied_shocks_d)
-```
-
-```{r}
-all.equal(implied_shocks, pm_beta * shock)
-```
-
-```{r}
-implied_shocks <- implied_shocks * risk_sign[x_factors]
-implied_shocks_pm <- implied_shocks_c * risk_sign[x_factors]
+LV <- eigen(cov(cl_pm - (dl_pm + du_pm)))
+L <- LV[["values"]]
+V <- LV[["vectors"]]
+scale <- -0.1 / (sqrt(L[comp]) * V[ , comp])[1]
+implied_shocks_pm <- scale * (sqrt(L[comp]) * V[ , comp]) * risk_sign
 ```
 
 ```{r}
 round(data.frame(
   implied_shocks = implied_shocks,
   implied_shocks_pm = implied_shocks_pm,
-  row.names = c("USD", "US10Y", "USHY")
+  row.names = c("SP500", "USD", "US10Y", "USHY")
 ) * 100, 2)
 ```
 
-## Bootstrap
+### Bootstrap
 
 - <https://github.com/OVVO-Financial/Finance/blob/main/stress_test.md>
 - <https://cran.r-project.org/web/packages/NNS/vignettes/NNSvignette_Sampling.html>
@@ -150,13 +119,11 @@ n_samples <- 1e6
 ```
 
 ```{r}
-# idx <- which(returns_z[ , factor] < target)
-# idx <- which(rowSums(returns_z < target) >= floor(length(factors) * 0.75))
-idx <- which(rowSums(returns_z < target) == length(factors))
+idx <- which(rowSums(returns_xts > target) != length(factors)) # exclude cupm quadrant
 ```
 
 ```{r}
-returns_x <- apply(returns_z[idx, x_factors], 2, function(x) {
+returns_bs <- apply(returns_xts[idx, ], 2, function(x) {
   result <- NNS.meboot(as.vector(x),
                        reps = ceiling(n_samples / length(idx)),
                        rho = 1,
@@ -165,41 +132,32 @@ returns_x <- apply(returns_z[idx, x_factors], 2, function(x) {
 })
 ```
 
-## Cross-validation
-
-- <https://cran.r-project.org/web/packages/NNS/vignettes/NNSvignette_Clustering_and_Regression.html>
-
-```{r, output = FALSE}
-returns_y <- NNS.stack(
-  IVs.train = returns_z[idx, x_factors],
-  DV.train = returns_z[idx, factor],
-  IVs.test = returns_x,
-  method = 1
-)$stack
+```{r}
+pm <- PM.matrix(LPM_degree = 1, UPM_degree = 1, target = "mean",
+                variable = returns_bs, pop_adj = TRUE)
 ```
 
 ```{r}
-returns_y <- data.frame(returns_y)
-colnames(returns_y) <- factor
+cl_pm <- pm$clpm
+cu_pm <- pm$cupm
+dl_pm <- pm$dlpm
+du_pm <- pm$dupm
 ```
 
 ```{r}
-# revert factors to original direction
-returns_x <- returns_x %*% diag(risk_sign[x_factors])
-colnames(returns_x) <- x_factors
-```
-
-```{r}
-sigma_clpm <- cov(cbind(returns_y, returns_x))
-beta_clpm <- sigma_clpm[factor, x_factors] / as.vector(var(returns_y))
-implied_shocks_clpm <- beta_clpm * shock
+# LV <- eigen(cov(returns_bs))
+LV <- eigen(cov(cl_pm - (dl_pm + du_pm)))
+L <- LV[["values"]]
+V <- LV[["vectors"]]
+scale <- shock / (sqrt(L[comp]) * V[ , comp])[1]
+implied_shocks_bs <- scale * (sqrt(L[comp]) * V[ , comp]) * risk_sign
 ```
 
 ```{r}
 round(data.frame(
   implied_shocks = implied_shocks,
   implied_shocks_pm = implied_shocks_pm,
-  implied_shocks_clpm = implied_shocks_clpm,
-  row.names = c("USD", "US10Y", "USHY")
+  implied_shocks_bs = implied_shocks_bs,
+  row.names = c("SP500", "USD", "US10Y", "USHY")
 ) * 100, 2)
 ```
