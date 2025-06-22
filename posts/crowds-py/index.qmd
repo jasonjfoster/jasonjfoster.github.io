@@ -84,7 +84,7 @@ overlap_y_df = overlap_df[tickers]
 
 ```{python}
 def pnl(x):
-    return np.nanprod(1 + x) - 1
+  return np.nanprod(1 + x) - 1
 ```
 
 ```{python}
@@ -185,5 +185,10 @@ for i in range(n_rows):
 ```
 
 ```{python}
-pd.concat(score_ls, ignore_index = True)
+score_df = pd.concat(score_ls, ignore_index = True)
+print(score_df)
+```
+
+```{python}
+# score_df.to_json("score_df.json", date_format = "iso")
 ```

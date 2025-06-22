@@ -216,9 +216,13 @@ for (i in 1:n_rows) {
 ```
 
 ```{r}
-do.call(rbind, score_ls)
-# score_xts <- do.call(rbind, score_ls)
-# score_xts <- xts(score_xts[score_xts[["quantile"]] == "Q1", "weight"],
-#                  score_xts[score_xts[["quantile"]] == "Q1", "date"])
+score_df <- do.call(rbind, score_ls)
+print(score_df)
+```
+
+```{r}
+# save(score_df, file = "score_df.rda")
+# score_xts <- xts(score_df[score_df[["quantile"]] == "Q1", "weight"],
+#                  score_df[score_df[["quantile"]] == "Q1", "date"])
 # plot(score_xts)
 ```

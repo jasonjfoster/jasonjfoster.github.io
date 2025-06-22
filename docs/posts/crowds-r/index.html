@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Jason Foster">
-<meta name="dcterms.date" content="2025-04-19">
+<meta name="dcterms.date" content="2025-06-22">
 
 <title>jasonjfoster.github.io - Crowds</title>
 <style>
@@ -162,7 +162,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <div>
       <div class="quarto-title-meta-heading">Published</div>
       <div class="quarto-title-meta-contents">
-        <p class="date">April 19, 2025</p>
+        <p class="date">June 22, 2025</p>
       </div>
     </div>
     
@@ -356,18 +356,21 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb14-28"><a href="#cb14-28" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">do.call</span>(rbind, score_ls)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>score_df <span class="ot">&lt;-</span> <span class="fu">do.call</span>(rbind, score_ls)</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(score_df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>        date quantile    weight performance
-1 2025-06-06       Q1 0.6053592  0.06380898
-2 2025-06-06       Q2 0.5731654  0.03108312
-3 2025-06-06       Q3 0.4122381  0.01810975
-4 2025-06-06       Q4 0.3873679 -0.04148283
-5 2025-06-06  Overall 0.4945773  0.01771594</code></pre>
+1 2025-06-20       Q1 0.6543714  0.06632245
+2 2025-06-20       Q2 0.5843020  0.03661664
+3 2025-06-20       Q3 0.3607883  0.01539228
+4 2025-06-20       Q4 0.3273664 -0.02965303
+5 2025-06-20  Overall 0.4838387  0.02271468</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co"># score_xts &lt;- do.call(rbind, score_ls)</span></span>
-<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="co"># score_xts &lt;- xts(score_xts[score_xts[["quantile"]] == "Q1", "weight"],</span></span>
-<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a><span class="co">#                  score_xts[score_xts[["quantile"]] == "Q1", "date"])</span></span>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co"># save(score_df, file = "score_df.rda")</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="co"># score_xts &lt;- xts(score_df[score_df[["quantile"]] == "Q1", "weight"],</span></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a><span class="co">#                  score_df[score_df[["quantile"]] == "Q1", "date"])</span></span>
 <span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a><span class="co"># plot(score_xts)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 
