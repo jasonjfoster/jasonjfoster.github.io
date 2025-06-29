@@ -41,6 +41,25 @@ risk_sign <- c(SP500 = 1, DTWEXAFEGS = 1, DGS10 = -1, BAMLH0A0HYM2 = -1)
 returns_xts <- na.omit(returns_xts)
 ```
 
+# Implied shocks
+
+```{r}
+shock <- -0.1
+returns_z_xts <- returns_xts[ , "SP500"]
+```
+
+```{r}
+beta <- solve(crossprod(returns_z_xts, returns_z_xts)) %*% crossprod(returns_z_xts, returns_xts)
+implied_shocks <- shock %*% beta * risk_sign
+```
+
+```{r}
+round(data.frame(
+  implied_shocks = t(implied_shocks),
+  row.names = c("SP500", "USD", "US10Y", "USHY")
+) * 100, 2)
+```
+
 # Partial moments
 
 ```{r}
@@ -78,7 +97,6 @@ all.equal(sigma, (cl_pm + cu_pm) - (dl_pm + du_pm))
 ## Stress P&L
 
 ```{r}
-shock <- -0.1
 comp <- 1
 ```
 
@@ -89,7 +107,7 @@ LV <- eigen(cov(returns_xts))
 L <- LV[["values"]]
 V <- LV[["vectors"]]
 scale <- shock / (sqrt(L[comp]) * V[ , comp])[1]
-implied_shocks <- scale * (sqrt(L[comp]) * V[ , comp]) * risk_sign
+implied_shocks_pc <- scale * (sqrt(L[comp]) * V[ , comp]) * risk_sign
 ```
 
 ```{r}
@@ -102,7 +120,8 @@ implied_shocks_pm <- scale * (sqrt(L[comp]) * V[ , comp]) * risk_sign
 
 ```{r}
 round(data.frame(
-  implied_shocks = implied_shocks,
+  implied_shocks = t(implied_shocks),
+  implied_shocks_pc = implied_shocks_pc,
   implied_shocks_pm = implied_shocks_pm,
   row.names = c("SP500", "USD", "US10Y", "USHY")
 ) * 100, 2)
@@ -155,7 +174,8 @@ implied_shocks_bs <- scale * (sqrt(L[comp]) * V[ , comp]) * risk_sign
 
 ```{r}
 round(data.frame(
-  implied_shocks = implied_shocks,
+  implied_shocks = t(implied_shocks),
+  implied_shocks_pc = implied_shocks_pc,
   implied_shocks_pm = implied_shocks_pm,
   implied_shocks_bs = implied_shocks_bs,
   row.names = c("SP500", "USD", "US10Y", "USHY")

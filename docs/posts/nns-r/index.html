@@ -178,7 +178,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#partial-moments" id="toc-partial-moments" class="nav-link active" data-scroll-target="#partial-moments">Partial moments</a>
+  <li><a href="#implied-shocks" id="toc-implied-shocks" class="nav-link active" data-scroll-target="#implied-shocks">Implied shocks</a></li>
+  <li><a href="#partial-moments" id="toc-partial-moments" class="nav-link" data-scroll-target="#partial-moments">Partial moments</a>
   <ul class="collapse">
   <li><a href="#multivariate" id="toc-multivariate" class="nav-link" data-scroll-target="#multivariate">Multivariate</a></li>
   <li><a href="#stress-pl" id="toc-stress-pl" class="nav-link" data-scroll-target="#stress-pl">Stress P&amp;L</a>
@@ -201,10 +202,34 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>factors_r <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"SP500"</span>, <span class="st">"DTWEXAFEGS"</span>) <span class="co"># "SP500" does not contain dividends; note: "DTWEXM" discontinued as of Jan 2020</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>factors_d <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"DGS10"</span>, <span class="st">"BAMLH0A0HYM2"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
+<section id="implied-shocks" class="level1">
+<h1>Implied shocks</h1>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>shock <span class="ot">&lt;-</span> <span class="sc">-</span><span class="fl">0.1</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>returns_z_xts <span class="ot">&lt;-</span> returns_xts[ , <span class="st">"SP500"</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>beta <span class="ot">&lt;-</span> <span class="fu">solve</span>(<span class="fu">crossprod</span>(returns_z_xts, returns_z_xts)) <span class="sc">%*%</span> <span class="fu">crossprod</span>(returns_z_xts, returns_xts)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>implied_shocks <span class="ot">&lt;-</span> shock <span class="sc">%*%</span> beta <span class="sc">*</span> risk_sign</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">round</span>(<span class="fu">data.frame</span>(</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">implied_shocks =</span> <span class="fu">t</span>(implied_shocks),</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">row.names =</span> <span class="fu">c</span>(<span class="st">"SP500"</span>, <span class="st">"USD"</span>, <span class="st">"US10Y"</span>, <span class="st">"USHY"</span>)</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>) <span class="sc">*</span> <span class="dv">100</span>, <span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>      implied_shocks
+SP500         -10.00
+USD             0.43
+US10Y          -0.08
+USHY            0.55</code></pre>
+</div>
+</div>
+</section>
 <section id="partial-moments" class="level1">
 <h1>Partial moments</h1>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(NNS)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(NNS)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <section id="multivariate" class="level2">
 <h2 class="anchored" data-anchor-id="multivariate">Multivariate</h2>
@@ -212,26 +237,26 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li><a href="https://cran.r-project.org/web/packages/NNS/vignettes/NNSvignette_Partial_Moments.html" class="uri">https://cran.r-project.org/web/packages/NNS/vignettes/NNSvignette_Partial_Moments.html</a></li>
 </ul>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>sigma <span class="ot">&lt;-</span> <span class="fu">cov</span>(returns_xts)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>sigma <span class="ot">&lt;-</span> <span class="fu">cov</span>(returns_xts)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>pm <span class="ot">&lt;-</span> <span class="fu">PM.matrix</span>(<span class="at">LPM_degree =</span> <span class="dv">1</span>, <span class="at">UPM_degree =</span> <span class="dv">1</span>, <span class="at">target =</span> <span class="st">"mean"</span>,</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>                <span class="at">variable =</span> returns_xts, <span class="at">pop_adj =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>pm <span class="ot">&lt;-</span> <span class="fu">PM.matrix</span>(<span class="at">LPM_degree =</span> <span class="dv">1</span>, <span class="at">UPM_degree =</span> <span class="dv">1</span>, <span class="at">target =</span> <span class="st">"mean"</span>,</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>                <span class="at">variable =</span> returns_xts, <span class="at">pop_adj =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">all.equal</span>(sigma, pm<span class="sc">$</span>cov.matrix)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">all.equal</span>(sigma, pm<span class="sc">$</span>cov.matrix)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] TRUE</code></pre>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>cl_pm <span class="ot">&lt;-</span> pm<span class="sc">$</span>clpm</span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>cu_pm <span class="ot">&lt;-</span> pm<span class="sc">$</span>cupm</span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>dl_pm <span class="ot">&lt;-</span> pm<span class="sc">$</span>dlpm</span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>du_pm <span class="ot">&lt;-</span> pm<span class="sc">$</span>dupm</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>cl_pm <span class="ot">&lt;-</span> pm<span class="sc">$</span>clpm</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>cu_pm <span class="ot">&lt;-</span> pm<span class="sc">$</span>cupm</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>dl_pm <span class="ot">&lt;-</span> pm<span class="sc">$</span>dlpm</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>du_pm <span class="ot">&lt;-</span> pm<span class="sc">$</span>dupm</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">all.equal</span>(sigma, (cl_pm <span class="sc">+</span> cu_pm) <span class="sc">-</span> (dl_pm <span class="sc">+</span> du_pm))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">all.equal</span>(sigma, (cl_pm <span class="sc">+</span> cu_pm) <span class="sc">-</span> (dl_pm <span class="sc">+</span> du_pm))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] TRUE</code></pre>
 </div>
@@ -240,37 +265,37 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="stress-pl" class="level2">
 <h2 class="anchored" data-anchor-id="stress-pl">Stress P&amp;L</h2>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>shock <span class="ot">&lt;-</span> <span class="sc">-</span><span class="fl">0.1</span></span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>comp <span class="ot">&lt;-</span> <span class="dv">1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>comp <span class="ot">&lt;-</span> <span class="dv">1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <section id="eigenanalysis" class="level3">
 <h3 class="anchored" data-anchor-id="eigenanalysis">Eigenanalysis</h3>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>LV <span class="ot">&lt;-</span> <span class="fu">eigen</span>(<span class="fu">cov</span>(returns_xts))</span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>L <span class="ot">&lt;-</span> LV[[<span class="st">"values"</span>]]</span>
-<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>V <span class="ot">&lt;-</span> LV[[<span class="st">"vectors"</span>]]</span>
-<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>scale <span class="ot">&lt;-</span> shock <span class="sc">/</span> (<span class="fu">sqrt</span>(L[comp]) <span class="sc">*</span> V[ , comp])[<span class="dv">1</span>]</span>
-<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>implied_shocks <span class="ot">&lt;-</span> scale <span class="sc">*</span> (<span class="fu">sqrt</span>(L[comp]) <span class="sc">*</span> V[ , comp]) <span class="sc">*</span> risk_sign</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>LV <span class="ot">&lt;-</span> <span class="fu">eigen</span>(<span class="fu">cov</span>(returns_xts))</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>L <span class="ot">&lt;-</span> LV[[<span class="st">"values"</span>]]</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>V <span class="ot">&lt;-</span> LV[[<span class="st">"vectors"</span>]]</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>scale <span class="ot">&lt;-</span> shock <span class="sc">/</span> (<span class="fu">sqrt</span>(L[comp]) <span class="sc">*</span> V[ , comp])[<span class="dv">1</span>]</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>implied_shocks_pc <span class="ot">&lt;-</span> scale <span class="sc">*</span> (<span class="fu">sqrt</span>(L[comp]) <span class="sc">*</span> V[ , comp]) <span class="sc">*</span> risk_sign</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>LV <span class="ot">&lt;-</span> <span class="fu">eigen</span>(<span class="fu">cov</span>(cl_pm <span class="sc">-</span> (dl_pm <span class="sc">+</span> du_pm)))</span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>L <span class="ot">&lt;-</span> LV[[<span class="st">"values"</span>]]</span>
-<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>V <span class="ot">&lt;-</span> LV[[<span class="st">"vectors"</span>]]</span>
-<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>scale <span class="ot">&lt;-</span> <span class="sc">-</span><span class="fl">0.1</span> <span class="sc">/</span> (<span class="fu">sqrt</span>(L[comp]) <span class="sc">*</span> V[ , comp])[<span class="dv">1</span>]</span>
-<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>implied_shocks_pm <span class="ot">&lt;-</span> scale <span class="sc">*</span> (<span class="fu">sqrt</span>(L[comp]) <span class="sc">*</span> V[ , comp]) <span class="sc">*</span> risk_sign</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>LV <span class="ot">&lt;-</span> <span class="fu">eigen</span>(<span class="fu">cov</span>(cl_pm <span class="sc">-</span> (dl_pm <span class="sc">+</span> du_pm)))</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>L <span class="ot">&lt;-</span> LV[[<span class="st">"values"</span>]]</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>V <span class="ot">&lt;-</span> LV[[<span class="st">"vectors"</span>]]</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>scale <span class="ot">&lt;-</span> <span class="sc">-</span><span class="fl">0.1</span> <span class="sc">/</span> (<span class="fu">sqrt</span>(L[comp]) <span class="sc">*</span> V[ , comp])[<span class="dv">1</span>]</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>implied_shocks_pm <span class="ot">&lt;-</span> scale <span class="sc">*</span> (<span class="fu">sqrt</span>(L[comp]) <span class="sc">*</span> V[ , comp]) <span class="sc">*</span> risk_sign</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">round</span>(<span class="fu">data.frame</span>(</span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">implied_shocks =</span> implied_shocks,</span>
-<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">implied_shocks_pm =</span> implied_shocks_pm,</span>
-<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">row.names =</span> <span class="fu">c</span>(<span class="st">"SP500"</span>, <span class="st">"USD"</span>, <span class="st">"US10Y"</span>, <span class="st">"USHY"</span>)</span>
-<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>) <span class="sc">*</span> <span class="dv">100</span>, <span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">round</span>(<span class="fu">data.frame</span>(</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">implied_shocks =</span> <span class="fu">t</span>(implied_shocks),</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">implied_shocks_pc =</span> implied_shocks_pc,</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">implied_shocks_pm =</span> implied_shocks_pm,</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">row.names =</span> <span class="fu">c</span>(<span class="st">"SP500"</span>, <span class="st">"USD"</span>, <span class="st">"US10Y"</span>, <span class="st">"USHY"</span>)</span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>) <span class="sc">*</span> <span class="dv">100</span>, <span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>      implied_shocks implied_shocks_pm
-SP500         -10.00            -10.00
-USD             0.51              1.78
-US10Y          -0.08             -0.17
-USHY            0.56              0.59</code></pre>
+<pre><code>      implied_shocks implied_shocks_pc implied_shocks_pm
+SP500         -10.00            -10.00            -10.00
+USD             0.43              0.48              1.76
+US10Y          -0.08             -0.08             -0.17
+USHY            0.55              0.56              0.58</code></pre>
 </div>
 </div>
 </section>
@@ -281,52 +306,53 @@ USHY            0.56              0.59</code></pre>
 <li><a href="https://cran.r-project.org/web/packages/NNS/vignettes/NNSvignette_Sampling.html" class="uri">https://cran.r-project.org/web/packages/NNS/vignettes/NNSvignette_Sampling.html</a></li>
 </ul>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>target <span class="ot">&lt;-</span> <span class="dv">0</span></span>
-<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>n_samples <span class="ot">&lt;-</span> <span class="fl">1e6</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>target <span class="ot">&lt;-</span> <span class="dv">0</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>n_samples <span class="ot">&lt;-</span> <span class="fl">1e6</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>idx <span class="ot">&lt;-</span> <span class="fu">which</span>(<span class="fu">rowSums</span>(returns_xts <span class="sc">&gt;</span> target) <span class="sc">!=</span> <span class="fu">length</span>(factors)) <span class="co"># exclude cupm quadrant</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>idx <span class="ot">&lt;-</span> <span class="fu">which</span>(<span class="fu">rowSums</span>(returns_xts <span class="sc">&gt;</span> target) <span class="sc">!=</span> <span class="fu">length</span>(factors)) <span class="co"># exclude cupm quadrant</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>returns_bs <span class="ot">&lt;-</span> <span class="fu">apply</span>(returns_xts[idx, ], <span class="dv">2</span>, <span class="cf">function</span>(x) {</span>
-<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>  result <span class="ot">&lt;-</span> <span class="fu">NNS.meboot</span>(<span class="fu">as.vector</span>(x),</span>
-<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>                       <span class="at">reps =</span> <span class="fu">ceiling</span>(n_samples <span class="sc">/</span> <span class="fu">length</span>(idx)),</span>
-<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>                       <span class="at">rho =</span> <span class="dv">1</span>,</span>
-<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>                       <span class="at">type =</span> <span class="st">"pearson"</span>)[<span class="st">"replicates"</span>, ]<span class="sc">$</span>replicates</span>
-<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tail</span>(<span class="fu">as.vector</span>(result), n_samples)</span>
-<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>returns_bs <span class="ot">&lt;-</span> <span class="fu">apply</span>(returns_xts[idx, ], <span class="dv">2</span>, <span class="cf">function</span>(x) {</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>  result <span class="ot">&lt;-</span> <span class="fu">NNS.meboot</span>(<span class="fu">as.vector</span>(x),</span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>                       <span class="at">reps =</span> <span class="fu">ceiling</span>(n_samples <span class="sc">/</span> <span class="fu">length</span>(idx)),</span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>                       <span class="at">rho =</span> <span class="dv">1</span>,</span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>                       <span class="at">type =</span> <span class="st">"pearson"</span>)[<span class="st">"replicates"</span>, ]<span class="sc">$</span>replicates</span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tail</span>(<span class="fu">as.vector</span>(result), n_samples)</span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>pm <span class="ot">&lt;-</span> <span class="fu">PM.matrix</span>(<span class="at">LPM_degree =</span> <span class="dv">1</span>, <span class="at">UPM_degree =</span> <span class="dv">1</span>, <span class="at">target =</span> <span class="st">"mean"</span>,</span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>                <span class="at">variable =</span> returns_bs, <span class="at">pop_adj =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>pm <span class="ot">&lt;-</span> <span class="fu">PM.matrix</span>(<span class="at">LPM_degree =</span> <span class="dv">1</span>, <span class="at">UPM_degree =</span> <span class="dv">1</span>, <span class="at">target =</span> <span class="st">"mean"</span>,</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>                <span class="at">variable =</span> returns_bs, <span class="at">pop_adj =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>cl_pm <span class="ot">&lt;-</span> pm<span class="sc">$</span>clpm</span>
-<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>cu_pm <span class="ot">&lt;-</span> pm<span class="sc">$</span>cupm</span>
-<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>dl_pm <span class="ot">&lt;-</span> pm<span class="sc">$</span>dlpm</span>
-<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>du_pm <span class="ot">&lt;-</span> pm<span class="sc">$</span>dupm</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>cl_pm <span class="ot">&lt;-</span> pm<span class="sc">$</span>clpm</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>cu_pm <span class="ot">&lt;-</span> pm<span class="sc">$</span>cupm</span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>dl_pm <span class="ot">&lt;-</span> pm<span class="sc">$</span>dlpm</span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>du_pm <span class="ot">&lt;-</span> pm<span class="sc">$</span>dupm</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co"># LV &lt;- eigen(cov(returns_bs))</span></span>
-<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>LV <span class="ot">&lt;-</span> <span class="fu">eigen</span>(<span class="fu">cov</span>(cl_pm <span class="sc">-</span> (dl_pm <span class="sc">+</span> du_pm)))</span>
-<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>L <span class="ot">&lt;-</span> LV[[<span class="st">"values"</span>]]</span>
-<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>V <span class="ot">&lt;-</span> LV[[<span class="st">"vectors"</span>]]</span>
-<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>scale <span class="ot">&lt;-</span> shock <span class="sc">/</span> (<span class="fu">sqrt</span>(L[comp]) <span class="sc">*</span> V[ , comp])[<span class="dv">1</span>]</span>
-<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>implied_shocks_bs <span class="ot">&lt;-</span> scale <span class="sc">*</span> (<span class="fu">sqrt</span>(L[comp]) <span class="sc">*</span> V[ , comp]) <span class="sc">*</span> risk_sign</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="co"># LV &lt;- eigen(cov(returns_bs))</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>LV <span class="ot">&lt;-</span> <span class="fu">eigen</span>(<span class="fu">cov</span>(cl_pm <span class="sc">-</span> (dl_pm <span class="sc">+</span> du_pm)))</span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>L <span class="ot">&lt;-</span> LV[[<span class="st">"values"</span>]]</span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>V <span class="ot">&lt;-</span> LV[[<span class="st">"vectors"</span>]]</span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>scale <span class="ot">&lt;-</span> shock <span class="sc">/</span> (<span class="fu">sqrt</span>(L[comp]) <span class="sc">*</span> V[ , comp])[<span class="dv">1</span>]</span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>implied_shocks_bs <span class="ot">&lt;-</span> scale <span class="sc">*</span> (<span class="fu">sqrt</span>(L[comp]) <span class="sc">*</span> V[ , comp]) <span class="sc">*</span> risk_sign</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">round</span>(<span class="fu">data.frame</span>(</span>
-<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">implied_shocks =</span> implied_shocks,</span>
-<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">implied_shocks_pm =</span> implied_shocks_pm,</span>
-<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">implied_shocks_bs =</span> implied_shocks_bs,</span>
-<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">row.names =</span> <span class="fu">c</span>(<span class="st">"SP500"</span>, <span class="st">"USD"</span>, <span class="st">"US10Y"</span>, <span class="st">"USHY"</span>)</span>
-<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>) <span class="sc">*</span> <span class="dv">100</span>, <span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="fu">round</span>(<span class="fu">data.frame</span>(</span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">implied_shocks =</span> <span class="fu">t</span>(implied_shocks),</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">implied_shocks_pc =</span> implied_shocks_pc,</span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">implied_shocks_pm =</span> implied_shocks_pm,</span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">implied_shocks_bs =</span> implied_shocks_bs,</span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">row.names =</span> <span class="fu">c</span>(<span class="st">"SP500"</span>, <span class="st">"USD"</span>, <span class="st">"US10Y"</span>, <span class="st">"USHY"</span>)</span>
+<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a>) <span class="sc">*</span> <span class="dv">100</span>, <span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>      implied_shocks implied_shocks_pm implied_shocks_bs
-SP500         -10.00            -10.00            -10.00
-USD             0.51              1.78              1.85
-US10Y          -0.08             -0.17             -0.18
-USHY            0.56              0.59              0.57</code></pre>
+<pre><code>      implied_shocks implied_shocks_pc implied_shocks_pm implied_shocks_bs
+SP500         -10.00            -10.00            -10.00            -10.00
+USD             0.43              0.48              1.76              1.84
+US10Y          -0.08             -0.08             -0.17             -0.18
+USHY            0.55              0.56              0.58              0.57</code></pre>
 </div>
 </div>
 
