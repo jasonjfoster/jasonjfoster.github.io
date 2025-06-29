@@ -1,0 +1,158 @@
+---
+title: "Crowds"
+author: "[Jason Foster](mailto:jason.j.foster@gmail.com)"
+date: last-modified
+categories:
+  - analysis
+  - finance
+  - r
+draft: true
+editor: 
+  mode: source
+---
+
+# Preprocessing
+
+```{r, message = FALSE}
+library(zoo)
+load("../crowds-r/score_df.rda")
+```
+
+```{r}
+n_ahead <- 20 * 3
+width <- 20 * 3
+```
+
+```{r}
+cols <- c("date", "quantile")
+
+weight_df <- reshape(score_df[ , c(cols, "weight")], timevar = "quantile",
+                     idvar = "date", direction = "wide")
+
+performance_df <- reshape(score_df[ , c(cols, "performance")], timevar = "quantile",
+                          idvar = "date", direction = "wide")
+
+x_df <- merge(weight_df, performance_df, by = "date")
+```
+
+```{r}
+x_xts <- zoo(x_df[ , -1], x_df[ , 1])
+y_xts <- lag(x_xts[ , "weight.Q1"], k = n_ahead, na.pad = TRUE)
+train_xts <- merge(y_xts, x_xts)
+```
+
+# Normalization
+
+```{r}
+library(roll)
+```
+
+```{r}
+score_xts <- roll_scale(train_xts, nrow(train_xts), min_obs = 1)
+score_idx <- complete.cases(y_xts) & complete.cases(score_xts)
+cov_xts <- roll_cov(score_xts, width = nrow(score_xts), min_obs = 1)
+cov_idx <- apply(cov_xts, 3, function(i) all(!is.na(i)))
+```
+
+# Distance
+
+```{r}
+target <- coredata(tail(score_xts[ , -1], 1))
+train_idx <- score_idx & cov_idx
+score_xts <- score_xts[train_idx, -1]
+cov_xts <- cov_xts[-1, -1, train_idx]
+```
+
+```{r}
+n_rows <- nrow(score_xts)
+dist_ls <- list()
+
+for (i in 1:n_rows) {
+
+  x_i <- coredata(score_xts[i, ])
+  sigma <- cov_xts[, , i]
+
+  dist <- tryCatch({
+    sqrt((x_i - target) %*% solve(sigma) %*% t(x_i - target))
+  }, error = function(e) {
+    NA
+  })
+
+  dist_ls <- append(dist_ls, list(dist))
+
+}
+
+dist <- do.call(rbind, dist_ls)
+```
+
+```{r}
+dist_idx <- dist <= quantile(dist, 0.05, na.rm = TRUE)
+test_idx <- dist_idx
+x_test <- x_xts[train_idx][test_idx]
+```
+
+# Similarity
+
+```{r}
+n_rows <- nrow(x_test)
+sign_ls <- list()
+target <- coredata(tail(x_xts, 1))
+
+for (i in 1:n_rows) {
+  
+  x_i <- coredata(x_test[i, ])
+
+  sign <- tryCatch({
+    sum(sign(x_i) == sign(target), na.rm = TRUE)
+  }, error = function(e) {
+    NA
+  })
+
+  sign_ls <- append(sign_ls, list(sign))
+
+}
+
+sign <- do.call(rbind, sign_ls)
+```
+
+```{r}
+sign_idx <- sign == ncol(score_xts)
+```
+
+# Prediction
+
+```{r, message = FALSE}
+library(CVXR)
+```
+
+```{r}
+min_rss_optim <- function(x, y) {
+  
+    x <- as.matrix(x)
+    y <- as.numeric(y)
+
+    params <- Variable(ncol(x))
+
+    obj <- Minimize(sum_squares(y - x %*% params))
+
+    cons <- list(sum(params) == 1, params >= 0, params <= 1)
+
+    prob <- Problem(obj, cons)
+
+    result <- solve(prob)$getValue(params)
+
+    return(result)
+
+}
+```
+
+```{r}
+x_subset <- x_test[sign_idx]
+y_subset <- y_xts[train_idx][test_idx][sign_idx]
+```
+
+```{r}
+weights <- min_rss_optim(x_subset, y_subset)
+predict <- target %*% weights
+print(predict)
+```
