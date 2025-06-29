@@ -11,6 +11,11 @@ editor:
   mode: source
 ---
 
+```{r, echo = FALSE, message = FALSE}
+library(data.table)
+source("../plot/theme_jjf.R")
+```
+
 # Preprocessing
 
 ```{r, message = FALSE}
@@ -41,7 +46,7 @@ y_xts <- lag(x_xts[ , "weight.Q1"], k = n_ahead, na.pad = TRUE)
 train_xts <- merge(y_xts, x_xts)
 ```
 
-# Normalization
+# Standardization
 
 ```{r}
 library(roll)
@@ -57,66 +62,11 @@ cov_idx <- apply(cov_xts, 3, function(i) all(!is.na(i)))
 # Distance
 
 ```{r}
-target <- coredata(tail(score_xts[ , -1], 1))
-train_idx <- score_idx & cov_idx
+train_idx <- which(score_idx & cov_idx)
+target_z_xts <- tail(score_xts[ , -1], length(train_idx))
+target_x_xts <- tail(x_xts, length(train_idx))
 score_xts <- score_xts[train_idx, -1]
 cov_xts <- cov_xts[-1, -1, train_idx]
-```
-
-```{r}
-n_rows <- nrow(score_xts)
-dist_ls <- list()
-
-for (i in 1:n_rows) {
-
-  x_i <- coredata(score_xts[i, ])
-  sigma <- cov_xts[, , i]
-
-  dist <- tryCatch({
-    sqrt((x_i - target) %*% solve(sigma) %*% t(x_i - target))
-  }, error = function(e) {
-    NA
-  })
-
-  dist_ls <- append(dist_ls, list(dist))
-
-}
-
-dist <- do.call(rbind, dist_ls)
-```
-
-```{r}
-dist_idx <- dist <= quantile(dist, 0.05, na.rm = TRUE)
-test_idx <- dist_idx
-x_test <- x_xts[train_idx][test_idx]
-```
-
-# Similarity
-
-```{r}
-n_rows <- nrow(x_test)
-sign_ls <- list()
-target <- coredata(tail(x_xts, 1))
-
-for (i in 1:n_rows) {
-  
-  x_i <- coredata(x_test[i, ])
-
-  sign <- tryCatch({
-    sum(sign(x_i) == sign(target), na.rm = TRUE)
-  }, error = function(e) {
-    NA
-  })
-
-  sign_ls <- append(sign_ls, list(sign))
-
-}
-
-sign <- do.call(rbind, sign_ls)
-```
-
-```{r}
-sign_idx <- sign == ncol(score_xts)
 ```
 
 # Prediction
@@ -146,13 +96,92 @@ min_rss_optim <- function(x, y) {
 }
 ```
 
+# Backtest
+
 ```{r}
-x_subset <- x_test[sign_idx]
-y_subset <- y_xts[train_idx][test_idx][sign_idx]
+n_z <- length(train_idx)
+predict_ls <- list()
+
+for (z in 1:n_z) {
+  
+  # distance
+  target_z <- coredata(target_z_xts[z, ])
+  dist_ls <- list()
+  
+  for (i in 1:z) {
+    
+    x_i <- coredata(score_xts[i, ])
+    sigma <- cov_xts[, , i]
+  
+    dist <- tryCatch({
+      sqrt((x_i - target_z) %*% solve(sigma) %*% t(x_i - target_z))
+    }, error = function(e) {
+      NA
+    })
+  
+    dist_ls <- append(dist_ls, list(dist))
+    
+  }
+  
+  dist <- do.call(rbind, dist_ls)
+  
+  dist_idx <- dist <= quantile(dist, 0.05, na.rm = TRUE)
+  test_idx <- dist_idx
+  x_test <- x_xts[train_idx][test_idx]
+  
+  # similarity
+  n_x <- nrow(x_test)
+  sign_ls <- list()
+  target_x <- coredata(target_x_xts[z, ])
+  
+  if (n_x > 0) {
+    for (i in 1:n_x) {
+    
+      x_i <- coredata(x_test[i, ])
+    
+      sign <- tryCatch({
+        sum(sign(x_i) == sign(target_x), na.rm = TRUE)
+      }, error = function(e) {
+        NA
+      })
+    
+      sign_ls <- append(sign_ls, list(sign))
+  
+    }    
+  }
+
+  sign <- do.call(rbind, sign_ls)
+  
+  sign_idx <- sign == ncol(score_xts)
+  
+  # prediction
+  if (sum(sign_idx) > 0) {
+    
+    x_subset <- x_test[sign_idx]
+    y_subset <- y_xts[train_idx][test_idx][sign_idx]
+    
+    weights <- min_rss_optim(x_subset, y_subset)
+    predict <- target_x %*% weights # sum(target_x * weights)
+  
+  } else {
+    
+    predict <- NA
+    
+  }
+  
+  predict_ls <- append(predict_ls, list(predict))
+
+}
 ```
 
 ```{r}
-weights <- min_rss_optim(x_subset, y_subset)
-predict <- target %*% weights
-print(predict)
+predict <- do.call(rbind, predict_ls)
+predict_xts <- zoo(predict, index(target_x_xts))
+```
+
+```{r, echo = FALSE, fig.width = 6, fig.height = 3}
+predict_mlt <- melt(as.data.table(na.omit(predict_xts), keep.rownames = "index"), id.vars = "index")
+predict_mlt[ , index := as.Date(index)]
+predict_plt <- plot_ts(predict_mlt, title = "Split (%)", multiple = 100) + theme(legend.position = "none")
+print(predict_plt)
 ```
