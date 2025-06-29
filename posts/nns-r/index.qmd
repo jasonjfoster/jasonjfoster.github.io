@@ -49,7 +49,7 @@ returns_z_xts <- returns_xts[ , "SP500"]
 ```
 
 ```{r}
-beta <- solve(crossprod(returns_z_xts, returns_z_xts)) %*% crossprod(returns_z_xts, returns_xts)
+beta <- solve(t(returns_z_xts) %*% returns_z_xts) %*% (t(returns_z_xts) %*% returns_xts)
 implied_shocks <- shock %*% beta * risk_sign
 ```
 
@@ -114,7 +114,7 @@ implied_shocks_pc <- scale * (sqrt(L[comp]) * V[ , comp]) * risk_sign
 LV <- eigen(cov(cl_pm - (dl_pm + du_pm)))
 L <- LV[["values"]]
 V <- LV[["vectors"]]
-scale <- -0.1 / (sqrt(L[comp]) * V[ , comp])[1]
+scale <- shock / (sqrt(L[comp]) * V[ , comp])[1]
 implied_shocks_pm <- scale * (sqrt(L[comp]) * V[ , comp]) * risk_sign
 ```
 

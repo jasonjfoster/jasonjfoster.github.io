@@ -209,7 +209,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>returns_z_xts <span class="ot">&lt;-</span> returns_xts[ , <span class="st">"SP500"</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>beta <span class="ot">&lt;-</span> <span class="fu">solve</span>(<span class="fu">crossprod</span>(returns_z_xts, returns_z_xts)) <span class="sc">%*%</span> <span class="fu">crossprod</span>(returns_z_xts, returns_xts)</span>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>beta <span class="ot">&lt;-</span> <span class="fu">solve</span>(<span class="fu">t</span>(returns_z_xts) <span class="sc">%*%</span> returns_z_xts) <span class="sc">%*%</span> (<span class="fu">t</span>(returns_z_xts) <span class="sc">%*%</span> returns_xts)</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>implied_shocks <span class="ot">&lt;-</span> shock <span class="sc">%*%</span> beta <span class="sc">*</span> risk_sign</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
@@ -280,7 +280,7 @@ USHY            0.55</code></pre>
 <div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>LV <span class="ot">&lt;-</span> <span class="fu">eigen</span>(<span class="fu">cov</span>(cl_pm <span class="sc">-</span> (dl_pm <span class="sc">+</span> du_pm)))</span>
 <span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>L <span class="ot">&lt;-</span> LV[[<span class="st">"values"</span>]]</span>
 <span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>V <span class="ot">&lt;-</span> LV[[<span class="st">"vectors"</span>]]</span>
-<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>scale <span class="ot">&lt;-</span> <span class="sc">-</span><span class="fl">0.1</span> <span class="sc">/</span> (<span class="fu">sqrt</span>(L[comp]) <span class="sc">*</span> V[ , comp])[<span class="dv">1</span>]</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>scale <span class="ot">&lt;-</span> shock <span class="sc">/</span> (<span class="fu">sqrt</span>(L[comp]) <span class="sc">*</span> V[ , comp])[<span class="dv">1</span>]</span>
 <span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>implied_shocks_pm <span class="ot">&lt;-</span> scale <span class="sc">*</span> (<span class="fu">sqrt</span>(L[comp]) <span class="sc">*</span> V[ , comp]) <span class="sc">*</span> risk_sign</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
@@ -350,7 +350,7 @@ USHY            0.55              0.56              0.58</code></pre>
 <div class="cell-output cell-output-stdout">
 <pre><code>      implied_shocks implied_shocks_pc implied_shocks_pm implied_shocks_bs
 SP500         -10.00            -10.00            -10.00            -10.00
-USD             0.43              0.48              1.76              1.84
+USD             0.43              0.48              1.76              1.85
 US10Y          -0.08             -0.08             -0.17             -0.18
 USHY            0.55              0.56              0.58              0.57</code></pre>
 </div>
