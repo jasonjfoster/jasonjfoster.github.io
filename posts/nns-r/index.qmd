@@ -1,5 +1,5 @@
 ---
-title: "Nonlinear Nonparametric Statistics"
+title: "Nonlinear nonparametric statistics"
 author: "[Jason Foster](mailto:jason.j.foster@gmail.com)"
 date: last-modified
 categories:
@@ -41,7 +41,7 @@ risk_sign <- c(SP500 = 1, DTWEXAFEGS = 1, DGS10 = -1, BAMLH0A0HYM2 = -1)
 returns_xts <- na.omit(returns_xts)
 ```
 
-# Implied shocks
+# Ordinary least squares
 
 ```{r}
 shock <- -0.1
@@ -60,13 +60,36 @@ round(data.frame(
 ) * 100, 2)
 ```
 
-# Partial moments
+
+# Principal components analysis
+
+```{r}
+comp <- 1
+```
+
+```{r}
+LV <- eigen(cov(returns_xts))
+L <- LV[["values"]]
+V <- LV[["vectors"]]
+scale <- shock / (sqrt(L[comp]) * V[ , comp])[1]
+implied_shocks_pc <- scale * (sqrt(L[comp]) * V[ , comp]) * risk_sign
+```
+
+```{r}
+round(data.frame(
+  implied_shocks = t(implied_shocks),
+  implied_shocks_pc = implied_shocks_pc,
+  row.names = c("SP500", "USD", "US10Y", "USHY")
+) * 100, 2)
+```
+
+# Nonlinear nonparametric statistics
 
 ```{r}
 library(NNS)
 ```
 
-## Multivariate
+## Partial moments
 
 -   <https://cran.r-project.org/web/packages/NNS/vignettes/NNSvignette_Partial_Moments.html>
 
@@ -94,21 +117,7 @@ du_pm <- pm$dupm
 all.equal(sigma, (cl_pm + cu_pm) - (dl_pm + du_pm))
 ```
 
-## Stress P&L
-
-```{r}
-comp <- 1
-```
-
-### Eigenanalysis
-
-```{r}
-LV <- eigen(cov(returns_xts))
-L <- LV[["values"]]
-V <- LV[["vectors"]]
-scale <- shock / (sqrt(L[comp]) * V[ , comp])[1]
-implied_shocks_pc <- scale * (sqrt(L[comp]) * V[ , comp]) * risk_sign
-```
+## Implied shocks
 
 ```{r}
 LV <- eigen(cov(cl_pm - (dl_pm + du_pm)))
@@ -127,7 +136,7 @@ round(data.frame(
 ) * 100, 2)
 ```
 
-### Bootstrap
+## Bootstrapping
 
 - <https://github.com/OVVO-Financial/Finance/blob/main/stress_test.md>
 - <https://cran.r-project.org/web/packages/NNS/vignettes/NNSvignette_Sampling.html>
