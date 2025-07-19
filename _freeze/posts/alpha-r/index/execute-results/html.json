@@ -1,0 +1,17 @@
+{
+  "hash": "98802c985644f5c988a2f054d53ddef4",
+  "result": {
+    "engine": "knitr",
+    "markdown": "---\ntitle: \"Alpha Distribution Analysis\"\nauthor: \"[Jason Foster](mailto:jason.j.foster@gmail.com)\"\ndate: last-modified\ncategories:\n  - analysis\n  - finance\n  - r\neditor: \n  mode: source\n---\n\n::: {.cell}\n\n:::\n\n\n# Question\n\nCould hedge funds have theoretically won Warren Buffet's 10-year bet against the S&P 500 if optimally combined?\n\n-   <https://longbets.org/362/>\n\n# Optimization\n\n\n::: {.cell}\n\n```{.r .cell-code}\nlibrary(CVXR)\n```\n:::\n\n::: {.cell}\n\n```{.r .cell-code}\nmin_rss_optim <- function(x, y) {\n\n  n_rows <- nrow(x)\n  x <- as.matrix(x)\n  y <- as.numeric(y)\n  params <- Variable(ncol(x))\n  \n  obj <- Minimize(sum_squares(y - x %*% params))\n  cons <- list(sum(params) == 1, params >= 0, params <= 1)\n  prob <- Problem(obj, cons)\n  \n  result <- solve(prob)$getValue(params)\n  \n  return(result)\n\n}\n```\n:::\n\n::: {.cell}\n\n:::\n\n\n# Bootstrapping\n\n\n::: {.cell}\n\n```{.r .cell-code}\nport_returns <- returns[ , colnames(returns) != \"S&P Index Fund\"]\nbench_returns <- returns[ , \"S&P Index Fund\"]\n```\n:::\n\n::: {.cell}\n\n```{.r .cell-code}\nset.seed(5640)\nn_rows <- nrow(returns)\nn_boot <- 1000\noptim_weights_ls <- list()\noptim_alpha_ls <- list()\noptim_te_ls <- list()\n```\n:::\n\n::: {.cell}\n\n```{.r .cell-code}\nfor (z in 1:n_boot) {\n\n  idx <- sample(1:n_rows, n_rows, replace = TRUE)\n  \n  x_boot <- port_returns[idx, , drop = FALSE]\n  y_boot <- bench_returns[idx]\n  \n  optim_weights <- min_rss_optim(x_boot, y_boot)\n  optim_returns <- x_boot %*% optim_weights\n  optim_port <- prod(1 + optim_returns) ^ (1 / nrow(optim_returns)) - 1\n  optim_bench <- prod(1 + y_boot) ^ (1 / nrow(y_boot)) - 1\n  optim_alpha <- optim_port - optim_bench\n  optim_te <- sd(optim_returns - y_boot)\n  \n  optim_weights_ls <- append(optim_weights_ls, list(t(optim_weights)))\n  optim_alpha_ls <- append(optim_alpha_ls, list(optim_alpha))\n  optim_te_ls <- append(optim_te_ls, list(optim_te))\n\n}\n```\n:::\n\n::: {.cell}\n\n```{.r .cell-code}\noptim_alpha <- do.call(rbind, optim_alpha_ls)\n```\n:::\n\n\n# Answer\n\nanalysis shows that 5% of the optimized portfolios produced alpha values greater than zero, which means that 95% of optimized combinations did not outperform the S&P 500.\n\n\n::: {.cell}\n::: {.cell-output-display}\n![](index_files/figure-html/unnamed-chunk-9-1.png){width=576}\n:::\n:::",
+    "supporting": [
+      "index_files"
+    ],
+    "filters": [
+      "rmarkdown/pagebreak.lua"
+    ],
+    "includes": {},
+    "engineDependencies": {},
+    "preserve": {},
+    "postProcess": true
+  }
+}
