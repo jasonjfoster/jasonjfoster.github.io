@@ -16,7 +16,7 @@ source("../plot/theme_jjf.R")
 
 # Question
 
-Could hedge funds have theoretically won Warren Buffet's 10-year bet against the S&P 500 if optimally combined?
+Could an optimally combined portfolio of hedge funds have won Warren Buffet's 10-year bet against the S&P 500?
 
 -   <https://longbets.org/362/>
 
@@ -54,31 +54,50 @@ returns <- na.omit(xts::as.xts(returns))
 # Bootstrapping
 
 ```{r}
-port_returns <- returns[ , colnames(returns) != "S&P Index Fund"]
-bench_returns <- returns[ , "S&P Index Fund"]
+# library(NNS)
 ```
 
 ```{r}
 set.seed(5640)
 n_rows <- nrow(returns)
+n_cols <- ncol(returns)
 n_boot <- 1000
 optim_weights_ls <- list()
 optim_alpha_ls <- list()
 optim_te_ls <- list()
+# returns_boot <- array(NA, dim = c(n_rows, n_cols, n_boot)) # time, asset, and bootstrap
+```
+
+```{r}
+# for (j in 1:n_cols) {
+# 
+#   col_boot <- NNS.meboot(as.vector(returns[ , j]), reps = n_boot,
+#                          rho = 1, type = "pearson")["replicates", ]$replicates
+# 
+#   returns_boot[ , j, ] <- col_boot
+# 
+# }
+```
+
+```{r}
+# colnames(returns_boot) <- colnames(returns)
 ```
 
 ```{r}
 for (z in 1:n_boot) {
-
-  idx <- sample(1:n_rows, n_rows, replace = TRUE)
   
-  x_boot <- port_returns[idx, , drop = FALSE]
-  y_boot <- bench_returns[idx]
+  idx <- sample(1:n_rows, n_rows, replace = TRUE)
+  # boot_sample <- returns_boot[ , , z]
+  
+  x_boot <- returns[idx, colnames(returns) != "S&P Index Fund"]
+  y_boot <- returns[idx, "S&P Index Fund"]
+  # x_boot <- boot_sample[ , colnames(boot_sample) != "S&P Index Fund"]
+  # y_boot <- boot_sample[ , "S&P Index Fund"]
   
   optim_weights <- min_rss_optim(x_boot, y_boot)
   optim_returns <- x_boot %*% optim_weights
-  optim_port <- prod(1 + optim_returns) ^ (1 / nrow(optim_returns)) - 1
-  optim_bench <- prod(1 + y_boot) ^ (1 / nrow(y_boot)) - 1
+  optim_port <- prod(1 + optim_returns) ^ (1 / n_rows) - 1
+  optim_bench <- prod(1 + y_boot) ^ (1 / n_rows) - 1
   optim_alpha <- optim_port - optim_bench
   optim_te <- sd(optim_returns - y_boot)
   
@@ -90,12 +109,14 @@ for (z in 1:n_boot) {
 ```
 
 ```{r}
+optim_weights <- do.call(rbind, optim_weights_ls)
 optim_alpha <- do.call(rbind, optim_alpha_ls)
+optim_te <- do.call(rbind, optim_te_ls)
 ```
 
 # Answer
 
-analysis shows that `{r} round(mean(optim_alpha > 0), 2) * 100`% of the optimized portfolios produced alpha values greater than zero, which means that `{r} round(mean(optim_alpha <= 0), 2) * 100`% of optimized combinations did not outperform the S&P 500.
+Analysis shows that `{r} round(mean(optim_alpha > 0), 2) * 100`% of the optimized portfolios produced alpha values greater than zero, which means that `{r} round(mean(optim_alpha <= 0), 2) * 100`% of optimized combinations did not outperform the S&P 500.
 
 ```{r, message = FALSE, echo = FALSE, fig.width = 6, fig.height = 3}
 # 1. Setup data and parameters
