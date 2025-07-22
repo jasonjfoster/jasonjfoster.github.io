@@ -20,6 +20,11 @@ Could an optimally combined portfolio of hedge funds have won Warren Buffet's 10
 
 -   <https://longbets.org/362/>
 
+
+```{r}
+load("returns.rda")
+```
+
 # Optimization
 
 ```{r, message = FALSE}
@@ -43,12 +48,6 @@ min_rss_optim <- function(x, y) {
   return(result)
 
 }
-```
-
-```{r, echo = FALSE, message = FALSE}
-returns <- data.table::fread("input_returns.csv")
-returns[ , Year := data.table::as.IDate(paste0(Year, "-12-31"))]
-returns <- na.omit(xts::as.xts(returns))
 ```
 
 # Bootstrapping
