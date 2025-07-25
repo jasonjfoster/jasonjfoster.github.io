@@ -6,6 +6,7 @@ categories:
   - analysis
   - finance
   - r
+draft: true
 editor: 
   mode: source
 ---
@@ -57,6 +58,36 @@ min_rss_optim <- function(x, y) {
 ```
 
 ```{r}
+boot <- function(n, p = 1) {
+
+  idx <- sample(1:n, 1)
+  idx_ls <- list(idx)
+  
+  for (i in 2:n) {
+    if (runif(1) < 1 / p) {
+      idx <- sample(1:n, 1)
+    } else {
+
+      idx <- idx + 1
+
+      if (idx > n) {
+        idx <- 1
+      }
+
+    }
+    
+    idx_ls <- append(idx_ls, list(idx))
+
+  }
+
+  result <- do.call(rbind, idx_ls)
+  
+  return(result)
+
+}
+```
+
+```{r}
 set.seed(5640)
 n_rows <- nrow(returns)
 n_cols <- ncol(returns)
@@ -85,7 +116,8 @@ optim_te_ls <- list()
 ```{r}
 for (z in 1:n_boot) {
   
-  idx <- sample(1:n_rows, n_rows, replace = TRUE)
+  # idx <- sample(1:n_rows, n_rows, replace = TRUE)
+  idx <- boot(n_rows, p = 2)
   # boot_sample <- returns_boot[ , , z]
   
   x_boot <- returns[idx, colnames(returns) != "S&P Index Fund"]
