@@ -57,16 +57,16 @@ import cvxpy as cp
 ```{python}
 def min_rss_optim(x, y):
     
-    w = cp.Variable(x.shape[1])
+  w = cp.Variable(x.shape[1])
     
-    objective = cp.Minimize(cp.sum_squares(y - x @ w))
+  objective = cp.Minimize(cp.sum_squares(y - x @ w))
     
-    constraints = [cp.sum(w) == 1, w >= 0, w <= 1]
+  constraints = [cp.sum(w) == 1, w >= 0, w <= 1]
     
-    problem = cp.Problem(objective, constraints)
-    problem.solve()
+  problem = cp.Problem(objective, constraints)
+  problem.solve()
     
-    return w.value
+  return w.value
 ```
 
 ```{python, echo = FALSE}
@@ -74,7 +74,7 @@ exec(open("../helper-prices.py").read())
 ```
 
 ```{python, echo = FALSE}
-overlap_df = returns_df.rolling(scale["overlap"],min_periods = 1).mean()
+overlap_df = returns_df.rolling(scale["overlap"], min_periods = 1).mean()
 
 # overlap_df = overlap_df.dropna()
 overlap_x_df = overlap_df[factors]

@@ -1,6 +1,6 @@
 import yfinance as yf
 
-prices_df = yf.download(tickers, start = "1900-01-01", progress = False)["Adj Close"]
+prices_df = yf.download(tickers, start = "1900-01-01", progress = False)["Close"]
 tickers = prices_df.columns
 
 returns_df = pd.concat([returns_df, np.log(prices_df).diff()], axis = 1)
