@@ -16,11 +16,13 @@ factors_r = ["SP500"] # "SP500" does not contain dividends
 factors_d = ["DTB3"]
 ```
 
-```{python, echo = FALSE}
+```{python}
+#| echo: false
 exec(open("../helper-levels.py").read())
 ```
 
-```{python, echo = FALSE}
+```{python}
+#| echo: false
 width = 20 * 3
 ```
 
@@ -69,11 +71,11 @@ def min_rss_optim(x, y):
   return w.value
 ```
 
-```{python, echo = FALSE}
-exec(open("../helper-prices.py").read())
-```
+```{python}
+#| echo: false
+#| output: false
+exec(open("../helper-prices-yfh.py").read()) # run then render
 
-```{python, echo = FALSE}
 overlap_df = returns_df.rolling(scale["overlap"], min_periods = 1).mean()
 
 # overlap_df = overlap_df.dropna()
@@ -167,7 +169,7 @@ for i in range(n_rows):
   score_df["date"] = index_ls[i]
   score_df["quantile"] = quantile_cut(score_df["performance"])
   
-  score = score_df.groupby(["date", "quantile"]).agg(
+  score = score_df.groupby(["date", "quantile"], observed = True).agg(
     weight = (factors[0], "mean"),
     performance = ("performance", "mean")
   ).reset_index()

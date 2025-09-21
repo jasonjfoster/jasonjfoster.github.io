@@ -16,7 +16,9 @@ factors_r <- c("SP500") # "SP500" does not contain dividends
 factors_d <- c("DTB3")
 ```
 
-```{r, echo = FALSE, message = FALSE}
+```{r}
+#| echo: false
+#| output: false
 source("../helper-levels.R")
 width <- 20 * 3
 ```
@@ -51,7 +53,8 @@ tickers <- sorted_df[!duplicated(sorted_df[["netAssets.raw"]]), "symbol"]
 # devtools::install_github("jasonjfoster/rolloptim")
 ```
 
-```{r, message = FALSE}
+```{r}
+#| output: false
 # library(CVXR)
 library(rolloptim)
 ```
@@ -74,22 +77,13 @@ library(rolloptim)
 # }
 ```
 
-```{r, echo = FALSE, message = FALSE, warning = FALSE}
-# select tickers are not included in tiingo's free subscription
-# source("../helper-prices.R")
-invisible(getSymbols(tickers, adjust = TRUE))
-tickers <- tickers[tickers %in% ls()]
-prices_xts <- do.call(merge, c(lapply(tickers, function(i) Ad(get(i))), all = TRUE))
-colnames(prices_xts) <- tickers
-index(prices_xts) <- as.Date(index(prices_xts))
+```{r}
+#| echo: false
+#| output: false
+#| warning: false
+source("../helper-prices-yfh.R")
 
-returns_xts <- merge(returns_xts, diff(log(prices_xts)))
-colnames(returns_xts) <- c(factors, tickers) # fix colnames that start with number after merge
-overlap_xts <- merge(overlap_xts, roll_mean(returns_xts[ , tickers], scale[["overlap"]], min_obs = 1))
-colnames(overlap_xts) <- c(factors, tickers)
-
-# weights <- 0.9 ^ ((width - 1):0)
-weights <- rep(1, width)
+overlap_xts <- roll_mean(returns_xts, scale[["overlap"]], min_obs = 1)
 
 # overlap_xts <- na.omit(overlap_xts)
 overlap_x_xts <- overlap_xts[ , factors]
