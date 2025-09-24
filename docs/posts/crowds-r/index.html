@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Jason Foster">
-<meta name="dcterms.date" content="2025-09-21">
+<meta name="dcterms.date" content="2025-09-24">
 
 <title>Crowds – jasonjfoster.github.io</title>
 <style>
@@ -165,7 +165,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <div>
       <div class="quarto-title-meta-heading">Published</div>
       <div class="quarto-title-meta-contents">
-        <p class="date">September 21, 2025</p>
+        <p class="date">September 24, 2025</p>
       </div>
     </div>
     
@@ -210,8 +210,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> <span class="fu">get_data</span>(payload)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>sorted_df <span class="ot">&lt;-</span> data[<span class="fu">order</span>(data[[<span class="st">"netAssets.raw"</span>]], data[[<span class="st">"firstTradeDateMilliseconds"</span>]]), ]</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>tickers <span class="ot">&lt;-</span> sorted_df[<span class="sc">!</span><span class="fu">duplicated</span>(sorted_df[[<span class="st">"netAssets.raw"</span>]]), <span class="st">"symbol"</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>sorted_df <span class="ot">&lt;-</span> data[<span class="fu">order</span>(</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="sc">-</span>data[[<span class="st">"netAssets.raw"</span>]],</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  data[[<span class="st">"netExpenseRatio.raw"</span>]],</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  data[[<span class="st">"firstTradeDateMilliseconds"</span>]],</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  data[[<span class="st">"longName"</span>]],</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>  data[[<span class="st">"symbol"</span>]]</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>), ]</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>tickers <span class="ot">&lt;-</span> sorted_df[<span class="sc">!</span><span class="fu">duplicated</span>(sorted_df[[<span class="st">"netAssets.raw"</span>]]), <span class="st">"symbol"</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># allocations &lt;- c("AOK", "AOM", "AOR", "AOA")</span></span>
@@ -256,51 +262,51 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="co"># for (i in width:n_rows) {</span></span>
 <span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> n_rows) {</span>
 <span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>    idx <span class="ot">&lt;-</span> <span class="fu">max</span>(i <span class="sc">-</span> width <span class="sc">+</span> <span class="dv">1</span>, <span class="dv">1</span>)<span class="sc">:</span>i</span>
-<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>    x_subset <span class="ot">&lt;-</span> <span class="fu">coredata</span>(overlap_x_xts[idx, ])</span>
-<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>    y_subset <span class="ot">&lt;-</span> <span class="fu">coredata</span>(overlap_y_xts[idx, ])</span>
-<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>    params_ls <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
-<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>    tickers_ls <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
-<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>    performance_ls <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
-<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>    <span class="co"># for (j in tickers[!tickers %in% allocations]) {</span></span>
-<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> (j <span class="cf">in</span> tickers) {</span>
-<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>      </span>
-<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>        idx <span class="ot">&lt;-</span> <span class="fu">complete.cases</span>(x_subset, y_subset[ , j])</span>
-<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a>        x_complete <span class="ot">&lt;-</span> x_subset[idx, , drop <span class="ot">=</span> <span class="cn">FALSE</span>]</span>
-<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a>        y_complete <span class="ot">&lt;-</span> y_subset[idx, j]</span>
-<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> ((<span class="fu">nrow</span>(x_complete) <span class="sc">&gt;</span> <span class="dv">0</span>) <span class="sc">&amp;&amp;</span> (<span class="fu">length</span>(y_complete) <span class="sc">&gt;</span> <span class="dv">0</span>)) {</span>
-<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a>            </span>
-<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a>            <span class="co"># params &lt;- t(min_rss_optim(x_complete, y_complete))</span></span>
-<span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a>            <span class="co"># params_ls &lt;- append(params_ls, list(params))</span></span>
-<span id="cb10-26"><a href="#cb10-26" aria-hidden="true" tabindex="-1"></a>          </span>
-<span id="cb10-27"><a href="#cb10-27" aria-hidden="true" tabindex="-1"></a>            xx <span class="ot">&lt;-</span> <span class="fu">roll_crossprod</span>(x_complete, x_complete, <span class="at">width =</span> <span class="fu">nrow</span>(x_complete))</span>
-<span id="cb10-28"><a href="#cb10-28" aria-hidden="true" tabindex="-1"></a>            xy <span class="ot">&lt;-</span> <span class="fu">roll_crossprod</span>(x_complete, y_complete, <span class="at">width =</span> <span class="fu">nrow</span>(x_complete))</span>
-<span id="cb10-29"><a href="#cb10-29" aria-hidden="true" tabindex="-1"></a>            </span>
-<span id="cb10-30"><a href="#cb10-30" aria-hidden="true" tabindex="-1"></a>            params <span class="ot">&lt;-</span> <span class="fu">roll_min_rss</span>(xx, xy, <span class="at">total =</span> <span class="dv">1</span>, <span class="at">lower =</span> <span class="dv">0</span>, <span class="at">upper =</span> <span class="dv">1</span>)[<span class="fu">nrow</span>(x_complete), ]</span>
-<span id="cb10-31"><a href="#cb10-31" aria-hidden="true" tabindex="-1"></a>            params_ls <span class="ot">&lt;-</span> <span class="fu">append</span>(params_ls, <span class="fu">list</span>(params))</span>
-<span id="cb10-32"><a href="#cb10-32" aria-hidden="true" tabindex="-1"></a>            </span>
-<span id="cb10-33"><a href="#cb10-33" aria-hidden="true" tabindex="-1"></a>            tickers_ls <span class="ot">&lt;-</span> <span class="fu">append</span>(tickers_ls, <span class="fu">list</span>(j))</span>
-<span id="cb10-34"><a href="#cb10-34" aria-hidden="true" tabindex="-1"></a>            </span>
-<span id="cb10-35"><a href="#cb10-35" aria-hidden="true" tabindex="-1"></a>            performance_ls <span class="ot">&lt;-</span> <span class="fu">append</span>(performance_ls, <span class="fu">list</span>(performance_xts[i, j]))</span>
-<span id="cb10-36"><a href="#cb10-36" aria-hidden="true" tabindex="-1"></a>            </span>
-<span id="cb10-37"><a href="#cb10-37" aria-hidden="true" tabindex="-1"></a>        }</span>
-<span id="cb10-38"><a href="#cb10-38" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb10-39"><a href="#cb10-39" aria-hidden="true" tabindex="-1"></a>    }</span>
-<span id="cb10-40"><a href="#cb10-40" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb10-41"><a href="#cb10-41" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="fu">length</span>(params_ls) <span class="sc">&gt;</span> <span class="dv">0</span>) {</span>
-<span id="cb10-42"><a href="#cb10-42" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb10-43"><a href="#cb10-43" aria-hidden="true" tabindex="-1"></a>        result <span class="ot">&lt;-</span> <span class="fu">do.call</span>(rbind, params_ls)</span>
-<span id="cb10-44"><a href="#cb10-44" aria-hidden="true" tabindex="-1"></a>        <span class="fu">rownames</span>(result) <span class="ot">&lt;-</span> <span class="fu">unlist</span>(tickers_ls)</span>
-<span id="cb10-45"><a href="#cb10-45" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb10-46"><a href="#cb10-46" aria-hidden="true" tabindex="-1"></a>        result <span class="ot">&lt;-</span> <span class="fu">cbind</span>(result, <span class="at">performance =</span> <span class="fu">unlist</span>(performance_ls))</span>
-<span id="cb10-47"><a href="#cb10-47" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb10-48"><a href="#cb10-48" aria-hidden="true" tabindex="-1"></a>        result_ls <span class="ot">&lt;-</span> <span class="fu">append</span>(result_ls, <span class="fu">list</span>(result))</span>
-<span id="cb10-49"><a href="#cb10-49" aria-hidden="true" tabindex="-1"></a>        index_ls <span class="ot">&lt;-</span> <span class="fu">append</span>(index_ls, <span class="fu">list</span>(<span class="fu">index</span>(overlap_xts)[i]))</span>
-<span id="cb10-50"><a href="#cb10-50" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb10-51"><a href="#cb10-51" aria-hidden="true" tabindex="-1"></a>    }</span>
-<span id="cb10-52"><a href="#cb10-52" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>  idx <span class="ot">&lt;-</span> <span class="fu">max</span>(i <span class="sc">-</span> width <span class="sc">+</span> <span class="dv">1</span>, <span class="dv">1</span>)<span class="sc">:</span>i</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>  x_subset <span class="ot">&lt;-</span> <span class="fu">coredata</span>(overlap_x_xts[idx, ])</span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>  y_subset <span class="ot">&lt;-</span> <span class="fu">coredata</span>(overlap_y_xts[idx, ])</span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>  params_ls <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>  tickers_ls <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>  performance_ls <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>  <span class="co"># for (j in tickers[!tickers %in% allocations]) {</span></span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (j <span class="cf">in</span> tickers) {</span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>    idx <span class="ot">&lt;-</span> <span class="fu">complete.cases</span>(x_subset, y_subset[ , j])</span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a>    x_complete <span class="ot">&lt;-</span> x_subset[idx, , drop <span class="ot">=</span> <span class="cn">FALSE</span>]</span>
+<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a>    y_complete <span class="ot">&lt;-</span> y_subset[idx, j]</span>
+<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> ((<span class="fu">nrow</span>(x_complete) <span class="sc">&gt;</span> <span class="dv">0</span>) <span class="sc">&amp;&amp;</span> (<span class="fu">length</span>(y_complete) <span class="sc">&gt;</span> <span class="dv">0</span>)) {</span>
+<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a>      <span class="co"># params &lt;- t(min_rss_optim(x_complete, y_complete))</span></span>
+<span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a>      <span class="co"># params_ls &lt;- append(params_ls, list(params))</span></span>
+<span id="cb10-26"><a href="#cb10-26" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb10-27"><a href="#cb10-27" aria-hidden="true" tabindex="-1"></a>      xx <span class="ot">&lt;-</span> <span class="fu">roll_crossprod</span>(x_complete, x_complete, <span class="at">width =</span> <span class="fu">nrow</span>(x_complete))</span>
+<span id="cb10-28"><a href="#cb10-28" aria-hidden="true" tabindex="-1"></a>      xy <span class="ot">&lt;-</span> <span class="fu">roll_crossprod</span>(x_complete, y_complete, <span class="at">width =</span> <span class="fu">nrow</span>(x_complete))</span>
+<span id="cb10-29"><a href="#cb10-29" aria-hidden="true" tabindex="-1"></a>      </span>
+<span id="cb10-30"><a href="#cb10-30" aria-hidden="true" tabindex="-1"></a>      params <span class="ot">&lt;-</span> <span class="fu">roll_min_rss</span>(xx, xy, <span class="at">total =</span> <span class="dv">1</span>, <span class="at">lower =</span> <span class="dv">0</span>, <span class="at">upper =</span> <span class="dv">1</span>)[<span class="fu">nrow</span>(x_complete), ]</span>
+<span id="cb10-31"><a href="#cb10-31" aria-hidden="true" tabindex="-1"></a>      params_ls <span class="ot">&lt;-</span> <span class="fu">append</span>(params_ls, <span class="fu">list</span>(params))</span>
+<span id="cb10-32"><a href="#cb10-32" aria-hidden="true" tabindex="-1"></a>      </span>
+<span id="cb10-33"><a href="#cb10-33" aria-hidden="true" tabindex="-1"></a>      tickers_ls <span class="ot">&lt;-</span> <span class="fu">append</span>(tickers_ls, <span class="fu">list</span>(j))</span>
+<span id="cb10-34"><a href="#cb10-34" aria-hidden="true" tabindex="-1"></a>      </span>
+<span id="cb10-35"><a href="#cb10-35" aria-hidden="true" tabindex="-1"></a>      performance_ls <span class="ot">&lt;-</span> <span class="fu">append</span>(performance_ls, <span class="fu">list</span>(performance_xts[i, j]))</span>
+<span id="cb10-36"><a href="#cb10-36" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb10-37"><a href="#cb10-37" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb10-38"><a href="#cb10-38" aria-hidden="true" tabindex="-1"></a>      </span>
+<span id="cb10-39"><a href="#cb10-39" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb10-40"><a href="#cb10-40" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb10-41"><a href="#cb10-41" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">length</span>(params_ls) <span class="sc">&gt;</span> <span class="dv">0</span>) {</span>
+<span id="cb10-42"><a href="#cb10-42" aria-hidden="true" tabindex="-1"></a>      </span>
+<span id="cb10-43"><a href="#cb10-43" aria-hidden="true" tabindex="-1"></a>    result <span class="ot">&lt;-</span> <span class="fu">do.call</span>(rbind, params_ls)</span>
+<span id="cb10-44"><a href="#cb10-44" aria-hidden="true" tabindex="-1"></a>    <span class="fu">rownames</span>(result) <span class="ot">&lt;-</span> <span class="fu">unlist</span>(tickers_ls)</span>
+<span id="cb10-45"><a href="#cb10-45" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb10-46"><a href="#cb10-46" aria-hidden="true" tabindex="-1"></a>    result <span class="ot">&lt;-</span> <span class="fu">cbind</span>(result, <span class="at">performance =</span> <span class="fu">unlist</span>(performance_ls))</span>
+<span id="cb10-47"><a href="#cb10-47" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb10-48"><a href="#cb10-48" aria-hidden="true" tabindex="-1"></a>    result_ls <span class="ot">&lt;-</span> <span class="fu">append</span>(result_ls, <span class="fu">list</span>(result))</span>
+<span id="cb10-49"><a href="#cb10-49" aria-hidden="true" tabindex="-1"></a>    index_ls <span class="ot">&lt;-</span> <span class="fu">append</span>(index_ls, <span class="fu">list</span>(<span class="fu">index</span>(overlap_xts)[i]))</span>
+<span id="cb10-50"><a href="#cb10-50" aria-hidden="true" tabindex="-1"></a>      </span>
+<span id="cb10-51"><a href="#cb10-51" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb10-52"><a href="#cb10-52" aria-hidden="true" tabindex="-1"></a>  </span>
 <span id="cb10-53"><a href="#cb10-53" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
@@ -363,11 +369,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(score_df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>        date quantile    weight performance
-1 2025-09-19       Q1 0.9616480  0.10579881
-2 2025-09-19       Q2 0.7636671  0.07496626
-3 2025-09-19       Q3 0.5488501  0.05702453
-4 2025-09-19       Q4 0.2887171  0.02883465
-5 2025-09-19  Overall 0.6407206  0.06665606</code></pre>
+1 2025-09-24       Q1 0.9015772  0.09617225
+2 2025-09-24       Q2 0.8003992  0.06850318
+3 2025-09-24       Q3 0.5673323  0.05309431
+4 2025-09-24       Q4 0.2578193  0.02670092
+5 2025-09-24  Overall 0.6317820  0.06111766</code></pre>
 </div>
 </div>
 <div class="cell">

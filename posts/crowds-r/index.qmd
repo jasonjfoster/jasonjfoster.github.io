@@ -37,7 +37,13 @@ data <- get_data(payload)
 ```
 
 ```{r}
-sorted_df <- data[order(data[["netAssets.raw"]], data[["firstTradeDateMilliseconds"]]), ]
+sorted_df <- data[order(
+  -data[["netAssets.raw"]],
+  data[["netExpenseRatio.raw"]],
+  data[["firstTradeDateMilliseconds"]],
+  data[["longName"]],
+  data[["symbol"]]
+), ]
 tickers <- sorted_df[!duplicated(sorted_df[["netAssets.raw"]]), "symbol"]
 ```
 
@@ -103,51 +109,51 @@ index_ls <- list()
 # for (i in width:n_rows) {
 for (i in n_rows) {
     
-    idx <- max(i - width + 1, 1):i
-    x_subset <- coredata(overlap_x_xts[idx, ])
-    y_subset <- coredata(overlap_y_xts[idx, ])
-    params_ls <- list()
-    tickers_ls <- list()
-    performance_ls <- list()
+  idx <- max(i - width + 1, 1):i
+  x_subset <- coredata(overlap_x_xts[idx, ])
+  y_subset <- coredata(overlap_y_xts[idx, ])
+  params_ls <- list()
+  tickers_ls <- list()
+  performance_ls <- list()
+  
+  # for (j in tickers[!tickers %in% allocations]) {
+  for (j in tickers) {
     
-    # for (j in tickers[!tickers %in% allocations]) {
-    for (j in tickers) {
+    idx <- complete.cases(x_subset, y_subset[ , j])
+    x_complete <- x_subset[idx, , drop = FALSE]
+    y_complete <- y_subset[idx, j]
+    
+    if ((nrow(x_complete) > 0) && (length(y_complete) > 0)) {
+        
+      # params <- t(min_rss_optim(x_complete, y_complete))
+      # params_ls <- append(params_ls, list(params))
+    
+      xx <- roll_crossprod(x_complete, x_complete, width = nrow(x_complete))
+      xy <- roll_crossprod(x_complete, y_complete, width = nrow(x_complete))
       
-        idx <- complete.cases(x_subset, y_subset[ , j])
-        x_complete <- x_subset[idx, , drop = FALSE]
-        y_complete <- y_subset[idx, j]
-        
-        if ((nrow(x_complete) > 0) && (length(y_complete) > 0)) {
-            
-            # params <- t(min_rss_optim(x_complete, y_complete))
-            # params_ls <- append(params_ls, list(params))
-          
-            xx <- roll_crossprod(x_complete, x_complete, width = nrow(x_complete))
-            xy <- roll_crossprod(x_complete, y_complete, width = nrow(x_complete))
-            
-            params <- roll_min_rss(xx, xy, total = 1, lower = 0, upper = 1)[nrow(x_complete), ]
-            params_ls <- append(params_ls, list(params))
-            
-            tickers_ls <- append(tickers_ls, list(j))
-            
-            performance_ls <- append(performance_ls, list(performance_xts[i, j]))
-            
-        }
+      params <- roll_min_rss(xx, xy, total = 1, lower = 0, upper = 1)[nrow(x_complete), ]
+      params_ls <- append(params_ls, list(params))
+      
+      tickers_ls <- append(tickers_ls, list(j))
+      
+      performance_ls <- append(performance_ls, list(performance_xts[i, j]))
         
     }
+      
+  }
+  
+  if (length(params_ls) > 0) {
+      
+    result <- do.call(rbind, params_ls)
+    rownames(result) <- unlist(tickers_ls)
     
-    if (length(params_ls) > 0) {
-        
-        result <- do.call(rbind, params_ls)
-        rownames(result) <- unlist(tickers_ls)
-        
-        result <- cbind(result, performance = unlist(performance_ls))
-        
-        result_ls <- append(result_ls, list(result))
-        index_ls <- append(index_ls, list(index(overlap_xts)[i]))
-        
-    }
+    result <- cbind(result, performance = unlist(performance_ls))
     
+    result_ls <- append(result_ls, list(result))
+    index_ls <- append(index_ls, list(index(overlap_xts)[i]))
+      
+  }
+  
 }
 ```
 

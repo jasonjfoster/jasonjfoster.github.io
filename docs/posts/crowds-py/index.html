@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Jason Foster">
-<meta name="dcterms.date" content="2025-09-21">
+<meta name="dcterms.date" content="2025-09-24">
 
 <title>Crowds – jasonjfoster.github.io</title>
 <style>
@@ -165,7 +165,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <div>
       <div class="quarto-title-meta-heading">Published</div>
       <div class="quarto-title-meta-contents">
-        <p class="date">September 21, 2025</p>
+        <p class="date">September 24, 2025</p>
       </div>
     </div>
     
@@ -194,37 +194,45 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 
 
-<div id="082f9367" class="cell" data-execution_count="1">
+<div id="072b3ed9" class="cell" data-execution_count="1">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>factors_r <span class="op">=</span> [<span class="st">"SP500"</span>] <span class="co"># "SP500" does not contain dividends</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>factors_d <span class="op">=</span> [<span class="st">"DTB3"</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <section id="parse-web" class="level1">
 <h1>Parse web</h1>
-<div id="08d7ac92" class="cell" data-execution_count="4">
+<div id="190b57f5" class="cell" data-execution_count="4">
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> yfscreen <span class="im">as</span> yfs</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div id="f97af7dd" class="cell" data-execution_count="5">
+<div id="66a99a3b" class="cell" data-execution_count="5">
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>filters <span class="op">=</span> [<span class="st">"eq"</span>, [<span class="st">"categoryname"</span>, <span class="st">"Tactical Allocation"</span>]]</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>query <span class="op">=</span> yfs.create_query(filters)</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>payload <span class="op">=</span> yfs.create_payload(<span class="st">"mutualfund"</span>, query, <span class="dv">250</span>)</span>
 <span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>data <span class="op">=</span> yfs.get_data(payload)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div id="5e089432" class="cell" data-execution_count="6">
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>sorted_df <span class="op">=</span> data.sort_values(by <span class="op">=</span> [<span class="st">"netAssets.raw"</span>, <span class="st">"firstTradeDateMilliseconds"</span>])</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>tickers <span class="op">=</span> sorted_df.loc[<span class="op">~</span>data[<span class="st">"netAssets.raw"</span>].duplicated(), <span class="st">"symbol"</span>].tolist()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="6b6e8390" class="cell" data-execution_count="6">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>sorted_df <span class="op">=</span> data.sort_values(</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  by <span class="op">=</span> [</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">"netAssets.raw"</span>, <span class="st">"netExpenseRatio.raw"</span>,</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">"firstTradeDateMilliseconds"</span>,</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">"longName"</span>, <span class="st">"symbol"</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>  ],</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>  ascending <span class="op">=</span> [<span class="va">False</span>, <span class="va">True</span>, <span class="va">True</span>, <span class="va">True</span>, <span class="va">True</span>],</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>  kind <span class="op">=</span> <span class="st">"stable"</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>tickers <span class="op">=</span> sorted_df.loc[<span class="op">~</span>sorted_df[<span class="st">"netAssets.raw"</span>].duplicated(), <span class="st">"symbol"</span>].tolist()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div id="63e26b25" class="cell" data-execution_count="7">
+<div id="92529269" class="cell" data-execution_count="7">
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># allocations = ["AOK", "AOM", "AOR", "AOA"]</span></span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="co"># tickers = tickers + allocations</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="optimization" class="level1">
 <h1>Optimization</h1>
-<div id="c1908294" class="cell" data-execution_count="8">
+<div id="c8f84095" class="cell" data-execution_count="8">
 <div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> json</span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> cvxpy <span class="im">as</span> cp</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div id="6d39a0e6" class="cell" data-execution_count="9">
+<div id="7bb35ca7" class="cell" data-execution_count="9">
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> min_rss_optim(x, y):</span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>    </span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  w <span class="op">=</span> cp.Variable(x.shape[<span class="dv">1</span>])</span>
@@ -238,14 +246,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>    </span>
 <span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> w.value</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div id="bbbd5cab" class="cell" data-execution_count="11">
+<div id="4aee08e9" class="cell" data-execution_count="11">
 <div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> pnl(x):</span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> np.nanprod(<span class="dv">1</span> <span class="op">+</span> x) <span class="op">-</span> <span class="dv">1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div id="30b770d7" class="cell" data-execution_count="12">
+<div id="96175868" class="cell" data-execution_count="12">
 <div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>performance_df <span class="op">=</span> returns_df.rolling(width, min_periods <span class="op">=</span> <span class="dv">1</span>).<span class="bu">apply</span>(pnl, raw <span class="op">=</span> <span class="va">False</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div id="7a3f6ecf" class="cell" data-execution_count="13">
+<div id="f2b1476d" class="cell" data-execution_count="13">
 <div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>n_rows <span class="op">=</span> overlap_df.shape[<span class="dv">0</span>]</span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>result_ls <span class="op">=</span> []</span>
 <span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>index_ls <span class="op">=</span> []</span>
@@ -284,18 +292,18 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb10-36"><a href="#cb10-36" aria-hidden="true" tabindex="-1"></a>    result_ls.append(result)</span>
 <span id="cb10-37"><a href="#cb10-37" aria-hidden="true" tabindex="-1"></a>    index_ls.append(overlap_x_df.index[i])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div id="fe83dddf" class="cell" data-execution_count="14">
+<div id="3b380854" class="cell" data-execution_count="14">
 <div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># json.dump([x.to_dict() for x in result_ls], open("result_ls.json", "w"))</span></span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="co"># json.dump([x.isoformat() for x in index_ls], open("index_ls.json", "w"))</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="performance" class="level1">
 <h1>Performance</h1>
-<div id="02ad669a" class="cell" data-execution_count="15">
+<div id="06e5c6dd" class="cell" data-execution_count="15">
 <div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># result_ls = [pd.DataFrame(x) for x in json.load(open("result_ls.json", "r"))]</span></span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="co"># index_ls = [pd.Timestamp(x) for x in json.load(open("index_ls.json", "r"))]</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div id="46166933" class="cell" data-execution_count="16">
+<div id="8958b0dc" class="cell" data-execution_count="16">
 <div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> quantile_cut(x):</span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>  </span>
 <span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>  result <span class="op">=</span> pd.qcut(</span>
@@ -306,7 +314,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>  </span>
 <span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> result</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div id="30ae3d21" class="cell" data-execution_count="17">
+<div id="debd8347" class="cell" data-execution_count="17">
 <div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>n_rows <span class="op">=</span> <span class="bu">len</span>(result_ls)</span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>score_ls <span class="op">=</span> []</span>
 <span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -334,19 +342,19 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb14-25"><a href="#cb14-25" aria-hidden="true" tabindex="-1"></a>  </span>
 <span id="cb14-26"><a href="#cb14-26" aria-hidden="true" tabindex="-1"></a>  score_ls.append(score)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div id="77d247f5" class="cell" data-execution_count="18">
+<div id="787c322e" class="cell" data-execution_count="18">
 <div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>score_df <span class="op">=</span> pd.concat(score_ls, ignore_index <span class="op">=</span> <span class="va">True</span>)</span>
 <span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(score_df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>        date quantile    weight  performance
-0 2025-09-19       Q1  0.961389     0.105395
-1 2025-09-19       Q2  0.762925     0.074934
-2 2025-09-19       Q3  0.549677     0.057135
-3 2025-09-19       Q4  0.288999     0.028890
-4 2025-09-19  Overall  0.640747     0.066589</code></pre>
+0 2025-09-24       Q1  0.901577     0.096172
+1 2025-09-24       Q2  0.800399     0.068503
+2 2025-09-24       Q3  0.567332     0.053094
+3 2025-09-24       Q4  0.257819     0.026701
+4 2025-09-24  Overall  0.631782     0.061118</code></pre>
 </div>
 </div>
-<div id="f66616b9" class="cell" data-execution_count="19">
+<div id="f0e06a2b" class="cell" data-execution_count="19">
 <div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co"># score_df.to_json("score_df.json", date_format = "iso")</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 

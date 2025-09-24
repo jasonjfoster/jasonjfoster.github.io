@@ -40,8 +40,16 @@ data = yfs.get_data(payload)
 ```
 
 ```{python}
-sorted_df = data.sort_values(by = ["netAssets.raw", "firstTradeDateMilliseconds"])
-tickers = sorted_df.loc[~data["netAssets.raw"].duplicated(), "symbol"].tolist()
+sorted_df = data.sort_values(
+  by = [
+    "netAssets.raw", "netExpenseRatio.raw",
+    "firstTradeDateMilliseconds",
+    "longName", "symbol"
+  ],
+  ascending = [False, True, True, True, True],
+  kind = "stable"
+)
+tickers = sorted_df.loc[~sorted_df["netAssets.raw"].duplicated(), "symbol"].tolist()
 ```
 
 ```{python}
