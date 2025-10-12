@@ -1,3 +1,7 @@
+if (!(exists("scale", inherits = TRUE) && is.list(get("scale", inherits = TRUE)))) {
+  scale <- list("periods" = 252, "overlap" = 5)
+}
+
 get_col <- function(data_ls, col) {
   
   symbols <- names(data_ls)
@@ -24,8 +28,17 @@ data_ls <- yfhist::get_data(tickers)
 prices_xts <- get_col(data_ls, "adjclose")
 tickers <- colnames(prices_xts)
 
-returns_xts <- merge(returns_xts, diff(log(prices_xts)))
-overlap_xts <- merge(overlap_xts, roll_mean(returns_xts[ , tickers], scale[["overlap"]], min_obs = 1))
+if (exists("returns_xts", inherits = TRUE)) {
+  returns_xts <- merge(returns_xts, diff(log(prices_xts)))
+} else {
+  returns_xts <- diff(log(prices_xts))
+}
+
+if (exists("overlap_xts", inherits = TRUE)) {
+  overlap_xts <- merge(overlap_xts, roll::roll_mean(returns_xts[ , tickers], scale[["overlap"]], min_obs = 1))
+} else {
+  overlap_xts <- roll::roll_mean(returns_xts[ , tickers], scale[["overlap"]], min_obs = 1)
+}
 
 # weights <- 0.9 ^ ((width - 1):0)
 weights <- rep(1, width)
