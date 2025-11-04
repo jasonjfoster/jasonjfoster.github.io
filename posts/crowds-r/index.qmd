@@ -19,6 +19,7 @@ factors_d <- c("DTB3")
 ```{r}
 #| echo: false
 #| output: false
+#| warning: false
 source("../helper-levels.R")
 width <- 20 * 3
 ```
@@ -87,9 +88,11 @@ library(rolloptim)
 #| echo: false
 #| output: false
 #| warning: false
+library(roll)
+library(zoo)
 source("../helper-prices-yfh.R")
 
-overlap_xts <- roll_mean(returns_xts, scale[["overlap"]], min_obs = 1)
+# overlap_xts <- roll_mean(returns_xts, scale[["overlap"]], min_obs = 1)
 
 # overlap_xts <- na.omit(overlap_xts)
 overlap_x_xts <- overlap_xts[ , factors]
