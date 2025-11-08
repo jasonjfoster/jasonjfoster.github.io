@@ -1,34 +1,68 @@
 # !pip install git+https://github.com/jasonjfoster/hist.git@main#subdirectory=python
+import pandas as pd
+import numpy as np
 import yfhist as yfh
 
-def get_col(data_ls, col):
+def exists(name):
+  
+  result = (name in locals()) or (name in globals())
+  
+  return result
 
-  series_ls = []
+def get_var(name):
+  
+  if name in locals():
+    result = locals()[name]
+  elif name in globals():
+    result = globals()[name]
+  else:
+    raise NameError(name)
+  
+  return result
 
-  for symbol, df in data_ls.items():
+if not exists("width"):
+  width = 252
+  
+if not (exists("scale") and isinstance(get_var("scale"), dict)):
+  scale = {"periods": 252, "overlap": 5}
 
-    df = df.loc[:, ["index", col]].copy()
-    df["index"] = pd.to_datetime(df["index"])
+# if not exists("weights"):
+#   # weights = (0.9 ** np.arange(width - 1, -1, -1)).reshape((width, 1))
+#   weights = np.ones((width, 1))
 
-    df = df.set_index("index")[col]
-    df.name = symbol
+factors = list(get_var("factors")) if exists("factors") else []
+tickers = list(get_var("tickers")) if exists("tickers") else []
 
-    series_ls.append(df)
+status_f = len(factors) > 0
+status_t = len(tickers) > 0
 
-  result_df = pd.concat(series_ls, axis = 1)
+if (status_t):
 
-  return result_df
+  prices_ls = yfh.get_data(tickers)
+  prices_df = yfh.get_col(prices_ls, "adjclose").set_index("index")
+  tickers = list(prices_df.columns)
+  
+  if (status_f):
+    if (exists("returns_df") and isinstance(get_var("returns_df"), pd.DataFrame) and (get_var("returns_df").shape[1] > 0)):
+      
+      returns_df = pd.concat([get_var("returns_df"), np.log(prices_df).diff()], axis = 1)
+      returns_df.columns = list(factors) + list(tickers)
+      
+    else:
+      returns_df = np.log(prices_df).diff()
+    
+    if (exists("overlap_df") and isinstance(get_var("overlap_df"), pd.DataFrame) and (get_var("overlap_df").shape[1] > 0)):
+      overlap_df = pd.concat([get_var("overlap_df"), returns_df[tickers].rolling(scale["overlap"], min_periods = 1).mean()], axis = 1)
+    else:
+      overlap_df = returns_df[tickers].rolling(scale["overlap"], min_periods = 1).mean()
+    
+  else:
+    
+    returns_df = np.log(prices_df).diff()
+    overlap_df = returns_df[tickers].rolling(scale["overlap"], min_periods = 1).mean()
 
-prices_ls = yfh.get_data(tickers)
-prices_df = get_col(prices_ls, "adjclose")
-tickers = prices_df.columns
-
-returns_df = pd.concat([returns_df, np.log(prices_df).diff()], axis = 1)
-overlap_df = pd.concat([overlap_df, returns_df[tickers].rolling(scale["overlap"], min_periods = 1).mean()], axis = 1)
-
-# weights = np.array([0.9 ** i for i in range(width - 1, -1, -1)]).reshape((width, 1))
-weights = np.array([1] * width).reshape((width, 1))
-
-overlap_df = overlap_df.dropna()
-overlap_x_df = overlap_df.dropna()[factors][-width:] # same dimension as `weights`
-overlap_y_df = overlap_df.dropna()[tickers][-width:]
+  # if status_f and exists("overlap_df") and (get_var("overlap_df").shape[1] > 0):
+  #   
+  #   overlap_df = overlap_df.dropna()
+  #   overlap_x_df = overlap_df.dropna()[factors][-width:] # same dimension as `weights`
+  #   overlap_y_df = overlap_df.dropna()[tickers][-width:]

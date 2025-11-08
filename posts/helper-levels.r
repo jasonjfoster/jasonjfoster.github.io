@@ -1,7 +1,3 @@
-# library(roll)
-# library(data.table)
-# options("getSymbols.warning4.0" = FALSE)
-
 if (!exists("width", inherits = TRUE)) {
   width <- 252
 }
@@ -9,6 +5,13 @@ if (!exists("width", inherits = TRUE)) {
 if (!(exists("scale", inherits = TRUE) && is.list(get("scale", inherits = TRUE)))) {
   scale <- list("periods" = 252, "overlap" = 5)
 }
+
+# if (!exists("weights", inherits = TRUE)) {
+#   
+#   # weights <- 0.9 ^ ((width - 1):0)
+#   weights <- rep(1, width)
+#   
+# }
 
 status_r <- exists("factors_r", inherits = TRUE) && length(factors_r) > 0
 status_d <- exists("factors_d", inherits = TRUE) && length(factors_d) > 0
@@ -33,22 +36,23 @@ if (length(factors) > 0) {
       colnames(z) <- i
       z
     }),
-    list(all = TRUE)))
+    list(all = TRUE)
+  ))
   
   if (!exists("returns_xts", inherits = TRUE)) {
     
     returns_xts <- do.call(merge, c(
       lapply(factors, function(i) {
         if (status_r && (i %in% factors_r)) {
-          diff(log(levels_xts[, i]))
+          diff(log(levels_xts[ , i]))
         } else if (status_d && (i %in% factors_d)) {
-          -diff(levels_xts[, i]) / 100
+          -diff(levels_xts[ , i]) / 100
         } else {
           NULL
         }
       }),
-      list(all = TRUE))
-    )
+      list(all = TRUE)
+    ))
     
     if (!is.null(returns_xts) && (ncol(returns_xts) > 0)) {
       colnames(returns_xts) <- factors
