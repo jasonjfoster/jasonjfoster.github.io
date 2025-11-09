@@ -15,17 +15,21 @@ factors_r <- c("SP500", "DTWEXAFEGS") # "SP500" does not contain dividends; note
 factors_d <- c("DGS10", "BAMLH0A0HYM2")
 ```
 
-```{r, echo = FALSE, message = FALSE}
+```{r}
+#| echo: false
+#| output: false
 source("../plot/theme_jjf.R")
 source("../helper-levels.R")
 ```
 
-```{r, echo = FALSE}
+```{r}
+#| echo: false
 palette <- c("black", palette_jjf(length(factors)))
 names(palette) <- c("Overall", factors)
 ```
 
-```{r, echo = FALSE}
+```{r}
+#| echo: false
 overlap_xts <- na.omit(overlap_xts)
 ```
 
@@ -44,14 +48,14 @@ $$
 
 ```{r}
 eigen_decomp <- function(x, comps) {
-    
-    LV <- eigen(cov(x))
-    L <- LV[["values"]][1:comps]
-    V <- LV[["vectors"]][ , 1:comps]
-    
-    result <- V %*% sweep(t(V), 1, L, "*")
-    
-    return(result)
+  
+  LV <- eigen(cov(x))
+  L <- LV[["values"]][1:comps]
+  V <- LV[["vectors"]][ , 1:comps]
+  
+  result <- V %*% sweep(t(V), 1, L, "*")
+  
+  return(result)
     
 }
 ```
@@ -81,12 +85,12 @@ $$
 ```{r}
 variance_explained <- function(x) {
     
-    LV <- eigen(cov(x))
-    L <- LV[["values"]]
-    
-    result <- cumsum(L) / sum(L)
-    
-    return(result)
+  LV <- eigen(cov(x))
+  L <- LV[["values"]]
+  
+  result <- cumsum(L) / sum(L)
+  
+  return(result)
     
 }
 ```
@@ -108,18 +112,18 @@ $$
 ```{r}
 similarity <- function(V, V0) {
     
-    n_cols_v <- ncol(V)
-    n_cols_v0 <- ncol(V0)
-    result <- matrix(0, nrow = n_cols_v, ncol = n_cols_v0)
-    
-    for (i in 1:n_cols_v) {
-      for (j in 1:n_cols_v0) {
-        result[i, j] <- crossprod(V[ , i], V0[ , j]) /
-            sqrt(crossprod(V[ , i]) * crossprod(V0[ , j]))
-      }
+  n_cols_v <- ncol(V)
+  n_cols_v0 <- ncol(V0)
+  result <- matrix(0, nrow = n_cols_v, ncol = n_cols_v0)
+  
+  for (i in 1:n_cols_v) {
+    for (j in 1:n_cols_v0) {
+      result[i, j] <- crossprod(V[ , i], V0[ , j]) /
+        sqrt(crossprod(V[ , i]) * crossprod(V0[ , j]))
     }
-    
-    return(result)
+  }
+  
+  return(result)
     
 }
 ```
@@ -127,25 +131,25 @@ similarity <- function(V, V0) {
 ```{r}
 roll_eigen1 <- function(x, width, comp) {
     
-    n_rows <- nrow(x)
-    result_ls <- list()
+  n_rows <- nrow(x)
+  result_ls <- list()
+  
+  for (i in width:n_rows) {
     
-    for (i in width:n_rows) {
-        
-        idx <- max(i - width + 1, 1):i
-        
-        LV <- eigen(cov(x[idx, ]))
-        V <- LV[["vectors"]]
-        
-        result_ls <- append(result_ls, list(V[ , comp]))
-        
-    }
+    idx <- max(i - width + 1, 1):i
     
-    result <- do.call(rbind, result_ls)
-    result <- xts(result, index(x)[width:n_rows])
-    colnames(result) <- colnames(x)
+    LV <- eigen(cov(x[idx, ]))
+    V <- LV[["vectors"]]
     
-    return(result)
+    result_ls <- append(result_ls, list(V[ , comp]))
+    
+  }
+  
+  result <- do.call(rbind, result_ls)
+  result <- xts::xts(result, zoo::index(x)[width:n_rows])
+  colnames(result) <- colnames(x)
+  
+  return(result)
     
 }
 ```
@@ -167,8 +171,11 @@ raw_df <- roll_eigen1(overlap_xts, width, comp)
 # colnames(raw_df) <- colnames(overlap_xts)
 ```
 
-```{r, echo = FALSE, fig.width = 6, fig.height = 3}
-raw_mlt <- melt(as.data.table(raw_df), id.vars = "index")
+```{r}
+#| echo: false
+#| fig.width: 6
+#| fig.height: 3
+raw_mlt <- data.table::melt(data.table::as.data.table(raw_df), id.vars = "index")
 raw_plt <- plot_ts(raw_mlt, title = "Eigenvector 1Y")
 print(raw_plt)
 ```
@@ -179,36 +186,36 @@ print(raw_plt)
 ```{r}
 roll_eigen2 <- function(x, width, comp) {
     
-    n_rows <- nrow(x)
-    V_ls <- list()
-    result_ls <- list()
+  n_rows <- nrow(x)
+  V_ls <- list()
+  result_ls <- list()
+  
+  for (i in width:n_rows) {
     
-    for (i in width:n_rows) {
-        
-        idx <- max(i - width + 1, 1):i
-        
-        LV <- eigen(cov(x[idx, ]))
-        V <- LV[["vectors"]]
-                
-        if (i > width) {
-          
-            # cosine <- crossprod(V, V_ls[[length(V_ls)]])
-            cosine <- similarity(V, V_ls[[length(V_ls)]])
-            order <- apply(abs(cosine), 1, which.max)
-            V <- t(sign(diag(cosine[ , order])) * t(V[ , order]))
-            
-        }
-        
-        V_ls <- append(V_ls, list(V))
-        result_ls <- append(result_ls, list(V[ , comp]))
-                
+    idx <- max(i - width + 1, 1):i
+    
+    LV <- eigen(cov(x[idx, ]))
+    V <- LV[["vectors"]]
+    
+    if (i > width) {
+      
+      # cosine <- crossprod(V, V_ls[[length(V_ls)]])
+      cosine <- similarity(V, V_ls[[length(V_ls)]])
+      order <- apply(abs(cosine), 1, which.max)
+      V <- t(sign(diag(cosine[ , order])) * t(V[ , order]))
+      
     }
     
-    result <- do.call(rbind, result_ls)
-    result <- xts(result, index(x)[width:n_rows])
-    colnames(result) <- colnames(x)
+    V_ls <- append(V_ls, list(V))
+    result_ls <- append(result_ls, list(V[ , comp]))
     
-    return(result)
+  }
+  
+  result <- do.call(rbind, result_ls)
+  result <- xts::xts(result, zoo::index(x)[width:n_rows])
+  colnames(result) <- colnames(x)
+  
+  return(result)
     
 }
 ```
@@ -217,8 +224,11 @@ roll_eigen2 <- function(x, width, comp) {
 clean_df <- roll_eigen2(overlap_xts, width, comp)
 ```
 
-```{r, echo = FALSE, fig.width = 6, fig.height = 3}
-clean_mlt <- melt(as.data.table(clean_df), id.vars = "index")
+```{r}
+#| echo: false
+#| fig.width: 6
+#| fig.height: 3
+clean_mlt <- data.table::melt(data.table::as.data.table(clean_df), id.vars = "index")
 clean_plt <- plot_ts(clean_mlt, title = "Eigenvector 1Y")
 print(clean_plt)
 ```
@@ -230,39 +240,39 @@ Product of the $n$th eigenvector and square root of the $n$th eigenvalue:
 ```{r}
 roll_shocks <- function(x, width, comp) {
   
-    n_rows <- nrow(x)
-    V_ls <- list()
-    result_ls <- list()
+  n_rows <- nrow(x)
+  V_ls <- list()
+  result_ls <- list()
+  
+  for (i in width:n_rows) {
     
-    for (i in width:n_rows) {
-        
-        idx <- max(i - width + 1, 1):i
-        
-        LV <- eigen(cov(x[idx, ]))
-        L <- LV[["values"]]
-        V <- LV[["vectors"]]
-        
-        if (length(V_ls) > 1) {
-          
-            # cosine <- crossprod(V, V_ls[[length(V_ls)]])
-            cosine <- similarity(V, V_ls[[length(V_ls)]])
-            order <- apply(abs(cosine), 1, which.max)
-            L <- L[order]
-            V <- t(sign(diag(cosine[ , order])) * t(V[ , order]))
-          
-        }
-        
-        shocks <- sqrt(L[comp]) * V[ , comp]
-        V_ls <- append(V_ls, list(V))
-        result_ls <- append(result_ls, list(shocks))
-                
+    idx <- max(i - width + 1, 1):i
+    
+    LV <- eigen(cov(x[idx, ]))
+    L <- LV[["values"]]
+    V <- LV[["vectors"]]
+    
+    if (length(V_ls) > 1) {
+      
+      # cosine <- crossprod(V, V_ls[[length(V_ls)]])
+      cosine <- similarity(V, V_ls[[length(V_ls)]])
+      order <- apply(abs(cosine), 1, which.max)
+      L <- L[order]
+      V <- t(sign(diag(cosine[ , order])) * t(V[ , order]))
+      
     }
     
-    result <- do.call(rbind, result_ls)
-    result <- xts(result, index(x)[width:n_rows])
-    colnames(result) <- colnames(x)
+    shocks <- sqrt(L[comp]) * V[ , comp]
+    V_ls <- append(V_ls, list(V))
+    result_ls <- append(result_ls, list(shocks))
     
-    return(result)
+  }
+  
+  result <- do.call(rbind, result_ls)
+  result <- xts::xts(result, zoo::index(x)[width:n_rows])
+  colnames(result) <- colnames(x)
+  
+  return(result)
     
 }
 ```
@@ -271,8 +281,11 @@ roll_shocks <- function(x, width, comp) {
 shocks_xts <- roll_shocks(overlap_xts, width, comp) * sqrt(scale[["periods"]] * scale[["overlap"]])
 ```
 
-```{r, echo = FALSE, fig.width = 6, fig.height = 3}
-shocks_mlt <- melt(as.data.table(shocks_xts), id.vars = "index")
+```{r}
+#| echo: false
+#| fig.width: 6
+#| fig.height: 3
+shocks_mlt <- data.table::melt(data.table::as.data.table(shocks_xts), id.vars = "index")
 shocks_plt <- plot_ts(shocks_mlt, title = "Implied shocks 1Y using PC1 (%)", multiple = 100)
 print(shocks_plt)
 ```

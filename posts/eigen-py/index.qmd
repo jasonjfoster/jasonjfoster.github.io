@@ -47,29 +47,29 @@ $$
 ```{python}
 def eigen(x):
   
-    L, V = np.linalg.eig(np.cov(x.T, ddof = 1))
-    idx = L.argsort()[::-1]
-    L = L[idx]
-    V = V[:, idx]
-    
-    result = {
-        "values": L,
-        "vectors": V
+  L, V = np.linalg.eig(np.cov(x.T, ddof = 1))
+  idx = L.argsort()[::-1]
+  L = L[idx]
+  V = V[:, idx]
+  
+  result = {
+    "values": L,
+    "vectors": V
     }
     
-    return result
+  return result
 ```
 
 ```{python}
 def eigen_decomp(x, comps):
-    
-    LV = eigen(x)
-    L = LV["values"][:comps]
-    V = LV["vectors"][:, :comps]
-    
-    result = np.dot(V, np.multiply(L, V.T))
-    
-    return result
+  
+  LV = eigen(x)
+  L = LV["values"][:comps]
+  V = LV["vectors"][:, :comps]
+  
+  result = np.dot(V, np.multiply(L, V.T))
+  
+  return result
 ```
 
 ```{python}
@@ -96,13 +96,13 @@ $$
 
 ```{python}
 def variance_explained(x):
-    
-    LV = eigen(x)
-    L = LV["values"]
-    
-    result = L.cumsum() / L.sum()
-    
-    return result
+  
+  LV = eigen(x)
+  L = LV["values"]
+  
+  result = L.cumsum() / L.sum()
+  
+  return result
 ```
 
 ```{python}
@@ -122,37 +122,37 @@ $$
 ```{python}
 def similarity(V, V0):
   
-    n_cols_v = V.shape[1]
-    n_cols_v0 = V0.shape[1]
-    result = np.zeros((n_cols_v, n_cols_v0))
-    
-    for i in range(n_cols_v):
-        for j in range(n_cols_v0):
-            result[i, j] = np.dot(V[:, i], V0[:, j]) / \
-                np.sqrt(np.dot(V[:, i], V[:, i]) * np.dot(V0[:, j], V0[:, j]))
-    
-    return result
+  n_cols_v = V.shape[1]
+  n_cols_v0 = V0.shape[1]
+  result = np.zeros((n_cols_v, n_cols_v0))
+  
+  for i in range(n_cols_v):
+    for j in range(n_cols_v0):
+      result[i, j] = np.dot(V[:, i], V0[:, j]) / \
+      np.sqrt(np.dot(V[:, i], V[:, i]) * np.dot(V0[:, j], V0[:, j]))
+      
+  return result
 ```
 
 ```{python}
 def roll_eigen1(x, width, comp):
     
-    n_rows = len(x)
-    result_ls = []
+  n_rows = len(x)
+  result_ls = []
+  
+  for i in range(width - 1, n_rows):
+      
+    idx = range(max(i - width + 1, 0), i + 1)
     
-    for i in range(width - 1, n_rows):
-        
-        idx = range(max(i - width + 1, 0), i + 1)
-        
-        LV = eigen(x.iloc[idx])
-        V = LV["vectors"]
-        
-        result_ls.append(V[:, comp - 1])
+    LV = eigen(x.iloc[idx])
+    V = LV["vectors"]
     
-    result_df = pd.DataFrame(result_ls, index = x.index[(width - 1):],
-                             columns = x.columns)
-    
-    return result_df  
+    result_ls.append(V[:, comp - 1])
+  
+  result_df = pd.DataFrame(result_ls, index = x.index[(width - 1):],
+                           columns = x.columns)
+  
+  return result_df  
 ```
 
 ```{python}
@@ -176,31 +176,31 @@ print(raw_plt)
 ```{python}
 def roll_eigen2(x, width, comp):
     
-    n_rows = len(x)
-    V_ls = []
-    result_ls = []
+  n_rows = len(x)
+  V_ls = []
+  result_ls = []
+  
+  for i in range(width - 1, n_rows):
+      
+    idx = range(max(i - width + 1, 0), i + 1)
     
-    for i in range(width - 1, n_rows):
-        
-        idx = range(max(i - width + 1, 0), i + 1)
-        
-        LV = eigen(x.iloc[idx])
-        V = LV["vectors"]
-        
-        if i > width - 1:
-            
-            # cosine = np.dot(V.T, V_ls[-1])
-            cosine = similarity(V.T, V_ls[-1])
-            order = np.argmax(np.abs(cosine), axis = 1)
-            V = np.sign(np.diag(cosine[:, order])) * V[:, order]
-            
-        V_ls.append(V)
-        result_ls.append(V[:, comp - 1])
+    LV = eigen(x.iloc[idx])
+    V = LV["vectors"]
     
-    result_df = pd.DataFrame(result_ls, index = x.index[(width - 1):],
-                             columns = x.columns)
-    
-    return result_df
+    if i > width - 1:
+        
+      # cosine = np.dot(V.T, V_ls[-1])
+      cosine = similarity(V.T, V_ls[-1])
+      order = np.argmax(np.abs(cosine), axis = 1)
+      V = np.sign(np.diag(cosine[:, order])) * V[:, order]
+        
+    V_ls.append(V)
+    result_ls.append(V[:, comp - 1])
+  
+  result_df = pd.DataFrame(result_ls, index = x.index[(width - 1):],
+                           columns = x.columns)
+  
+  return result_df
 ```
 
 ```{python}
@@ -221,34 +221,34 @@ Product of the $n$th eigenvector and square root of the $n$th eigenvalue:
 ```{python}
 def roll_shocks(x, width, comp):
     
-    n_rows = len(x)
-    V_ls = []
-    result_ls = []
+  n_rows = len(x)
+  V_ls = []
+  result_ls = []
+  
+  for i in range(width - 1, n_rows):
     
-    for i in range(width - 1, n_rows):
-        
-        idx = range(max(i - width + 1, 0), i + 1)
-        
-        LV = eigen(x.iloc[idx])
-        L = LV["values"]
-        V = LV["vectors"]
-        
-        if len(V_ls) > 1:
-            
-            # cosine = np.dot(V.T, V_ls[-1])
-            cosine = similarity(V.T, V_ls[-1])
-            order = np.argmax(np.abs(cosine), axis = 1)
-            L = L[order]
-            V = np.sign(np.diag(cosine[:, order])) * V[:, order]
-        
-        shocks = np.sqrt(L[comp - 1]) * V[:, comp - 1]
-        V_ls.append(V)
-        result_ls.append(shocks)
-        
-    result_df = pd.DataFrame(result_ls, index = x.index[(width - 1):],
-                             columns = x.columns)
+    idx = range(max(i - width + 1, 0), i + 1)
     
-    return result_df
+    LV = eigen(x.iloc[idx])
+    L = LV["values"]
+    V = LV["vectors"]
+    
+    if len(V_ls) > 1:
+        
+      # cosine = np.dot(V.T, V_ls[-1])
+      cosine = similarity(V.T, V_ls[-1])
+      order = np.argmax(np.abs(cosine), axis = 1)
+      L = L[order]
+      V = np.sign(np.diag(cosine[:, order])) * V[:, order]
+    
+    shocks = np.sqrt(L[comp - 1]) * V[:, comp - 1]
+    V_ls.append(V)
+    result_ls.append(shocks)
+    
+  result_df = pd.DataFrame(result_ls, index = x.index[(width - 1):],
+                           columns = x.columns)
+  
+  return result_df
 ```
 
 ```{python}
