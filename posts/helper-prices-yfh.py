@@ -40,7 +40,7 @@ if (status_t):
 
   prices_ls = yfh.get_data(tickers)
   prices_df = yfh.get_col(prices_ls, "adjclose").set_index("index")
-  tickers = list(prices_df.columns)
+  tickers = prices_df.columns
   
   if (status_f):
     if (exists("returns_df") and isinstance(get_var("returns_df"), pd.DataFrame) and (get_var("returns_df").shape[1] > 0)):
