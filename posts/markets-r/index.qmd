@@ -15,7 +15,9 @@ factors_r <- c("SP500", "DTWEXAFEGS") # "SP500" does not contain dividends; note
 factors_d <- c("DGS10", "BAMLH0A0HYM2")
 ```
 
-```{r, echo = FALSE, message = FALSE}
+```{r}
+#| echo: false
+#| output: false
 source("../plot/theme_jjf.R")
 source("../helper-levels.R")
 ```
@@ -35,11 +37,14 @@ order <- 20
 
 ```{r}
 # "Momentum, Acceleration, and Reversal"
-momentum_xts <- na.omit(lag(roll_prod(1 + returns_xts, width - order, min_obs = 1) - 1, order))
+momentum_xts <- na.omit(lag(roll::roll_prod(1 + returns_xts, width - order, min_obs = 1) - 1, order))
 ```
 
-```{r, echo = FALSE, fig.width = 8, fig.height = 4}
-momentum_mlt <- melt(as.data.table(momentum_xts), id.vars = "index")
+```{r}
+#| echo: false
+#| fig.width: 6
+#| fig.height: 3
+momentum_mlt <- data.table::melt(data.table::as.data.table(momentum_xts), id.vars = "index")
 momentum_plt <- plot_ts_decomp(momentum_mlt, decomp = "Total", title = "Momentum 1Y (%)") +
   facet_wrap(~ variable, scales = "free")
 print(momentum_plt)
@@ -92,7 +97,7 @@ $$
 
 ```{r}
 # volatility scale only
-score_xts <- na.omit(momentum_xts / roll_sd(momentum_xts, width, center = FALSE, min_obs = 1))
+score_xts <- na.omit(momentum_xts / roll::roll_sd(momentum_xts, width, center = FALSE, min_obs = 1))
 ```
 
 ```{r}
@@ -105,8 +110,11 @@ score_xts <- na.omit(momentum_xts / roll_sd(momentum_xts, width, center = FALSE,
 # score_xts <- na.omit(merge(overall_xts, score_xts))
 ```
 
-```{r, echo = FALSE, fig.width = 8, fig.height = 4}
-score_mlt <- melt(as.data.table(score_xts), id.vars = "index")
+```{r}
+#| echo: false
+#| fig.width: 6
+#| fig.height: 3
+score_mlt <- data.table::melt(data.table::as.data.table(score_xts), id.vars = "index")
 score_plt <- plot_ts_decomp(score_mlt, decomp = "Overall", title = "Score 1Y", multiple = 1) +
   facet_wrap(~ variable)
 print(score_plt)
@@ -163,8 +171,11 @@ outliers <- function(z) {
 outliers_xts <- outliers(score_xts)
 ```
 
-```{r, echo = FALSE, warning = FALSE, fig.width = 8, fig.height = 4}
-outliers_mlt <- melt(as.data.table(outliers_xts), id.vars = "index")
+```{r}
+#| echo: false
+#| fig.width: 6
+#| fig.height: 3
+outliers_mlt <- data.table::melt(data.table::as.data.table(outliers_xts), id.vars = "index")
 outliers_plt <- score_plt +
   geom_point(data = outliers_mlt, aes(x = index, y = value, fill = variable))
 print(outliers_plt)
@@ -236,7 +247,7 @@ roll_lead_lag <- function(x, y, width, order, p_value) {
     }
     
     result <- data.frame(do.call(c, x_y_ls), do.call(c, y_x_ls))
-    result <- xts(result, index(x)[width:n_rows])
+    result <- xts::xts(result, zoo::index(x)[width:n_rows])
     colnames(result) <- c(x_name, y_name)
     
     return(result)
@@ -257,8 +268,11 @@ score_y_xts <- score_xts[ , "DGS10"]
 lead_lag_xts <- roll_lead_lag(score_x_xts, score_y_xts, width, order, p_value)
 ```
 
-```{r, echo = FALSE, fig.width = 6, fig.height = 3}
-lead_lag_mlt <- melt(as.data.table(lead_lag_xts), id.vars = "index")
+```{r}
+#| echo: false
+#| fig.width: 6
+#| fig.height: 3
+lead_lag_mlt <- data.table::melt(data.table::as.data.table(lead_lag_xts), id.vars = "index")
 lead_lag_plt <- plot_ts_decomp(lead_lag_mlt, decomp = "Total", title = "Lead lag 1M", palette = palette) +
   theme(axis.text.y = element_blank())
 print(lead_lag_plt)

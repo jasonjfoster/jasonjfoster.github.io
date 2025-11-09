@@ -39,7 +39,7 @@ if (length(factors) > 0) {
     list(all = TRUE)
   ))
   
-  if (!exists("returns_xts", inherits = TRUE)) {
+  # if (!exists("returns_xts", inherits = TRUE)) {
     
     returns_xts <- do.call(merge, c(
       lapply(factors, function(i) {
@@ -58,11 +58,11 @@ if (length(factors) > 0) {
       colnames(returns_xts) <- factors
     }
     
-  }
+  # }
   
-  if (exists("returns_xts", inherits = TRUE) && !is.null(returns_xts) && (ncol(returns_xts) > 0)) {
+  # if (exists("returns_xts", inherits = TRUE) && !is.null(returns_xts) && (ncol(returns_xts) > 0)) {
     overlap_xts <- roll::roll_mean(returns_xts, scale[["overlap"]],
                                    min_obs = 1, na_restore = TRUE)
-  }
+  # }
   
 }

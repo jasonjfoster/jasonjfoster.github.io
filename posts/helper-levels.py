@@ -53,26 +53,26 @@ if status_f:
   levels_df = pdr.get_data_fred(factors, start = "1900-01-01")
   levels_df.sort_index(axis = 0, inplace = True)
   
-  if not exists("returns_df"):
+  # if not exists("returns_df"):
     
-    returns_ls = []
+  returns_ls = []
+  
+  for i in factors:
     
-    for i in factors:
+    if status_r and (i in factors_r):
+      result = np.log(levels_df[i]).diff()
+    elif status_d and (i in factors_d):
+      result = -levels_df[i].diff() / 100
+    else:
+      result = None
+    
+    if result is not None:
       
-      if status_r and (i in factors_r):
-        result = np.log(levels_df[i]).diff()
-      elif status_d and (i in factors_d):
-        result = -levels_df[i].diff() / 100
-      else:
-        result = None
-      
-      if result is not None:
-        
-        result.name = i
-        returns_ls.append(result)
-    
-    if returns_ls:
-      returns_df = pd.concat(returns_ls, axis = 1)
+      result.name = i
+      returns_ls.append(result)
+  
+  if returns_ls:
+    returns_df = pd.concat(returns_ls, axis = 1)
 
-  if (exists("returns_df") and isinstance(returns_df, pd.DataFrame) and (returns_df.shape[1] > 0)):
-    overlap_df = returns_df.rolling(scale["overlap"], min_periods = 1).mean()
+  # if (exists("returns_df") and isinstance(returns_df, pd.DataFrame) and (returns_df.shape[1] > 0)):
+  overlap_df = returns_df.rolling(scale["overlap"], min_periods = 1).mean()

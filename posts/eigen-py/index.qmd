@@ -15,19 +15,23 @@ factors_r = ["SP500", "DTWEXAFEGS"] # "SP500" does not contain dividends; note: 
 factors_d = ["DGS10", "BAMLH0A0HYM2"]
 ```
 
-```{r, echo = FALSE, message = FALSE}
-library(reticulate)
-library(data.table)
+```{r}
 source("../plot/theme_jjf.R")
-source_python("../helper-levels.py")
 ```
 
-```{r, echo = FALSE}
-palette <- c("black", palette_jjf(length(py$factors)))
-names(palette) <- c("Overall", py$factors)
+```{python}
+#| echo: false
+exec(open("../helper-levels.py").read())
 ```
 
-```{python, echo = FALSE}
+```{r}
+#| echo: false
+palette <- c("black", palette_jjf(length(reticulate::py$factors)))
+names(palette) <- c("Overall", reticulate::py$factors)
+```
+
+```{python}
+#| echo: false
 overlap_df = overlap_df.dropna()
 ```
 
@@ -163,8 +167,11 @@ comp = 1
 raw_df = roll_eigen1(overlap_df, width, comp)
 ```
 
-```{r, echo = FALSE, fig.width = 6, fig.height = 3}
-raw_mlt <- melt(as.data.table(py$raw_df, keep.rownames = "index"), id.vars = "index")
+```{r}
+#| echo: false
+#| fig.width: 6
+#| fig.height: 3
+raw_mlt <- data.table::melt(data.table::as.data.table(reticulate::py$raw_df, keep.rownames = "index"), id.vars = "index")
 raw_mlt[ , index := as.Date(index)]
 raw_plt <- plot_ts(raw_mlt, title = "Eigenvector 1Y")
 print(raw_plt)
@@ -207,8 +214,11 @@ def roll_eigen2(x, width, comp):
 clean_df = roll_eigen2(overlap_df, width, comp)
 ```
 
-```{r, echo = FALSE, fig.width = 6, fig.height = 3}
-clean_mlt <- melt(as.data.table(py$clean_df, keep.rownames = "index"), id.vars = "index")
+```{r}
+#| echo: false
+#| fig.width: 6
+#| fig.height: 3
+clean_mlt <- data.table::melt(data.table::as.data.table(reticulate::py$clean_df, keep.rownames = "index"), id.vars = "index")
 clean_mlt[ , index := as.Date(index)]
 clean_plt <- plot_ts(clean_mlt, title = "Eigenvector 1Y")
 print(clean_plt)
@@ -255,8 +265,11 @@ def roll_shocks(x, width, comp):
 shocks_df = roll_shocks(overlap_df, width, comp) * np.sqrt(scale["periods"] * scale["overlap"])
 ```
 
-```{r, echo = FALSE, fig.width = 6, fig.height = 3}
-shocks_mlt <- melt(as.data.table(py$shocks_df, keep.rownames = "index"), id.vars = "index")
+```{r}
+#| echo: false
+#| fig.width: 6
+#| fig.height: 3
+shocks_mlt <- data.table::melt(data.table::as.data.table(reticulate::py$shocks_df, keep.rownames = "index"), id.vars = "index")
 shocks_mlt[ , index := as.Date(index)]
 shocks_plt <- plot_ts(shocks_mlt, title = "Implied shocks 1Y using PC1 (%)", multiple = 100)
 print(shocks_plt)
