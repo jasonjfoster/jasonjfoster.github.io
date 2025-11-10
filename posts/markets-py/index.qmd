@@ -15,16 +15,20 @@ factors_r = ["SP500", "DTWEXAFEGS"] # "SP500" does not contain dividends; note: 
 factors_d = ["DGS10", "BAMLH0A0HYM2"]
 ```
 
-```{r, echo = FALSE, message = FALSE}
-# library(reticulate)
-# library(data.table)
+```{r}
+#| echo: false
 source("../plot/theme_jjf.R")
-source_python("../helper-levels.py")
 ```
 
-```{r, echo = FALSE}
-palette <- c("black", palette_jjf(length(py$factors)))
-names(palette) <- c("Overall", py$factors)
+```{python}
+#| echo: false
+exec(open("../helper-levels.py").read())
+```
+
+```{r}
+#| echo: false
+palette <- c("black", palette_jjf(length(reticulate::py$factors)))
+names(palette) <- c("Overall", reticulate::py$factors)
 ```
 
 # Price momentum
@@ -45,8 +49,11 @@ order = 20
 momentum_df = returns_df.shift(order).rolling(width - order, min_periods = 1).apply(pnl, raw = False).dropna()
 ```
 
-```{r, echo = FALSE, fig.width = 8, fig.height = 4}
-momentum_mlt <- melt(as.data.table(py$momentum_df, keep.rownames = "index"), id.vars = "index")
+```{r}
+#| echo: false
+#| fig.width: 6
+#| fig.height: 3
+momentum_mlt <- data.table::melt(data.table::as.data.table(reticulate::py$momentum_df, keep.rownames = "index"), id.vars = "index")
 momentum_mlt[ , index := as.Date(index)]
 momentum_plt <- plot_ts_decomp(momentum_mlt, decomp = "Total", title = "Momentum 1Y (%)") +
   facet_wrap(~ variable, scales = "free")
@@ -101,14 +108,14 @@ $$
 ```{python}
 def sd(x):
     
-    n_rows = sum(~np.isnan(x))
-        
-    if n_rows > 1:
-        result = np.sqrt(np.nansum(x ** 2) / (n_rows - 1))
-    else:
-        result = np.nan
-        
-    return result
+  n_rows = sum(~np.isnan(x))
+      
+  if n_rows > 1:
+    result = np.sqrt(np.nansum(x ** 2) / (n_rows - 1))
+  else:
+    result = np.nan
+      
+  return result
 ```
 
 ```{python}
@@ -126,8 +133,11 @@ score_df = (momentum_df / momentum_df.rolling(width, min_periods = 1).apply(sd, 
 # score_df = score_df.dropna()
 ```
 
-```{r, echo = FALSE, fig.width = 8, fig.height = 4}
-score_mlt <- melt(as.data.table(py$score_df, keep.rownames = "index"), id.vars = "index")
+```{r}
+#| echo: false
+#| fig.width: 6
+#| fig.height: 3
+score_mlt <- data.table::melt(data.table::as.data.table(reticulate::py$score_df, keep.rownames = "index"), id.vars = "index")
 score_mlt[ , index := as.Date(index)]
 score_plt <- plot_ts_decomp(score_mlt, decomp = "Overall", title = "Score 1Y", multiple = 1) +
   facet_wrap(~ variable)
@@ -151,43 +161,47 @@ Outliers are defined as the regression residuals that fall below $Q_{1}−1.5\ti
 ```{python}
 def outliers(z):
   
-    n_cols = z.shape[1]
-    result_ls = []
+  n_cols = z.shape[1]
+  result_ls = []
 
-    for j in range(n_cols):
-      
-        y = z.iloc[:, j]
+  for j in range(n_cols):
+    
+    y = z.iloc[:, j]
 
-        if (n_cols == 0):
-            x = sm.add_constant(range(len(y)))
-        else:
-            x = sm.add_constant(z.drop(z.columns[j], axis = 1))
+    if (n_cols == 0):
+      x = sm.add_constant(range(len(y)))
+    else:
+      x = sm.add_constant(z.drop(z.columns[j], axis = 1))
 
-        coef = sm.WLS(y, x).fit().params
-        predict = coef.iloc[0] + np.dot(x.iloc[:, 1:], coef[1:])
-        resid = y - predict
+    coef = sm.WLS(y, x).fit().params
+    predict = coef.iloc[0] + np.dot(x.iloc[:, 1:], coef[1:])
+    resid = y - predict
 
-        lower = resid.quantile(0.25)
-        upper = resid.quantile(0.75)
-        iqr = upper - lower
+    lower = resid.quantile(0.25)
+    upper = resid.quantile(0.75)
+    iqr = upper - lower
 
-        total = y[(resid < lower - 1.5 * iqr) | (resid > upper + 1.5 * iqr)]
-        
-        total = pd.DataFrame({"date": total.index, "symbol": total.name, "values": total})
-        result_ls.append(total)
+    total = y[(resid < lower - 1.5 * iqr) | (resid > upper + 1.5 * iqr)]
+    
+    total = pd.DataFrame({"date": total.index, "symbol": total.name, "values": total})
+    result_ls.append(total)
 
-    result = pd.concat(result_ls, ignore_index = True)
-    result = result.pivot_table(index = "date", columns = "symbol", values = "values")
+  result = pd.concat(result_ls, ignore_index = True)
+  result = result.pivot_table(index = "date", columns = "symbol", values = "values")
 
-    return result
+  return result
 ```
 
 ```{python}
 outliers_df = outliers(score_df)
 ```
 
-```{r, echo = FALSE, warning = FALSE, fig.width = 8, fig.height = 4}
-outliers_mlt <- melt(as.data.table(py$outliers_df, keep.rownames = "index"), id.vars = "index")
+```{r}
+#| echo: false
+#| output: false
+#| fig.width: 6
+#| fig.height: 3
+outliers_mlt <- data.table::melt(data.table::as.data.table(reticulate::py$outliers_df, keep.rownames = "index"), id.vars = "index")
 outliers_mlt[ , index := as.Date(index)]
 outliers_plt <- score_plt +
   geom_point(data = outliers_mlt, aes(x = index, y = value, fill = variable))
@@ -215,55 +229,55 @@ $$
 ```{python}
 def granger_test(x, y, order):
     
-    # compute lagged observations
-    lag_x = x.shift(order)
-    lag_y = y.shift(order)
-    
-    # collect series
-    df = pd.DataFrame({"x": x, "y": y, "lag_x": lag_x, "lag_y": lag_y})
-    x = sm.add_constant(df[["lag_y", "lag_x"]])
-    
-    # fit full model
-    fit = sm.WLS(df["y"], x, missing = "drop").fit()
-    
-    R = np.array([0, 0, 1])
-    coef = fit.params
-    r = 0 # technically a matrix (see Stack Exchange)
-    
-    matmul = np.dot(R, coef) - r
-    matmul_mid = np.linalg.inv(np.atleast_2d(np.dot(R, np.dot(fit.cov_params(), R.T))))
-    wald = np.dot(matmul.T, np.dot(matmul_mid, matmul))
-    
-    result = 1 - chi2.cdf(wald, 1)
-    
-    return np.ravel(result)
+  # compute lagged observations
+  lag_x = x.shift(order)
+  lag_y = y.shift(order)
+  
+  # collect series
+  df = pd.DataFrame({"x": x, "y": y, "lag_x": lag_x, "lag_y": lag_y})
+  x = sm.add_constant(df[["lag_y", "lag_x"]])
+  
+  # fit full model
+  fit = sm.WLS(df["y"], x, missing = "drop").fit()
+  
+  R = np.array([0, 0, 1])
+  coef = fit.params
+  r = 0 # technically a matrix (see Stack Exchange)
+  
+  matmul = np.dot(R, coef) - r
+  matmul_mid = np.linalg.inv(np.atleast_2d(np.dot(R, np.dot(fit.cov_params(), R.T))))
+  wald = np.dot(matmul.T, np.dot(matmul_mid, matmul))
+  
+  result = 1 - chi2.cdf(wald, 1)
+  
+  return np.ravel(result)
 ```
 
 ```{python}
 def roll_lead_lag(x, y, width, order, p_value):
   
-    n_rows = len(x)
-    x_name = x.name
-    y_name = y.name
-    x_y_ls = []
-    y_x_ls = []
+  n_rows = len(x)
+  x_name = x.name
+  y_name = y.name
+  x_y_ls = []
+  y_x_ls = []
 
-    for i in range(width - 1, n_rows):
-      
-        idx = range(max(i - width + 1, 0), i + 1)
-
-        x_y = granger_test(x.iloc[idx], y.iloc[idx], order)
-        y_x = granger_test(y.iloc[idx], x.iloc[idx], order)
-
-        x_y_status = (x_y < p_value) and (y_x > p_value)
-        y_x_status = (x_y > p_value) and (y_x < p_value)
-        
-        x_y_ls.append(x_y_status)
-        y_x_ls.append(y_x_status)
+  for i in range(width - 1, n_rows):
     
-    result = pd.DataFrame({x_name: x_y_ls, y_name: y_x_ls}, index = x.index[(width - 1):])
+    idx = range(max(i - width + 1, 0), i + 1)
 
-    return result
+    x_y = granger_test(x.iloc[idx], y.iloc[idx], order)
+    y_x = granger_test(y.iloc[idx], x.iloc[idx], order)
+
+    x_y_status = (x_y < p_value) and (y_x > p_value)
+    y_x_status = (x_y > p_value) and (y_x < p_value)
+    
+    x_y_ls.append(x_y_status)
+    y_x_ls.append(y_x_status)
+  
+  result = pd.DataFrame({x_name: x_y_ls, y_name: y_x_ls}, index = x.index[(width - 1):])
+
+  return result
 ```
 
 ```{python}
@@ -279,8 +293,11 @@ score_y_df = score_df.loc[:, "DGS10"]
 lead_lag_df = roll_lead_lag(score_x_df, score_y_df, width, order, p_value)
 ```
 
-```{r, echo = FALSE, fig.width = 6, fig.height = 3}
-lead_lag_mlt <- melt(as.data.table(py$lead_lag_df, keep.rownames = "index"), id.vars = "index")
+```{r}
+#| echo: false
+#| fig.width: 6
+#| fig.height: 3
+lead_lag_mlt <- data.table::melt(data.table::as.data.table(reticulate::py$lead_lag_df, keep.rownames = "index"), id.vars = "index")
 lead_lag_mlt[ , index := as.Date(index)]
 lead_lag_mlt[ , value := as.logical(value)]
 lead_lag_plt <- plot_ts_decomp(lead_lag_mlt, decomp = "Total", title = "Lead lag 1M", palette = palette) +

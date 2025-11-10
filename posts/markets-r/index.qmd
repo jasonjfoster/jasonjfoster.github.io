@@ -22,7 +22,8 @@ source("../plot/theme_jjf.R")
 source("../helper-levels.R")
 ```
 
-```{r, echo = FALSE}
+```{r}
+#| echo: false
 palette <- c("black", palette_jjf(length(factors)))
 names(palette) <- c("Overall", factors)
 ```
@@ -173,6 +174,7 @@ outliers_xts <- outliers(score_xts)
 
 ```{r}
 #| echo: false
+#| output: false
 #| fig.width: 6
 #| fig.height: 3
 outliers_mlt <- data.table::melt(data.table::as.data.table(outliers_xts), id.vars = "index")
@@ -198,26 +200,26 @@ $$
 ```{r}
 granger_test <- function(x, y, order) {
     
-    # compute lagged observations
-    lag_x <- lag(x, order)
-    lag_y <- lag(y, order)
-    
-    # collect series
-    data <- merge(x, y, lag_x, lag_y)
-    colnames(data) <- c("x", "y", "lag_x", "lag_y")
-    
-    # fit full model
-    fit <- lm(y ~ lag_y + lag_x, data = data)
-    
-    R <- matrix(c(0, 0, 1), nrow = 1)
-    coef <- fit$coefficients
-    r <- 0 # technically a matrix (see Stack Exchange)
-    
-    wald <- t(R %*% coef - r) %*% solve(R %*% vcov(fit) %*% t(R)) %*% (R %*% coef - r)
-    
-    result <- 1 - pchisq(wald, 1)
-    
-    return(result)
+  # compute lagged observations
+  lag_x <- lag(x, order)
+  lag_y <- lag(y, order)
+  
+  # collect series
+  data <- merge(x, y, lag_x, lag_y)
+  colnames(data) <- c("x", "y", "lag_x", "lag_y")
+  
+  # fit full model
+  fit <- lm(y ~ lag_y + lag_x, data = data)
+  
+  R <- matrix(c(0, 0, 1), nrow = 1)
+  coef <- fit$coefficients
+  r <- 0 # technically a matrix (see Stack Exchange)
+  
+  wald <- t(R %*% coef - r) %*% solve(R %*% vcov(fit) %*% t(R)) %*% (R %*% coef - r)
+  
+  result <- 1 - pchisq(wald, 1)
+  
+  return(result)
     
 }
 ```
@@ -225,32 +227,32 @@ granger_test <- function(x, y, order) {
 ```{r}
 roll_lead_lag <- function(x, y, width, order, p_value) {
     
-    n_rows <- nrow(x)
-    x_name <- names(x)
-    y_name <- names(y)
-    x_y_ls <- list()
-    y_x_ls <- list()
+  n_rows <- nrow(x)
+  x_name <- names(x)
+  y_name <- names(y)
+  x_y_ls <- list()
+  y_x_ls <- list()
+  
+  for (i in width:n_rows) {
     
-    for (i in width:n_rows) {
-        
-        idx <- max(i - width + 1, 1):i
-        
-        x_y <- granger_test(x[idx], y[idx], order)
-        y_x <- granger_test(y[idx], x[idx], order)
-        
-        x_y_status <- (x_y < p_value) && (y_x > p_value)
-        y_x_status <- (x_y > p_value) && (y_x < p_value)
-        
-        x_y_ls <- append(x_y_ls, list(x_y_status))
-        y_x_ls <- append(y_x_ls, list(y_x_status))
-
-    }
+    idx <- max(i - width + 1, 1):i
     
-    result <- data.frame(do.call(c, x_y_ls), do.call(c, y_x_ls))
-    result <- xts::xts(result, zoo::index(x)[width:n_rows])
-    colnames(result) <- c(x_name, y_name)
+    x_y <- granger_test(x[idx], y[idx], order)
+    y_x <- granger_test(y[idx], x[idx], order)
     
-    return(result)
+    x_y_status <- (x_y < p_value) && (y_x > p_value)
+    y_x_status <- (x_y > p_value) && (y_x < p_value)
+    
+    x_y_ls <- append(x_y_ls, list(x_y_status))
+    y_x_ls <- append(y_x_ls, list(y_x_status))
+    
+  }
+  
+  result <- data.frame(do.call(c, x_y_ls), do.call(c, y_x_ls))
+  result <- xts::xts(result, zoo::index(x)[width:n_rows])
+  colnames(result) <- c(x_name, y_name)
+  
+  return(result)
     
 }
 ```

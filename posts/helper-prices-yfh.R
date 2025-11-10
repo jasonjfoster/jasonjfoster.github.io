@@ -29,7 +29,8 @@ if (status_t) {
   tickers <- colnames(prices_xts)
   
   if (status_f) {
-    if (exists("returns_xts", inherits = TRUE) && (ncol(returns_xts) > 0)) {
+    if (exists("returns_xts", inherits = TRUE) && !is.null(returns_xts) && 
+        (ncol(returns_xts) > 0)) {
       
       returns_xts <- do.call(merge, c(
         list(returns_xts, diff(log(prices_xts))),
@@ -37,9 +38,12 @@ if (status_t) {
       ))
       colnames(returns_xts) <- c(factors, tickers)
       
+    } else {
+      returns_xts <- diff(log(prices_xts))
     }
     
-    if (exists("overlap_xts", inherits = TRUE) && (ncol(overlap_xts) > 0)) {
+    if (exists("overlap_xts", inherits = TRUE) && !is.null(overlap_xts) && 
+        (ncol(overlap_xts) > 0)) {
       
       overlap_xts <- do.call(merge, c(
         list(overlap_xts,
@@ -62,13 +66,13 @@ if (status_t) {
     
   }
   
-  # if (exists("factors", inherits = TRUE) && (length(factors) > 0) &&
-  #     exists("overlap_xts", inherits = TRUE) && (ncol(overlap_xts) > 0)) {
-  #   
+  # if (status_f && exists("overlap_xts", inherits = TRUE) &&
+  #     (ncol(overlap_xts) > 0)) {
+  # 
   #   overlap_xts <- na.omit(overlap_xts)
   #   overlap_x_xts <- tail(overlap_xts[ , factors], width) # same dimension as `weights`
   #   overlap_y_xts <- tail(overlap_xts[ , tickers], width)
-  #   
+  # 
   # }
   
 }
