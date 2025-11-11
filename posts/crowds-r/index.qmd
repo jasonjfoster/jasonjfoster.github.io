@@ -27,14 +27,10 @@ width <- 20 * 3
 # Parse web
 
 ```{r}
-library(yfscreen)
-```
-
-```{r}
 filters <- list("eq", list("categoryname", "Tactical Allocation"))
-query <- create_query(filters)
-payload <- create_payload("mutualfund", query, 250)
-data <- get_data(payload)
+query <- yfscreen::create_query(filters)
+payload <- yfscreen::create_payload("mutualfund", query, 250)
+data <- yfscreen::get_data(payload)
 ```
 
 ```{r}
@@ -63,23 +59,22 @@ tickers <- sorted_df[!duplicated(sorted_df[["netAssets.raw"]]), "symbol"]
 ```{r}
 #| output: false
 # library(CVXR)
-library(rolloptim)
 ```
 
 ```{r}
 # min_rss_optim <- function(x, y) {
-#     
-#     params <- Variable(ncol(x))
-#     
-#     obj <- Minimize(sum_squares(y - x %*% params))
-#     
-#     cons <- list(sum(params) == 1, params >= 0, params <= 1)
-#     
-#     prob <- Problem(obj, cons)
-#         
-#     result <- solve(prob)$getValue(params)
-#     
-#     return(result)
+# 
+#   params <- Variable(ncol(x))
+# 
+#   obj <- Minimize(sum_squares(y - x %*% params))
+# 
+#   cons <- list(sum(params) == 1, params >= 0, params <= 1)
+# 
+#   prob <- Problem(obj, cons)
+# 
+#   result <- solve(prob)$getValue(params)
+# 
+#   return(result)
 # 
 # }
 ```
@@ -88,12 +83,10 @@ library(rolloptim)
 #| echo: false
 #| output: false
 #| warning: false
-library(roll)
-library(zoo)
 source("../helper-prices-yfh.R")
 
 # consistent with python
-overlap_xts <- roll_mean(returns_xts, scale[["overlap"]], min_obs = 1)
+overlap_xts <- roll::roll_mean(returns_xts, scale[["overlap"]], min_obs = 1)
 
 # overlap_xts <- na.omit(overlap_xts)
 overlap_x_xts <- overlap_xts[ , factors]
@@ -102,7 +95,7 @@ overlap_y_xts <- overlap_xts[ , tickers]
 ```
 
 ```{r}
-performance_xts <- roll_prod(1 + returns_xts, width, min_obs = 1) - 1
+performance_xts <- roll::roll_prod(1 + returns_xts, width, min_obs = 1) - 1
 ```
 
 ```{r}
@@ -114,8 +107,8 @@ index_ls <- list()
 for (i in n_rows) {
     
   idx <- max(i - width + 1, 1):i
-  x_subset <- coredata(overlap_x_xts[idx, ])
-  y_subset <- coredata(overlap_y_xts[idx, ])
+  x_subset <- zoo::coredata(overlap_x_xts[idx, ])
+  y_subset <- zoo::coredata(overlap_y_xts[idx, ])
   params_ls <- list()
   tickers_ls <- list()
   performance_ls <- list()
@@ -132,10 +125,10 @@ for (i in n_rows) {
       # params <- t(min_rss_optim(x_complete, y_complete))
       # params_ls <- append(params_ls, list(params))
     
-      xx <- roll_crossprod(x_complete, x_complete, width = nrow(x_complete))
-      xy <- roll_crossprod(x_complete, y_complete, width = nrow(x_complete))
+      xx <- roll::roll_crossprod(x_complete, x_complete, width = nrow(x_complete))
+      xy <- roll::roll_crossprod(x_complete, y_complete, width = nrow(x_complete))
       
-      params <- roll_min_rss(xx, xy, total = 1, lower = 0, upper = 1)[nrow(x_complete), ]
+      params <- rolloptim::roll_min_rss(xx, xy, total = 1, lower = 0, upper = 1)[nrow(x_complete), ]
       params_ls <- append(params_ls, list(params))
       
       tickers_ls <- append(tickers_ls, list(j))
@@ -154,7 +147,7 @@ for (i in n_rows) {
     result <- cbind(result, performance = unlist(performance_ls))
     
     result_ls <- append(result_ls, list(result))
-    index_ls <- append(index_ls, list(index(overlap_xts)[i]))
+    index_ls <- append(index_ls, list(zoo::index(overlap_xts)[i]))
       
   }
   
