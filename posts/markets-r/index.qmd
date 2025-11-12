@@ -102,8 +102,8 @@ score_xts <- na.omit(momentum_xts / roll::roll_sd(momentum_xts, width, center = 
 ```
 
 ```{r}
-# overall_xts <- xts(rowMeans(score_xts), index(score_xts))
-# overall_xts <- overall_xts / roll_sd(overall_xts, width, center = FALSE, min_obs = 1)
+# overall_xts <- xts::xts(rowMeans(score_xts), zoo::index(score_xts))
+# overall_xts <- overall_xts / roll::roll_sd(overall_xts, width, center = FALSE, min_obs = 1)
 # colnames(overall_xts) <- "Overall"
 ```
 
