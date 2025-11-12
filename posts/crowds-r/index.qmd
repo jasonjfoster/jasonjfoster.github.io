@@ -18,8 +18,7 @@ factors_d <- c("DTB3")
 
 ```{r}
 #| echo: false
-#| output: false
-#| warning: false
+#| output: false # Registered S3 method overwritten by 'quantmod'
 source("../helper-levels.R")
 width <- 20 * 3
 ```
@@ -81,11 +80,9 @@ tickers <- sorted_df[!duplicated(sorted_df[["netAssets.raw"]]), "symbol"]
 
 ```{r}
 #| echo: false
-#| output: false
-#| warning: false
+#| output: false # pause one second after five requests
 source("../helper-prices-yfh.R")
 
-# consistent with python
 overlap_xts <- roll::roll_mean(returns_xts, scale[["overlap"]], min_obs = 1)
 
 # overlap_xts <- na.omit(overlap_xts)

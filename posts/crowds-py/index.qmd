@@ -19,10 +19,6 @@ factors_d = ["DTB3"]
 ```{python}
 #| echo: false
 exec(open("../helper-levels.py").read())
-```
-
-```{python}
-#| echo: false
 width = 20 * 3
 ```
 
@@ -42,9 +38,11 @@ data = yfs.get_data(payload)
 ```{python}
 sorted_df = data.sort_values(
   by = [
-    "netAssets.raw", "netExpenseRatio.raw",
+    "netAssets.raw",
+    "netExpenseRatio.raw",
     "firstTradeDateMilliseconds",
-    "longName", "symbol"
+    "longName",
+    "symbol"
   ],
   ascending = [False, True, True, True, True],
   kind = "stable"
@@ -81,11 +79,10 @@ def min_rss_optim(x, y):
 
 ```{python}
 #| echo: false
-#| output: false
-#| warning: false
+#| output: false # pause one second after five requests
 exec(open("../helper-prices-yfh.py").read()) # run then render
 
-# overlap_df = returns_df.rolling(scale["overlap"], min_periods = 1).mean()
+overlap_df = returns_df.rolling(scale["overlap"], min_periods = 1).mean()
 
 # overlap_df = overlap_df.dropna()
 overlap_x_df = overlap_df[factors]
