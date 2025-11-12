@@ -17,7 +17,7 @@ factors_d <- c("DGS10", "BAMLH0A0HYM2")
 
 ```{r}
 #| echo: false
-#| output: false
+#| output: false # Registered S3 method overwritten by 'quantmod'
 source("../plot/theme_jjf.R")
 source("../helper-levels.R")
 ```
@@ -174,7 +174,7 @@ outliers_xts <- outliers(score_xts)
 
 ```{r}
 #| echo: false
-#| output: false
+#| warning: false # rows containing missing values or values outside the scale range
 #| fig.width: 6
 #| fig.height: 3
 outliers_mlt <- data.table::melt(data.table::as.data.table(outliers_xts), id.vars = "index")
