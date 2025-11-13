@@ -300,8 +300,8 @@ window.Quarto = {
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>score_xts <span class="ot">&lt;-</span> <span class="fu">na.omit</span>(momentum_xts <span class="sc">/</span> roll<span class="sc">::</span><span class="fu">roll_sd</span>(momentum_xts, width, <span class="at">center =</span> <span class="cn">FALSE</span>, <span class="at">min_obs =</span> <span class="dv">1</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># overall_xts &lt;- xts(rowMeans(score_xts), index(score_xts))</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="co"># overall_xts &lt;- overall_xts / roll_sd(overall_xts, width, center = FALSE, min_obs = 1)</span></span>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># overall_xts &lt;- xts::xts(rowMeans(score_xts), zoo::index(score_xts))</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="co"># overall_xts &lt;- overall_xts / roll::roll_sd(overall_xts, width, center = FALSE, min_obs = 1)</span></span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="co"># colnames(overall_xts) &lt;- "Overall"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
