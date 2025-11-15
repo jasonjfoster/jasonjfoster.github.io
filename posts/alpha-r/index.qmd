@@ -7,11 +7,14 @@ categories:
   - finance
   - r
 draft: true
+execute:
+  freeze: false
 editor: 
   mode: source
 ---
 
-```{r, echo = FALSE, message = FALSE}
+```{r}
+#| echo: false
 source("../plot/theme_jjf.R")
 ```
 
@@ -28,27 +31,33 @@ load("returns.rda")
 
 # Optimization
 
-```{r, message = FALSE}
-library(CVXR)
+```{r}
+# install.packages("devtools")
+# devtools::install_github("jasonjfoster/rolloptim")
 ```
 
 ```{r}
-min_rss_optim <- function(x, y) {
+#| output: false # Attaching package: 'CVXR' — The following object is masked from 'package:stats': power
+# library(CVXR)
+```
 
-  n_rows <- nrow(x)
-  x <- as.matrix(x)
-  y <- as.numeric(y)
-  params <- Variable(ncol(x))
-  
-  obj <- Minimize(sum_squares(y - x %*% params))
-  cons <- list(sum(params) == 1, params >= 0, params <= 1)
-  prob <- Problem(obj, cons)
-  
-  result <- solve(prob)$getValue(params)
-  
-  return(result)
-
-}
+```{r}
+# min_rss_optim <- function(x, y) {
+# 
+#   n_rows <- nrow(x)
+#   x <- as.matrix(x)
+#   y <- as.numeric(y)
+#   params <- Variable(ncol(x))
+#   
+#   obj <- Minimize(sum_squares(y - x %*% params))
+#   cons <- list(sum(params) == 1, params >= 0, params <= 1)
+#   prob <- Problem(obj, cons)
+#   
+#   result <- solve(prob)$getValue(params)
+#   
+#   return(result)
+# 
+# }
 ```
 
 # Bootstrapping
@@ -125,7 +134,13 @@ for (z in 1:n_boot) {
   # x_boot <- boot_sample[ , colnames(boot_sample) != "S&P Index Fund"]
   # y_boot <- boot_sample[ , "S&P Index Fund"]
   
-  optim_weights <- min_rss_optim(x_boot, y_boot)
+  # optim_weights <- min_rss_optim(x_boot, y_boot)
+  
+  xx <- roll::roll_crossprod(x_boot, x_boot, width = nrow(x_boot))
+  xy <- roll::roll_crossprod(x_boot, y_boot, width = nrow(x_boot))
+  
+  optim_weights <- rolloptim::roll_min_rss(xx, xy, total = 1, lower = 0, upper = 1)[nrow(x_boot), ]
+  
   optim_returns <- x_boot %*% optim_weights
   optim_port <- prod(1 + optim_returns) ^ (1 / n_rows) - 1
   optim_bench <- prod(1 + y_boot) ^ (1 / n_rows) - 1
@@ -149,7 +164,10 @@ optim_te <- do.call(rbind, optim_te_ls)
 
 Analysis shows that `{r} round(mean(optim_alpha > 0), 2) * 100`% of the optimized portfolios produced alpha values greater than zero, which means that `{r} round(mean(optim_alpha <= 0), 2) * 100`% of optimized combinations did not outperform the S&P 500.
 
-```{r, message = FALSE, echo = FALSE, fig.width = 6, fig.height = 3}
+```{r}
+#| echo: false
+#| fig.width: 6
+#| fig.height: 3
 # 1. Setup data and parameters
 dt <- data.table::as.data.table(list(optim_alpha = optim_alpha))
 q_vals <- quantile(dt$optim_alpha, probs = c(0.05, 0.50, 0.95))

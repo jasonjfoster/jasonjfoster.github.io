@@ -20,7 +20,7 @@ factors_d <- c("DTB3")
 
 ```{r}
 #| echo: false
-#| output: false # Registered S3 method overwritten by 'quantmod'
+#| output: false # Registered S3 method overwritten by 'quantmod': method as.zoo.data.frame from zoo
 source("../helper-levels.R")
 width <- 20 * 3
 ```
@@ -58,7 +58,7 @@ tickers <- sorted_df[!duplicated(sorted_df[["netAssets.raw"]]), "symbol"]
 ```
 
 ```{r}
-#| output: false
+#| output: false # Attaching package: 'CVXR' - The following object is masked from 'package:stats': power
 # library(CVXR)
 ```
 
@@ -122,7 +122,6 @@ for (i in n_rows) {
     if ((nrow(x_complete) > 0) && (length(y_complete) > 0)) {
         
       # params <- t(min_rss_optim(x_complete, y_complete))
-      # params_ls <- append(params_ls, list(params))
     
       xx <- roll::roll_crossprod(x_complete, x_complete, width = nrow(x_complete))
       xy <- roll::roll_crossprod(x_complete, y_complete, width = nrow(x_complete))
