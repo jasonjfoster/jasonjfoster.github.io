@@ -488,5 +488,26 @@
     "title": "Cloud",
     "section": "",
     "text": "https://aws.amazon.com/blogs/big-data/running-r-on-aws/\n\nInstall R\nsudo su\n# yum install -y R # Amazon Linux\n# amazon-linux-extras list\nsudo amazon-linux-extras install R3.4 # Amazon Linux 2\nInstall RStudio Server\n\nhttps://posit.co/download/rstudio-server/\n\nwget https://download2.rstudio.org/server/centos6/x86_64/rstudio-server-rhel-1.2.5019-x86_64.rpm\nyum install rstudio-server-rhel-1.2.5019-x86_64.rpm\nrm rstudio-server-rhel-1.2.5019-x86_64.rpm\nInstall Shiny Server\n\nhttps://posit.co/download/shiny-server/\n\nR -e \"install.packages('shiny', repos = 'http://cran.rstudio.com/')\"\nwget https://download3.rstudio.org/centos6.3/x86_64/shiny-server-1.5.12.933-x86_64.rpm\nyum install --nogpgcheck shiny-server-1.5.12.933-x86_64.rpm\nrm shiny-server-1.5.12.933-x86_64.rpm\nAdd user(s)\nuseradd -m jjf234\nsudo passwd jjf234 # prompt to enter password\nNeed to create /ShinyApps under /ec2-user and then subfolders with code, e.g. /home/ec2-user/ShinyApps/hello\n# sudo /opt/shiny-server/bin/deploy-example user-dirs\n# mkdir ~/ShinyApps\n# sudo cp -R /opt/shiny-server/samples/sample-apps/hello ~/ShinyApps\nInstall devtools\nsudo yum install libcurl-devel\nsudo yum install openssl-devel\nsudo yum install libxml2-devel\nR -e \"install.packages('devtools', repos = 'http://cran.rstudio.com/')\"\nInstall RcppParallel\nR -e \"install.packages('RcppParallel', repos = 'http://cran.rstudio.com/')\"\nInstall RcppArmadillo\nR -e \"install.packages('RcppArmadillo', repos = 'http://cran.rstudio.com/')\"\nInstall other packages\nR -e \"install.packages(c('data.table', 'xts', 'testthat', 'microbenchmark'),\nrepos = 'http://cran.rstudio.com/')\"\nInstall roll\nR -e \"devtools::install_github('jjf234/roll')\"\n\nhttp://1.23.456.789:8787/\nhttp://1.23.456.789:3838/ec2-user/hello/"
+  },
+  {
+    "objectID": "posts/dev-r/index.html",
+    "href": "posts/dev-r/index.html",
+    "title": "Software",
+    "section": "",
+    "text": ".libPaths()\n# &gt; C:\\Users\\username\\AppData\\Local\n# &gt; C:\\Program Files\\R\\R-1.2.3\\library\n\nSet environment variable: PATH=c:\\rtools&lt;123&gt;\\usr\\bin"
+  },
+  {
+    "objectID": "posts/dev-r/index.html#quarto",
+    "href": "posts/dev-r/index.html#quarto",
+    "title": "Software",
+    "section": "Quarto",
+    "text": "Quarto\npip install pyyaml jupyter"
+  },
+  {
+    "objectID": "posts/dev-r/index.html#issues",
+    "href": "posts/dev-r/index.html#issues",
+    "title": "Software",
+    "section": "Issues",
+    "text": "Issues\n\nhttps://github.com/osqp/osqp/issues/385\n\nUse python 3.10 for qdldl\n\nhttps://github.com/pydata/pandas-datareader/issues/965\n\npip install git+https://github.com/pydata/pandas-datareader.git"
   }
 ]

@@ -13,11 +13,14 @@
         "  - finance\n",
         "  - python\n",
         "draft: true\n",
+        "execute:\n",
+        "  eval: false\n",
+        "  freeze: false\n",
         "editor: \n",
         "  mode: source\n",
         "---"
       ],
-      "id": "283525b6"
+      "id": "90c02244"
     },
     {
       "cell_type": "code",
@@ -27,7 +30,7 @@
         "import blpapi\n",
         "import pandas as pd"
       ],
-      "id": "45517ddb",
+      "id": "dae7267c",
       "execution_count": null,
       "outputs": []
     },
@@ -40,7 +43,7 @@
         "-   <https://www.bloomberg.com/professional/support/api-library/>\n",
         "-   Page 80: <https://bloomberg.github.io/blpapi-docs/>"
       ],
-      "id": "086c9e34"
+      "id": "c7c477ed"
     },
     {
       "cell_type": "code",
@@ -58,7 +61,7 @@
         "  \n",
         "  return session"
       ],
-      "id": "36941693",
+      "id": "39cbfc01",
       "execution_count": null,
       "outputs": []
     },
@@ -109,7 +112,7 @@
         "    \n",
         "  return pd.DataFrame(data_ls)"
       ],
-      "id": "feaba444",
+      "id": "5ab8c493",
       "execution_count": null,
       "outputs": []
     },
@@ -119,7 +122,7 @@
       "source": [
         "# Data point"
       ],
-      "id": "cb40c90d"
+      "id": "b1abdf74"
     },
     {
       "cell_type": "code",
@@ -162,7 +165,7 @@
         "  \n",
         "  return result"
       ],
-      "id": "8cf9170b",
+      "id": "4dc8b7f4",
       "execution_count": null,
       "outputs": []
     },
@@ -173,7 +176,7 @@
         "securities = [\"IBM US Equity\", \"GOOG US Equity\", \"MSFT US Equity\", \"BA US Equity\"]\n",
         "fields = [\"MARKET_SECTOR_DES\", \"GICS_SECTOR_NAME\", \"ID_CUSIP\", \"PX_LAST\"]"
       ],
-      "id": "3ea32b75",
+      "id": "4a65acfc",
       "execution_count": null,
       "outputs": []
     },
@@ -185,7 +188,7 @@
         "bdp_df = bdp(securities, fields)\n",
         "print(bdp_df)"
       ],
-      "id": "0be50550",
+      "id": "71a7d1b1",
       "execution_count": null,
       "outputs": []
     },
@@ -195,7 +198,7 @@
       "source": [
         "# Data history"
       ],
-      "id": "76666014"
+      "id": "6ded646d"
     },
     {
       "cell_type": "code",
@@ -246,7 +249,7 @@
         "  \n",
         "  return result"
       ],
-      "id": "a01b3faa",
+      "id": "fb96260b",
       "execution_count": null,
       "outputs": []
     },
@@ -258,7 +261,7 @@
         "start_date = \"20231201\"\n",
         "end_date = \"20231205\""
       ],
-      "id": "a6c21232",
+      "id": "1eee40f4",
       "execution_count": null,
       "outputs": []
     },
@@ -270,7 +273,7 @@
         "bdh_df = bdh(securities, fields, start_date, end_date)\n",
         "print(bdh_df)"
       ],
-      "id": "bb0bf54d",
+      "id": "13d593b2",
       "execution_count": null,
       "outputs": []
     }
