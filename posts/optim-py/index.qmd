@@ -6,6 +6,8 @@ categories:
   - analysis
   - finance
   - python
+execute:
+  freeze: false
 editor: 
   mode: source
 ---
@@ -15,16 +17,20 @@ factors_r = ["SP500", "DTWEXAFEGS"] # "SP500" does not contain dividends; note: 
 factors_d = ["DGS10", "BAMLH0A0HYM2"]
 ```
 
-```{r, echo = FALSE, message = FALSE}
-library(reticulate)
-library(data.table)
+```{r}
+#| echo: false
 source("../plot/theme_jjf.R")
-source_python("../helper-levels.py")
 ```
 
-```{r, echo = FALSE}
-palette <- c("black", palette_jjf(length(py$factors)))
-names(palette) <- c("Overall", py$factors)
+```{python}
+#| echo: false
+exec(open("../helper-levels.py").read())
+```
+
+```{r}
+#| echo: false
+palette <- c("black", palette_jjf(length(reticulate::py$factors)))
+names(palette) <- c("Overall", reticulate::py$factors)
 ```
 
 # Random weights
@@ -39,13 +45,13 @@ Can also scale random weights by $M$, e.g. if sum of weights must be 10% then mu
 
 ```{python}
 def rand_weights1(n_sim, n_assets):  
-    
-    rand_exp = np.matrix(np.random.uniform(size = (n_sim, n_assets)))
-    rand_exp_sum = np.sum(rand_exp, axis = 1)
-    
-    result = rand_exp / rand_exp_sum
-    
-    return result
+  
+  rand_exp = np.matrix(np.random.uniform(size = (n_sim, n_assets)))
+  rand_exp_sum = np.sum(rand_exp, axis = 1)
+  
+  result = rand_exp / rand_exp_sum
+  
+  return result
 ```
 
 ```{python}
@@ -57,8 +63,11 @@ n_sim = 10000
 approach1 = rand_weights1(n_sim, n_assets)
 ```
 
-```{r, echo = FALSE, fig.width = 4, fig.height = 4}
-plot_pairs(as.data.table(py$approach1), title = "Weight (%)")
+```{r}
+#| echo: false
+#| fig.width: 4
+#| fig.height: 4
+plot_pairs(data.table::as.data.table(reticulate::py$approach1), title = "Weight (%)")
 ```
 
 **Approach 2(a)**: uniform sample from the simplex (<http://mathoverflow.net/a/76258>) and then normalize
@@ -69,14 +78,14 @@ This is also known as generating a random vector from the symmetric Dirichlet di
 
 ```{python}
 def rand_weights2a(n_sim, n_assets, lmbda):   
-    
-    # inverse transform sampling: https://en.wikipedia.org/wiki/Inverse_transform_sampling
-    rand_exp = np.matrix(-np.log(1 - np.random.uniform(size = (n_sim, n_assets))) / lmbda)
-    rand_exp_sum = np.sum(rand_exp, axis = 1)
-    
-    result = rand_exp / rand_exp_sum
-    
-    return result
+  
+  # inverse transform sampling: https://en.wikipedia.org/wiki/Inverse_transform_sampling
+  rand_exp = np.matrix(-np.log(1 - np.random.uniform(size = (n_sim, n_assets))) / lmbda)
+  rand_exp_sum = np.sum(rand_exp, axis = 1)
+  
+  result = rand_exp / rand_exp_sum
+  
+  return result
 ```
 
 ```{python}
@@ -87,29 +96,35 @@ lmbda = 1
 approach2a = rand_weights2a(n_sim, n_assets, lmbda)
 ```
 
-```{r, echo = FALSE, fig.width = 4, fig.height = 4}
-plot_pairs(as.data.table(py$approach2a), title = "Weight (%)")
+```{r}
+#| echo: false
+#| fig.width: 4
+#| fig.height: 4
+plot_pairs(data.table::as.data.table(reticulate::py$approach2a), title = "Weight (%)")
 ```
 
 **Approach 2(b)**: directly generate $\text{Exp}(1)$ and then normalize
 
 ```{python}
 def rand_weights2b(n_sim, n_assets):
-    
-    rand_exp = np.matrix(np.random.exponential(size = (n_sim, n_assets)))
-    rand_exp_sum = np.sum(rand_exp, axis = 1)
-    
-    result = rand_exp / rand_exp_sum
-    
-    return result
+  
+  rand_exp = np.matrix(np.random.exponential(size = (n_sim, n_assets)))
+  rand_exp_sum = np.sum(rand_exp, axis = 1)
+  
+  result = rand_exp / rand_exp_sum
+  
+  return result
 ```
 
 ```{python}
 approach2b = rand_weights2b(n_sim, n_assets)
 ```
 
-```{r, echo = FALSE, fig.width = 4, fig.height = 4}
-plot_pairs(as.data.table(py$approach2b), title = "Weight (%)")
+```{r}
+#| echo: false
+#| fig.width: 4
+#| fig.height: 4
+plot_pairs(data.table::as.data.table(reticulate::py$approach2b), title = "Weight (%)")
 ```
 
 ## Random turnover
@@ -128,13 +143,13 @@ Then add random turnover to previous period's random weights.
 
 ```{python}
 def rand_turnover1(n_sim, n_assets, lower, upper, target):
-    
-    rng = upper - lower
-    
-    result = rand_weights2b(n_sim, n_assets) * rng
-    result = result - rng / n_assets
-    
-    return result
+  
+  rng = upper - lower
+  
+  result = rand_weights2b(n_sim, n_assets) * rng
+  result = result - rng / n_assets
+  
+  return result
 ```
 
 ```{python}
@@ -147,46 +162,52 @@ target = 0
 approach1 = rand_turnover1(n_sim, n_assets, lower, upper, target)
 ```
 
-```{r, echo = FALSE, fig.width = 4, fig.height = 4}
-plot_pairs(as.data.table(py$approach1), title = "Weight (%)")
+```{r}
+#| echo: false
+#| fig.width: 4
+#| fig.height: 4
+plot_pairs(data.table::as.data.table(reticulate::py$approach1), title = "Weight (%)")
 ```
 
 ```{python}
 def rand_iterative(n_assets, lower, upper, target):
-    
-    result = np.random.uniform(low = lower, high = upper, size = n_assets - 1)
-    temp = target - sum(result)
-    
-    while not ((temp <= upper) and (temp >= lower)):
-        result = np.random.uniform(low = lower, high = upper, size = n_assets - 1)
-        temp = target - sum(result)
-        
-    result = np.append(result, temp)
-    
-    return result
+  
+  result = np.random.uniform(low = lower, high = upper, size = n_assets - 1)
+  temp = target - sum(result)
+  
+  while not ((temp <= upper) and (temp >= lower)):
+      result = np.random.uniform(low = lower, high = upper, size = n_assets - 1)
+      temp = target - sum(result)
+      
+  result = np.append(result, temp)
+  
+  return result
 ```
 
 ```{python}
 def rand_turnover2(n_sim, n_assets, lower, upper, target):
+
+  result_ls = []
   
-    result_ls = []
+  for i in range(n_sim):
     
-    for i in range(n_sim):
-      
-      result_sim = rand_iterative(n_assets, lower, upper, target)
-      result_ls.append(result_sim)
-      
-    result = pd.DataFrame(result_ls)
+    result_sim = rand_iterative(n_assets, lower, upper, target)
+    result_ls.append(result_sim)
     
-    return result
+  result = pd.DataFrame(result_ls)
+  
+  return result
 ```
 
 ```{python}
 approach2 = rand_turnover2(n_sim, n_assets, lower, upper, target)
 ```
 
-```{r, echo = FALSE, fig.width = 4, fig.height = 4}
-plot_pairs(as.data.table(py$approach2), title = "Weight (%)")
+```{r}
+#| echo: false
+#| fig.width: 4
+#| fig.height: 4
+plot_pairs(data.table::as.data.table(reticulate::py$approach2), title = "Weight (%)")
 ```
 
 # Mean-variance
@@ -197,10 +218,10 @@ import cvxpy as cp
 
 ```{python}
 def geometric_mean(x, scale):
-    
-    result = np.prod(1 + x) ** (scale/ len(x)) - 1
-    
-    return result
+  
+  result = np.prod(1 + x) ** (scale/ len(x)) - 1
+  
+  return result
 ```
 
 -   <https://www.adrian.idv.hk/2021-06-22-kkt/>
@@ -212,12 +233,19 @@ def geometric_mean(x, scale):
 tickers = ["BAICX"] # fund inception date is "2011-11-28"
 ```
 
-```{r, echo = FALSE, message = FALSE}
-source_python("../helper-prices.py")
+```{python}
+#| echo: false
+exec(open("../helper-prices-yfh.py").read())
+
+overlap_df = returns_df.rolling(scale["overlap"], min_periods = 1).mean()
+
+overlap_df = overlap_df.dropna()
+overlap_x_df = overlap_df[factors]
+overlap_y_df = overlap_df[tickers]
 ```
 
 ```{python}
-returns_x_df = returns_df.dropna()[factors]
+returns_x_df = returns_df.dropna()[factors] # extended history
 mu = returns_x_df.apply(geometric_mean, axis = 0, scale = scale["periods"])
 sigma = np.cov(overlap_x_df.T, ddof = 1) * scale["periods"] * scale["overlap"]
 ```
@@ -287,19 +315,19 @@ $$
 
 ```{python}
 def max_mean_optim(mu, sigma, target):
-    
-    params = cp.Variable(len(mu))
-    
-    obj = cp.Maximize(params.T @ mu)
-    
-    cons = [cp.sum(params) == 1, params >= 0,
-            cp.quad_form(params, sigma) <= target ** 2]
-    
-    prob = cp.Problem(obj, cons)
-    
-    prob.solve()
-    
-    return params.value
+  
+  params = cp.Variable(len(mu))
+  
+  obj = cp.Maximize(params.T @ mu)
+  
+  cons = [cp.sum(params) == 1, params >= 0,
+          cp.quad_form(params, sigma) <= target ** 2]
+  
+  prob = cp.Problem(obj, cons)
+  
+  prob.solve()
+  
+  return params.value
 ```
 
 ```{python}
@@ -384,19 +412,19 @@ $$
 
 ```{python}
 def min_var_optim(mu, sigma, target):
-    
-    params = cp.Variable(len(mu))
-    
-    obj = cp.Minimize(cp.quad_form(params, sigma))
-    
-    cons = [cp.sum(params) == 1, params >= 0,
-            params.T @ mu >= target]
-    
-    prob = cp.Problem(obj, cons)
-    
-    prob.solve()
-    
-    return params.value
+  
+  params = cp.Variable(len(mu))
+  
+  obj = cp.Minimize(cp.quad_form(params, sigma))
+  
+  cons = [cp.sum(params) == 1, params >= 0,
+          params.T @ mu >= target]
+  
+  prob = cp.Problem(obj, cons)
+  
+  prob.solve()
+  
+  return params.value
 ```
 
 ```{python}
@@ -480,18 +508,18 @@ $$
 
 ```{python}
 def max_utility_optim(mu, sigma, target):
-    
-    params = cp.Variable(len(mu))
-    
-    obj = cp.Minimize(0.5 * target * cp.quad_form(params, sigma) - params.T @ mu)
-    
-    cons = [cp.sum(params) == 1, params >= 0]
-    
-    prob = cp.Problem(obj, cons)
-    
-    prob.solve()
-    
-    return params.value
+  
+  params = cp.Variable(len(mu))
+  
+  obj = cp.Minimize(0.5 * target * cp.quad_form(params, sigma) - params.T @ mu)
+  
+  cons = [cp.sum(params) == 1, params >= 0]
+  
+  prob = cp.Problem(obj, cons)
+  
+  prob.solve()
+  
+  return params.value
 ```
 
 ```{python}
@@ -578,18 +606,18 @@ $$
 
 ```{python}
 def min_rss_optim1(mu, sigma):
-    
-    params = cp.Variable(len(mu))
-    
-    obj = cp.Minimize(0.5 * cp.quad_form(params, sigma) - params.T @ mu)
-    
-    cons = [cp.sum(params) == 1, params >= 0]
-    
-    prob = cp.Problem(obj, cons)
-    
-    prob.solve()
-    
-    return params.value
+  
+  params = cp.Variable(len(mu))
+  
+  obj = cp.Minimize(0.5 * cp.quad_form(params, sigma) - params.T @ mu)
+  
+  cons = [cp.sum(params) == 1, params >= 0]
+  
+  prob = cp.Problem(obj, cons)
+  
+  prob.solve()
+  
+  return params.value
 ```
 
 ```{python}
@@ -608,18 +636,18 @@ np.sqrt(np.matmul(np.transpose(params4), np.matmul(sigma, params4)))
 
 ```{python}
 def min_rss_optim2(x, y):
-    
-    params = cp.Variable(x.shape[1])
-    
-    obj = cp.Minimize(cp.sum_squares(y - x @ params))
-    
-    cons = [cp.sum(params) == 1, params >= 0]
-    
-    prob = cp.Problem(obj, cons)
-    
-    prob.solve()
-    
-    return params.value
+  
+  params = cp.Variable(x.shape[1])
+  
+  obj = cp.Minimize(cp.sum_squares(y - x @ params))
+  
+  cons = [cp.sum(params) == 1, params >= 0]
+  
+  prob = cp.Problem(obj, cons)
+  
+  prob.solve()
+  
+  return params.value
 ```
 
 ```{python}

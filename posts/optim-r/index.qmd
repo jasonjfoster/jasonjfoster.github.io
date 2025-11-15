@@ -6,6 +6,8 @@ categories:
   - analysis
   - finance
   - r
+execute:
+  freeze: false
 editor: 
   mode: source
 ---
@@ -15,12 +17,15 @@ factors_r <- c("SP500", "DTWEXAFEGS") # "SP500" does not contain dividends; note
 factors_d <- c("DGS10", "BAMLH0A0HYM2")
 ```
 
-```{r, echo = FALSE, message = FALSE}
+```{r}
+#| echo: false
+#| output: false # Registered S3 method overwritten by 'quantmod': method as.zoo.data.frame from zoo
 source("../plot/theme_jjf.R")
 source("../helper-levels.R")
 ```
 
-```{r, echo = FALSE}
+```{r}
+#| echo: false
 palette <- c("black", palette_jjf(length(factors)))
 names(palette) <- c("Overall", factors)
 ```
@@ -37,11 +42,11 @@ Can also scale random weights by $M$, e.g. if sum of weights must be 10% then mu
 
 ```{r}
 rand_weights1 <- function(n_sim, n_assets) {
+  
+  rand_exp <- matrix(runif(n_sim * n_assets), nrow = n_sim, ncol = n_assets)
+  result <- rand_exp / rowSums(rand_exp)
     
-    rand_exp <- matrix(runif(n_sim * n_assets), nrow = n_sim, ncol = n_assets)
-    result <- rand_exp / rowSums(rand_exp)
-    
-    return(result)
+  return(result)
     
 }
 ```
@@ -55,8 +60,11 @@ n_sim <- 10000
 approach1 <- rand_weights1(n_sim, n_assets)
 ```
 
-```{r, echo = FALSE, fig.width = 4, fig.height = 4}
-plot_pairs(as.data.table(approach1), title = "Weight (%)")
+```{r}
+#| echo: false
+#| fig.width: 4
+#| fig.height: 4
+plot_pairs(data.table::as.data.table(approach1), title = "Weight (%)")
 ```
 
 **Approach 2(a)**: uniform sample from the simplex (<http://mathoverflow.net/a/76258>) and then normalize
@@ -68,12 +76,12 @@ This is also known as generating a random vector from the symmetric Dirichlet di
 ```{r}
 rand_weights2a <- function(n_sim, n_assets, lmbda) {
     
-    # inverse transform sampling: https://en.wikipedia.org/wiki/Inverse_transform_sampling
-    rand_exp <- matrix(-log(1 - runif(n_sim * n_assets)) / lmbda, nrow = n_sim, ncol = n_assets)
-    result <- rand_exp / rowSums(rand_exp)
-    
-    return(result)
-    
+  # inverse transform sampling: https://en.wikipedia.org/wiki/Inverse_transform_sampling
+  rand_exp <- matrix(-log(1 - runif(n_sim * n_assets)) / lmbda, nrow = n_sim, ncol = n_assets)
+  result <- rand_exp / rowSums(rand_exp)
+  
+  return(result)
+  
 }
 ```
 
@@ -85,20 +93,23 @@ lmbda <- 1
 approach2a <- rand_weights2a(n_sim, n_assets, lmbda)
 ```
 
-```{r, echo = FALSE, fig.width = 4, fig.height = 4}
-plot_pairs(as.data.table(approach2a), title = "Weight (%)")
+```{r}
+#| echo: false
+#| fig.width: 4
+#| fig.height: 4
+plot_pairs(data.table::as.data.table(approach2a), title = "Weight (%)")
 ```
 
 **Approach 2(b)**: directly generate $\text{Exp}(1)$ and then normalize
 
 ```{r}
 rand_weights2b <- function(n_sim, n_assets) {
-    
-    rand_exp <- matrix(rexp(n_sim * n_assets), nrow = n_sim, ncol = n_assets)
-    result <- rand_exp / rowSums(rand_exp)
-    
-    return(result)
-    
+  
+  rand_exp <- matrix(rexp(n_sim * n_assets), nrow = n_sim, ncol = n_assets)
+  result <- rand_exp / rowSums(rand_exp)
+  
+  return(result)
+  
 }
 ```
 
@@ -106,8 +117,11 @@ rand_weights2b <- function(n_sim, n_assets) {
 approach2b <- rand_weights2b(n_sim, n_assets)
 ```
 
-```{r, echo = FALSE, fig.width = 4, fig.height = 4}
-plot_pairs(as.data.table(approach2b), title = "Weight (%)")
+```{r}
+#| echo: false
+#| fig.width: 4
+#| fig.height: 4
+plot_pairs(data.table::as.data.table(approach2b), title = "Weight (%)")
 ```
 
 ## Random turnover
@@ -127,12 +141,12 @@ Then add random turnover to previous period's random weights.
 ```{r}
 rand_turnover1 <- function(n_sim, n_assets, lower, upper, target) {
     
-    rng <- upper - lower
-    
-    result <- rand_weights2b(n_sim, n_assets) * rng
-    result <- result - rng / n_assets
-    
-    return(result)
+  rng <- upper - lower
+  
+  result <- rand_weights2b(n_sim, n_assets) * rng
+  result <- result - rng / n_assets
+  
+  return(result)
     
 }
 ```
@@ -147,46 +161,49 @@ target <- 0
 approach1 <- rand_turnover1(n_sim, n_assets, lower, upper, target)
 ```
 
-```{r, echo = FALSE, fig.width = 4, fig.height = 4}
-plot_pairs(as.data.table(approach1), title = "Weight (%)")
+```{r}
+#| echo: false
+#| fig.width: 4
+#| fig.height: 4
+plot_pairs(data.table::as.data.table(approach1), title = "Weight (%)")
 ```
 
 ```{r}
 rand_iterative <- function(n_assets, lower, upper, target) {
-    
-    result <- runif(n_assets - 1, min = lower, max = upper)
-    temp <- target - sum(result)
-    
-    while (!((temp <= upper) && (temp >= lower))) {
-        
-        result <- runif(n_assets - 1, min = lower, max = upper)
-        temp <- target - sum(result)
-        
-    }
-    
-    result <- append(result, temp)
-    
-    return(result)
-    
+  
+  result <- runif(n_assets - 1, min = lower, max = upper)
+  temp <- target - sum(result)
+  
+  while (!((temp <= upper) && (temp >= lower))) {
+      
+      result <- runif(n_assets - 1, min = lower, max = upper)
+      temp <- target - sum(result)
+      
+  }
+  
+  result <- append(result, temp)
+  
+  return(result)
+  
 }
 ```
 
 ```{r}
 rand_turnover2 <- function(n_sim, n_assets, lower, upper, target) {
   
-    result_ls <- list()
-    
-    for (i in 1:n_sim) {
-        
-        result_sim <- rand_iterative(n_assets, lower, upper, target)
-        result_ls <- append(result_ls, list(result_sim))
-        
-    }
-    
-    result <- do.call(rbind, result_ls)
-    
-    return(result)
-    
+  result_ls <- list()
+  
+  for (i in 1:n_sim) {
+      
+      result_sim <- rand_iterative(n_assets, lower, upper, target)
+      result_ls <- append(result_ls, list(result_sim))
+      
+  }
+  
+  result <- do.call(rbind, result_ls)
+  
+  return(result)
+  
 }
 ```
 
@@ -194,23 +211,22 @@ rand_turnover2 <- function(n_sim, n_assets, lower, upper, target) {
 approach2 <- rand_turnover2(n_sim, n_assets, lower, upper, target)
 ```
 
-```{r, echo = FALSE, fig.width = 4, fig.height = 4}
-plot_pairs(as.data.table(approach2), title = "Weight (%)")
+```{r}
+#| echo: false
+#| fig.width: 4
+#| fig.height: 4
+plot_pairs(data.table::as.data.table(approach2), title = "Weight (%)")
 ```
 
 # Mean-variance
 
-```{r, message = FALSE}
-library(CVXR)
-```
-
 ```{r}
 geometric_mean <- function(x, scale) {
-    
-    result <- prod(1 + x) ^ (scale / length(x)) - 1
-    
-    return(result)
-    
+  
+  result <- prod(1 + x) ^ (scale / length(x)) - 1
+  
+  return(result)
+  
 }
 ```
 
@@ -223,8 +239,14 @@ geometric_mean <- function(x, scale) {
 tickers <- "BAICX" # fund inception date is "2011-11-28" 
 ```
 
-```{r, echo = FALSE, message = FALSE}
-source("../helper-prices.R")
+```{r}
+source("../helper-prices-yfh.R")
+
+overlap_xts <- roll::roll_mean(returns_xts, scale[["overlap"]], min_obs = 1)
+
+overlap_xts <- na.omit(overlap_xts)
+overlap_x_xts <- overlap_xts[ , factors]
+overlap_y_xts <- overlap_xts[ , tickers]
 ```
 
 ```{r}
@@ -298,19 +320,19 @@ $$
 
 ```{r}
 max_mean_optim <- function(mu, sigma, target) {
-    
-    params <- Variable(length(mu))
-    
-    obj <- Maximize(t(params) %*% mu)
-    
-    cons <- list(sum(params) == 1, params >= 0,
-                 quad_form(params, sigma) <= target ^ 2)
-    
-    prob <- Problem(obj, cons)
-    
-    result <- solve(prob)$getValue(params)
-    
-    return(result)
+  
+  params <- CVXR::Variable(length(mu))
+  
+  obj <- CVXR::Maximize(t(params) %*% mu)
+  
+  cons <- list(sum(params) == 1, params >= 0,
+               CVXR::quad_form(params, sigma) <= target ^ 2)
+  
+  prob <- CVXR::Problem(obj, cons)
+  
+  result <- CVXR::solve(prob)$getValue(params)
+  
+  return(result)
 
 }
 ```
@@ -411,19 +433,19 @@ $$
 
 ```{r}
 min_var_optim <- function(mu, sigma, target) {
-    
-    params <- Variable(length(mu))
-    
-    obj <- Minimize(quad_form(params, sigma))
-    
-    cons <- list(sum(params) == 1, params >= 0,
-                 sum(mu * params) >= target)
-    
-    prob <- Problem(obj, cons)
-    
-    result <- solve(prob)$getValue(params)
-    
-    return(result)
+  
+  params <- CVXR::Variable(length(mu))
+  
+  obj <- CVXR::Minimize(CVXR::quad_form(params, sigma))
+  
+  cons <- list(sum(params) == 1, params >= 0,
+               sum(mu * params) >= target)
+  
+  prob <- CVXR::Problem(obj, cons)
+  
+  result <- CVXR::solve(prob)$getValue(params)
+  
+  return(result)
 
 }
 ```
@@ -513,18 +535,18 @@ $$
 
 ```{r}
 max_utility_optim <- function(mu, sigma, target) {
-    
-    params <- Variable(length(mu))
-    
-    obj <- Minimize(0.5 * target * quad_form(params, sigma) - t(mu) %*% params)
-    
-    cons <- list(sum(params) == 1, params >= 0)
-    
-    prob <- Problem(obj, cons)
-        
-    result <- solve(prob)$getValue(params)
-    
-    return(result)
+  
+  params <- CVXR::Variable(length(mu))
+  
+  obj <- CVXR::Minimize(0.5 * target * CVXR::quad_form(params, sigma) - t(mu) %*% params)
+  
+  cons <- list(sum(params) == 1, params >= 0)
+  
+  prob <- CVXR::Problem(obj, cons)
+      
+  result <- CVXR::solve(prob)$getValue(params)
+  
+  return(result)
 
 }
 ```
@@ -618,17 +640,17 @@ $$
 ```{r}
 min_rss_optim1 <- function(mu, sigma) {
     
-    params <- Variable(length(mu))
-    
-    obj <- Minimize(0.5 * quad_form(params, sigma) - t(mu) %*% params)
-    
-    cons <- list(sum(params) == 1, params >= 0)
-    
-    prob <- Problem(obj, cons)
-        
-    result <- solve(prob)$getValue(params)
-    
-    return(result)
+  params <- CVXR::Variable(length(mu))
+  
+  obj <- CVXR::Minimize(0.5 * CVXR::quad_form(params, sigma) - t(mu) %*% params)
+  
+  cons <- list(sum(params) == 1, params >= 0)
+  
+  prob <- CVXR::Problem(obj, cons)
+      
+  result <- CVXR::solve(prob)$getValue(params)
+  
+  return(result)
 
 }
 ```
@@ -652,24 +674,24 @@ sqrt(params4 %*% sigma %*% t(params4))
 
 ```{r}
 min_rss_optim2 <- function(x, y) {
-    
-    params <- Variable(ncol(x))
-    
-    obj <- Minimize(sum_squares(y - x %*% params))
-    
-    cons <- list(sum(params) == 1, params >= 0)
-    
-    prob <- Problem(obj, cons)
-        
-    result <- solve(prob)$getValue(params)
-    
-    return(result)
+  
+  params <- CVXR::Variable(ncol(x))
+  
+  obj <- CVXR::Minimize(CVXR::sum_squares(y - x %*% params))
+  
+  cons <- list(sum(params) == 1, params >= 0)
+  
+  prob <- CVXR::Problem(obj, cons)
+      
+  result <- CVXR::solve(prob)$getValue(params)
+  
+  return(result)
 
 }
 ```
 
 ```{r}
-params5 <- t(min_rss_optim2(coredata(overlap_x_xts), coredata(overlap_y_xts)))
+params5 <- t(min_rss_optim2(zoo::coredata(overlap_x_xts), zoo::coredata(overlap_y_xts)))
 params5
 ```
 
