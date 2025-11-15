@@ -16,28 +16,18 @@ factors_r <- c("SP500", "DTWEXAFEGS") # "SP500" does not contain dividends; note
 factors_d <- c("DGS10", "BAMLH0A0HYM2")
 ```
 
-```{r, echo = FALSE, output = FALSE}
-# source("../helper-levels.R")
-library(quantmod)
-options("getSymbols.warning4.0" = FALSE)
-
-factors <- c(factors_r, factors_d)
-
-getSymbols(factors, src = "FRED")
-levels_xts <- do.call(merge, c(lapply(factors, function(i) get(i)), all = TRUE))
-
-returns_xts <- do.call(merge, lapply(factors, function(i) {
-  if (i %in% factors_r) {
-    diff(log((levels_xts[ , i]))) # price
-  } else if (i %in% factors_d) {
-    -diff(levels_xts[ , i]) / 100 # price
-  }    
-}))
-
+```{r}
 risk_sign <- c(SP500 = 1, DTWEXAFEGS = 1, DGS10 = -1, BAMLH0A0HYM2 = -1)
 ```
 
-```{r, echo = FALSE}
+```{r}
+#| echo: false
+#| output: false # Registered S3 method overwritten by 'quantmod': method as.zoo.data.frame from zoo
+source("../helper-levels.R")
+```
+
+```{r}
+#| echo: false
 returns_xts <- na.omit(returns_xts)
 ```
 
@@ -85,10 +75,6 @@ round(data.frame(
 
 # Nonlinear nonparametric statistics
 
-```{r}
-library(NNS)
-```
-
 ## Partial moments
 
 -   <https://cran.r-project.org/web/packages/NNS/vignettes/NNSvignette_Partial_Moments.html>
@@ -98,8 +84,12 @@ sigma <- cov(returns_xts)
 ```
 
 ```{r}
-pm <- PM.matrix(LPM_degree = 1, UPM_degree = 1, target = "mean",
-                variable = returns_xts, pop_adj = TRUE)
+#| output: false
+# Registered S3 method overwritten by 'data.table': print.data.table
+# Registered S3 methods overwritten by 'htmltools': print.html (from=tools:rstudio), print.shiny.tag (from=tools:rstudio), print.shiny.tag.list (from=tools:rstudio)
+# Registered S3 method overwritten by 'htmlwidgets': print.htmlwidget (from=tools:rstudio)
+pm <- NNS::PM.matrix(LPM_degree = 1, UPM_degree = 1, target = "mean",
+                     variable = returns_xts, pop_adj = TRUE)
 ```
 
 ```{r}
@@ -152,17 +142,17 @@ idx <- which(rowSums(returns_xts > target) != length(factors)) # exclude cupm qu
 
 ```{r}
 returns_bs <- apply(returns_xts[idx, ], 2, function(x) {
-  result <- NNS.meboot(as.vector(x),
-                       reps = ceiling(n_samples / length(idx)),
-                       rho = 1,
-                       type = "pearson")["replicates", ]$replicates
+  result <- NNS::NNS.meboot(as.vector(x),
+                            reps = ceiling(n_samples / length(idx)),
+                            rho = 1,
+                            type = "pearson")["replicates", ]$replicates
   tail(as.vector(result), n_samples)
 })
 ```
 
 ```{r}
-pm <- PM.matrix(LPM_degree = 1, UPM_degree = 1, target = "mean",
-                variable = returns_bs, pop_adj = TRUE)
+pm <- NNS::PM.matrix(LPM_degree = 1, UPM_degree = 1, target = "mean",
+                     variable = returns_bs, pop_adj = TRUE)
 ```
 
 ```{r}
