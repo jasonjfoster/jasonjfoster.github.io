@@ -1,351 +1,489 @@
 {
-  "cells": [
-    {
-      "cell_type": "markdown",
-      "metadata": {},
-      "source": [
-        "---\n",
-        "title: \"Crowds\"\n",
-        "author: \"[Jason Foster](mailto:jason.j.foster@gmail.com)\"\n",
-        "date: last-modified\n",
-        "categories:\n",
-        "  - analysis\n",
-        "  - finance\n",
-        "  - python\n",
-        "draft: true\n",
-        "execute:\n",
-        "  freeze: false\n",
-        "editor: \n",
-        "  mode: source\n",
-        "---"
-      ],
-      "id": "e5514ddd"
-    },
-    {
-      "cell_type": "code",
-      "metadata": {},
-      "source": [
-        "factors_r = [\"SP500\"] # \"SP500\" does not contain dividends\n",
-        "factors_d = [\"DTB3\"]"
-      ],
-      "id": "ae319c17",
-      "execution_count": null,
-      "outputs": []
-    },
-    {
-      "cell_type": "code",
-      "metadata": {},
-      "source": [
-        "#| echo: false\n",
-        "exec(open(\"../helper-levels.py\").read())\n",
-        "width = 20 * 3"
-      ],
-      "id": "e41ef479",
-      "execution_count": null,
-      "outputs": []
-    },
-    {
-      "cell_type": "markdown",
-      "metadata": {},
-      "source": [
-        "# Parse web"
-      ],
-      "id": "5585a2d1"
-    },
-    {
-      "cell_type": "code",
-      "metadata": {},
-      "source": [
-        "import yfscreen as yfs"
-      ],
-      "id": "366d72e5",
-      "execution_count": null,
-      "outputs": []
-    },
-    {
-      "cell_type": "code",
-      "metadata": {},
-      "source": [
-        "filters = [\"eq\", [\"categoryname\", \"Tactical Allocation\"]]\n",
-        "query = yfs.create_query(filters)\n",
-        "payload = yfs.create_payload(\"mutualfund\", query, 250)\n",
-        "data = yfs.get_data(payload)"
-      ],
-      "id": "5c9ed289",
-      "execution_count": null,
-      "outputs": []
-    },
-    {
-      "cell_type": "code",
-      "metadata": {},
-      "source": [
-        "sorted_df = data.sort_values(\n",
-        "  by = [\n",
-        "    \"netAssets.raw\",\n",
-        "    \"netExpenseRatio.raw\",\n",
-        "    \"firstTradeDateMilliseconds\",\n",
-        "    \"longName\",\n",
-        "    \"symbol\"\n",
-        "  ],\n",
-        "  ascending = [False, True, True, True, True],\n",
-        "  kind = \"stable\"\n",
-        ")\n",
-        "tickers = sorted_df.loc[~sorted_df[\"netAssets.raw\"].duplicated(), \"symbol\"].tolist()"
-      ],
-      "id": "206cb37c",
-      "execution_count": null,
-      "outputs": []
-    },
-    {
-      "cell_type": "code",
-      "metadata": {},
-      "source": [
-        "# allocations = [\"AOK\", \"AOM\", \"AOR\", \"AOA\"]\n",
-        "# tickers = tickers + allocations"
-      ],
-      "id": "68792206",
-      "execution_count": null,
-      "outputs": []
-    },
-    {
-      "cell_type": "markdown",
-      "metadata": {},
-      "source": [
-        "# Optimization"
-      ],
-      "id": "d34606de"
-    },
-    {
-      "cell_type": "code",
-      "metadata": {},
-      "source": [
-        "import json\n",
-        "import cvxpy as cp"
-      ],
-      "id": "dda794d0",
-      "execution_count": null,
-      "outputs": []
-    },
-    {
-      "cell_type": "code",
-      "metadata": {},
-      "source": [
-        "def min_rss_optim(x, y):\n",
-        "    \n",
-        "  w = cp.Variable(x.shape[1])\n",
-        "    \n",
-        "  objective = cp.Minimize(cp.sum_squares(y - x @ w))\n",
-        "    \n",
-        "  constraints = [cp.sum(w) == 1, w >= 0, w <= 1]\n",
-        "    \n",
-        "  problem = cp.Problem(objective, constraints)\n",
-        "  problem.solve()\n",
-        "    \n",
-        "  return w.value"
-      ],
-      "id": "c0ab0a7d",
-      "execution_count": null,
-      "outputs": []
-    },
-    {
-      "cell_type": "code",
-      "metadata": {},
-      "source": [
-        "#| echo: false\n",
-        "#| output: false # pause one second after five requests\n",
-        "exec(open(\"../helper-prices-yfh.py\").read()) # run then render\n",
-        "\n",
-        "overlap_df = returns_df.rolling(scale[\"overlap\"], min_periods = 1).mean()\n",
-        "\n",
-        "# overlap_df = overlap_df.dropna()\n",
-        "overlap_x_df = overlap_df[factors]\n",
-        "overlap_y_df = overlap_df[tickers]\n",
-        "# overlap_z_df = overlap_df[allocations]"
-      ],
-      "id": "1a036b83",
-      "execution_count": null,
-      "outputs": []
-    },
-    {
-      "cell_type": "code",
-      "metadata": {},
-      "source": [
-        "def pnl(x):\n",
-        "  return np.nanprod(1 + x) - 1"
-      ],
-      "id": "5ee6bae1",
-      "execution_count": null,
-      "outputs": []
-    },
-    {
-      "cell_type": "code",
-      "metadata": {},
-      "source": [
-        "performance_df = returns_df.rolling(width, min_periods = 1).apply(pnl, raw = False)"
-      ],
-      "id": "07321dfb",
-      "execution_count": null,
-      "outputs": []
-    },
-    {
-      "cell_type": "code",
-      "metadata": {},
-      "source": [
-        "n_rows = overlap_df.shape[0]\n",
-        "result_ls = []\n",
-        "index_ls = []\n",
-        "\n",
-        "# for i in range(width - 1, n_rows):\n",
-        "for i in range(n_rows - 1, n_rows):\n",
-        "  \n",
-        "  idx = range(max(i - width + 1, 0), i + 1)\n",
-        "  x_subset = overlap_x_df.iloc[idx]\n",
-        "  y_subset = overlap_y_df.iloc[idx]\n",
-        "  params_ls = []\n",
-        "  tickers_ls = []\n",
-        "  performance_ls = []\n",
-        "  \n",
-        "  # for j in [ticker for ticker in tickers if ticker not in allocations]:\n",
-        "  for j in tickers:\n",
-        "    \n",
-        "    idx = ~x_subset.isna().any(axis = 1) & ~y_subset[j].isna()\n",
-        "    x_complete = x_subset.loc[idx]\n",
-        "    y_complete = y_subset.loc[idx, j]\n",
-        "    \n",
-        "    if (x_complete.shape[0] > 0) and (y_complete.size > 0):\n",
-        "        \n",
-        "      params = min_rss_optim(x_complete.values, y_complete.values)\n",
-        "      params_ls.append(params)\n",
-        "      \n",
-        "      tickers_ls.append(j)\n",
-        "      \n",
-        "      performance_ls.append(performance_df[j].iloc[i])\n",
-        "\n",
-        "  if params_ls:\n",
-        "    \n",
-        "    result = pd.DataFrame(params_ls, index = tickers_ls)\n",
-        "    result[\"performance\"] = performance_ls\n",
-        "    \n",
-        "    result_ls.append(result)\n",
-        "    index_ls.append(overlap_x_df.index[i])"
-      ],
-      "id": "ec535f6b",
-      "execution_count": null,
-      "outputs": []
-    },
-    {
-      "cell_type": "code",
-      "metadata": {},
-      "source": [
-        "# json.dump([x.to_dict() for x in result_ls], open(\"result_ls.json\", \"w\"))\n",
-        "# json.dump([x.isoformat() for x in index_ls], open(\"index_ls.json\", \"w\"))"
-      ],
-      "id": "f85b218e",
-      "execution_count": null,
-      "outputs": []
-    },
-    {
-      "cell_type": "markdown",
-      "metadata": {},
-      "source": [
-        "# Performance"
-      ],
-      "id": "a05677ec"
-    },
-    {
-      "cell_type": "code",
-      "metadata": {},
-      "source": [
-        "# result_ls = [pd.DataFrame(x) for x in json.load(open(\"result_ls.json\", \"r\"))]\n",
-        "# index_ls = [pd.Timestamp(x) for x in json.load(open(\"index_ls.json\", \"r\"))]"
-      ],
-      "id": "b1298ce8",
-      "execution_count": null,
-      "outputs": []
-    },
-    {
-      "cell_type": "code",
-      "metadata": {},
-      "source": [
-        "def quantile_cut(x):\n",
-        "  \n",
-        "  result = pd.qcut(\n",
-        "    -x,\n",
-        "    q = [0, 0.25, 0.5, 0.75, 1],\n",
-        "    labels = [\"Q1\", \"Q2\", \"Q3\", \"Q4\"]\n",
-        "  )\n",
-        "  \n",
-        "  return result"
-      ],
-      "id": "08f828d2",
-      "execution_count": null,
-      "outputs": []
-    },
-    {
-      "cell_type": "code",
-      "metadata": {},
-      "source": [
-        "n_rows = len(result_ls)\n",
-        "score_ls = []\n",
-        "\n",
-        "for i in range(n_rows):\n",
-        "  \n",
-        "  score_df = pd.DataFrame(result_ls[i])\n",
-        "  score_df.columns = factors + [\"performance\"]\n",
-        "  \n",
-        "  score_df[\"date\"] = index_ls[i]\n",
-        "  score_df[\"quantile\"] = quantile_cut(score_df[\"performance\"])\n",
-        "  \n",
-        "  score = score_df.groupby([\"date\", \"quantile\"], observed = True).agg(\n",
-        "    weight = (factors[0], \"mean\"),\n",
-        "    performance = (\"performance\", \"mean\")\n",
-        "  ).reset_index()\n",
-        "  \n",
-        "  overall = pd.DataFrame({\n",
-        "    \"date\": [index_ls[i]],\n",
-        "    \"quantile\": [\"Overall\"],\n",
-        "    \"weight\": [score_df[factors[0]].mean()],\n",
-        "    \"performance\": [score_df[\"performance\"].mean()]\n",
-        "  })\n",
-        "  \n",
-        "  score = pd.concat([score, overall], ignore_index = True)\n",
-        "  \n",
-        "  score_ls.append(score)"
-      ],
-      "id": "8a07b204",
-      "execution_count": null,
-      "outputs": []
-    },
-    {
-      "cell_type": "code",
-      "metadata": {},
-      "source": [
-        "score_df = pd.concat(score_ls, ignore_index = True)\n",
-        "print(score_df)"
-      ],
-      "id": "065cb92c",
-      "execution_count": null,
-      "outputs": []
-    },
-    {
-      "cell_type": "code",
-      "metadata": {},
-      "source": [
-        "# score_df.to_json(\"score_df.json\", date_format = \"iso\")"
-      ],
-      "id": "15325b36",
-      "execution_count": null,
-      "outputs": []
-    }
-  ],
-  "metadata": {
-    "kernelspec": {
-      "name": "python3",
-      "language": "python",
-      "display_name": "Python 3 (ipykernel)",
-      "path": "C:\\Users\\jason\\AppData\\Local\\Programs\\Python\\Python310\\share\\jupyter\\kernels\\python3"
-    }
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "id": "a251f478",
+   "metadata": {},
+   "source": [
+    "---\n",
+    "title: \"Crowds\"\n",
+    "author: \"[Jason Foster](mailto:jason.j.foster@gmail.com)\"\n",
+    "date: last-modified\n",
+    "categories:\n",
+    "  - analysis\n",
+    "  - finance\n",
+    "  - python\n",
+    "draft: true\n",
+    "execute:\n",
+    "  freeze: false\n",
+    "editor: \n",
+    "  mode: source\n",
+    "---"
+   ]
   },
-  "nbformat": 4,
-  "nbformat_minor": 5
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "id": "932d254f",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "factors_r = [\"SP500\"] # \"SP500\" does not contain dividends\n",
+    "factors_d = [\"DTB3\"]"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "id": "485f4953",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#| echo: false\n",
+    "exec(open(\"../helper-levels.py\").read())\n",
+    "width = 20 * 3"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "7eb36b5c",
+   "metadata": {},
+   "source": [
+    "# Parse web"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "id": "773a8eb8",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import yfscreen as yfs"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 4,
+   "id": "ef901d5f",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "filters = [\"eq\", [\"categoryname\", \"Tactical Allocation\"]]\n",
+    "query = yfs.create_query(filters)\n",
+    "payload = yfs.create_payload(\"mutualfund\", query, 250)\n",
+    "data = yfs.get_data(payload)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 5,
+   "id": "e26cad0b",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "sorted_df = data.sort_values(\n",
+    "  by = [\n",
+    "    \"netAssets.raw\",\n",
+    "    \"netExpenseRatio.raw\",\n",
+    "    \"firstTradeDateMilliseconds\",\n",
+    "    \"longName\",\n",
+    "    \"symbol\"\n",
+    "  ],\n",
+    "  ascending = [False, True, True, True, True],\n",
+    "  kind = \"stable\"\n",
+    ")\n",
+    "tickers = sorted_df.loc[~sorted_df[\"netAssets.raw\"].duplicated(), \"symbol\"].tolist()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 6,
+   "id": "bb8fdadc",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# allocations = [\"AOK\", \"AOM\", \"AOR\", \"AOA\"]\n",
+    "# tickers = tickers + allocations"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "90b4f65f",
+   "metadata": {},
+   "source": [
+    "# Optimization"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 7,
+   "id": "25cecbcf",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import json\n",
+    "import cvxpy as cp"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 8,
+   "id": "30c73871",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "def min_rss_optim(x, y):\n",
+    "    \n",
+    "  w = cp.Variable(x.shape[1])\n",
+    "    \n",
+    "  objective = cp.Minimize(cp.sum_squares(y - x @ w))\n",
+    "    \n",
+    "  constraints = [cp.sum(w) == 1, w >= 0, w <= 1]\n",
+    "    \n",
+    "  problem = cp.Problem(objective, constraints)\n",
+    "  problem.solve()\n",
+    "    \n",
+    "  return w.value"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 9,
+   "id": "d0af7f56",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "pause one second after five requests\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "pause one second after five requests\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "pause one second after five requests\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "pause one second after five requests\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "pause one second after five requests\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "pause one second after five requests\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "pause one second after five requests\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "pause one second after five requests\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "pause one second after five requests\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "pause one second after five requests\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "pause one second after five requests\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "pause one second after five requests\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "pause one second after five requests\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "pause one second after five requests\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "pause one second after five requests\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "pause one second after five requests\n"
+     ]
+    }
+   ],
+   "source": [
+    "#| echo: false\n",
+    "#| output: false # pause one second after five requests\n",
+    "exec(open(\"../helper-prices-yfh.py\").read()) # run then render\n",
+    "\n",
+    "overlap_df = returns_df.rolling(scale[\"overlap\"], min_periods = 1).mean()\n",
+    "\n",
+    "# overlap_df = overlap_df.dropna()\n",
+    "overlap_x_df = overlap_df[factors]\n",
+    "overlap_y_df = overlap_df[tickers]\n",
+    "# overlap_z_df = overlap_df[allocations]"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 10,
+   "id": "fa6880cd",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "def pnl(x):\n",
+    "  return np.nanprod(1 + x) - 1"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 11,
+   "id": "7a43c355",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "performance_df = returns_df.rolling(width, min_periods = 1).apply(pnl, raw = False)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 12,
+   "id": "6ee211ea",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "n_rows = overlap_df.shape[0]\n",
+    "result_ls = []\n",
+    "index_ls = []\n",
+    "\n",
+    "# for i in range(width - 1, n_rows):\n",
+    "for i in range(n_rows - 1, n_rows):\n",
+    "  \n",
+    "  idx = range(max(i - width + 1, 0), i + 1)\n",
+    "  x_subset = overlap_x_df.iloc[idx]\n",
+    "  y_subset = overlap_y_df.iloc[idx]\n",
+    "  params_ls = []\n",
+    "  tickers_ls = []\n",
+    "  performance_ls = []\n",
+    "  \n",
+    "  # for j in [ticker for ticker in tickers if ticker not in allocations]:\n",
+    "  for j in tickers:\n",
+    "    \n",
+    "    idx = ~x_subset.isna().any(axis = 1) & ~y_subset[j].isna()\n",
+    "    x_complete = x_subset.loc[idx]\n",
+    "    y_complete = y_subset.loc[idx, j]\n",
+    "    \n",
+    "    if (x_complete.shape[0] > 0) and (y_complete.size > 0):\n",
+    "        \n",
+    "      params = min_rss_optim(x_complete.values, y_complete.values)\n",
+    "      params_ls.append(params)\n",
+    "      \n",
+    "      tickers_ls.append(j)\n",
+    "      \n",
+    "      performance_ls.append(performance_df[j].iloc[i])\n",
+    "\n",
+    "  if params_ls:\n",
+    "    \n",
+    "    result = pd.DataFrame(params_ls, index = tickers_ls)\n",
+    "    result[\"performance\"] = performance_ls\n",
+    "    \n",
+    "    result_ls.append(result)\n",
+    "    index_ls.append(overlap_x_df.index[i])"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 13,
+   "id": "b207d108",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# json.dump([x.to_dict() for x in result_ls], open(\"result_ls.json\", \"w\"))\n",
+    "# json.dump([x.isoformat() for x in index_ls], open(\"index_ls.json\", \"w\"))"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "8b3a4a19",
+   "metadata": {},
+   "source": [
+    "# Performance"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 14,
+   "id": "c119cdfa",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# result_ls = [pd.DataFrame(x) for x in json.load(open(\"result_ls.json\", \"r\"))]\n",
+    "# index_ls = [pd.Timestamp(x) for x in json.load(open(\"index_ls.json\", \"r\"))]"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 15,
+   "id": "9194e029",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "def quantile_cut(x):\n",
+    "  \n",
+    "  result = pd.qcut(\n",
+    "    -x,\n",
+    "    q = [0, 0.25, 0.5, 0.75, 1],\n",
+    "    labels = [\"Q1\", \"Q2\", \"Q3\", \"Q4\"]\n",
+    "  )\n",
+    "  \n",
+    "  return result"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 16,
+   "id": "4cccd391",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "n_rows = len(result_ls)\n",
+    "score_ls = []\n",
+    "\n",
+    "for i in range(n_rows):\n",
+    "  \n",
+    "  score_df = pd.DataFrame(result_ls[i])\n",
+    "  score_df.columns = factors + [\"performance\"]\n",
+    "  \n",
+    "  score_df[\"date\"] = index_ls[i]\n",
+    "  score_df[\"quantile\"] = quantile_cut(score_df[\"performance\"])\n",
+    "  \n",
+    "  score = score_df.groupby([\"date\", \"quantile\"], observed = True).agg(\n",
+    "    weight = (factors[0], \"mean\"),\n",
+    "    performance = (\"performance\", \"mean\")\n",
+    "  ).reset_index()\n",
+    "  \n",
+    "  overall = pd.DataFrame({\n",
+    "    \"date\": [index_ls[i]],\n",
+    "    \"quantile\": [\"Overall\"],\n",
+    "    \"weight\": [score_df[factors[0]].mean()],\n",
+    "    \"performance\": [score_df[\"performance\"].mean()]\n",
+    "  })\n",
+    "  \n",
+    "  score = pd.concat([score, overall], ignore_index = True)\n",
+    "  \n",
+    "  score_ls.append(score)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 17,
+   "id": "497efc78",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "        date quantile    weight  performance\n",
+      "0 2025-11-14       Q1  0.827696     0.064285\n",
+      "1 2025-11-14       Q2  0.671307     0.040846\n",
+      "2 2025-11-14       Q3  0.596869     0.029795\n",
+      "3 2025-11-14       Q4  0.347768     0.004573\n",
+      "4 2025-11-14  Overall  0.610345     0.034864\n"
+     ]
+    }
+   ],
+   "source": [
+    "score_df = pd.concat(score_ls, ignore_index = True)\n",
+    "print(score_df)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 18,
+   "id": "1c748ff1",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# score_df.to_json(\"score_df.json\", date_format = \"iso\")"
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3 (ipykernel)",
+   "language": "python",
+   "name": "python3",
+   "path": "C:\\Users\\jason\\OneDrive\\Documents\\.virtualenvs\\r-reticulate\\share\\jupyter\\kernels\\python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.10.11"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
 }
