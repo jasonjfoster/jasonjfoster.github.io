@@ -240,6 +240,7 @@ tickers <- "BAICX" # fund inception date is "2011-11-28"
 ```
 
 ```{r}
+#| echo: false
 source("../helper-prices-yfh.R")
 
 overlap_xts <- roll::roll_mean(returns_xts, scale[["overlap"]], min_obs = 1)
@@ -255,7 +256,7 @@ mu <- apply(returns_x_xts, 2, geometric_mean, scale = scale[["periods"]])
 sigma <- cov(overlap_x_xts) * scale[["periods"]] * scale[["overlap"]]
 ```
 
-## Maximize means
+## Maximize mean
 
 $$
 \begin{aligned}
