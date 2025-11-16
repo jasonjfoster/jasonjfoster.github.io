@@ -46,8 +46,8 @@ tickers <- sorted_df[!duplicated(sorted_df[["netAssets.raw"]]), "symbol"]
 ```
 
 ```{r}
-# allocations <- c("AOK", "AOM", "AOR", "AOA")
-# tickers <- c(tickers, allocations)
+allocations <- c("IVV", "IDEV", "IUSB", "IEMG", "IJH", "IAGG", "IJR")
+tickers <- c(tickers, allocations)
 ```
 
 # Optimization
@@ -88,8 +88,9 @@ source("../helper-prices-yfh.R")
 overlap_xts <- roll::roll_mean(returns_xts, scale[["overlap"]], min_obs = 1)
 
 # overlap_xts <- na.omit(overlap_xts)
-overlap_x_xts <- overlap_xts[ , factors]
-overlap_y_xts <- overlap_xts[ , tickers]
+# overlap_x_xts <- overlap_xts[ , factors]
+overlap_x_xts <- overlap_xts[ , allocations]
+overlap_y_xts <- overlap_xts[ , !colnames(overlap_xts) %in% c(factors, allocations)]
 # overlap_z_xts <- overlap_xts[ , allocations]
 ```
 
@@ -112,20 +113,18 @@ for (i in n_rows) {
   tickers_ls <- list()
   performance_ls <- list()
   
-  # for (j in tickers[!tickers %in% allocations]) {
-  for (j in tickers) {
+  for (j in tickers[!tickers %in% allocations]) {
     
     idx <- complete.cases(x_subset, y_subset[ , j])
     x_complete <- x_subset[idx, , drop = FALSE]
     y_complete <- y_subset[idx, j]
     
     if ((nrow(x_complete) > 0) && (length(y_complete) > 0)) {
-        
-      # params <- t(min_rss_optim(x_complete, y_complete))
-    
+      
       xx <- roll::roll_crossprod(x_complete, x_complete, width = nrow(x_complete))
       xy <- roll::roll_crossprod(x_complete, y_complete, width = nrow(x_complete))
       
+      # params <- t(min_rss_optim(x_complete, y_complete))
       params <- rolloptim::roll_min_rss(xx, xy, total = 1, lower = 0, upper = 1)[nrow(x_complete), ]
       params_ls <- append(params_ls, list(params))
       
@@ -166,16 +165,16 @@ for (i in n_rows) {
 
 ```{r}
 quantile_cut <- function(x) {
-  
+
   result <- cut(
     -x,
     breaks = quantile(-x, probs = c(0, 0.25, 0.5, 0.75, 1)),
     labels = c("Q1", "Q2", "Q3", "Q4"),
     include.lowest = TRUE
   )
-  
+
   return(result)
-  
+
 }
 ```
 
@@ -186,22 +185,18 @@ score_ls <- list()
 for (i in 1:n_rows) {
   
   score_df <- data.frame(result_ls[[i]])
-  colnames(score_df) <- c(factors, "performance")
+  colnames(score_df) <- c(allocations, "performance")
   
   score_df[["date"]] <- index_ls[[i]]
   score_df[["quantile"]] <- quantile_cut(score_df[["performance"]])
   
-  score <- aggregate(
-    cbind(weight = get(factors[1]), performance) ~ date + quantile,
-    score_df, mean
-  )
+  score_form <- as.formula(paste0("cbind(", paste(c(allocations, "performance"), collapse = ","), ") ~ date + quantile"))
+  overall_form <- as.formula(paste0("cbind(", paste(c(allocations, "performance"), collapse = ","), ") ~ date"))
   
-  overall <- data.frame(
-    date = index_ls[[i]],
-    quantile = "Overall",
-    weight = mean(score_df[[factors[1]]]),
-    performance = mean(score_df[["performance"]])
-  )
+  score <- aggregate(score_form, data = score_df, FUN = function(x) mean(x, na.rm = TRUE))
+  overall <- aggregate(overall_form, data = score_df, FUN = function(x) mean(x, na.rm = TRUE))
+  overall[["quantile"]] <- "Overall"
+  overall <- overall[ , c("date", "quantile", allocations, "performance")]
   
   score <- rbind(score, overall)
   
