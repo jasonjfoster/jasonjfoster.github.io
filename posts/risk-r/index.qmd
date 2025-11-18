@@ -6,6 +6,8 @@ categories:
   - analysis
   - finance
   - r
+execute:
+  freeze: false
 editor: 
   mode: source
 ---
@@ -23,13 +25,24 @@ tickers <- "BAICX" # fund inception date is "2011-11-28"
 intercept <- TRUE
 ```
 
-```{r, echo = FALSE, message = FALSE}
+```{r}
+#| echo: false
+#| output: false # Registered S3 method overwritten by 'quantmod': method as.zoo.data.frame from zoo
 source("../plot/theme_jjf.R")
 source("../helper-levels.R")
-source("../helper-prices.R")
+source("../helper-prices-yfh.R")
+# weights <- 0.9 ^ ((width - 1):0)
+weights <- rep(1, width)
+
+overlap_xts <- roll::roll_mean(returns_xts, scale[["overlap"]], min_obs = 1)
+
+overlap_xts <- na.omit(overlap_xts)
+overlap_x_xts <- tail(overlap_xts[ , factors], width) # same dimension as `weights`
+overlap_y_xts <- tail(overlap_xts[ , tickers], width)
 ```
 
-```{r, echo = FALSE}
+```{r}
+#| echo: false
 palette <- c("black", palette_jjf(length(factors)))
 names(palette) <- c("Overall", factors)
 ```
@@ -50,13 +63,13 @@ $$
 
 ```{r}
 lm_coef <- function(x, y, weights, intercept) {
-    
-    if (intercept) x <- model.matrix(~ x)
-    
-    result <- solve(crossprod(x, diag(weights)) %*% x) %*% crossprod(x, diag(weights) %*% y)
-    
-    return(result)
-    
+  
+  if (intercept) x <- model.matrix(~ x)
+  
+  result <- solve(crossprod(x, diag(weights)) %*% x) %*% crossprod(x, diag(weights) %*% y)
+  
+  return(result)
+  
 }
 ```
 
@@ -66,9 +79,9 @@ t(lm_coef(overlap_x_xts, overlap_y_xts, weights, intercept))
 
 ```{r}
 if (intercept) {
-    fit <- lm(overlap_y_xts ~ overlap_x_xts, weights = weights)
+  fit <- lm(overlap_y_xts ~ overlap_x_xts, weights = weights)
 } else {
-    fit <- lm(overlap_y_xts ~ overlap_x_xts - 1, weights = weights)
+  fit <- lm(overlap_y_xts ~ overlap_x_xts - 1, weights = weights)
 }
     
 coef(fit)
@@ -85,19 +98,19 @@ $$
 ```{r}
 lm_rsq <- function(x, y, weights, intercept) {
         
-    coef <- lm_coef(x, y, weights, intercept)
-    
-    if (intercept) {
-        
-        x <- model.matrix(~ x)
-        x <- sweep(x, 2, apply(x, 2, weighted.mean, w = weights), "-")
-        y <- sweep(y, 2, apply(y, 2, weighted.mean, w = weights), "-")
-        
-    }
-    
-    result <- (t(coef) %*% (crossprod(x, diag(weights)) %*% x) %*% coef) / (crossprod(y, diag(weights)) %*% y)
-    
-    return(result)
+  coef <- lm_coef(x, y, weights, intercept)
+  
+  if (intercept) {
+      
+    x <- model.matrix(~ x)
+    x <- sweep(x, 2, apply(x, 2, weighted.mean, w = weights), "-")
+    y <- sweep(y, 2, apply(y, 2, weighted.mean, w = weights), "-")
+      
+  }
+  
+  result <- (t(coef) %*% (crossprod(x, diag(weights)) %*% x) %*% coef) / (crossprod(y, diag(weights)) %*% y)
+  
+  return(result)
     
 }
 ```
@@ -126,28 +139,29 @@ $$
 ```{r}
 lm_se <- function(x, y, weights, intercept) {
     
-    n_rows <- nrow(x)
-    n_cols <- ncol(x)
+  n_rows <- nrow(x)
+  n_cols <- ncol(x)
+  
+  rsq <- lm_rsq(x, y, weights, intercept)
+  
+  if (intercept) {
+      
+    x <- model.matrix(~ x)
+    y <- sweep(y, 2, apply(y, 2, weighted.mean, w = weights), "-")
     
-    rsq <- lm_rsq(x, y, weights, intercept)
+    df_resid <- n_rows - n_cols - 1
+      
+  } else {
+    df_resid <- n_rows - n_cols
+  }
+  
+  var_y <- crossprod(y, diag(weights)) %*% y
+  var_resid <- as.numeric((1 - rsq) * var_y / df_resid)
+  
+  result <- sqrt(var_resid * diag(solve(crossprod(x, diag(weights)) %*% x)))
+  
+  return(result)
     
-    if (intercept) {
-        
-        x <- model.matrix(~ x)
-        y <- sweep(y, 2, apply(y, 2, weighted.mean, w = weights), "-")
-        
-        df_resid <- n_rows - n_cols - 1
-        
-    } else {
-        df_resid <- n_rows - n_cols
-    }
-    
-    var_y <- crossprod(y, diag(weights)) %*% y
-    var_resid <- as.numeric((1 - rsq) * var_y / df_resid)
-    
-    result <- sqrt(var_resid * diag(solve(crossprod(x, diag(weights)) %*% x)))
-    
-    return(result)
 }
 ```
 
@@ -241,8 +255,8 @@ lm_shap(overlap_x_xts, overlap_y_xts, weights, intercept)
 
 ## Principal component regression
 
-```{r, message = FALSE}
-library(pls)
+```{r}
+library(pls) # "Error in mvrValstats(object = fit, estimate = 'train'): could not find function 'mvrValstats'"
 ```
 
 ```{r}
@@ -263,18 +277,18 @@ $$
 
 ```{r}
 pcr_coef <- function(x, y, comps) {
-    
-    x <- sweep(x, 2, colMeans(x), "-")
-    LV <- eigen(cov(x))
-    V <- LV[["vectors"]]
-    
-    W <- x %*% V
-    gamma <- solve(crossprod(W)) %*% (crossprod(W, y))
-    
-    result <- V[ , 1:comps] %*% as.matrix(gamma[1:comps])
-    
-    return(result)
-    
+  
+  x <- sweep(x, 2, colMeans(x), "-")
+  LV <- eigen(cov(x))
+  V <- LV[["vectors"]]
+  
+  W <- x %*% V
+  gamma <- solve(crossprod(W)) %*% (crossprod(W, y))
+  
+  result <- V[ , 1:comps] %*% as.matrix(gamma[1:comps])
+  
+  return(result)
+  
 }
 ```
 
@@ -291,8 +305,8 @@ t(pcr_coef(overlap_x_xts, overlap_y_xts, comps))
 ```
 
 ```{r}
-fit <- pcr(reformulate(termlabels = ".", response = tickers), 
-           data = merge(scale_x_xts, overlap_y_xts), ncomp = comps)
+fit <- pls::pcr(reformulate(termlabels = ".", response = tickers),
+                data = merge(scale_x_xts, overlap_y_xts), ncomp = comps)
 coef(fit)[ , , 1]
 ```
 
@@ -300,16 +314,16 @@ coef(fit)[ , , 1]
 
 ```{r}
 pcr_rsq <- function(x, y, comps) {
-    
-    coef <- pcr_coef(x, y, comps)
-    
-    x <- sweep(x, 2, colMeans(x), "-")
-    y <- sweep(y, 2, colMeans(y), "-")
-    
-    result <- (t(coef) %*% crossprod(x) %*% coef) / crossprod(y)
-    
-    return(result)
-    
+  
+  coef <- pcr_coef(x, y, comps)
+  
+  x <- sweep(x, 2, colMeans(x), "-")
+  y <- sweep(y, 2, colMeans(y), "-")
+  
+  result <- (t(coef) %*% crossprod(x) %*% coef) / crossprod(y)
+  
+  return(result)
+  
 }
 ```
 
@@ -322,7 +336,7 @@ pcr_rsq(overlap_x_xts, overlap_y_xts, comps)
 ```
 
 ```{r}
-R2(fit)$val[comps + 1]
+# pls::R2(fit)$val[comps + 1]
 ```
 
 ### Standard errors
@@ -338,27 +352,27 @@ $$
 ```{r}
 # unable to verify the result
 pcr_se <- function(x, y, comps) {
-    
-    n_rows <- nrow(x)
-    n_cols <- ncol(x)
-    
-    rsq <- pcr_rsq(x, y, comps)
-    
-    y <- sweep(y, 2, colMeans(y), "-")
-    
-    df_resid <- n_rows - n_cols - 1
-    
-    var_y <- crossprod(y)
-    var_resid <- as.numeric((1 - rsq) * var_y / df_resid)
-    
-    LV <- eigen(cov(x))
-    L <- LV$values[1:comps] * (n_rows - 1)
-    V <- LV$vectors[ , 1:comps]
-    
-    result <- sqrt(var_resid * diag(V %*% sweep(t(V), 1, 1 / L, "*")))
-    
-    return(result)
-    
+  
+  n_rows <- nrow(x)
+  n_cols <- ncol(x)
+  
+  rsq <- pcr_rsq(x, y, comps)
+  
+  y <- sweep(y, 2, colMeans(y), "-")
+  
+  df_resid <- n_rows - n_cols - 1
+  
+  var_y <- crossprod(y)
+  var_resid <- as.numeric((1 - rsq) * var_y / df_resid)
+  
+  LV <- eigen(cov(x))
+  L <- LV$values[1:comps] * (n_rows - 1)
+  V <- LV$vectors[ , 1:comps]
+  
+  result <- sqrt(var_resid * diag(V %*% sweep(t(V), 1, 1 / L, "*")))
+  
+  return(result)
+  
 }
 ```
 
@@ -385,22 +399,22 @@ $$
 
 ```{r}
 lm_sar <- function(x, y, weights, intercept) {
-    
-    coef <- lm_coef(x, y, weights, intercept)
-    rsq <- lm_rsq(x, y, weights, intercept)
-    
-    if (intercept) x <- model.matrix(~ x)
-    
-    sigma <- cov.wt(cbind(x, y), wt = weights, center = intercept)$cov
-    sar <- coef ^ 2 * diag(sigma[-ncol(sigma), -ncol(sigma)])
-    sar_eps <- (1 - rsq) * sigma[ncol(sigma), ncol(sigma)]
-    
-    result <- sqrt(c(sigma[ncol(sigma), ncol(sigma)],
-                     sar,
-                     sar_eps))
-    
-    return(result)
-    
+  
+  coef <- lm_coef(x, y, weights, intercept)
+  rsq <- lm_rsq(x, y, weights, intercept)
+  
+  if (intercept) x <- model.matrix(~ x)
+  
+  sigma <- cov.wt(cbind(x, y), wt = weights, center = intercept)$cov
+  sar <- coef ^ 2 * diag(sigma[-ncol(sigma), -ncol(sigma)])
+  sar_eps <- (1 - rsq) * sigma[ncol(sigma), ncol(sigma)]
+  
+  result <- sqrt(c(sigma[ncol(sigma), ncol(sigma)],
+                   sar,
+                   sar_eps))
+  
+  return(result)
+  
 }
 ```
 
@@ -422,22 +436,22 @@ $$
 
 ```{r}
 lm_mcr <- function(x, y, weights, intercept) {
-    
-    coef <- lm_coef(x, y, weights, intercept)
-    rsq <- lm_rsq(x, y, weights, intercept)
-    
-    if (intercept) x <- model.matrix(~ x)
-    
-    sigma <- cov.wt(cbind(x, y), wt = weights, center = intercept)$cov
-    mcr <- coef * sigma[-ncol(sigma), -ncol(sigma)] %*% coef / sqrt(sigma[ncol(sigma), ncol(sigma)])
-    mcr_eps <- sqrt(sigma[ncol(sigma), ncol(sigma)]) - sum(mcr)
-    
-    result <- c(sqrt(sigma[ncol(sigma), ncol(sigma)]),
-                mcr,
-                mcr_eps)
-    
-    return(result)
-    
+  
+  coef <- lm_coef(x, y, weights, intercept)
+  rsq <- lm_rsq(x, y, weights, intercept)
+  
+  if (intercept) x <- model.matrix(~ x)
+  
+  sigma <- cov.wt(cbind(x, y), wt = weights, center = intercept)$cov
+  mcr <- coef * sigma[-ncol(sigma), -ncol(sigma)] %*% coef / sqrt(sigma[ncol(sigma), ncol(sigma)])
+  mcr_eps <- sqrt(sigma[ncol(sigma), ncol(sigma)]) - sum(mcr)
+  
+  result <- c(sqrt(sigma[ncol(sigma), ncol(sigma)]),
+              mcr,
+              mcr_eps)
+  
+  return(result)
+  
 }
 ```
 
@@ -457,13 +471,13 @@ $$
 
 ```{r}
 implied_shocks <- function(shocks, x, z, weights) {
-    
-    beta <- solve(crossprod(z, diag(weights) %*% z)) %*% crossprod(z, diag(weights) %*% x)
-    
-    result <- shocks %*% beta
-    
-    return(result)
-    
+  
+  beta <- solve(crossprod(z, diag(weights) %*% z)) %*% crossprod(z, diag(weights) %*% x)
+  
+  result <- shocks %*% beta
+  
+  return(result)
+  
 }
 ```
 
@@ -480,15 +494,15 @@ implied_shocks(shocks, overlap_x_xts, overlap_z_xts, weights)
 
 ```{r}
 pnl_stress <- function(shocks, x, y, z, weights, intercept) {
-    
-    coef <- lm_coef(x, y, weights, intercept)
-    
-    if (intercept) x <- model.matrix(~ x)
-    
-    result <- t(coef) * implied_shocks(shocks, x, z, weights)
-    
-    return(result)    
-    
+  
+  coef <- lm_coef(x, y, weights, intercept)
+  
+  if (intercept) x <- model.matrix(~ x)
+  
+  result <- t(coef) * implied_shocks(shocks, x, z, weights)
+  
+  return(result)    
+  
 }
 ```
 

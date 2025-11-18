@@ -6,6 +6,8 @@ categories:
   - analysis
   - finance
   - python
+execute:
+  freeze: false
 editor: 
   mode: source
 ---
@@ -23,17 +25,29 @@ tickers = ["BAICX"] # fund inception date is "2011-11-28"
 intercept = True
 ```
 
-```{r, echo = FALSE, message = FALSE}
-library(reticulate)
-library(data.table)
+```{r}
+#| echo: false
 source("../plot/theme_jjf.R")
-source_python("../helper-levels.py")
-source_python("../helper-prices.py")
 ```
 
-```{r, echo = FALSE}
-palette <- c("black", palette_jjf(length(py$factors)))
-names(palette) <- c("Overall", py$factors)
+```{python}
+#| echo: false
+exec(open("../helper-levels.py").read())
+exec(open("../helper-prices-yfh.py").read())
+# weights = (0.9 ** np.arange(width - 1, -1, -1)).reshape((width, 1))
+weights = np.ones((width, 1))
+
+overlap_df = returns_df.rolling(scale["overlap"], min_periods = 1).mean()
+
+overlap_df = overlap_df.dropna()
+overlap_x_df = overlap_df.dropna()[factors][-width:] # same dimension as `weights`
+overlap_y_df = overlap_df.dropna()[tickers][-width:]
+```
+
+```{r}
+#| echo: false
+palette <- c("black", palette_jjf(length(reticulate::py$factors)))
+names(palette) <- c("Overall", reticulate::py$factors)
 ```
 
 # Regression analysis
@@ -57,13 +71,13 @@ $$
 
 ```{python}
 def lm_coef(x, y, weights, intercept):
-    
-    if (intercept): x = sm.add_constant(x)
-        
-    result = np.dot(np.linalg.inv(np.dot(x.T, np.multiply(weights, x))),
-                    np.dot(x.T, np.multiply(weights, y)))
-    
-    return np.ravel(result)
+  
+  if (intercept): x = sm.add_constant(x)
+      
+  result = np.dot(np.linalg.inv(np.dot(x.T, np.multiply(weights, x))),
+                  np.dot(x.T, np.multiply(weights, y)))
+  
+  return np.ravel(result)
 ```
 
 ```{python}
@@ -90,19 +104,19 @@ $$
 
 ```{python}
 def lm_rsq(x, y, weights, intercept):
-            
-    coef = np.matrix(lm_coef(x, y, weights, intercept))
+          
+  coef = np.matrix(lm_coef(x, y, weights, intercept))
+  
+  if (intercept):
     
-    if (intercept):
-        
-        x = sm.add_constant(x)
-        x = x - np.average(x, axis = 0, weights = weights.reshape(-1))
-        y = y - np.average(y, axis = 0, weights = weights.reshape(-1))
-        
-    result = np.dot(coef, np.dot(np.dot(x.T, np.multiply(weights, x)), coef.T)) / \
-        np.dot(y.T, np.multiply(weights, y))
-    
-    return result.item()
+    x = sm.add_constant(x)
+    x = x - np.average(x, axis = 0, weights = weights.reshape(-1))
+    y = y - np.average(y, axis = 0, weights = weights.reshape(-1))
+      
+  result = np.dot(coef, np.dot(np.dot(x.T, np.multiply(weights, x)), coef.T)) / \
+    np.dot(y.T, np.multiply(weights, y))
+  
+  return result.item()
 ```
 
 ```{python}
@@ -128,28 +142,28 @@ $$
 
 ```{python}
 def lm_se(x, y, weights, intercept):
+  
+  n_rows = x.shape[0]
+  n_cols = x.shape[1]
+  
+  rsq = lm_rsq(x, y, weights, intercept)
+  
+  if (intercept):
     
-    n_rows = x.shape[0]
-    n_cols = x.shape[1]
+    x = sm.add_constant(x)
+    y = y - np.average(y, axis = 0, weights = weights.reshape(-1))
     
-    rsq = lm_rsq(x, y, weights, intercept)
+    df_resid = n_rows - n_cols - 1 
     
-    if (intercept):
-        
-        x = sm.add_constant(x)
-        y = y - np.average(y, axis = 0, weights = weights.reshape(-1))
-        
-        df_resid = n_rows - n_cols - 1 
-        
-    else:
-        df_resid = n_rows - n_cols        
-    
-    var_y = np.dot(y.T, np.multiply(weights, y))
-    var_resid = (1 - rsq) * var_y / df_resid
-    
-    result = np.sqrt(var_resid * np.linalg.inv(np.dot(x.T, np.multiply(weights, x))).diagonal())
-    
-    return np.ravel(result)
+  else:
+    df_resid = n_rows - n_cols        
+  
+  var_y = np.dot(y.T, np.multiply(weights, y))
+  var_resid = (1 - rsq) * var_y / df_resid
+  
+  result = np.sqrt(var_resid * np.linalg.inv(np.dot(x.T, np.multiply(weights, x))).diagonal())
+  
+  return np.ravel(result)
 ```
 
 ```{python}
@@ -170,57 +184,57 @@ $$
 
 ```{python}
 def lm_shap(x, y, weights, intercept):
-  
-    n_rows = x.shape[0]
-    n_cols = x.shape[1]
-    n_combn = 2 ** n_cols
-    n_vec = np.zeros(n_combn)
-    ix_mat = np.zeros((n_cols, n_combn))
-    rsq = np.zeros(n_combn)
-    result = np.zeros(n_cols)
-    
-    # number of binary combinations
-    for k in range(n_combn):
-      
-        n = 0
-        n_size = k
-        
-        # find the binary combination
-        for j in range(n_cols):
-          
-            if n_size % 2 == 0:
-              
-                n += 1
-                
-                ix_mat[j, k] = j + 1
-                
-            n_size //= 2
-        
-        n_vec[k] = n
-        
-        if n > 0:
-          
-            ix_subset = np.where(ix_mat[:, k] != 0)[0]
-            x_subset = x.iloc[:, ix_subset]
-            
-            rsq[k] = lm_rsq(x_subset, y, weights, intercept)
 
-    # calculate the exact Shapley value for r-squared
+  n_rows = x.shape[0]
+  n_cols = x.shape[1]
+  n_combn = 2 ** n_cols
+  n_vec = np.zeros(n_combn)
+  ix_mat = np.zeros((n_cols, n_combn))
+  rsq = np.zeros(n_combn)
+  result = np.zeros(n_cols)
+  
+  # number of binary combinations
+  for k in range(n_combn):
+    
+    n = 0
+    n_size = k
+    
+    # find the binary combination
     for j in range(n_cols):
       
-        ix_pos = np.where(ix_mat[j, :] != 0)[0]
-        ix_neg = np.where(ix_mat[j, :] == 0)[0]
-        ix_n = n_vec[ix_neg]
-        rsq_diff = rsq[ix_pos] - rsq[ix_neg]
-
-        for k in range(int(n_combn / 2)):
+      if n_size % 2 == 0:
+        
+        n += 1
+        
+        ix_mat[j, k] = j + 1
           
-            s = int(ix_n[k])
-            weight = math.factorial(s) * math.factorial(n_cols - s - 1) \
-                / math.factorial(n_cols)
-            result[j] += weight * rsq_diff[k]
+      n_size //= 2
+    
+    n_vec[k] = n
+    
+    if n > 0:
+      
+      ix_subset = np.where(ix_mat[:, k] != 0)[0]
+      x_subset = x.iloc[:, ix_subset]
+      
+      rsq[k] = lm_rsq(x_subset, y, weights, intercept)
 
-    return result
+  # calculate the exact Shapley value for r-squared
+  for j in range(n_cols):
+    
+    ix_pos = np.where(ix_mat[j, :] != 0)[0]
+    ix_neg = np.where(ix_mat[j, :] == 0)[0]
+    ix_n = n_vec[ix_neg]
+    rsq_diff = rsq[ix_pos] - rsq[ix_neg]
+
+    for k in range(int(n_combn / 2)):
+      
+      s = int(ix_n[k])
+      weight = math.factorial(s) * math.factorial(n_cols - s - 1) \
+          / math.factorial(n_cols)
+      result[j] += weight * rsq_diff[k]
+
+  return result
 ```
 
 ```{python}
@@ -252,18 +266,18 @@ $$
 
 ```{python}
 def pcr_coef(x, y, comps):
-    
-    x = x - np.average(x, axis = 0)
-    L, V = np.linalg.eig(np.cov(x.T, ddof = 1))
-    idx = L.argsort()[::-1]
-    V = V[:, idx]
-    
-    W = np.dot(x, V)
-    gamma = np.dot(np.dot(np.linalg.inv(np.dot(W.T, W)), W.T), y)
-    
-    result = np.dot(V[:, :comps], gamma[:comps])
-    
-    return np.ravel(result)
+  
+  x = x - np.average(x, axis = 0)
+  L, V = np.linalg.eig(np.cov(x.T, ddof = 1))
+  idx = L.argsort()[::-1]
+  V = V[:, idx]
+  
+  W = np.dot(x, V)
+  gamma = np.dot(np.dot(np.linalg.inv(np.dot(W.T, W)), W.T), y)
+  
+  result = np.dot(V[:, :comps], gamma[:comps])
+  
+  return np.ravel(result)
 ```
 
 ```{python}
@@ -293,15 +307,15 @@ np.dot(pca.components_.T[:, :comps], gamma.T[:comps]).ravel()
 
 ```{python}
 def pcr_rsq(x, y, comps):
-    
-    coef = np.matrix(pcr_coef(x, y, comps))
-    
-    x = x - np.average(x, axis = 0)
-    y = y - np.average(y, axis = 0)
-    
-    result = np.dot(np.dot(coef, np.dot(x.T, x)), coef.T) / np.dot(y.T, y)
-    
-    return result.item()
+  
+  coef = np.matrix(pcr_coef(x, y, comps))
+  
+  x = x - np.average(x, axis = 0)
+  y = y - np.average(y, axis = 0)
+  
+  result = np.dot(np.dot(coef, np.dot(x.T, x)), coef.T) / np.dot(y.T, y)
+  
+  return result.item()
 ```
 
 ```{python}
@@ -325,27 +339,27 @@ $$
 ```{python}
 # unable to verify the result
 def pcr_se(x, y, comps):
-    
-    n_rows = x.shape[0]
-    n_cols = x.shape[1]
-    
-    rsq = pcr_rsq(x, y, comps)
-    
-    y = y - np.average(y, axis = 0)
-    
-    df_resid = n_rows - n_cols - 1
-    
-    var_y = np.dot(y.T, y)   
-    var_resid = (1 - rsq) * var_y / df_resid
-    
-    # uses statsmodels for illustrative purposes
-    pca = sm.multivariate.PCA(x, standardize = False, demean = True)
-    L = pca.eigenvals[:comps]
-    V = pca.eigenvecs.iloc[:, :comps]
-    
-    result = np.sqrt(var_resid * np.dot(V, np.dot(np.diag(1 / L), V.T)).diagonal())
-    
-    return np.ravel(result)
+  
+  n_rows = x.shape[0]
+  n_cols = x.shape[1]
+  
+  rsq = pcr_rsq(x, y, comps)
+  
+  y = y - np.average(y, axis = 0)
+  
+  df_resid = n_rows - n_cols - 1
+  
+  var_y = np.dot(y.T, y)   
+  var_resid = (1 - rsq) * var_y / df_resid
+  
+  # uses statsmodels for illustrative purposes
+  pca = sm.multivariate.PCA(x, standardize = False, demean = True)
+  L = pca.eigenvals[:comps]
+  V = pca.eigenvecs.iloc[:, :comps]
+  
+  result = np.sqrt(var_resid * np.dot(V, np.dot(np.diag(1 / L), V.T)).diagonal())
+  
+  return np.ravel(result)
 ```
 
 ```{python}
@@ -371,38 +385,38 @@ $$
 
 ```{python}
 def cov_wt(x, weights, center):
-    
-    sum_w = sum(weights)
-    sumsq_w = sum(np.power(weights, 2))
-    
-    if (center):
-    
-        x = x - np.average(x, axis = 0, weights = weights.reshape(-1))
-    
-    result = np.dot(x.T, np.multiply(weights, x)) / (sum_w - sumsq_w / sum_w)
-    
-    return result
+  
+  sum_w = sum(weights)
+  sumsq_w = sum(np.power(weights, 2))
+  
+  if (center):
+  
+    x = x - np.average(x, axis = 0, weights = weights.reshape(-1))
+  
+  result = np.dot(x.T, np.multiply(weights, x)) / (sum_w - sumsq_w / sum_w)
+  
+  return result
 ```
 
 ```{python}
 def lm_sar(x, y, weights, intercept):
     
-    coef = lm_coef(x, y, weights, intercept)
-    rsq = lm_rsq(x, y, weights, intercept)
-    
-    if (intercept): x = sm.add_constant(x)
-    
-    # sigma = np.cov(np.concatenate((x, y), axis = 1).T,
-    #                aweights = weights.reshape(-1))
-    sigma = cov_wt(np.concatenate((x, y), axis = 1), weights, intercept)
-    sar = np.multiply(np.power(coef, 2).T, sigma[:-1, :-1].diagonal())
-    sar_eps = (1 - rsq) * sigma[-1, -1]
-    
-    result = np.sqrt(np.concatenate((np.matrix(sigma[-1, -1]),
-                                     np.matrix(sar),
-                                     np.matrix(sar_eps)), axis = 1))
-    
-    return np.ravel(result)
+  coef = lm_coef(x, y, weights, intercept)
+  rsq = lm_rsq(x, y, weights, intercept)
+  
+  if (intercept): x = sm.add_constant(x)
+  
+  # sigma = np.cov(np.concatenate((x, y), axis = 1).T,
+  #                aweights = weights.reshape(-1))
+  sigma = cov_wt(np.concatenate((x, y), axis = 1), weights, intercept)
+  sar = np.multiply(np.power(coef, 2).T, sigma[:-1, :-1].diagonal())
+  sar_eps = (1 - rsq) * sigma[-1, -1]
+  
+  result = np.sqrt(np.concatenate((np.matrix(sigma[-1, -1]),
+                                   np.matrix(sar),
+                                   np.matrix(sar_eps)), axis = 1))
+  
+  return np.ravel(result)
 ```
 
 ```{python}
@@ -424,22 +438,22 @@ $$
 ```{python}
 def lm_mcr(x, y, weights, intercept):
     
-    coef = np.matrix(lm_coef(x, y, weights, intercept)).T
-    rsq = lm_rsq(x, y, weights, intercept)
-        
-    if (intercept): x = sm.add_constant(x)
-    
+  coef = np.matrix(lm_coef(x, y, weights, intercept)).T
+  rsq = lm_rsq(x, y, weights, intercept)
+      
+  if (intercept): x = sm.add_constant(x)
+  
 #     sigma = np.cov(np.concatenate((x, y), axis = 1).T,
 #                    aweights = weights.reshape(-1))
-    sigma = cov_wt(np.concatenate((x, y), axis = 1), weights, intercept)
-    mcr = np.multiply(coef, np.dot(sigma[:-1, :-1], coef)) / np.sqrt(sigma[-1, -1])
-    mcr_eps = np.sqrt(sigma[-1, -1]) - sum(mcr)
-    
-    result = np.concatenate((np.sqrt(np.matrix(sigma[-1, -1])),
-                             np.matrix(mcr).T,
-                             np.matrix(mcr_eps)), axis = 1)
-    
-    return np.ravel(result)
+  sigma = cov_wt(np.concatenate((x, y), axis = 1), weights, intercept)
+  mcr = np.multiply(coef, np.dot(sigma[:-1, :-1], coef)) / np.sqrt(sigma[-1, -1])
+  mcr_eps = np.sqrt(sigma[-1, -1]) - sum(mcr)
+  
+  result = np.concatenate((np.sqrt(np.matrix(sigma[-1, -1])),
+                           np.matrix(mcr).T,
+                           np.matrix(mcr_eps)), axis = 1)
+  
+  return np.ravel(result)
 ```
 
 ```{python}
@@ -459,11 +473,11 @@ $$
 ```{python}
 def implied_shocks(shocks, x, z, weights):
 
-    beta = np.linalg.lstsq(np.multiply(weights, z), np.multiply(weights, x), rcond = None)[0]
-                     
-    result = np.dot(shocks, beta)
-    
-    return np.ravel(result)
+  beta = np.linalg.lstsq(np.multiply(weights, z), np.multiply(weights, x), rcond = None)[0]
+                   
+  result = np.dot(shocks, beta)
+  
+  return np.ravel(result)
 ```
 
 ```{python}
@@ -479,14 +493,14 @@ implied_shocks(shocks, overlap_x_df, overlap_z_df, weights)
 
 ```{python}
 def pnl_stress(shocks, x, y, z, weights, intercept):
-    
-    coef = lm_coef(x, y, weights, intercept)
-    
-    if (intercept): x = sm.add_constant(x)
-    
-    result = np.multiply(coef.T, implied_shocks(shocks, x, z, weights))
-    
-    return np.ravel(result)
+  
+  coef = lm_coef(x, y, weights, intercept)
+  
+  if (intercept): x = sm.add_constant(x)
+  
+  result = np.multiply(coef.T, implied_shocks(shocks, x, z, weights))
+  
+  return np.ravel(result)
 ```
 
 ```{python}
