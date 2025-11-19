@@ -6,6 +6,8 @@ categories:
   - analysis
   - finance
   - r
+execute:
+  freeze: false
 editor: 
   mode: source
 ---
@@ -15,29 +17,33 @@ factors_r <- c("SP500", "DTWEXAFEGS") # "SP500" does not contain dividends; note
 factors_d <- c("DGS10", "BAMLH0A0HYM2")
 ```
 
-```{r, echo = FALSE, message = FALSE}
+```{r}
+#| echo: false
+#| output: false # Registered S3 method overwritten by 'quantmod': method as.zoo.data.frame from zoo
 source("../plot/theme_jjf.R")
 source("../helper-levels.R")
 ```
 
-```{r, echo = FALSE}
+```{r}
+#| echo: false
 palette <- c("black", palette_jjf(length(factors)))
 names(palette) <- c("Overall", factors)
 ```
 
-```{r, echo = FALSE}
-sd_xts <- roll_sd(overlap_xts, width, min_obs = 1) * sqrt(scale[["periods"]]) * sqrt(scale[["overlap"]])
+```{r}
+#| echo: false
+sd_xts <- roll::roll_sd(overlap_xts, width, min_obs = 1) * sqrt(scale[["periods"]]) * sqrt(scale[["overlap"]])
 ```
 
 # Black-Scholes model
 
 ```{r}
 level_shock <- function(shock, S, tau, sigma) {
-    
-    result <- S * (1 + shock * sigma * sqrt(tau))
-    
-    return(result)
-    
+  
+  result <- S * (1 + shock * sigma * sqrt(tau))
+  
+  return(result)
+  
 }
 ```
 
@@ -47,17 +53,17 @@ level_shock <- function(shock, S, tau, sigma) {
 ```{r}
 factor <- "SP500"
 types <- c("call", "put")
-S <- coredata(na.locf(levels_xts[nrow(levels_xts), factor]))
+S <- zoo::coredata(zoo::na.locf(levels_xts[nrow(levels_xts), factor]))
 K <- S
 r <- 0 # use "USD3MTD156N"
 q <- 0 # see https://stackoverflow.com/a/11286679 
 tau <- 1 # = 252 / 252
-sigma <- coredata(sd_xts[nrow(sd_xts), factor]) # use "VIXCLS"
+sigma <- zoo::coredata(sd_xts[nrow(sd_xts), factor]) # use "VIXCLS"
 shocks <- seq(-3, 3, by = 0.5)
 ```
 
 ```{r}
-greeks_dt <- CJ(type = types, shock = shocks)
+greeks_dt <- data.table::CJ(type = types, shock = shocks)
 greeks_dt[ , spot := level_shock(shock, S, tau, sigma), by = c("type", "shock")]
 ```
 
@@ -74,16 +80,16 @@ $$
 
 ```{r}
 bs_value <- function(type, S, K, r, q, tau, sigma, d1, d2) {
+
+  r_df <- exp(-r * tau)
+  q_df <- exp(-q * tau)
   
-    r_df <- exp(-r * tau)
-    q_df <- exp(-q * tau)
-    
-    call_value <- S * q_df * Phi(d1) - r_df * K * Phi(d2)
-    put_value <- r_df * K * Phi(-d2) - S * q_df * Phi(-d1)
-    result <- ifelse(type == "call", call_value, put_value)
-    
-    return(result)
-    
+  call_value <- S * q_df * Phi(d1) - r_df * K * Phi(d2)
+  put_value <- r_df * K * Phi(-d2) - S * q_df * Phi(-d1)
+  result <- ifelse(type == "call", call_value, put_value)
+  
+  return(result)
+  
 } 
 ```
 
@@ -100,35 +106,35 @@ $$
 
 ```{r}
 bs_d1 <- function(S, K, r, q, tau, sigma) {
-    
-    result <- (log(S / K) + (r - q + sigma ^ 2 / 2) * tau) / (sigma * sqrt(tau))
-    
-    return(result)
-    
+  
+  result <- (log(S / K) + (r - q + sigma ^ 2 / 2) * tau) / (sigma * sqrt(tau))
+  
+  return(result)
+  
 }
 
 bs_d2 <- function(S, K, r, q, tau, sigma) {
-    
-    result <- (log(S / K) + (r - q - sigma ^ 2 / 2) * tau) / (sigma * sqrt(tau))
-    
-    return(result)
-    
+  
+  result <- (log(S / K) + (r - q - sigma ^ 2 / 2) * tau) / (sigma * sqrt(tau))
+  
+  return(result)
+  
 }
 
 phi <- function(x) {
-    
-    result <- dnorm(x)
-    
-    return(result)
-    
+  
+  result <- dnorm(x)
+  
+  return(result)
+  
 }
 
 Phi <- function(x) {
-    
-    result <- pnorm(x)
-    
-    return(result)
-    
+  
+  result <- pnorm(x)
+  
+  return(result)
+  
 }
 ```
 
@@ -151,15 +157,15 @@ $$
 
 ```{r}
 bs_delta <- function(type, S, K, r, q, tau, sigma, d1, d2) {
-    
-    q_df <- exp(-q * tau)
   
-    call_value <- q_df * Phi(d1)
-    put_value <- -q_df * Phi(-d1)
-    result <- ifelse(type == "call", call_value, put_value)
-    
-    return(result)
-    
+  q_df <- exp(-q * tau)
+
+  call_value <- q_df * Phi(d1)
+  put_value <- -q_df * Phi(-d1)
+  result <- ifelse(type == "call", call_value, put_value)
+  
+  return(result)
+  
 } 
 ```
 
@@ -182,18 +188,18 @@ $$
 
 ```{r}
 bs_delta_diff <- function(type, S, K, r, q, tau, sigma, delta0) {
-    
-    d1 <- bs_d1(S, K, r, q, tau, sigma)
-    d2 <- bs_d2(S, K, r, q, tau, sigma)
-    delta <- bs_delta(type, S, K, r, q, tau, sigma, d1, d2)
-    
-    call_value <- delta - delta0
-    put_value <- delta0 - delta
-    
-    result <- ifelse(type == "call", call_value, put_value)
-        
-    return(result)
-    
+  
+  d1 <- bs_d1(S, K, r, q, tau, sigma)
+  d2 <- bs_d2(S, K, r, q, tau, sigma)
+  delta <- bs_delta(type, S, K, r, q, tau, sigma, d1, d2)
+  
+  call_value <- delta - delta0
+  put_value <- delta0 - delta
+  
+  result <- ifelse(type == "call", call_value, put_value)
+      
+  return(result)
+  
 }
 ```
 
@@ -217,17 +223,20 @@ sec <- list(
 )
 ```
 
-```{r, warning = FALSE}
-beta_dt <- CJ(type = type, shock = shocks)
+```{r}
+beta_dt <- data.table::CJ(type = type, shock = shocks)
 beta_dt[ , spot := level_shock(shock, S, tau, sigma), by = c("type", "shock")]
 beta_dt[ , static := beta]
 beta_dt[ , diff := bs_delta_diff(type, spot, K, r, q, tau, sigma, sec[["delta"]])]
 beta_dt[ , dynamic := beta + sec[["n"]] * sec[["multiple"]] * sec[["S"]] * sec[["beta"]] * diff / total, by = c("type", "shock")]
 ```
 
-```{r, echo = FALSE, fig.width = 4, fig.height = 3}
-beta_mlt <- copy(beta_dt)[ , c("type", "spot", "diff") := NULL]
-beta_mlt <- melt(beta_mlt, id.vars = "shock")
+```{r}
+#| echo: false
+#| fig.width: 4
+#| fig.height: 3
+beta_mlt <- data.table::copy(beta_dt)[ , c("type", "spot", "diff") := NULL]
+beta_mlt <- data.table::melt(beta_mlt, id.vars = "shock")
 beta_plt <- plot_scen(beta_mlt, title = "Delta-beta", xlab = "Shock")
 print(beta_plt)
 ```
@@ -250,13 +259,13 @@ $$
 
 ```{r}
 bs_vega <- function(type, S, K, r, q, tau, sigma, d1, d2) {
-    
-    q_df <- exp(-q * tau)
-    
-    result <- S * q_df * phi(d1) * sqrt(tau)
-    
-    return(result)
-    
+  
+  q_df <- exp(-q * tau)
+  
+  result <- S * q_df * phi(d1) * sqrt(tau)
+  
+  return(result)
+  
 }
 ```
 
@@ -275,20 +284,20 @@ $$
 
 ```{r}
 bs_theta <- function(type, S, K, r, q, tau, sigma, d1, d2) {
-    
-    r_df <- exp(r * tau)
-    q_df <- exp(q * tau)
   
-    call_value <- -q_df * S * phi(d1) * sigma / (2 * sqrt(tau)) -
-      r * K * r_df * Phi(d2) + q * S * q_df * Phi(d1)
-    
-    put_value <- -q_df * S * phi(d1) * sigma / (2 * sqrt(tau)) +
-      r * K * r_df * Phi(-d2) - q * S * q_df * Phi(-d1)
-        
-    result <- ifelse(type == "call", call_value, put_value)
-    
-    return(result)
-    
+  r_df <- exp(r * tau)
+  q_df <- exp(q * tau)
+
+  call_value <- -q_df * S * phi(d1) * sigma / (2 * sqrt(tau)) -
+    r * K * r_df * Phi(d2) + q * S * q_df * Phi(d1)
+  
+  put_value <- -q_df * S * phi(d1) * sigma / (2 * sqrt(tau)) +
+    r * K * r_df * Phi(-d2) - q * S * q_df * Phi(-d1)
+      
+  result <- ifelse(type == "call", call_value, put_value)
+  
+  return(result)
+  
 }
 ```
 
@@ -308,13 +317,13 @@ $$
 
 ```{r}
 bs_gamma <- function(type, S, K, r, q, tau, sigma, d1, d2) {
+
+  q_df <- exp(-q * tau)
   
-    q_df <- exp(-q * tau)
-    
-    result <- q_df * phi(d1) / (S * sigma * sqrt(tau))
-    
-    return(result)
-    
+  result <- q_df * phi(d1) / (S * sigma * sqrt(tau))
+  
+  return(result)
+  
 }
 ```
 
@@ -322,9 +331,12 @@ bs_gamma <- function(type, S, K, r, q, tau, sigma, d1, d2) {
 greeks_dt[ , gamma := bs_gamma(type, spot, K, r, q, tau, sigma, d1, d2), by = c("type", "shock")]
 ```
 
-```{r, echo = FALSE, fig.width = 10, fig.height = 3}
-greeks_mlt <- copy(greeks_dt)[ , c("spot", "d1", "d2") := NULL]
-greeks_mlt <- melt(greeks_mlt, id.vars = c("type", "shock"))
+```{r}
+#| echo: false
+#| fig.width: 10
+#| fig.height: 3
+greeks_mlt <- data.table::copy(greeks_dt)[ , c("spot", "d1", "d2") := NULL]
+greeks_mlt <- data.table::melt(greeks_mlt, id.vars = c("type", "shock"))
 greeks_plt <- plot_scen(greeks_mlt, z = "type", title = "Greeks", xlab = "Shock") +
   facet_wrap(~ variable, nrow = 1, scales = "free", labeller = labeller(variable = capitalize))
 print(greeks_plt)
@@ -356,20 +368,20 @@ $$
 
 ```{r}
 pnl_bond <- function(duration, convexity, dy) {
-    
-    duration_pnl <- -duration * dy
-    convexity_pnl <- (convexity / 2) * dy ^ 2
-    income_pnl <- dy
-    
-    result <- list(
-        "total" = duration_pnl + convexity_pnl + income_pnl,
-        "duration" = duration_pnl,
-        "convexity" = convexity_pnl,
-        "income" = income_pnl
-    )
-    
-    return(result)
-    
+  
+  duration_pnl <- -duration * dy
+  convexity_pnl <- (convexity / 2) * dy ^ 2
+  income_pnl <- dy
+  
+  result <- list(
+      "total" = duration_pnl + convexity_pnl + income_pnl,
+      "duration" = duration_pnl,
+      "convexity" = convexity_pnl,
+      "income" = income_pnl
+  )
+  
+  return(result)
+  
 } 
 ```
 
@@ -381,14 +393,14 @@ pnl_bond <- function(duration, convexity, dy) {
 factor <- "DGS10"
 duration <- 6.5
 convexity <- 0.65
-y <- coredata(tail(na.locf(levels_xts[ , factor]), width)[1])
+y <- zoo::coredata(tail(zoo::na.locf(levels_xts[ , factor]), width)[1])
 ```
 
 ```{r}
-bonds_dt <- data.table(index = index(tail(levels_xts, width)),
-                       duration = duration, convexity = convexity,
-                       dy = na.locf(tail(levels_xts[ , factor], width)))
-setnames(bonds_dt, c("index", "duration", "convexity", "dy"))
+bonds_dt <- data.table::data.table(index = zoo::index(tail(levels_xts, width)),
+                                   duration = duration, convexity = convexity,
+                                   dy = zoo::na.locf(tail(levels_xts[ , factor], width)))
+data.table::setnames(bonds_dt, c("index", "duration", "convexity", "dy"))
 bonds_dt[ , dy := (dy - y) / 100, by = index]
 ```
 
@@ -396,8 +408,11 @@ bonds_dt[ , dy := (dy - y) / 100, by = index]
 attrib_dt <- bonds_dt[ , as.list(unlist(pnl_bond(duration, convexity, dy))), by = index]
 ```
 
-```{r, echo = FALSE, fig.width = 6, fig.height = 3}
-attrib_mlt <- melt(attrib_dt, id.vars = "index")
+```{r}
+#| echo: false
+#| fig.width: 6
+#| fig.height: 3
+attrib_mlt <- data.table::melt(attrib_dt, id.vars = "index")
 attrib_plt <- plot_ts_decomp(attrib_mlt, decomp = "Total", title = "Attribution 1Y (%)")
 print(attrib_plt)
 ```
@@ -418,46 +433,49 @@ Because of market conventions, use the following formula: $\text{Drift}=\frac{1}
 
 ```{r}
 yield_shock <- function(shock, tau, sigma) {
-    
-    result <- shock * sigma * sqrt(tau)
-    
-    return(result)
-    
+  
+  result <- shock * sigma * sqrt(tau)
+  
+  return(result)
+  
 }
 ```
 
 ```{r}
 duration_drift <- function(duration, convexity, dy) {
-    
-    drift <- -convexity + duration ^ 2 / 100
-    change <- drift * dy * 100
-    
-    result <- list(
-        "drift" = drift,
-        "change" = change
-    )
-    
-    return(result)
-    
+  
+  drift <- -convexity + duration ^ 2 / 100
+  change <- drift * dy * 100
+  
+  result <- list(
+      "drift" = drift,
+      "change" = change
+  )
+  
+  return(result)
+  
 }
 ```
 
 ```{r}
 # "Risk Management: Approaches for Fixed Income Markets" (page 45)
 factor <- "DGS10"
-sigma <- coredata(sd_xts[nrow(sd_xts), factor])
+sigma <- zoo::coredata(sd_xts[nrow(sd_xts), factor])
 ```
 
 ```{r}
-duration_dt <- CJ(shock = shocks)
+duration_dt <- data.table::CJ(shock = shocks)
 duration_dt[ , spot := yield_shock(shock, tau, sigma), by = "shock"]
 duration_dt[ , static := duration]
 duration_dt[ , dynamic := duration + duration_drift(duration, convexity, spot)[["change"]], by = "shock"]
 ```
 
-```{r, echo = FALSE, fig.width = 4, fig.height = 3}
-duration_mlt <- copy(duration_dt)[ , "spot" := NULL]
-duration_mlt <- melt(duration_mlt, id.vars = "shock")
+```{r}
+#| echo: false
+#| fig.width: 4
+#| fig.height: 3
+duration_mlt <- data.table::copy(duration_dt)[ , "spot" := NULL]
+duration_mlt <- data.table::melt(duration_mlt, id.vars = "shock")
 duration_plt <- plot_scen(duration_mlt, title = "Duration", xlab = "Shock")
 print(duration_plt)
 ```
@@ -488,47 +506,47 @@ $$
 
 ```{r}
 pnl_option <- function(type, S, K, r, q, tau, sigma, dS, dt, dsigma) {
-    
-    d1 <- bs_d1(S, K, r, q, tau, sigma)
-    d2 <- bs_d2(S, K, r, q, tau, sigma)
-    value <- bs_value(type, S, K, r, q, tau, sigma, d1, d2)
-    delta <- bs_delta(type, S, K, r, q, tau, sigma, d1, d2)
-    vega <- bs_vega(type, S, K, r, q, tau, sigma, d1, d2)
-    theta <- bs_theta(type, S, K, r, q, tau, sigma, d1, d2)
-    gamma <- bs_gamma(type, S, K, r, q, tau, sigma, d1, d2)
-    
-    delta_pnl <- delta * dS / value
-    gamma_pnl <- gamma / 2 * dS ^ 2 / value
-    vega_pnl <- vega * dsigma / value
-    theta_pnl <- theta * dt / value
-    
-    result <- list(
-        "total" = delta_pnl + gamma_pnl + vega_pnl + theta_pnl,
-        "delta" = delta_pnl,
-        "gamma" = gamma_pnl,
-        "vega" = vega_pnl,
-        "theta" = theta_pnl
-    )
-    
-    return(result)    
-    
+  
+  d1 <- bs_d1(S, K, r, q, tau, sigma)
+  d2 <- bs_d2(S, K, r, q, tau, sigma)
+  value <- bs_value(type, S, K, r, q, tau, sigma, d1, d2)
+  delta <- bs_delta(type, S, K, r, q, tau, sigma, d1, d2)
+  vega <- bs_vega(type, S, K, r, q, tau, sigma, d1, d2)
+  theta <- bs_theta(type, S, K, r, q, tau, sigma, d1, d2)
+  gamma <- bs_gamma(type, S, K, r, q, tau, sigma, d1, d2)
+  
+  delta_pnl <- delta * dS / value
+  gamma_pnl <- gamma / 2 * dS ^ 2 / value
+  vega_pnl <- vega * dsigma / value
+  theta_pnl <- theta * dt / value
+  
+  result <- list(
+    "total" = delta_pnl + gamma_pnl + vega_pnl + theta_pnl,
+    "delta" = delta_pnl,
+    "gamma" = gamma_pnl,
+    "vega" = vega_pnl,
+    "theta" = theta_pnl
+  )
+  
+  return(result)    
+  
 }
 ```
 
 ```{r}
 factor <- "SP500"
 type <- "call"
-S <- coredata(tail(na.locf(levels_xts[ , factor]), width)[1])
+S <- zoo::coredata(tail(zoo::na.locf(levels_xts[ , factor]), width)[1])
 K <- S # * (1 + 0.05)
 tau <- 1 # = 252 / 252
-sigma <- coredata(tail(sd_xts[ , factor], width)[1])
+sigma <- zoo::coredata(tail(sd_xts[ , factor], width)[1])
 ```
 
 ```{r}
-options_dt <- data.table(index = index(tail(levels_xts, width)),
-                         spot = na.locf(tail(levels_xts[ , factor], width)),
-                         sigma = tail(sd_xts[ , factor], width))
-setnames(options_dt, c("index", "spot", "sigma"))
+options_dt <- data.table::data.table(index = zoo::index(tail(levels_xts, width)),
+                                     spot = zoo::na.locf(tail(levels_xts[ , factor], width)),
+                                     sigma = tail(sd_xts[ , factor], width))
+data.table::setnames(options_dt, c("index", "spot", "sigma"))
 options_dt[ , dS := spot - S, by = index]
 options_dt[ , dt_diff := as.numeric(index - index[1])]
 options_dt[ , dt := dt_diff / tail(dt_diff, 1)]
@@ -540,8 +558,11 @@ attrib_dt <- options_dt[ , as.list(unlist(pnl_option(type, S, K, r, q, tau, ..si
                                                      dS, dt, dsigma))), by = index]
 ```
 
-```{r, echo = FALSE, fig.width = 6, fig.height = 3}
-attrib_mlt <- melt(attrib_dt, id.vars = "index")
+```{r}
+#| echo: false
+#| fig.width: 6
+#| fig.height: 3
+attrib_mlt <- data.table::melt(attrib_dt, id.vars = "index")
 attrib_plt <- plot_ts_decomp(attrib_mlt, decomp = "Total", title = "Attribution 1Y (%)")
 print(attrib_plt)
 ```
@@ -616,12 +637,12 @@ where $Z_{1},Z_{2},\ldots,Z_{n}$ are independent standard normals.
 
 ```{r}
 sim_gbm <- function(n_sim, S, mu, sigma, dt) {
-    
-    result <- S * exp(cumsum(sigma * sqrt(dt) * rnorm(n_sim)) +
-                      (mu - 0.5 * sigma ^ 2) * dt)
-    
-    return(result)
-    
+  
+  result <- S * exp(cumsum(sigma * sqrt(dt) * rnorm(n_sim)) +
+                    (mu - 0.5 * sigma ^ 2) * dt)
+  
+  return(result)
+  
 }
 ```
 
@@ -637,16 +658,16 @@ where $A$ is the Cholesky factor of $\Sigma$, i.e. $A$ is any matrix for which $
 
 ```{r}
 sim_multi_gbm <- function(n_sim, S, mu, sigma, dt) {
-    
-    n_cols <- ncol(sigma)
-    
-    Z <- matrix(rnorm(n_sim * n_cols), nrow = n_sim, ncol = n_cols)
-    X <- sweep(sqrt(dt) * (Z %*% chol(sigma)), 2, (mu - 0.5 * diag(sigma)) * dt, "+")
-    
-    result <- sweep(apply(X, 2, function(x) exp(cumsum(x))), 2, S, "*")
-    
-    return(result)
-    
+  
+  n_cols <- ncol(sigma)
+  
+  Z <- matrix(rnorm(n_sim * n_cols), nrow = n_sim, ncol = n_cols)
+  X <- sweep(sqrt(dt) * (Z %*% chol(sigma)), 2, (mu - 0.5 * diag(sigma)) * dt, "+")
+  
+  result <- sweep(apply(X, 2, function(x) exp(cumsum(x))), 2, S, "*")
+  
+  return(result)
+  
 }
 ```
 
@@ -671,17 +692,17 @@ sigma_ls <- list()
 
 ```{r}
 for (i in 1:1e4) {
-    
-    # assumes stock prices
-    levels_sim <- sim_multi_gbm(width + 1, S, mu, sigma, dt)
-    returns_sim <- diff(log(levels_sim))
+  
+  # assumes stock prices
+  levels_sim <- sim_multi_gbm(width + 1, S, mu, sigma, dt)
+  returns_sim <- diff(log(levels_sim))
 
-    mu_sim <- colMeans(returns_sim) * scale[["periods"]]
-    sigma_sim <- apply(returns_sim, 2, sd) * sqrt(scale[["periods"]])
-    
-    mu_ls <- append(mu_ls, list(mu_sim))
-    sigma_ls <- append(sigma_ls, list(sigma_sim))
-    
+  mu_sim <- colMeans(returns_sim) * scale[["periods"]]
+  sigma_sim <- apply(returns_sim, 2, sd) * sqrt(scale[["periods"]])
+  
+  mu_ls <- append(mu_ls, list(mu_sim))
+  sigma_ls <- append(sigma_ls, list(sigma_sim))
+  
 }
 ```
 
@@ -727,26 +748,26 @@ $$
 
 ```{r}
 implied_vol_newton <- function(params, type, S, K, r, q, tau) {
+  
+  target0 <- 0
+  sigma <- params[["sigma"]]
+  sigma0 <- sigma
+  
+  while (abs(target0 - params[["target"]]) > params[["tol"]]) {
     
-    target0 <- 0
-    sigma <- params[["sigma"]]
+    d1 <- bs_d1(S, K, r, q, tau, sigma0)
+    d2 <- bs_d2(S, K, r, q, tau, sigma0)
+    
+    target0 <- bs_value(type, S, K, r, q, tau, sigma0, d1, d2)
+    d_target0 <- bs_vega(type, S, K, r, q, tau, sigma0, d1, d2)
+    
+    sigma <- sigma0 - (target0 - params[["target"]]) / d_target0
     sigma0 <- sigma
     
-    while (abs(target0 - params[["target"]]) > params[["tol"]]) {
-        
-        d1 <- bs_d1(S, K, r, q, tau, sigma0)
-        d2 <- bs_d2(S, K, r, q, tau, sigma0)
-        
-        target0 <- bs_value(type, S, K, r, q, tau, sigma0, d1, d2)
-        d_target0 <- bs_vega(type, S, K, r, q, tau, sigma0, d1, d2)
-        
-        sigma <- sigma0 - (target0 - params[["target"]]) / d_target0
-        sigma0 <- sigma
-        
-    }
-    
-    return(sigma)
-    
+  }
+  
+  return(sigma)
+  
 }
 ```
 
@@ -754,9 +775,9 @@ implied_vol_newton <- function(params, type, S, K, r, q, tau) {
 -   <https://books.google.com/books?id=VLi61POD61IC&pg=PA104>
 
 ```{r}
-S <- coredata(na.locf(levels_xts)[nrow(levels_xts), factor])
+S <- zoo::coredata(zoo::na.locf(levels_xts)[nrow(levels_xts), factor])
 K <- S # * (1 + 0.05)
-sigma <- coredata(sd_xts[nrow(sd_xts), factor]) # overrides matrix
+sigma <- zoo::coredata(sd_xts[nrow(sd_xts), factor]) # overrides matrix
 start1 <- 0.2
 ```
 
@@ -765,9 +786,9 @@ d1 <- bs_d1(S, K, r, q, tau, sigma)
 d2 <- bs_d2(S, K, r, q, tau, sigma)
 target1 <- bs_value(type, S, K, r, q, tau, sigma, d1, d2)
 params1 <- list(
-    "target" = target1,
-    "sigma" = start1,
-    "tol" = 1e-4 # .Machine$double.eps
+  "target" = target1,
+  "sigma" = start1,
+  "tol" = 1e-4 # .Machine$double.eps
 )
 ```
 
@@ -780,44 +801,44 @@ implied_vol_newton(params1, type, S, K, r, q, tau)
 ```{r}
 yld_newton <- function(params, cash_flows) {
   
-    target0 <- 0
-    yld <- params[["cpn"]]
-    yld0 <- yld
+  target0 <- 0
+  yld <- params[["cpn"]]
+  yld0 <- yld
+  
+  while (abs(target0 - params[["target"]]) > params[["tol"]]) {
     
-    while (abs(target0 - params[["target"]]) > params[["tol"]]) {
-      
-      target0 <- 0
-      d_target0 <- 0
-      dd_target0 <- 0
-      
-      for (i in 1:length(cash_flows)) {
-        
-        t <- i
-        
-        # present value of cash flows
-        target0 <- target0 + cash_flows[i] / (1 + yld0) ^ t
-        
-        # first derivative of present value of cash flows
-        d_target0 <- d_target0 - t * cash_flows[i] / (1 + yld0) ^ (t + 1) # use t for Macaulay duration
-        
-        # second derivative of present value of cash flows
-        dd_target0 <- dd_target0 - t * (t + 1) * cash_flows[i] / (1 + yld0) ^ (t + 2)
-        
-      }
-      
-      yld <- yld0 - (target0 - params[["target"]]) / d_target0
-      yld0 <- yld
-      
-    }
+  target0 <- 0
+  d_target0 <- 0
+  dd_target0 <- 0
+  
+  for (i in 1:length(cash_flows)) {
     
-    result <- list(
-        "price" = target0,
-        "yield" = yld * params[["freq"]],
-        "duration" = -d_target0 / params[["target"]] / params[["freq"]],
-        "convexity" = -dd_target0 / params[["target"]] / params[["freq"]] ^ 2
-    )
+    t <- i
     
-    return(result)
+    # present value of cash flows
+    target0 <- target0 + cash_flows[i] / (1 + yld0) ^ t
+    
+    # first derivative of present value of cash flows
+    d_target0 <- d_target0 - t * cash_flows[i] / (1 + yld0) ^ (t + 1) # use t for Macaulay duration
+    
+    # second derivative of present value of cash flows
+    dd_target0 <- dd_target0 - t * (t + 1) * cash_flows[i] / (1 + yld0) ^ (t + 2)
+    
+  }
+  
+  yld <- yld0 - (target0 - params[["target"]]) / d_target0
+  yld0 <- yld
+    
+  }
+  
+  result <- list(
+    "price" = target0,
+    "yield" = yld * params[["freq"]],
+    "duration" = -d_target0 / params[["target"]] / params[["freq"]],
+    "convexity" = -dd_target0 / params[["target"]] / params[["freq"]] ^ 2
+  )
+  
+  return(result)
   
 }
 ```
@@ -835,10 +856,10 @@ cash_flows[10 * 2] <- cash_flows[10 * 2] + 1000
 
 ```{r}
 params2 <- list(
-    "target" = target2,
-    "cpn" = start2,
-    "freq" = 2,
-    "tol" = 1e-4 # .Machine$double.eps
+  "target" = target2,
+  "cpn" = start2,
+  "freq" = 2,
+  "tol" = 1e-4 # .Machine$double.eps
 )
 ```
 
@@ -854,23 +875,23 @@ If the derivative is unknown, try optimization:
 
 ```{r}
 implied_vol_obj <- function(param, type, S, K, r, q, tau, target) {
-    
-    d1 <- bs_d1(S, K, r, q, tau, param)
-    d2 <- bs_d2(S, K, r, q, tau, param)
-    target0 <- bs_value(type, S, K, r, q, tau, param, d1, d2)
-    
-    result <- abs(target0 - target)
-    
-    return(result)
+  
+  d1 <- bs_d1(S, K, r, q, tau, param)
+  d2 <- bs_d2(S, K, r, q, tau, param)
+  target0 <- bs_value(type, S, K, r, q, tau, param, d1, d2)
+  
+  result <- abs(target0 - target)
+  
+  return(result)
     
 }
 
 implied_vol_optim <- function(param, type, S, K, r, q, tau, target) {
-    
-    result <- optim(param, implied_vol_obj, type = type, S = S, K = K, r = r, q = q,
-                    tau = tau, target = target, method = "Brent", lower = 0, upper = 1)
-    
-    return(result$par)
+  
+  result <- optim(param, implied_vol_obj, type = type, S = S, K = K, r = r, q = q,
+                  tau = tau, target = target, method = "Brent", lower = 0, upper = 1)
+  
+  return(result$par)
     
 }
 ```
@@ -883,25 +904,25 @@ implied_vol_optim(start1, type, S, K, r, q, tau, target1)
 
 ```{r}
 yld_obj <- function(param, cash_flows, target) {
-    
-    target0 <- 0
-        
-    for (i in 1:length(cash_flows)) {
-      target0 <- target0 + cash_flows[i] / (1 + param) ^ i
-    }
   
-    result <- abs(target0 - target)
-    
-    return(result)
+  target0 <- 0
+      
+  for (i in 1:length(cash_flows)) {
+    target0 <- target0 + cash_flows[i] / (1 + param) ^ i
+  }
+
+  result <- abs(target0 - target)
+  
+  return(result)
     
 }
 
 yld_optim <- function(params, cash_flows, target) {
-    
-    result <- optim(params[["cpn"]], yld_obj, target = target, cash_flows = cash_flows,
-                    method = "Brent", lower = 0, upper = 1)
-    
-    return(result$par * params[["freq"]])
+  
+  result <- optim(params[["cpn"]], yld_obj, target = target, cash_flows = cash_flows,
+                  method = "Brent", lower = 0, upper = 1)
+  
+  return(result$par * params[["freq"]])
     
 }
 ```

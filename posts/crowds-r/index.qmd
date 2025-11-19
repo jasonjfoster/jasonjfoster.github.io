@@ -14,14 +14,14 @@ editor:
 ---
 
 ```{r}
-factors_r <- c("SP500") # "SP500" does not contain dividends
-factors_d <- c("DTB3")
+# factors_r <- c("SP500") # "SP500" does not contain dividends
+# factors_d <- c("DTB3")
 ```
 
 ```{r}
 #| echo: false
 #| output: false # Registered S3 method overwritten by 'quantmod': method as.zoo.data.frame from zoo
-source("../helper-levels.R")
+# source("../helper-levels.R")
 width <- 20 * 3
 ```
 
@@ -90,7 +90,8 @@ overlap_xts <- roll::roll_mean(returns_xts, scale[["overlap"]], min_obs = 1)
 # overlap_xts <- na.omit(overlap_xts)
 # overlap_x_xts <- overlap_xts[ , factors]
 overlap_x_xts <- overlap_xts[ , allocations]
-overlap_y_xts <- overlap_xts[ , !colnames(overlap_xts) %in% c(factors, allocations)]
+# overlap_y_xts <- overlap_xts[ , !colnames(overlap_xts) %in% c(factors, allocations)]
+overlap_y_xts <- overlap_xts[ , !colnames(overlap_xts) %in% allocations]
 # overlap_z_xts <- overlap_xts[ , allocations]
 ```
 
