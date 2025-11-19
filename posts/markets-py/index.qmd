@@ -200,6 +200,7 @@ outliers_df = outliers(score_df)
 
 ```{r}
 #| echo: false
+#| warning: false # Removed rows containing missing values or values outside the scale range (`geom_point()`)
 #| fig.width: 6
 #| fig.height: 3
 outliers_mlt <- data.table::melt(data.table::as.data.table(reticulate::py$outliers_df, keep.rownames = "index"), id.vars = "index")
