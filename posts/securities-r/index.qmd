@@ -53,12 +53,12 @@ level_shock <- function(shock, S, tau, sigma) {
 ```{r}
 factor <- "SP500"
 types <- c("call", "put")
-S <- zoo::coredata(zoo::na.locf(levels_xts[nrow(levels_xts), factor]))
+S <- as.numeric(zoo::coredata(zoo::na.locf(levels_xts[nrow(levels_xts), factor]))) # Recycling array of length 1 in vector-array arithmetic is deprecated. Use c() or as.vector() instead.
 K <- S
 r <- 0 # use "USD3MTD156N"
 q <- 0 # see https://stackoverflow.com/a/11286679 
 tau <- 1 # = 252 / 252
-sigma <- zoo::coredata(sd_xts[nrow(sd_xts), factor]) # use "VIXCLS"
+sigma <- as.numeric(zoo::coredata(sd_xts[nrow(sd_xts), factor])) # use "VIXCLS"
 shocks <- seq(-3, 3, by = 0.5)
 ```
 
@@ -215,11 +215,11 @@ total <- 1000000
 d1 <- bs_d1(S, K, r, q, tau, sigma)
 d2 <- bs_d2(S, K, r, q, tau, sigma)
 sec <- list(
-    "n" = n,
-    "multiple" = multiple,
-    "S" = S,
-    "delta" = bs_delta(type, S, K, r, q, tau, sigma, d1, d2),
-    "beta" = 1
+  "n" = n,
+  "multiple" = multiple,
+  "S" = S,
+  "delta" = bs_delta(type, S, K, r, q, tau, sigma, d1, d2),
+  "beta" = 1
 )
 ```
 
@@ -374,10 +374,10 @@ pnl_bond <- function(duration, convexity, dy) {
   income_pnl <- dy
   
   result <- list(
-      "total" = duration_pnl + convexity_pnl + income_pnl,
-      "duration" = duration_pnl,
-      "convexity" = convexity_pnl,
-      "income" = income_pnl
+    "total" = duration_pnl + convexity_pnl + income_pnl,
+    "duration" = duration_pnl,
+    "convexity" = convexity_pnl,
+    "income" = income_pnl
   )
   
   return(result)
@@ -448,8 +448,8 @@ duration_drift <- function(duration, convexity, dy) {
   change <- drift * dy * 100
   
   result <- list(
-      "drift" = drift,
-      "change" = change
+    "drift" = drift,
+    "change" = change
   )
   
   return(result)
@@ -708,15 +708,15 @@ for (i in 1:1e4) {
 
 ```{r}
 data.frame(
-    "empirical" = colMeans(na.omit(returns_xts)) * scale[["periods"]],
-    "theoretical" = colMeans(do.call(rbind, mu_ls)
+  "empirical" = colMeans(na.omit(returns_xts)) * scale[["periods"]],
+  "theoretical" = colMeans(do.call(rbind, mu_ls)
 ))
 ```
 
 ```{r}
 data.frame(
-    "empirical" = sqrt(diag(sigma)),
-    "theoretical" = colMeans(do.call(rbind, sigma_ls))
+  "empirical" = sqrt(diag(sigma)),
+  "theoretical" = colMeans(do.call(rbind, sigma_ls))
 )
 ```
 

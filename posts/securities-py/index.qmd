@@ -15,19 +15,24 @@ factors_r = ["SP500", "DTWEXAFEGS"] # "SP500" does not contain dividends; note: 
 factors_d = ["DGS10", "BAMLH0A0HYM2"]
 ```
 
-```{r, echo = FALSE, message = FALSE}
-library(reticulate)
-library(data.table)
+```{r}
+#| echo: false
 source("../plot/theme_jjf.R")
-source_python("../helper-levels.py")
 ```
 
-```{r, echo = FALSE}
-palette <- c("black", palette_jjf(length(py$factors)))
-names(palette) <- c("Overall", py$factors)
+```{python}
+#| echo: false
+exec(open("../helper-levels.py").read())
 ```
 
-```{python, echo = FALSE}
+```{r}
+#| echo: false
+palette <- c("black", palette_jjf(length(reticulate::py$factors)))
+names(palette) <- c("Overall", reticulate::py$factors)
+```
+
+```{python}
+#| echo: false
 sd_df = overlap_df.rolling(width, min_periods = 1).std() * \
     np.sqrt(scale["periods"]) * np.sqrt(scale["overlap"])
 ```
@@ -40,10 +45,10 @@ from scipy.stats import norm
 
 ```{python}
 def level_shock(shock, S, tau, sigma):
-    
-    result = S * (1 + shock * sigma * np.sqrt(tau))
-    
-    return result
+  
+  result = S * (1 + shock * sigma * np.sqrt(tau))
+  
+  return result
 ```
 
 -   <https://en.wikipedia.org/wiki/Greeks_(finance)>
@@ -63,7 +68,7 @@ shocks = [x / 2 for x in range(-6, 7)]
 
 ```{python}
 greeks_df = pd.DataFrame([(x, y) for x in types for y in shocks], 
-    columns = ["type", "shock"])
+  columns = ["type", "shock"])
 greeks_df["spot"] = level_shock(greeks_df["shock"], S, tau, sigma)
 ```
 
@@ -80,26 +85,26 @@ $$
 
 ```{python}
 def bs_value(type, S, K, r, q, tau, sigma, d1, d2):
-    
-    if (type == "call"):
-        result =  S * np.exp(-q * tau) * Phi(d1) - np.exp(-r * tau) * K * Phi(d2)
-    elif (type == "put"):
-        result = np.exp(-r * tau) * K * Phi(-d2) - S * np.exp(-q * tau) * Phi(-d1)
-        
-    return result
+  
+  if (type == "call"):
+    result =  S * np.exp(-q * tau) * Phi(d1) - np.exp(-r * tau) * K * Phi(d2)
+  elif (type == "put"):
+    result = np.exp(-r * tau) * K * Phi(-d2) - S * np.exp(-q * tau) * Phi(-d1)
+      
+  return result
 ```
 
 ```{python}
 def bs_value(type, S, K, r, q, tau, sigma, d1, d2):
-    
-    r_df = np.exp(-r * tau)
-    q_df = np.exp(-q * tau)
-    
-    call_value = S * q_df * Phi(d1) - r_df * K * Phi(d2)
-    put_value = r_df * K * Phi(-d2) - S * q_df * Phi(-d1)
-    result = np.where(type == "call", call_value, put_value)
-    
-    return result
+  
+  r_df = np.exp(-r * tau)
+  q_df = np.exp(-q * tau)
+  
+  call_value = S * q_df * Phi(d1) - r_df * K * Phi(d2)
+  put_value = r_df * K * Phi(-d2) - S * q_df * Phi(-d1)
+  result = np.where(type == "call", call_value, put_value)
+  
+  return result
 ```
 
 where
@@ -116,27 +121,27 @@ $$
 ```{python}
 def bs_d1(S, K, r, q, tau, sigma):
     
-    result = (np.log(S / K) + (r - q + sigma ** 2 / 2) * tau) / (sigma * np.sqrt(tau))
-    
-    return result
+  result = (np.log(S / K) + (r - q + sigma ** 2 / 2) * tau) / (sigma * np.sqrt(tau))
+  
+  return result
 
 def bs_d2(S, K, r, q, tau, sigma):
-    
-    result = (np.log(S / K) + (r - q - sigma ** 2 / 2) * tau) / (sigma * np.sqrt(tau))
-    
-    return result
+  
+  result = (np.log(S / K) + (r - q - sigma ** 2 / 2) * tau) / (sigma * np.sqrt(tau))
+  
+  return result
     
 def phi(x):
-    
-    result = norm.pdf(x)
-    
-    return result
+  
+  result = norm.pdf(x)
+  
+  return result
 
 def Phi(x):
-    
-    result = norm.cdf(x)
-    
-    return result
+  
+  result = norm.cdf(x)
+  
+  return result
 ```
 
 ```{python}
@@ -159,14 +164,14 @@ $$
 
 ```{python}
 def bs_delta(type, S, K, r, q, tau, sigma, d1, d2):
+
+  q_df = np.exp(-q * tau)
   
-    q_df = np.exp(-q * tau)
-    
-    call_value = q_df * Phi(d1)
-    put_value = -q_df * Phi(-d1)
-    result = np.where(type == "call", call_value, put_value)
-    
-    return result
+  call_value = q_df * Phi(d1)
+  put_value = -q_df * Phi(-d1)
+  result = np.where(type == "call", call_value, put_value)
+  
+  return result
 ```
 
 ```{python}
@@ -189,17 +194,17 @@ $$
 
 ```{python}
 def bs_delta_diff(type, S, K, r, q, tau, sigma, delta0):
-    
-    d1 = bs_d1(S, K, r, q, tau, sigma)
-    d2 = bs_d2(S, K, r, q, tau, sigma)
-    delta = bs_delta(type, S, K, r, q, tau, sigma, d1, d2)
-    
-    call_value = delta - delta0
-    put_value = delta0 - delta
-    
-    result = np.where(type == "call", call_value, put_value)
-        
-    return result
+  
+  d1 = bs_d1(S, K, r, q, tau, sigma)
+  d2 = bs_d2(S, K, r, q, tau, sigma)
+  delta = bs_delta(type, S, K, r, q, tau, sigma, d1, d2)
+  
+  call_value = delta - delta0
+  put_value = delta0 - delta
+  
+  result = np.where(type == "call", call_value, put_value)
+      
+  return result
 ```
 
 ```{python}
@@ -214,26 +219,29 @@ total = 1000000
 d1 = bs_d1(S, K, r, q, tau, sigma)
 d2 = bs_d2(S, K, r, q, tau, sigma)
 sec = {
-    "n": n,
-    "multiple": multiple,
-    "S": S,
-    "delta": bs_delta(type, S, K, r, q, tau, sigma, d1, d2),
-    "beta": 1
+  "n": n,
+  "multiple": multiple,
+  "S": S,
+  "delta": bs_delta(type, S, K, r, q, tau, sigma, d1, d2),
+  "beta": 1
 }
 ```
 
 ```{python}
 beta_df = pd.DataFrame([(x, y) for x in types for y in shocks], 
-    columns = ["type", "shock"])
+  columns = ["type", "shock"])
 beta_df["spot"] = level_shock(beta_df["shock"], S, tau, sigma)
 beta_df["static"] = beta
 beta_df["diff"] = bs_delta_diff(type, beta_df["spot"], K, r, q, tau, sigma, sec["delta"])
 beta_df["dynamic"] = beta + sec["n"] * sec["multiple"] * sec["S"] * sec["beta"] * beta_df["diff"] / total
 ```
 
-```{r, echo = FALSE, fig.width = 4, fig.height = 3}
-beta_mlt <- as.data.table(py$beta_df)[ , c("type", "spot", "diff") := NULL]
-beta_mlt <- melt(beta_mlt, id.vars = "shock")
+```{r}
+#| echo: false
+#| fig.width: 4
+#| fig.height: 3
+beta_mlt <- data.table::as.data.table(reticulate::py$beta_df)[ , c("type", "spot", "diff") := NULL]
+beta_mlt <- data.table::melt(beta_mlt, id.vars = "shock")
 beta_plt <- plot_scen(beta_mlt, title = "Delta-beta", xlab = "Shock")
 print(beta_plt)
 ```
@@ -255,12 +263,13 @@ $$
 $$
 
 ```{python}
+# START HERE!
 def bs_vega(type, S, K, r, q, tau, sigma, d1, d2):
-    
-    q_df = np.exp(-q * tau)
-    result = S * q_df * phi(d1) * np.sqrt(tau)
-    
-    return result
+  
+  q_df = np.exp(-q * tau)
+  result = S * q_df * phi(d1) * np.sqrt(tau)
+  
+  return result
 ```
 
 ```{python}
@@ -279,19 +288,19 @@ $$
 
 ```{python}
 def bs_theta(type, S, K, r, q, tau, sigma, d1, d2):
-    
-    r_df = np.exp(-r * tau)
-    q_df = np.exp(-q * tau)
-    
-    call_value = -q_df * S * phi(d1) * sigma / (2 * np.sqrt(tau)) - \
-        r * K * r_df * Phi(d2) + q * S * q_df * Phi(d1)
-        
-    put_value = -q_df * S * phi(d1) * sigma / (2 * np.sqrt(tau)) + \
-        r * K * r_df * Phi(-d2) - q * S * q_df * Phi(-d1)
-        
-    result = np.where(type == "call", call_value, put_value)
-    
-    return result
+  
+  r_df = np.exp(-r * tau)
+  q_df = np.exp(-q * tau)
+  
+  call_value = -q_df * S * phi(d1) * sigma / (2 * np.sqrt(tau)) - \
+    r * K * r_df * Phi(d2) + q * S * q_df * Phi(d1)
+      
+  put_value = -q_df * S * phi(d1) * sigma / (2 * np.sqrt(tau)) + \
+    r * K * r_df * Phi(-d2) - q * S * q_df * Phi(-d1)
+      
+  result = np.where(type == "call", call_value, put_value)
+  
+  return result
 ```
 
 ```{python}
@@ -311,12 +320,12 @@ $$
 
 ```{python}
 def bs_gamma(type, S, K, r, q, tau, sigma, d1, d2):
+
+  q_df = np.exp(-q * tau)
   
-    q_df = np.exp(-q * tau)
-    
-    result = q_df * phi(d1) / (S * sigma * np.sqrt(tau))
-    
-    return result
+  result = q_df * phi(d1) / (S * sigma * np.sqrt(tau))
+  
+  return result
 ```
 
 ```{python}
@@ -324,9 +333,12 @@ greeks_df["gamma"] = bs_gamma(greeks_df["type"], greeks_df["spot"], K, r, q, tau
                               greeks_df["d1"], greeks_df["d2"]) 
 ```
 
-```{r, echo = FALSE, fig.width = 10, fig.height = 3}
-greeks_mlt <- as.data.table(py$greeks_df)[ , c("spot", "d1", "d2") := NULL]
-greeks_mlt <- melt(greeks_mlt, id.vars = c("type", "shock"))
+```{r}
+#| echo: false
+#| fig.width: 10
+#| fig.height: 3
+greeks_mlt <- data.table::as.data.table(reticulate::py$greeks_df)[ , c("spot", "d1", "d2") := NULL]
+greeks_mlt <- data.table::melt(greeks_mlt, id.vars = c("type", "shock"))
 greeks_plt <- plot_scen(greeks_mlt, z = "type", title = "Greeks", xlab = "Shock") +
   facet_wrap(~ variable, nrow = 1, scales = "free", labeller = labeller(variable = capitalize))
 print(greeks_plt)
@@ -358,19 +370,19 @@ $$
 
 ```{python}
 def pnl_bond(duration, convexity, dy):
-    
-    duration_pnl = -duration * dy
-    convexity_pnl = (convexity / 2) * dy ** 2
-    income_pnl = dy
-    
-    result = pd.DataFrame({
-        "total": duration_pnl + convexity_pnl + income_pnl,
-        "duration": duration_pnl,
-        "convexity": convexity_pnl,
-        "income": income_pnl
-    })
-    
-    return result
+  
+  duration_pnl = -duration * dy
+  convexity_pnl = (convexity / 2) * dy ** 2
+  income_pnl = dy
+  
+  result = pd.DataFrame({
+    "total": duration_pnl + convexity_pnl + income_pnl,
+    "duration": duration_pnl,
+    "convexity": convexity_pnl,
+    "income": income_pnl
+  })
+  
+  return result
 ```
 
 -   <https://engineering.nyu.edu/sites/default/files/2021-07/CarWuRF2021.pdf>
@@ -386,9 +398,9 @@ y = levels_df.ffill()[factor].iloc[-width]
 
 ```{python}
 bond_df = pd.DataFrame({
-    "duration": duration,
-    "convexity": convexity,
-    "dy": (levels_df.ffill()[factor].iloc[-width:] - y) / 100
+  "duration": duration,
+  "convexity": convexity,
+  "dy": (levels_df.ffill()[factor].iloc[-width:] - y) / 100
 })
 ```
 
@@ -396,8 +408,12 @@ bond_df = pd.DataFrame({
 attrib_df = pnl_bond(bond_df["duration"], bond_df["convexity"], bond_df["dy"])
 ```
 
-```{r, echo = FALSE, fig.width = 6, fig.height = 3}
-attrib_mlt <- melt(as.data.table(py$attrib_df, keep.rownames = "index"), id.vars = "index")
+```{r}
+#| echo: false
+#| fig.width: 6
+#| fig.height: 3
+attrib_mlt <- data.table::as.data.table(reticulate::py$attrib_df, keep.rownames = "index")
+attrib_mlt <- data.table::melt(attrib_mlt, id.vars = "index")
 attrib_mlt[ , index := as.Date(index)]
 attrib_plt <- plot_ts_decomp(attrib_mlt, decomp = "Total", title = "Attribution 1Y (%)")
 print(attrib_plt)
@@ -419,24 +435,24 @@ Because of market conventions, use the following formula: $\text{Drift}=\frac{1}
 
 ```{python}
 def yield_shock(shock, tau, sigma):
-    
-    result = shock * sigma * np.sqrt(tau)
-    
-    return result
+  
+  result = shock * sigma * np.sqrt(tau)
+  
+  return result
 ```
 
 ```{python}
 def duration_drift(duration, convexity, dy):
-    
-    drift = -convexity + duration ** 2 / 100
-    change = drift * dy * 100
-    
-    result = {
-        "drift": drift,
-        "change": change
-    }
-    
-    return result
+  
+  drift = -convexity + duration ** 2 / 100
+  change = drift * dy * 100
+  
+  result = {
+    "drift": drift,
+    "change": change
+  }
+  
+  return result
 ```
 
 ```{python}
@@ -450,12 +466,15 @@ duration_df = pd.DataFrame(shocks).rename(columns = {0: "shock"})
 duration_df["spot"] = yield_shock(duration_df["shock"], tau, sigma)
 duration_df["static"] = duration
 duration_df["dynamic"] = duration + \
-    duration_drift(duration, convexity, duration_df["spot"])["change"]
+  duration_drift(duration, convexity, duration_df["spot"])["change"]
 ```
 
-```{r, echo = FALSE, fig.width = 4, fig.height = 3}
-duration_mlt <- as.data.table(py$duration_df)[ , "spot" := NULL]
-duration_mlt <- melt(duration_mlt, id.vars = "shock")
+```{r}
+#| echo: false
+#| fig.width: 4
+#| fig.height: 3
+duration_mlt <- data.table::as.data.table(reticulate::py$duration_df)[ , "spot" := NULL]
+duration_mlt <- data.table::melt(duration_mlt, id.vars = "shock")
 duration_plt <- plot_scen(duration_mlt, title = "Duration", xlab = "Shock")
 print(duration_plt)
 ```
@@ -486,29 +505,29 @@ $$
 
 ```{python}
 def pnl_option(type, S, K, r, q, tau, sigma, dS, dt, dsigma):
-    
-    d1 = bs_d1(S, K, r, q, tau, sigma)
-    d2 = bs_d2(S, K, r, q, tau, sigma)
-    value = bs_value(type, S, K, r, q, tau, sigma, d1, d2)
-    delta = bs_delta(type, S, K, r, q, tau, sigma, d1, d2)
-    vega = bs_vega(type, S, K, r, q, tau, sigma, d1, d2)
-    theta = bs_theta(type, S, K, r, q, tau, sigma, d1, d2)
-    gamma = bs_gamma(type, S, K, r, q, tau, sigma, d1, d2)
-    
-    delta_pnl = delta * dS / value
-    gamma_pnl = gamma / 2 * dS ** 2 / value
-    vega_pnl = vega * dsigma / value
-    theta_pnl = theta * dt / value
-    
-    result = pd.DataFrame({
-        "total": delta_pnl + gamma_pnl + vega_pnl + theta_pnl,
-        "delta": delta_pnl,
-        "gamma": gamma_pnl,
-        "vega": vega_pnl,
-        "theta": theta_pnl
-    })
-    
-    return result
+  
+  d1 = bs_d1(S, K, r, q, tau, sigma)
+  d2 = bs_d2(S, K, r, q, tau, sigma)
+  value = bs_value(type, S, K, r, q, tau, sigma, d1, d2)
+  delta = bs_delta(type, S, K, r, q, tau, sigma, d1, d2)
+  vega = bs_vega(type, S, K, r, q, tau, sigma, d1, d2)
+  theta = bs_theta(type, S, K, r, q, tau, sigma, d1, d2)
+  gamma = bs_gamma(type, S, K, r, q, tau, sigma, d1, d2)
+  
+  delta_pnl = delta * dS / value
+  gamma_pnl = gamma / 2 * dS ** 2 / value
+  vega_pnl = vega * dsigma / value
+  theta_pnl = theta * dt / value
+  
+  result = pd.DataFrame({
+    "total": delta_pnl + gamma_pnl + vega_pnl + theta_pnl,
+    "delta": delta_pnl,
+    "gamma": gamma_pnl,
+    "vega": vega_pnl,
+    "theta": theta_pnl
+  })
+  
+  return result
 ```
 
 ```{python}
@@ -522,8 +541,8 @@ sigma = sd_df[factor].iloc[-width]
 
 ```{python}
 options_df = pd.DataFrame({
-    "spot": levels_df.ffill()[factor].iloc[-width:],
-    "sigma": sd_df[factor].iloc[-width:]
+  "spot": levels_df.ffill()[factor].iloc[-width:],
+  "sigma": sd_df[factor].iloc[-width:]
 })
 options_df["dS"] = options_df["spot"] - S
 options_df["dt_diff"] = (options_df.index - options_df.index[0]).days
@@ -536,8 +555,12 @@ attrib_df = pnl_option(type, S, K, r, q, tau, sigma,
                        options_df["dS"], options_df["dt"], options_df["dsigma"])
 ```
 
-```{r, echo = FALSE, fig.width = 6, fig.height = 3}
-attrib_mlt <- melt(as.data.table(py$attrib_df, keep.rownames = "index"), id.vars = "index")
+```{r}
+#| echo: false
+#| fig.width: 6
+#| fig.height: 3
+attrib_mlt <- data.table::as.data.table(reticulate::py$attrib_df, keep.rownames = "index")
+attrib_mlt <- data.table::melt(attrib_mlt, id.vars = "index")
 attrib_mlt[ , index := as.Date(index)]
 attrib_plt <- plot_ts_decomp(attrib_mlt, decomp = "Total", title = "Attribution 1Y (%)")
 print(attrib_plt)
@@ -613,11 +636,11 @@ where $Z_{1},Z_{2},\ldots,Z_{n}$ are independent standard normals.
 
 ```{python}
 def sim_gbm(n_sim, S, mu, sigma, dt):
-    
-    result = S * np.exp(np.cumsum(sigma * np.sqrt(dt) * np.random.normal(size = n_sim)) + \
-                        (mu - 0.5 * sigma ** 2) * dt)
-    
-    return result
+  
+  result = S * np.exp(np.cumsum(sigma * np.sqrt(dt) * np.random.normal(size = n_sim)) + \
+                      (mu - 0.5 * sigma ** 2) * dt)
+  
+  return result
 ```
 
 This leads to an algorithm for simulating a multidimensional geometric Brownian motion:
@@ -632,15 +655,15 @@ where $A$ is the Cholesky factor of $\Sigma$, i.e. $A$ is any matrix for which $
 
 ```{python}
 def sim_multi_gbm(n_sim, S, mu, sigma, dt):
-    
-    n_cols = sigma.shape[1]
-    
-    Z = np.random.normal(size = n_sim * n_cols).reshape((n_sim, n_cols))
-    X = np.sqrt(dt) * Z @ np.linalg.cholesky(sigma).T + (mu - 0.5 * np.diag(sigma)) * dt
-    
-    result = S * np.exp(X.cumsum(axis = 0))
-    
-    return np.asmatrix(result)
+  
+  n_cols = sigma.shape[1]
+  
+  Z = np.random.normal(size = n_sim * n_cols).reshape((n_sim, n_cols))
+  X = np.sqrt(dt) * Z @ np.linalg.cholesky(sigma).T + (mu - 0.5 * np.diag(sigma)) * dt
+  
+  result = S * np.exp(X.cumsum(axis = 0))
+  
+  return np.asmatrix(result)
 ```
 
 -   <https://arxiv.org/pdf/0812.4210.pdf>
@@ -664,16 +687,16 @@ sigma_ls = []
 
 ```{python}
 for i in range(10000): # "TypeError: 'float' object cannot be interpreted as an integer"
-  
-    # assumes underlying stock price follows geometric Brownian motion with constant volatility
-    levels_sim = pd.DataFrame(sim_multi_gbm(width + 1, S, mu, sigma, dt))
-    returns_sim = np.log(levels_sim).diff()
 
-    mu_sim = returns_sim.mean() * scale["periods"]
-    sigma_sim = returns_sim.std() * np.sqrt(scale["periods"])
+  # assumes underlying stock price follows geometric Brownian motion with constant volatility
+  levels_sim = pd.DataFrame(sim_multi_gbm(width + 1, S, mu, sigma, dt))
+  returns_sim = np.log(levels_sim).diff()
 
-    mu_ls.append(mu_sim)
-    sigma_ls.append(sigma_sim)
+  mu_sim = returns_sim.mean() * scale["periods"]
+  sigma_sim = returns_sim.std() * np.sqrt(scale["periods"])
+
+  mu_ls.append(mu_sim)
+  sigma_ls.append(sigma_sim)
 ```
 
 ```{python}
@@ -683,15 +706,15 @@ sigma_df = pd.DataFrame(sigma_ls)
 
 ```{python}
 pd.DataFrame({
-    "empirical": np.array(returns_df.dropna().mean()) * scale["periods"],
-    "theoretical": mu_df.mean()
+  "empirical": np.array(returns_df.dropna().mean()) * scale["periods"],
+  "theoretical": mu_df.mean()
 })
 ```
 
 ```{python}
 pd.DataFrame({
-    "empirical": np.sqrt(np.diag(sigma)),
-    "theoretical": sigma_df.mean()
+  "empirical": np.sqrt(np.diag(sigma)),
+  "theoretical": sigma_df.mean()
 })
 ```
 
@@ -723,23 +746,23 @@ $$
 
 ```{python}
 def implied_vol_newton(params, type, S, K, r, q, tau):
+  
+  target0 = 0
+  sigma = params["sigma"]
+  sigma0 = sigma
+  
+  while (abs(target0 - params["target"]) > params["tol"]):
+      
+    d1 = bs_d1(S, K, r, q, tau, sigma0)
+    d2 = bs_d2(S, K, r, q, tau, sigma0)
     
-    target0 = 0
-    sigma = params["sigma"]
+    target0 = bs_value(type, S, K, r, q, tau, sigma0, d1, d2)
+    d_target0 = bs_vega(type, S, K, r, q, tau, sigma0, d1, d2)
+    
+    sigma = sigma0 - (target0 - params["target"]) / d_target0
     sigma0 = sigma
-    
-    while (abs(target0 - params["target"]) > params["tol"]):
-        
-        d1 = bs_d1(S, K, r, q, tau, sigma0)
-        d2 = bs_d2(S, K, r, q, tau, sigma0)
-        
-        target0 = bs_value(type, S, K, r, q, tau, sigma0, d1, d2)
-        d_target0 = bs_vega(type, S, K, r, q, tau, sigma0, d1, d2)
-        
-        sigma = sigma0 - (target0 - params["target"]) / d_target0
-        sigma0 = sigma
-        
-    return sigma.item()
+      
+  return sigma.item()
 ```
 
 -   <http://www.aspenres.com/documents/help/userguide/help/bopthelp/bopt2Implied_Volatility_Formula.html>
@@ -757,9 +780,9 @@ d1 = bs_d1(S, K, r, q, tau, sigma)
 d2 = bs_d2(S, K, r, q, tau, sigma)
 target1 = bs_value(type, S, K, r, q, tau, sigma, d1, d2)
 params1 = {
-    "target": target1,
-    "sigma": start1,
-    "tol": 1e-4 # np.finfo(float).eps
+  "target": target1,
+  "sigma": start1,
+  "tol": 1e-4 # np.finfo(float).eps
 }
 ```
 
@@ -771,41 +794,41 @@ implied_vol_newton(params1, type, S, K, r, q, tau)
 
 ```{python}
 def yld_newton(params, cash_flows):
-    
+  
+  target0 = 0
+  yld0 = params["cpn"] / params["freq"]
+  yld = yld0 # assignment to `yield` variable is not possible
+  
+  while (abs(target0 - params["target"]) > params["tol"]):
+      
     target0 = 0
-    yld0 = params["cpn"] / params["freq"]
-    yld = yld0 # assignment to `yield` variable is not possible
+    d_target0 = 0
+    dd_target0 = 0
     
-    while (abs(target0 - params["target"]) > params["tol"]):
-        
-        target0 = 0
-        d_target0 = 0
-        dd_target0 = 0
-        
-        for i in range(len(cash_flows)):
-          
-            t = i + 1
-          
-            # present value of cash flows
-            target0 += cash_flows[i] / (1 + yld0) ** t
-            
-            # first derivative of present value of cash flows
-            d_target0 -= t * cash_flows[i] / (1 + yld0) ** (t + 1) # use t for Macaulay duration
-            
-            # second derivative of present value of cash flows
-            dd_target0 -= t * (t + 1) * cash_flows[i] / (1 + yld0) ** (t + 2)
-        
-        yld = yld0 - (target0 - params["target"]) / d_target0
-        yld0 = yld
-        
-    result = {
-        "price": target0,
-        "yield": yld * params["freq"],
-        "duration": -d_target0 / params["target"] / params["freq"],
-        "convexity": -dd_target0 / params["target"] / params["freq"] ** 2
-    }
-        
-    return result
+    for i in range(len(cash_flows)):
+      
+      t = i + 1
+    
+      # present value of cash flows
+      target0 += cash_flows[i] / (1 + yld0) ** t
+      
+      # first derivative of present value of cash flows
+      d_target0 -= t * cash_flows[i] / (1 + yld0) ** (t + 1) # use t for Macaulay duration
+      
+      # second derivative of present value of cash flows
+      dd_target0 -= t * (t + 1) * cash_flows[i] / (1 + yld0) ** (t + 2)
+    
+    yld = yld0 - (target0 - params["target"]) / d_target0
+    yld0 = yld
+      
+  result = {
+    "price": target0,
+    "yield": yld * params["freq"],
+    "duration": -d_target0 / params["target"] / params["freq"],
+    "convexity": -dd_target0 / params["target"] / params["freq"] ** 2
+  }
+      
+  return result
 ```
 
 -   <https://www.bloomberg.com/markets/rates-bonds/government-bonds/us>
@@ -821,10 +844,10 @@ cash_flows[-1] += 1000
 
 ```{python}
 params2 = {
-    "target": target2,
-    "cpn": start2,
-    "freq": 2,
-    "tol": 1e-4 # np.finfo(float).eps
+  "target": target2,
+  "cpn": start2,
+  "freq": 2,
+  "tol": 1e-4 # np.finfo(float).eps
 }
 ```
 
@@ -844,20 +867,20 @@ If the derivative is unknown, try optimization:
 
 ```{python}
 def implied_vol_obj(param, type, S, K, r, q, tau, target):
-    
-    d1 = bs_d1(S, K, r, q, tau, param)
-    d2 = bs_d2(S, K, r, q, tau, param)
-    target0 = bs_value(type, S, K, r, q, tau, param, d1, d2)
-    
-    result = abs(target0 - target)
-    
-    return result
+  
+  d1 = bs_d1(S, K, r, q, tau, param)
+  d2 = bs_d2(S, K, r, q, tau, param)
+  target0 = bs_value(type, S, K, r, q, tau, param, d1, d2)
+  
+  result = abs(target0 - target)
+  
+  return result
 
 def implied_vol_optim(param, type, S, K, r, q, tau, target):
-    
-    result = minimize(implied_vol_obj, param, args = (type, S, K, r, q, tau, target))
-    
-    return result.x.item()
+  
+  result = minimize(implied_vol_obj, param, args = (type, S, K, r, q, tau, target))
+  
+  return result.x.item()
 ```
 
 ```{python}
@@ -868,22 +891,22 @@ implied_vol_optim(start1, type, S, K, r, q, tau, target1)
 
 ```{python}
 def yld_obj(param, cash_flows, target):
-    
-    target0 = 0
-    
-    for i in range(len(cash_flows)):
-        
-        target0 += cash_flows[i] / (1 + param) ** (i + 1)
-    
-    target0 = abs(target0 - target)
-    
-    return target0
+  
+  target0 = 0
+  
+  for i in range(len(cash_flows)):
+      
+    target0 += cash_flows[i] / (1 + param) ** (i + 1)
+  
+  target0 = abs(target0 - target)
+  
+  return target0
   
 def yld_optim(params, cash_flows, target):
-    
-    result = minimize(yld_obj, params["cpn"], args = (cash_flows, target))
-    
-    return result.x.item() * params["freq"]
+  
+  result = minimize(yld_obj, params["cpn"], args = (cash_flows, target))
+  
+  return result.x.item() * params["freq"]
 ```
 
 ```{python}
