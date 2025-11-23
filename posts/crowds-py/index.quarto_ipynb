@@ -19,7 +19,7 @@
         "  mode: source\n",
         "---"
       ],
-      "id": "dbae77b0"
+      "id": "ba850ab4"
     },
     {
       "cell_type": "code",
@@ -28,7 +28,7 @@
         "factors_r = [\"SP500\"] # \"SP500\" does not contain dividends\n",
         "factors_d = [\"DTB3\"]"
       ],
-      "id": "000ad147",
+      "id": "cdb7782c",
       "execution_count": null,
       "outputs": []
     },
@@ -40,7 +40,7 @@
         "exec(open(\"../helper-levels.py\").read())\n",
         "width = 20 * 3"
       ],
-      "id": "bffa1856",
+      "id": "01a715fb",
       "execution_count": null,
       "outputs": []
     },
@@ -50,7 +50,7 @@
       "source": [
         "# Parse web"
       ],
-      "id": "25433c9d"
+      "id": "66be4f28"
     },
     {
       "cell_type": "code",
@@ -58,7 +58,7 @@
       "source": [
         "import yfscreen as yfs"
       ],
-      "id": "e80959a3",
+      "id": "5a0d8dc6",
       "execution_count": null,
       "outputs": []
     },
@@ -71,7 +71,7 @@
         "payload = yfs.create_payload(\"mutualfund\", query, 250)\n",
         "data = yfs.get_data(payload)"
       ],
-      "id": "998368f1",
+      "id": "d52dc26f",
       "execution_count": null,
       "outputs": []
     },
@@ -92,7 +92,7 @@
         ")\n",
         "tickers = sorted_df.loc[~sorted_df[\"netAssets.raw\"].duplicated(), \"symbol\"].tolist()"
       ],
-      "id": "1cde0b3b",
+      "id": "d5ca8cc6",
       "execution_count": null,
       "outputs": []
     },
@@ -103,7 +103,7 @@
         "# allocations = [\"AOK\", \"AOM\", \"AOR\", \"AOA\"]\n",
         "# tickers = tickers + allocations"
       ],
-      "id": "d51db337",
+      "id": "c7b6b4ab",
       "execution_count": null,
       "outputs": []
     },
@@ -113,7 +113,7 @@
       "source": [
         "# Optimization"
       ],
-      "id": "eede66d4"
+      "id": "847acd51"
     },
     {
       "cell_type": "code",
@@ -122,7 +122,7 @@
         "import json\n",
         "import cvxpy as cp"
       ],
-      "id": "829dedae",
+      "id": "7bd573a0",
       "execution_count": null,
       "outputs": []
     },
@@ -143,7 +143,7 @@
         "    \n",
         "  return w.value"
       ],
-      "id": "ed2454b4",
+      "id": "0d99db58",
       "execution_count": null,
       "outputs": []
     },
@@ -162,7 +162,7 @@
         "overlap_y_df = overlap_df[tickers]\n",
         "# overlap_z_df = overlap_df[allocations]"
       ],
-      "id": "bca4abe8",
+      "id": "b22009ef",
       "execution_count": null,
       "outputs": []
     },
@@ -173,7 +173,7 @@
         "def pnl(x):\n",
         "  return np.nanprod(1 + x) - 1"
       ],
-      "id": "a8c7236b",
+      "id": "60c6711f",
       "execution_count": null,
       "outputs": []
     },
@@ -183,7 +183,7 @@
       "source": [
         "performance_df = returns_df.rolling(width, min_periods = 1).apply(pnl, raw = False)"
       ],
-      "id": "e243bc26",
+      "id": "74e34df8",
       "execution_count": null,
       "outputs": []
     },
@@ -229,7 +229,7 @@
         "    result_ls.append(result)\n",
         "    index_ls.append(overlap_x_df.index[i])"
       ],
-      "id": "63969ed5",
+      "id": "a1ac9d37",
       "execution_count": null,
       "outputs": []
     },
@@ -240,7 +240,7 @@
         "# json.dump([x.to_dict() for x in result_ls], open(\"result_ls.json\", \"w\"))\n",
         "# json.dump([x.isoformat() for x in index_ls], open(\"index_ls.json\", \"w\"))"
       ],
-      "id": "aea39b98",
+      "id": "b52a7861",
       "execution_count": null,
       "outputs": []
     },
@@ -250,7 +250,7 @@
       "source": [
         "# Performance"
       ],
-      "id": "6f8f596c"
+      "id": "747cb88c"
     },
     {
       "cell_type": "code",
@@ -259,7 +259,7 @@
         "# result_ls = [pd.DataFrame(x) for x in json.load(open(\"result_ls.json\", \"r\"))]\n",
         "# index_ls = [pd.Timestamp(x) for x in json.load(open(\"index_ls.json\", \"r\"))]"
       ],
-      "id": "6e673a88",
+      "id": "0cd7fdac",
       "execution_count": null,
       "outputs": []
     },
@@ -277,7 +277,7 @@
         "  \n",
         "  return result"
       ],
-      "id": "db14e97a",
+      "id": "088d7756",
       "execution_count": null,
       "outputs": []
     },
@@ -312,7 +312,7 @@
         "  \n",
         "  score_ls.append(score)"
       ],
-      "id": "3063dc9e",
+      "id": "0c23fcc8",
       "execution_count": null,
       "outputs": []
     },
@@ -323,7 +323,7 @@
         "score_df = pd.concat(score_ls, ignore_index = True)\n",
         "print(score_df)"
       ],
-      "id": "bb35353b",
+      "id": "094f7c99",
       "execution_count": null,
       "outputs": []
     },
@@ -333,7 +333,7 @@
       "source": [
         "# score_df.to_json(\"score_df.json\", date_format = \"iso\")"
       ],
-      "id": "e5a2ac0d",
+      "id": "ee79efd0",
       "execution_count": null,
       "outputs": []
     }

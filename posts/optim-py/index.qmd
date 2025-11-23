@@ -176,8 +176,9 @@ def rand_iterative(n_assets, lower, upper, target):
   temp = target - sum(result)
   
   while not ((temp <= upper) and (temp >= lower)):
-      result = np.random.uniform(low = lower, high = upper, size = n_assets - 1)
-      temp = target - sum(result)
+    
+    result = np.random.uniform(low = lower, high = upper, size = n_assets - 1)
+    temp = target - sum(result)
       
   result = np.append(result, temp)
   

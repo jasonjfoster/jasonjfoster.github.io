@@ -176,8 +176,8 @@ rand_iterative <- function(n_assets, lower, upper, target) {
   
   while (!((temp <= upper) && (temp >= lower))) {
       
-      result <- runif(n_assets - 1, min = lower, max = upper)
-      temp <- target - sum(result)
+    result <- runif(n_assets - 1, min = lower, max = upper)
+    temp <- target - sum(result)
       
   }
   
@@ -195,8 +195,8 @@ rand_turnover2 <- function(n_sim, n_assets, lower, upper, target) {
   
   for (i in 1:n_sim) {
       
-      result_sim <- rand_iterative(n_assets, lower, upper, target)
-      result_ls <- append(result_ls, list(result_sim))
+    result_sim <- rand_iterative(n_assets, lower, upper, target)
+    result_ls <- append(result_ls, list(result_sim))
       
   }
   
