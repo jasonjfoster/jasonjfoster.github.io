@@ -263,7 +263,6 @@ $$
 $$
 
 ```{python}
-# START HERE!
 def bs_vega(type, S, K, r, q, tau, sigma, d1, d2):
   
   q_df = np.exp(-q * tau)
@@ -663,7 +662,7 @@ def sim_multi_gbm(n_sim, S, mu, sigma, dt):
   
   result = S * np.exp(X.cumsum(axis = 0))
   
-  return np.asmatrix(result)
+  return result
 ```
 
 -   <https://arxiv.org/pdf/0812.4210.pdf>
@@ -762,7 +761,7 @@ def implied_vol_newton(params, type, S, K, r, q, tau):
     sigma = sigma0 - (target0 - params["target"]) / d_target0
     sigma0 = sigma
       
-  return sigma.item()
+  return sigma
 ```
 
 -   <http://www.aspenres.com/documents/help/userguide/help/bopthelp/bopt2Implied_Volatility_Formula.html>
@@ -880,7 +879,7 @@ def implied_vol_optim(param, type, S, K, r, q, tau, target):
   
   result = minimize(implied_vol_obj, param, args = (type, S, K, r, q, tau, target))
   
-  return result.x.item()
+  return result.x
 ```
 
 ```{python}
@@ -906,7 +905,7 @@ def yld_optim(params, cash_flows, target):
   
   result = minimize(yld_obj, params["cpn"], args = (cash_flows, target))
   
-  return result.x.item() * params["freq"]
+  return result.x * params["freq"]
 ```
 
 ```{python}
