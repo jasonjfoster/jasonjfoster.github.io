@@ -469,13 +469,12 @@ d_{2}&amp;={\frac{\ln(S/K)+(r-q-\sigma^{2}/2)\tau}{\sigma{\sqrt{\tau}}}}=d_{1}-\
 \end{aligned}
 \]</span></p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># START HERE!</span></span>
-<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> bs_vega(<span class="bu">type</span>, S, K, r, q, tau, sigma, d1, d2):</span>
-<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>  q_df <span class="op">=</span> np.exp(<span class="op">-</span>q <span class="op">*</span> tau)</span>
-<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>  result <span class="op">=</span> S <span class="op">*</span> q_df <span class="op">*</span> phi(d1) <span class="op">*</span> np.sqrt(tau)</span>
-<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> result</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> bs_vega(<span class="bu">type</span>, S, K, r, q, tau, sigma, d1, d2):</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>  q_df <span class="op">=</span> np.exp(<span class="op">-</span>q <span class="op">*</span> tau)</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>  result <span class="op">=</span> S <span class="op">*</span> q_df <span class="op">*</span> phi(d1) <span class="op">*</span> np.sqrt(tau)</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> result</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>greeks_df[<span class="st">"vega"</span>] <span class="op">=</span> bs_vega(greeks_df[<span class="st">"type"</span>], greeks_df[<span class="st">"spot"</span>], K, r, q, tau, sigma,</span>
@@ -868,10 +867,10 @@ S_{k}(t_{i+1})&amp;=S_{k}(t_{i})\exp\left(\sqrt{t_{i+1}-t_{i}}\sum_{j=1}^{d}{A_{
 <span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>   empirical  theoretical
-0   0.118287     0.120982
-1  -0.005434    -0.006034
-2  -0.000540    -0.000295
-3   0.004052     0.004099</code></pre>
+0   0.118287     0.116745
+1  -0.005434    -0.005230
+2  -0.000540    -0.000346
+3   0.004052     0.003869</code></pre>
 </div>
 </div>
 <div class="cell">
@@ -881,9 +880,9 @@ S_{k}(t_{i+1})&amp;=S_{k}(t_{i})\exp\left(\sqrt{t_{i+1}-t_{i}}\sum_{j=1}^{d}{A_{
 <span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>   empirical  theoretical
-0   0.183915     0.183715
-1   0.061168     0.061097
-2   0.008470     0.008455
+0   0.183915     0.183676
+1   0.061168     0.061122
+2   0.008470     0.008465
 3   0.016957     0.016938</code></pre>
 </div>
 </div>
