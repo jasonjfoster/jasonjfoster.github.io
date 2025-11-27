@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Jason Foster">
-<meta name="dcterms.date" content="2025-11-26">
+<meta name="dcterms.date" content="2025-11-27">
 
 <title>Securities – jasonjfoster.github.io</title>
 <style>
@@ -193,7 +193,7 @@ window.Quarto = {
       <div>
       <div class="quarto-title-meta-heading">Published</div>
       <div class="quarto-title-meta-contents">
-        <p class="date">November 26, 2025</p>
+        <p class="date">November 27, 2025</p>
       </div>
     </div>
     
@@ -867,10 +867,10 @@ S_{k}(t_{i+1})&amp;=S_{k}(t_{i})\exp\left(\sqrt{t_{i+1}-t_{i}}\sum_{j=1}^{d}{A_{
 <span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>   empirical  theoretical
-0   0.118287     0.116745
-1  -0.005434    -0.005230
-2  -0.000540    -0.000346
-3   0.004052     0.003869</code></pre>
+0   0.118287     0.117010
+1  -0.005434    -0.005143
+2  -0.000540    -0.000517
+3   0.004052     0.003987</code></pre>
 </div>
 </div>
 <div class="cell">
@@ -880,10 +880,10 @@ S_{k}(t_{i+1})&amp;=S_{k}(t_{i})\exp\left(\sqrt{t_{i+1}-t_{i}}\sum_{j=1}^{d}{A_{
 <span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>   empirical  theoretical
-0   0.183915     0.183676
-1   0.061168     0.061122
-2   0.008470     0.008465
-3   0.016957     0.016938</code></pre>
+0   0.183915     0.183669
+1   0.061168     0.061152
+2   0.008470     0.008463
+3   0.016957     0.016937</code></pre>
 </div>
 </div>
 </section>
@@ -954,7 +954,7 @@ x_{n+1}=x_{n}-{\frac{f(x_{n})}{f'(x_{n})}}
 <div class="cell">
 <div class="sourceCode cell-code" id="cb48"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>implied_vol_newton(params1, <span class="bu">type</span>, S, K, r, q, tau) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>np.float64(0.18759233714468238)</code></pre>
+<pre><code>np.float64(0.1878512960135424)</code></pre>
 </div>
 </div>
 </section>
@@ -1048,12 +1048,12 @@ x_{n+1}=x_{n}-{\frac{f(x_{n})}{f'(x_{n})}}
 <span id="cb56-12"><a href="#cb56-12" aria-hidden="true" tabindex="-1"></a>  </span>
 <span id="cb56-13"><a href="#cb56-13" aria-hidden="true" tabindex="-1"></a>  result <span class="op">=</span> minimize(implied_vol_obj, param, args <span class="op">=</span> (<span class="bu">type</span>, S, K, r, q, tau, target))</span>
 <span id="cb56-14"><a href="#cb56-14" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb56-15"><a href="#cb56-15" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> result.x</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb56-15"><a href="#cb56-15" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> np.float64(result.x.item())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb57"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a>implied_vol_optim(start1, <span class="bu">type</span>, S, K, r, q, tau, target1)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>array([0.18759233])</code></pre>
+<pre><code>np.float64(0.18785128868665432)</code></pre>
 </div>
 </div>
 </section>
@@ -1076,12 +1076,12 @@ x_{n+1}=x_{n}-{\frac{f(x_{n})}{f'(x_{n})}}
 <span id="cb59-14"><a href="#cb59-14" aria-hidden="true" tabindex="-1"></a>  </span>
 <span id="cb59-15"><a href="#cb59-15" aria-hidden="true" tabindex="-1"></a>  result <span class="op">=</span> minimize(yld_obj, params[<span class="st">"cpn"</span>], args <span class="op">=</span> (cash_flows, target))</span>
 <span id="cb59-16"><a href="#cb59-16" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb59-17"><a href="#cb59-17" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> result.x <span class="op">*</span> params[<span class="st">"freq"</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb59-17"><a href="#cb59-17" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> np.float64(result.x.item()) <span class="op">*</span> params[<span class="st">"freq"</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb60"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a>yld_optim(params2, cash_flows, target2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>array([0.04470075])</code></pre>
+<pre><code>np.float64(0.04470075001603727)</code></pre>
 </div>
 </div>
 

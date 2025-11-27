@@ -339,7 +339,7 @@ greeks_df["gamma"] = bs_gamma(greeks_df["type"], greeks_df["spot"], K, r, q, tau
 greeks_mlt <- data.table::as.data.table(reticulate::py$greeks_df)[ , c("spot", "d1", "d2") := NULL]
 greeks_mlt <- data.table::melt(greeks_mlt, id.vars = c("type", "shock"))
 greeks_plt <- plot_scen(greeks_mlt, z = "type", title = "Greeks", xlab = "Shock") +
-  facet_wrap(~ variable, nrow = 1, scales = "free", labeller = labeller(variable = capitalize))
+  ggplot2::facet_wrap(~ variable, nrow = 1, scales = "free", labeller = ggplot2::labeller(variable = capitalize))
 print(greeks_plt)
 ```
 
@@ -879,7 +879,7 @@ def implied_vol_optim(param, type, S, K, r, q, tau, target):
   
   result = minimize(implied_vol_obj, param, args = (type, S, K, r, q, tau, target))
   
-  return result.x
+  return np.float64(result.x.item())
 ```
 
 ```{python}
@@ -905,7 +905,7 @@ def yld_optim(params, cash_flows, target):
   
   result = minimize(yld_obj, params["cpn"], args = (cash_flows, target))
   
-  return result.x * params["freq"]
+  return np.float64(result.x.item()) * params["freq"]
 ```
 
 ```{python}
