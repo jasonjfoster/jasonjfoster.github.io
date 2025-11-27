@@ -1,25 +1,30 @@
-library(ggplot2)
-library(GGally)
-
 theme_jjf <- function(base_size = 11, base_family = "") {
   
   half_line <- base_size / 2
   
-  theme_gray(base_size = base_size, base_family = base_family) %+replace%
-    theme(line = element_line(colour = rgb(217, 217, 217, max = 255), linewidth = base_size / 22,
-                              linetype = 1, lineend = "butt"),
-          axis.text = element_text(size = rel(0.8), colour = "black"),
-          axis.ticks = element_blank(),
-          legend.margin = margin(0),
-          legend.key = element_blank(),
-          legend.text = element_text(hjust = 0),
-          legend.title = element_blank(),
-          legend.position = "bottom",
-          panel.background = element_blank(),
-          panel.grid = element_line(),
-          strip.background = element_blank(),
-          plot.background = element_blank(),
-          plot.margin = margin(0))
+  ggplot2::`%+replace%`(
+    ggplot2::theme_gray(base_size = base_size, base_family = base_family),
+    ggplot2::theme(
+      line = ggplot2::element_line(
+        color = grDevices::rgb(217, 217, 217, max = 255),
+        linewidth = base_size / 22,
+        linetype = 1,
+        lineend = "butt"
+      ),
+      axis.text = ggplot2::element_text(size = ggplot2::rel(0.8), color = "black"),
+      axis.ticks = ggplot2::element_blank(),
+      legend.margin = ggplot2::margin(0),
+      legend.key = ggplot2::element_blank(),
+      legend.text = ggplot2::element_text(hjust = 0),
+      legend.title = ggplot2::element_blank(),
+      legend.position = "bottom",
+      panel.background = ggplot2::element_blank(),
+      panel.grid = ggplot2::element_line(),
+      strip.background = ggplot2::element_blank(),
+      plot.background = ggplot2::element_blank(),
+      plot.margin = ggplot2::margin(0)
+    )
+  )
   
 }
 
@@ -27,10 +32,12 @@ palette_jjf <- function(n_cols, n_rows = 1) {
   # if n_cols > length(colors) then repeat with transparency
   # otherwise repeat n_rows with transparency
   
-  colors_jjf <- c(grDevices::rgb(236, 105,  65, maxColorValue = 255),
-                  grDevices::rgb(253, 197, 129, maxColorValue = 255),
-                  grDevices::rgb( 20,  76,  89, maxColorValue = 255),
-                  grDevices::rgb( 22, 144, 133, maxColorValue = 255))
+  colors_jjf <- c(
+    grDevices::rgb(236, 105,  65, maxColorValue = 255),
+    grDevices::rgb(253, 197, 129, maxColorValue = 255),
+    grDevices::rgb( 20,  76,  89, maxColorValue = 255),
+    grDevices::rgb( 22, 144, 133, maxColorValue = 255)
+  )
   
   rep_cols <- floor(n_cols / length(colors_jjf))
   rep_rows <- n_rows - 1
@@ -70,20 +77,20 @@ palette_jjf <- function(n_cols, n_rows = 1) {
     result <- do.call(c, result_ls)
     
   }
-
+  
   return(result)
   
 }
 
 scale_color_jjf <- function(...) {
   
-  discrete_scale("color", palette = palette_jjf, ...)
+  ggplot2::discrete_scale("color", palette = palette_jjf, ...)
   
 }
 
 scale_fill_jjf <- function(...) {
   
-  discrete_scale("fill", palette = palette_jjf, ...)
+  ggplot2::discrete_scale("fill", palette = palette_jjf, ...)
   
 }
 
@@ -100,43 +107,49 @@ plot_jjf <- function(dt, x, y, z, decomp, title, xlab, ylab, multiple, palette, 
     dt[ , (z) := factor(capitalize(get(z)), levels = unique(capitalize(get(z))))]
   }
   
-  result <- ggplot() +
+  result <- ggplot2::ggplot() +
     theme_jjf() +
-    labs(title = title, x = xlab, y = ylab)
+    ggplot2::labs(title = title, x = xlab, y = ylab)
   
   if (stack) {
     
     result <- result +
-      geom_area(data = dt[get(z) != decomp],
-                aes(x = get(x), y = get(y) * multiple, fill = get(z))) +
-      geom_line(data = dt[get(z) == decomp],
-                aes(x = get(x), y = get(y) * multiple, color = get(z)))
+      ggplot2::geom_area(
+        data = dt[get(z) != decomp],
+        ggplot2::aes(x = get(x), y = get(y) * multiple, fill = get(z))
+      ) +
+      ggplot2::geom_line(
+        data = dt[get(z) == decomp],
+        ggplot2::aes(x = get(x), y = get(y) * multiple, color = get(z))
+      )
     
     if (!is.null(palette)) {
       
       result <- result +
-        scale_fill_manual(values = palette)
-        # scale_fill_manual(values = palette, guide = guide_legend(order = 2)) +
-        # scale_color_manual(values = palette, guide = guide_legend(order = 1))
+        ggplot2::scale_fill_manual(values = palette)
+      # scale_fill_manual(values = palette, guide = guide_legend(order = 2)) +
+      # scale_color_manual(values = palette, guide = guide_legend(order = 1))
       
     } else {
       
       result <- result +
-        scale_fill_jjf(guide = guide_legend(order = 2)) +
-        scale_color_manual(values = "black", guide = guide_legend(order = 1))
+        scale_fill_jjf(guide = ggplot2::guide_legend(order = 2)) +
+        ggplot2::scale_color_manual(values = "black", guide = ggplot2::guide_legend(order = 1))
       
     }
     
   } else {
     
     result <- result +
-      geom_line(data = dt,
-                aes(x = get(x), y = get(y) * multiple, color = get(z)))
+      ggplot2::geom_line(
+        data = dt,
+        ggplot2::aes(x = get(x), y = get(y) * multiple, color = get(z))
+      )
     
     if (!is.null(palette)) {
       
       result <- result +
-        scale_color_manual(values = palette)
+        ggplot2::scale_color_manual(values = palette)
       
     } else {
       
@@ -185,13 +198,16 @@ plot_heatmap <- function(dt, x = "", y = "", z = "",
                          title = NULL, xlab = NULL, ylab = NULL,
                          multiple = 100, color = palette_jjf(1)) {
   
-  result <- ggplot(dt, aes(x = get(x), y = get(y), fill = get(z) * multiple)) +
+  result <- ggplot2::ggplot(
+    dt,
+    ggplot2::aes(x = get(x), y = get(y), fill = get(z) * multiple)
+  ) +
     theme_jjf() +
-    theme(legend.position = "none") +
-    labs(title = title, x = xlab, y = ylab) +
-    geom_tile() +
-    geom_text(aes(label = sprintf("%0.0f", get(z) * 100))) +
-    scale_fill_gradient(low = "white", high = color)
+    ggplot2::theme(legend.position = "none") +
+    ggplot2::labs(title = title, x = xlab, y = ylab) +
+    ggplot2::geom_tile() +
+    ggplot2::geom_text(ggplot2::aes(label = sprintf("%0.0f", get(z) * 100))) +
+    ggplot2::scale_fill_gradient(low = "white", high = color)
   
   return(result)
   
@@ -201,11 +217,14 @@ plot_scatter <- function(dt, x = "", y = "",
                          title = NULL, xlab = x, ylab = y,
                          multiple = 100, color = palette_jjf(1)) {
   
-  result <- ggplot() +
+  result <- ggplot2::ggplot() +
     theme_jjf() +
-    geom_point(data = dt, aes(x = get(x) * multiple, y = get(y) * multiple),
-               col = color, alpha = 0.2) +
-    labs(title = title, x = xlab, y = ylab)
+    ggplot2::geom_point(
+      data = dt,
+      ggplot2::aes(x = get(x) * multiple, y = get(y) * multiple),
+      col = color,
+      alpha = 0.2) +
+    ggplot2::labs(title = title, x = xlab, y = ylab)
   
   return(result)
   
@@ -215,11 +234,18 @@ plot_density <- function(dt, x = "", y = "",
                          title = NULL, xlab = x, ylab = y,
                          multiple = 1, color = palette_jjf(1)) {
   
-  result <- ggplot() +
+  result <- ggplot2::ggplot() +
     theme_jjf() +
-    geom_histogram(data = dt, aes(x = get(x) * multiple, y = ..density..), bins = 30) +
-    geom_line(data = dt, aes(x = get(x) * multiple, y = get(y) * multiple)) +
-    labs(title = title, x = xlab, y = ylab)
+    ggplot2::geom_histogram(
+      data = dt,
+      ggplot2::aes(x = get(x) * multiple, y = ggplot2::after_stat(density)),
+      bins = 30
+    ) +
+    ggplot2::geom_line(
+      data = dt,
+      ggplot2::aes(x = get(x) * multiple, y = get(y) * multiple)
+    ) +
+    ggplot2::labs(title = title, x = xlab, y = ylab)
   
   return(result)
   
@@ -229,12 +255,13 @@ plot_pairs <- function(dt,
                        title = NULL, xlab = NULL, ylab = NULL,
                        multiple = 100, color = palette_jjf(1)) {
   
-  result <- ggpairs(dt * multiple,
-                    diag = list(continuous = wrap("densityDiag", col = color)),
-                    upper = list(continuous = wrap("points", size = 0.1, alpha = 0.1, col = color)),
-                    lower = list(continuous = wrap("points", size = 0.1, alpha = 0.1, col = color))) +
+  result <- GGally::ggpairs(
+    dt * multiple,
+    diag = list(continuous = GGally::wrap("densityDiag", col = color)),
+    upper = list(continuous = GGally::wrap("points", size = 0.1, alpha = 0.1, col = color)),
+    lower = list(continuous = GGally::wrap("points", size = 0.1, alpha = 0.1, col = color))) +
     theme_jjf() +
-    labs(title = title, x = xlab, y = ylab)
+    ggplot2::labs(title = title, x = xlab, y = ylab)
   
   return(result)
   
