@@ -58,7 +58,7 @@ momentum_df = returns_df.shift(order).rolling(width - order, min_periods = 1).ap
 momentum_mlt <- data.table::melt(data.table::as.data.table(reticulate::py$momentum_df, keep.rownames = "index"), id.vars = "index")
 momentum_mlt[ , index := as.Date(index)]
 momentum_plt <- plot_ts_decomp(momentum_mlt, decomp = "Total", title = "Momentum 1Y (%)") +
-  facet_wrap(~ variable, scales = "free")
+  ggplot2::facet_wrap(~ variable, scales = "free")
 print(momentum_plt)
 ```
 
@@ -142,7 +142,7 @@ score_df = (momentum_df / momentum_df.rolling(width, min_periods = 1).apply(sd, 
 score_mlt <- data.table::melt(data.table::as.data.table(reticulate::py$score_df, keep.rownames = "index"), id.vars = "index")
 score_mlt[ , index := as.Date(index)]
 score_plt <- plot_ts_decomp(score_mlt, decomp = "Overall", title = "Score 1Y", multiple = 1) +
-  facet_wrap(~ variable)
+  ggplot2::facet_wrap(~ variable)
 print(score_plt)
 ```
 
@@ -206,7 +206,10 @@ outliers_df = outliers(score_df)
 outliers_mlt <- data.table::melt(data.table::as.data.table(reticulate::py$outliers_df, keep.rownames = "index"), id.vars = "index")
 outliers_mlt[ , index := as.Date(index)]
 outliers_plt <- score_plt +
-  geom_point(data = outliers_mlt, aes(x = index, y = value, fill = variable))
+  ggplot2::geom_point(
+    data = outliers_mlt,
+    ggplot2::aes(x = index, y = value, fill = variable)
+  )
 print(outliers_plt)
 ```
 
@@ -303,6 +306,6 @@ lead_lag_mlt <- data.table::melt(data.table::as.data.table(reticulate::py$lead_l
 lead_lag_mlt[ , index := as.Date(index)]
 lead_lag_mlt[ , value := as.logical(value)]
 lead_lag_plt <- plot_ts_decomp(lead_lag_mlt, decomp = "Total", title = "Lead lag 1M", palette = palette) +
-  theme(axis.text.y = element_blank())
+  ggplot2::theme(axis.text.y = ggplot2::element_blank())
 print(lead_lag_plt)
 ```
