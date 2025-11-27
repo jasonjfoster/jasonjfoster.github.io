@@ -1,0 +1,291 @@
+{
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "---\n",
+        "title: \"Data\"\n",
+        "author: \"[Jason Foster](mailto:jason.j.foster@gmail.com)\"\n",
+        "date: last-modified\n",
+        "categories:\n",
+        "  - analysis\n",
+        "  - finance\n",
+        "  - python\n",
+        "draft: true\n",
+        "execute:\n",
+        "  eval: false\n",
+        "  freeze: false\n",
+        "editor: \n",
+        "  mode: source\n",
+        "---"
+      ],
+      "id": "8a1dedd2"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "# !pip install --index-url=https://blpapi.bloomberg.com/repository/releases/python/simple/ blpapi\n",
+        "import blpapi\n",
+        "import pandas as pd"
+      ],
+      "id": "0a524047",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "# Static query\n",
+        "\n",
+        "-   <https://www.bloomberg.com/professional/support/api-library/>\n",
+        "-   Page 80: <https://bloomberg.github.io/blpapi-docs/>"
+      ],
+      "id": "3f7d61b5"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "def create_session(host = \"localhost\", port = 8194):\n",
+        "  \n",
+        "  options = blpapi.SessionOptions()\n",
+        "  options.setServerHost(host)\n",
+        "  options.setServerPort(port)\n",
+        "  \n",
+        "  session = blpapi.Session(options)\n",
+        "  session.start()\n",
+        "  session.openService(\"//blp/refdata\")\n",
+        "  \n",
+        "  return session"
+      ],
+      "id": "a3043e2f",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "def process_response(event, fields, start_date = None, end_date = None):\n",
+        "  \n",
+        "  data_ls = []\n",
+        "  \n",
+        "  for msg in event:\n",
+        "    \n",
+        "    security_data = msg.getElement(\"securityData\")\n",
+        "    \n",
+        "    if (start_date):\n",
+        "      \n",
+        "      security = security_data.getElementAsString(\"security\")\n",
+        "      field_data = security_data.getElement(\"fieldData\")\n",
+        "      \n",
+        "      for x in field_data:\n",
+        "        \n",
+        "        record = {\"security\": security, \"date\": x.getElementAsDatetime(\"date\")}\n",
+        "        \n",
+        "        for field in fields:\n",
+        "          try:\n",
+        "            record[field] = x.getElement(field).getValue()\n",
+        "          except:\n",
+        "            pass\n",
+        "        \n",
+        "        data_ls.append(record)\n",
+        "        \n",
+        "    else:\n",
+        "      \n",
+        "      for x in security_data.values():\n",
+        "        \n",
+        "        security = x.getElementAsString(\"security\")\n",
+        "        field_data = x.getElement(\"fieldData\")\n",
+        "        record = {\"security\": security}\n",
+        "        \n",
+        "        for field in fields:\n",
+        "          try:\n",
+        "            record[field] = field_data.getElement(field).getValue()\n",
+        "          except:\n",
+        "            pass\n",
+        "        \n",
+        "        data_ls.append(record)\n",
+        "    \n",
+        "  return pd.DataFrame(data_ls)"
+      ],
+      "id": "120ef96c",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "# Data point"
+      ],
+      "id": "59d010f3"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "def bdp(securities, fields):\n",
+        "  \n",
+        "  if isinstance(securities, str):\n",
+        "    securities = [securities]\n",
+        "  \n",
+        "  if isinstance(fields, str):\n",
+        "    fields = [fields]\n",
+        "  \n",
+        "  session = create_session()\n",
+        "  service = session.getService(\"//blp/refdata\")\n",
+        "  request = service.createRequest(\"ReferenceDataRequest\")\n",
+        "  \n",
+        "  for security in securities:\n",
+        "    request.append(\"securities\", security)\n",
+        "  \n",
+        "  for field in fields:\n",
+        "    request.append(\"fields\", field)\n",
+        "    \n",
+        "  session.sendRequest(request)\n",
+        "  \n",
+        "  status = True\n",
+        "  result = pd.DataFrame()\n",
+        "  \n",
+        "  while status:\n",
+        "    \n",
+        "    event = session.nextEvent()\n",
+        "    \n",
+        "    if (event.eventType() in [blpapi.Event.RESPONSE, blpapi.Event.PARTIAL_RESPONSE]):\n",
+        "      result = pd.concat([result, process_response(event, fields)], ignore_index = True)\n",
+        "      \n",
+        "    if (event.eventType() == blpapi.Event.RESPONSE):\n",
+        "      status = False\n",
+        "  \n",
+        "  session.stop()\n",
+        "  \n",
+        "  return result"
+      ],
+      "id": "f637a3f9",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "securities = [\"IBM US Equity\", \"GOOG US Equity\", \"MSFT US Equity\", \"BA US Equity\"]\n",
+        "fields = [\"MARKET_SECTOR_DES\", \"GICS_SECTOR_NAME\", \"ID_CUSIP\", \"PX_LAST\"]"
+      ],
+      "id": "c1c4f9ff",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "#| eval: false\n",
+        "bdp_df = bdp(securities, fields)\n",
+        "print(bdp_df)"
+      ],
+      "id": "6891f0ab",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "# Data history"
+      ],
+      "id": "8a1acea8"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "def bdh(securities, fields, start_date, end_date = None):\n",
+        "  \n",
+        "  if isinstance(securities, str):\n",
+        "    securities = [securities]\n",
+        "  \n",
+        "  if isinstance(fields, str):\n",
+        "    fields = [fields]\n",
+        "  \n",
+        "  session = create_session()\n",
+        "  service = session.getService(\"//blp/refdata\")\n",
+        "  request = service.createRequest(\"HistoricalDataRequest\")\n",
+        "  \n",
+        "  for security in securities:\n",
+        "    request.append(\"securities\", security)\n",
+        "    \n",
+        "  for field in fields:\n",
+        "    request.append(\"fields\", field)\n",
+        "\n",
+        "  request.set(\"startDate\", start_date)\n",
+        "  \n",
+        "  if (end_date):\n",
+        "    request.set(\"endDate\", end_date)\n",
+        "    \n",
+        "  request.set(\"nonTradingDayFillOption\", \"ALL_CALENDAR_DAYS\") # \"NON_TRADING_WEEKDAYS\", \"ALL_CALENDAR_DAYS\", \"ACTIVE_DAYS_ONLY\"\n",
+        "  request.set(\"nonTradingDayFillMethod\", \"NIL_VALUE\") # \"PREVIOUS_VALUE\", \"NIL_VALUE\" \n",
+        "  \n",
+        "  session.sendRequest(request)\n",
+        "  \n",
+        "  status = True\n",
+        "  result = pd.DataFrame()\n",
+        "  \n",
+        "  while status:\n",
+        "    \n",
+        "    event = session.nextEvent()\n",
+        "    \n",
+        "    if (event.eventType() in [blpapi.Event.RESPONSE, blpapi.Event.PARTIAL_RESPONSE]):\n",
+        "      result = pd.concat([result, process_response(event, fields, start_date, end_date)], ignore_index = True)\n",
+        "    \n",
+        "    if (event.eventType() == blpapi.Event.RESPONSE):\n",
+        "      status = False\n",
+        "      \n",
+        "  session.stop()\n",
+        "  \n",
+        "  return result"
+      ],
+      "id": "8be2b2cc",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "fields = [\"PX_LAST\", \"PX_BID\", \"PX_ASK\"]\n",
+        "start_date = \"20231201\"\n",
+        "end_date = \"20231205\""
+      ],
+      "id": "2f75937a",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "#| eval: false\n",
+        "bdh_df = bdh(securities, fields, start_date, end_date)\n",
+        "print(bdh_df)"
+      ],
+      "id": "4b0fd3c0",
+      "execution_count": null,
+      "outputs": []
+    }
+  ],
+  "metadata": {
+    "kernelspec": {
+      "name": "python3",
+      "language": "python",
+      "display_name": "Python 3 (ipykernel)",
+      "path": "C:\\Users\\jason\\OneDrive\\Documents\\.virtualenvs\\r-reticulate\\share\\jupyter\\kernels\\python3"
+    }
+  },
+  "nbformat": 4,
+  "nbformat_minor": 5
+}

@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Jason Foster">
-<meta name="dcterms.date" content="2025-11-12">
+<meta name="dcterms.date" content="2025-11-27">
 
 <title>Eigen – jasonjfoster.github.io</title>
 <style>
@@ -193,7 +193,7 @@ window.Quarto = {
       <div>
       <div class="quarto-title-meta-heading">Published</div>
       <div class="quarto-title-meta-contents">
-        <p class="date">November 12, 2025</p>
+        <p class="date">November 27, 2025</p>
       </div>
     </div>
     
@@ -263,7 +263,7 @@ window.Quarto = {
 <span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>  </span>
 <span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>  result <span class="op">=</span> np.dot(V, np.multiply(L, V.T))</span>
 <span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> result</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> np.ravel(result)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>comps <span class="op">=</span> <span class="dv">1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -271,14 +271,10 @@ window.Quarto = {
 <div class="cell">
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>eigen_decomp(overlap_df, comps) <span class="op">*</span> scale[<span class="st">"periods"</span>] <span class="op">*</span> scale[<span class="st">"overlap"</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>array([[ 3.18897076e-02, -3.78904977e-03, -8.11493151e-05,
-         2.63031430e-03],
-       [-3.78904977e-03,  4.50204759e-04,  9.64194458e-06,
-        -3.12526911e-04],
-       [-8.11493151e-05,  9.64194458e-06,  2.06499584e-07,
-        -6.69332585e-06],
-       [ 2.63031430e-03, -3.12526911e-04, -6.69332585e-06,
-         2.16952548e-04]])</code></pre>
+<pre><code>array([ 3.19294657e-02, -3.79444587e-03, -8.04947508e-05,  2.63187781e-03,
+       -3.79444587e-03,  4.50925786e-04,  9.56586550e-06, -3.12768086e-04,
+       -8.04947508e-05,  9.56586550e-06,  2.02928698e-07, -6.63501077e-06,
+        2.63187781e-03, -3.12768086e-04, -6.63501077e-06,  2.16940079e-04])</code></pre>
 </div>
 </div>
 <div class="cell">
@@ -306,7 +302,7 @@ window.Quarto = {
 <div class="cell">
 <div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>variance_explained(overlap_df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>array([0.88564074, 0.99266967, 0.99824561, 1.        ])</code></pre>
+<pre><code>array([0.8856599 , 0.99267755, 0.99824402, 1.        ])</code></pre>
 </div>
 </div>
 </section>
