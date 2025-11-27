@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Jason Foster">
-<meta name="dcterms.date" content="2025-11-23">
+<meta name="dcterms.date" content="2025-11-27">
 
 <title>Risk – jasonjfoster.github.io</title>
 <style>
@@ -193,7 +193,7 @@ window.Quarto = {
       <div>
       <div class="quarto-title-meta-heading">Published</div>
       <div class="quarto-title-meta-contents">
-        <p class="date">November 23, 2025</p>
+        <p class="date">November 27, 2025</p>
       </div>
     </div>
     
@@ -287,8 +287,8 @@ window.Quarto = {
 <div class="cell">
 <div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>lm_coef(overlap_x_df, overlap_y_df, weights, intercept)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>array([ 1.14803701e-04,  1.83552059e-01, -9.88266619e-02,  3.12743059e+00,
-        1.13774830e+00])</code></pre>
+<pre><code>array([ 1.26517152e-04,  1.83289818e-01, -1.01982452e-01,  3.11705519e+00,
+        1.14645113e+00])</code></pre>
 </div>
 </div>
 <div class="cell">
@@ -300,8 +300,8 @@ window.Quarto = {
 <span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>np.array(fit.params)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>array([ 1.14803701e-04,  1.83552059e-01, -9.88266619e-02,  3.12743059e+00,
-        1.13774830e+00])</code></pre>
+<pre><code>array([ 1.26517152e-04,  1.83289818e-01, -1.01982452e-01,  3.11705519e+00,
+        1.14645113e+00])</code></pre>
 </div>
 </div>
 </section>
@@ -326,18 +326,18 @@ R^{2}=\frac{\hat{\beta}^\mathrm{T}(X^\mathrm{T}WX)\hat{\beta}}{y^\mathrm{T}Wy}
 <span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>  result <span class="op">=</span> np.dot(coef, np.dot(np.dot(x.T, np.multiply(weights, x)), coef.T)) <span class="op">/</span> <span class="op">\</span></span>
 <span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>    np.dot(y.T, np.multiply(weights, y))</span>
 <span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> result.item()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> np.float64(result.item())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>lm_rsq(overlap_x_df, overlap_y_df, weights, intercept)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>0.7323693095420206</code></pre>
+<pre><code>np.float64(0.7368866722990308)</code></pre>
 </div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>fit.rsquared</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>np.float64(0.7323693095420203)</code></pre>
+<pre><code>np.float64(0.7368866722990306)</code></pre>
 </div>
 </div>
 </section>
@@ -382,15 +382,15 @@ R^{2}=\frac{\hat{\beta}^\mathrm{T}(X^\mathrm{T}WX)\hat{\beta}}{y^\mathrm{T}Wy}
 <div class="cell">
 <div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>lm_se(overlap_x_df, overlap_y_df, weights, intercept)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>array([6.29067301e-05, 1.95134213e-02, 3.40977069e-02, 2.55895496e-01,
-       2.25026619e-01])</code></pre>
+<pre><code>array([6.24702982e-05, 1.93411170e-02, 3.34838428e-02, 2.52682278e-01,
+       2.23655552e-01])</code></pre>
 </div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>np.array(fit.bse)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>array([6.29067301e-05, 1.95134213e-02, 3.40977069e-02, 2.55895496e-01,
-       2.25026619e-01])</code></pre>
+<pre><code>array([6.24702982e-05, 1.93411170e-02, 3.34838428e-02, 2.52682278e-01,
+       2.23655552e-01])</code></pre>
 </div>
 </div>
 </section>
@@ -459,7 +459,7 @@ R^{2}_{i}=\sum_{S\subseteq N\setminus\{i\}}{\frac{|S|!\;(n-|S|-1)!}{n!}}(R^{2}(S
 <div class="cell">
 <div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>lm_shap(overlap_x_df, overlap_y_df, weights, intercept)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>array([0.31943761, 0.01661087, 0.15779872, 0.23852211])</code></pre>
+<pre><code>array([0.32139057, 0.01698864, 0.15811682, 0.24039065])</code></pre>
 </div>
 </div>
 </section>
@@ -507,13 +507,13 @@ W_{k}&amp;=\mathbf{X}V_{k}=[\mathbf{X}\mathbf{v}_{1},\ldots,\mathbf{X}\mathbf{v}
 <div class="cell">
 <div class="sourceCode cell-code" id="cb27"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>pcr_coef(scale_x_df, overlap_y_df, comps)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>array([ 6.36635362e-04,  5.40939127e-05, -1.36708081e-04,  6.40223689e-04])</code></pre>
+<pre><code>array([ 6.47330935e-04,  4.55509438e-05, -1.31420379e-04,  6.51119479e-04])</code></pre>
 </div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb29"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>pcr_coef(overlap_x_df, overlap_y_df, comps)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>array([ 0.25306574,  0.0034336 , -0.00062675,  0.01777104])</code></pre>
+<pre><code>array([ 0.25401205,  0.00302391, -0.00057864,  0.01779625])</code></pre>
 </div>
 </div>
 <div class="cell">
@@ -525,7 +525,7 @@ W_{k}&amp;=\mathbf{X}V_{k}=[\mathbf{X}\mathbf{v}_{1},\ldots,\mathbf{X}\mathbf{v}
 <span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a>gamma <span class="op">=</span> fit.coef_</span>
 <span id="cb31-7"><a href="#cb31-7" aria-hidden="true" tabindex="-1"></a>np.dot(pca.components_.T[:, :comps], gamma.T[:comps]).ravel()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>array([ 6.36635362e-04,  5.40939127e-05, -1.36708081e-04,  6.40223689e-04])</code></pre>
+<pre><code>array([ 6.47330935e-04,  4.55509438e-05, -1.31420379e-04,  6.51119479e-04])</code></pre>
 </div>
 </div>
 </section>
@@ -541,18 +541,18 @@ W_{k}&amp;=\mathbf{X}V_{k}=[\mathbf{X}\mathbf{v}_{1},\ldots,\mathbf{X}\mathbf{v}
 <span id="cb33-7"><a href="#cb33-7" aria-hidden="true" tabindex="-1"></a>  </span>
 <span id="cb33-8"><a href="#cb33-8" aria-hidden="true" tabindex="-1"></a>  result <span class="op">=</span> np.dot(np.dot(coef, np.dot(x.T, x)), coef.T) <span class="op">/</span> np.dot(y.T, y)</span>
 <span id="cb33-9"><a href="#cb33-9" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb33-10"><a href="#cb33-10" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> result.item()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb33-10"><a href="#cb33-10" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> np.float64(result.item())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb34"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>pcr_rsq(scale_x_df, overlap_y_df, comps)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>0.4458171464775532</code></pre>
+<pre><code>np.float64(0.4565055362604753)</code></pre>
 </div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb36"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>pcr_rsq(overlap_x_df, overlap_y_df, comps)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>0.5256483726427376</code></pre>
+<pre><code>np.float64(0.530608586512265)</code></pre>
 </div>
 </div>
 </section>
@@ -593,13 +593,13 @@ W_{k}&amp;=\mathbf{X}V_{k}=[\mathbf{X}\mathbf{v}_{1},\ldots,\mathbf{X}\mathbf{v}
 <div class="cell">
 <div class="sourceCode cell-code" id="cb39"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>pcr_se(scale_x_df, overlap_y_df, comps)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>array([4.51637963e-05, 3.83749726e-06, 9.69826105e-06, 4.54183571e-05])</code></pre>
+<pre><code>array([4.49420029e-05, 3.16244835e-06, 9.12407353e-06, 4.52050287e-05])</code></pre>
 </div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb41"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>pcr_se(overlap_x_df, overlap_y_df, comps)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>array([1.52963357e-02, 2.07541068e-04, 3.78832664e-05, 1.07415462e-03])</code></pre>
+<pre><code>array([1.52014939e-02, 1.80967702e-04, 3.46291531e-05, 1.06502643e-03])</code></pre>
 </div>
 </div>
 </section>
@@ -655,8 +655,8 @@ W_{k}&amp;=\mathbf{X}V_{k}=[\mathbf{X}\mathbf{v}_{1},\ldots,\mathbf{X}\mathbf{v}
 <div class="cell">
 <div class="sourceCode cell-code" id="cb45"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>lm_sar(overlap_x_df, overlap_y_df, weights, intercept) <span class="op">*</span> np.sqrt(scale[<span class="st">"periods"</span>] <span class="op">*</span> scale[<span class="st">"overlap"</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>array([0.06565947, 0.        , 0.0343526 , 0.00637423, 0.02704017,
-       0.01854822, 0.03396764])</code></pre>
+<pre><code>array([0.06583626, 0.        , 0.03443123, 0.00664231, 0.02707   ,
+       0.01870893, 0.03377043])</code></pre>
 </div>
 </div>
 </section>
@@ -695,8 +695,8 @@ W_{k}&amp;=\mathbf{X}V_{k}=[\mathbf{X}\mathbf{v}_{1},\ldots,\mathbf{X}\mathbf{v}
 <div class="cell">
 <div class="sourceCode cell-code" id="cb48"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>lm_mcr(overlap_x_df, overlap_y_df, weights, intercept) <span class="op">*</span> np.sqrt(scale[<span class="st">"periods"</span>] <span class="op">*</span> scale[<span class="st">"overlap"</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>array([0.06565947, 0.        , 0.0249204 , 0.00095031, 0.01000579,
-       0.01221048, 0.01757249])</code></pre>
+<pre><code>array([0.06583626, 0.        , 0.02509125, 0.00099811, 0.01005174,
+       0.01237277, 0.0173224 ])</code></pre>
 </div>
 </div>
 </section>
@@ -717,7 +717,7 @@ W_{k}&amp;=\mathbf{X}V_{k}=[\mathbf{X}\mathbf{v}_{1},\ldots,\mathbf{X}\mathbf{v}
 <span id="cb50-4"><a href="#cb50-4" aria-hidden="true" tabindex="-1"></a>                   </span>
 <span id="cb50-5"><a href="#cb50-5" aria-hidden="true" tabindex="-1"></a>  result <span class="op">=</span> np.dot(shocks, beta)</span>
 <span id="cb50-6"><a href="#cb50-6" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb50-7"><a href="#cb50-7" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> np.ravel(result)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb50-7"><a href="#cb50-7" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> result</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb51"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a>shocks <span class="op">=</span> np.array([<span class="op">-</span><span class="fl">0.1</span>, <span class="fl">0.1</span>])</span>
@@ -726,7 +726,7 @@ W_{k}&amp;=\mathbf{X}V_{k}=[\mathbf{X}\mathbf{v}_{1},\ldots,\mathbf{X}\mathbf{v}
 <div class="cell">
 <div class="sourceCode cell-code" id="cb52"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a>implied_shocks(shocks, overlap_x_df, overlap_z_df, weights)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>array([-0.1       ,  0.1       , -0.002163  , -0.00723696])</code></pre>
+<pre><code>array([-0.1       ,  0.1       , -0.00201402, -0.00724209])</code></pre>
 </div>
 </div>
 </section>
@@ -741,12 +741,12 @@ W_{k}&amp;=\mathbf{X}V_{k}=[\mathbf{X}\mathbf{v}_{1},\ldots,\mathbf{X}\mathbf{v}
 <span id="cb54-6"><a href="#cb54-6" aria-hidden="true" tabindex="-1"></a>  </span>
 <span id="cb54-7"><a href="#cb54-7" aria-hidden="true" tabindex="-1"></a>  result <span class="op">=</span> np.multiply(coef.T, implied_shocks(shocks, x, z, weights))</span>
 <span id="cb54-8"><a href="#cb54-8" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb54-9"><a href="#cb54-9" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> np.ravel(result)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb54-9"><a href="#cb54-9" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> result</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb55"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a>pnl_stress(shocks, overlap_x_df, overlap_y_df, overlap_z_df, weights, intercept)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>array([-0.00118747, -0.01835521, -0.00988267, -0.00676462, -0.00823384])</code></pre>
+<pre><code>array([-0.00115613, -0.01832898, -0.01019825, -0.0062778 , -0.0083027 ])</code></pre>
 </div>
 </div>
 

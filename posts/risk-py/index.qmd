@@ -116,7 +116,7 @@ def lm_rsq(x, y, weights, intercept):
   result = np.dot(coef, np.dot(np.dot(x.T, np.multiply(weights, x)), coef.T)) / \
     np.dot(y.T, np.multiply(weights, y))
   
-  return result.item()
+  return np.float64(result.item())
 ```
 
 ```{python}
@@ -315,7 +315,7 @@ def pcr_rsq(x, y, comps):
   
   result = np.dot(np.dot(coef, np.dot(x.T, x)), coef.T) / np.dot(y.T, y)
   
-  return result.item()
+  return np.float64(result.item())
 ```
 
 ```{python}
@@ -477,7 +477,7 @@ def implied_shocks(shocks, x, z, weights):
                    
   result = np.dot(shocks, beta)
   
-  return np.ravel(result)
+  return result
 ```
 
 ```{python}
@@ -500,7 +500,7 @@ def pnl_stress(shocks, x, y, z, weights, intercept):
   
   result = np.multiply(coef.T, implied_shocks(shocks, x, z, weights))
   
-  return np.ravel(result)
+  return result
 ```
 
 ```{python}
