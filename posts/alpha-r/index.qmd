@@ -192,34 +192,69 @@ density_dt <- data.table::data.table(
 y_max <- max(hist_dt$freq_pct)
 
 # 5. Plot
-ggplot() +
-  theme_minimal(base_size = 14) +
-
+ggplot2::ggplot() +
+  ggplot2::theme_minimal(base_size = 14) +
+  
   # Histogram from manually precomputed values
-  geom_col(data = hist_dt,
-           aes(x = mids, y = freq_pct),
-           fill = "lightgray",
-           color = "white",
-           width = bin_width * 100,
-           position = "identity") +
-
+  ggplot2::geom_col(
+    data = hist_dt,
+    ggplot2::aes(x = mids, y = freq_pct),
+    fill = "lightgray",
+    color = "white",
+    width = bin_width * 100,
+    position = "identity"
+  ) +
+  
   # Density line (scaled to match histogram)
-  geom_line(data = density_dt,
-            aes(x = alpha_pct, y = density),
-            color = "black") +
-
+  ggplot2::geom_line(
+    data = density_dt,
+    ggplot2::aes(x = alpha_pct, y = density),
+    color = "black") +
+  
   # Vertical lines at quantiles
-  geom_vline(xintercept = 0, color = "black", linewidth = 1) +
-  # geom_vline(xintercept = q_vals * 100, linetype = "dashed", color = "red") +
-  # 
-  # # Quantile annotations
-  # annotate("text", x = q_vals[1] * 100, y = y_max, label = "5%", color = "red", hjust = 1) +
-  # annotate("text", x = q_vals[2] * 100, y = y_max, label = "Median", color = "red", hjust = 1) +
-  # annotate("text", x = q_vals[3] * 100, y = y_max, label = "95%", color = "red", hjust = 1) +
-
+  ggplot2::geom_vline(
+    xintercept = 0,
+    color = "black",
+    linewidth = 1
+  ) +
+  ggplot2::geom_vline(
+    xintercept = q_vals * 100,
+    linetype = "dashed",
+    color = "red"
+  ) +
+  
+  # Quantile annotations
+  ggplot2::annotate(
+    "text",
+    x = q_vals[1] * 100,
+    y = y_max,
+    label = "5%",
+    color = "red",
+    hjust = 1
+  ) +
+  
+  ggplot2::annotate(
+    "text",
+    x = q_vals[2] * 100,
+    y = y_max,
+    label = "Median",
+    color = "red",
+    hjust = 1
+  ) +
+  
+  ggplot2::annotate(
+    "text",
+    x = q_vals[3] * 100,
+    y = y_max,
+    label = "95%",
+    color = "red",
+    hjust = 1
+  ) +
+  
   # Axis labels
-  labs(title = "Alpha Distribution",
-       x = "Alpha (%)",
-       y = "Frequency (%)")
-
+  ggplot2::labs(
+    title = "Alpha Distribution",
+    x = "Alpha (%)",
+    y = "Frequency (%)"
+  )
 ```
