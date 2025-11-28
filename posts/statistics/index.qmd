@@ -19,8 +19,6 @@ default-image-extension: ""
 # Usage
 
 ```{r}
-library(roll)
-library(microbenchmark)
 options(microbenchmark.unit = "us")
 ```
 
@@ -37,20 +35,24 @@ x_lgl <- x < 0
 # Rolling any
 
 ```{r}
-result <- microbenchmark("125" = roll_any(x_lgl, width = 125, min_obs = 1),
-                         "250" = roll_any(x_lgl, width = 250, min_obs = 1),
-                         "500" = roll_any(x_lgl, width = 500, min_obs = 1),
-                         "1000" = roll_any(x_lgl, width = 1000, min_obs = 1))
+result <- microbenchmark::microbenchmark(
+  "125" = roll::roll_any(x_lgl, width = 125, min_obs = 1),
+  "250" = roll::roll_any(x_lgl, width = 250, min_obs = 1),
+  "500" = roll::roll_any(x_lgl, width = 500, min_obs = 1),
+  "1000" = roll::roll_any(x_lgl, width = 1000, min_obs = 1)
+)
 print(result)
 ```
 
 # Rolling all
 
 ```{r}
-result <- microbenchmark("125" = roll_all(x_lgl, width = 125, min_obs = 1),
-                         "250" = roll_all(x_lgl, width = 250, min_obs = 1),
-                         "500" = roll_all(x_lgl, width = 500, min_obs = 1),
-                         "1000" = roll_all(x_lgl, width = 1000, min_obs = 1))
+result <- microbenchmark::microbenchmark(
+  "125" = roll::roll_all(x_lgl, width = 125, min_obs = 1),
+  "250" = roll::roll_all(x_lgl, width = 250, min_obs = 1),
+  "500" = roll::roll_all(x_lgl, width = 500, min_obs = 1),
+  "1000" = roll::roll_all(x_lgl, width = 1000, min_obs = 1)
+)
 print(result)
 ```
 
@@ -66,10 +68,12 @@ $$
 $$
 
 ```{r}
-result <- microbenchmark("125" = roll_sum(x, width = 125, min_obs = 1, weights = weights),
-                         "250" = roll_sum(x, width = 250, min_obs = 1, weights = weights),
-                         "500" = roll_sum(x, width = 500, min_obs = 1, weights = weights),
-                         "1000" = roll_sum(x, width = 1000, min_obs = 1, weights = weights))
+result <- microbenchmark::microbenchmark(
+  "125" = roll::roll_sum(x, width = 125, min_obs = 1, weights = weights),
+  "250" = roll::roll_sum(x, width = 250, min_obs = 1, weights = weights),
+  "500" = roll::roll_sum(x, width = 500, min_obs = 1, weights = weights),
+  "1000" = roll::roll_sum(x, width = 1000, min_obs = 1, weights = weights)
+)
 print(result)
 ```
 
@@ -86,10 +90,12 @@ $$
 $$
 
 ```{r}
-result <- microbenchmark("125" = roll_prod(x, width = 125, min_obs = 1, weights = weights),
-                         "250" = roll_prod(x, width = 250, min_obs = 1, weights = weights),
-                         "500" = roll_prod(x, width = 500, min_obs = 1, weights = weights),
-                         "1000" = roll_prod(x, width = 1000, min_obs = 1, weights = weights))
+result <- microbenchmark::microbenchmark(
+  "125" = roll::roll_prod(x, width = 125, min_obs = 1, weights = weights),
+  "250" = roll::roll_prod(x, width = 250, min_obs = 1, weights = weights),
+  "500" = roll::roll_prod(x, width = 500, min_obs = 1, weights = weights),
+  "1000" = roll::roll_prod(x, width = 1000, min_obs = 1, weights = weights)
+)
 print(result)
 ```
 
@@ -106,50 +112,60 @@ $$
 $$
 
 ```{r}
-result <- microbenchmark("125" = roll_mean(x, width = 125, min_obs = 1, weights = weights),
-                         "250" = roll_mean(x, width = 250, min_obs = 1, weights = weights),
-                         "500" = roll_mean(x, width = 500, min_obs = 1, weights = weights),
-                         "1000" = roll_mean(x, width = 1000, min_obs = 1, weights = weights))
+result <- microbenchmark::microbenchmark(
+  "125" = roll::roll_mean(x, width = 125, min_obs = 1, weights = weights),
+  "250" = roll::roll_mean(x, width = 250, min_obs = 1, weights = weights),
+  "500" = roll::roll_mean(x, width = 500, min_obs = 1, weights = weights),
+  "1000" = roll::roll_mean(x, width = 1000, min_obs = 1, weights = weights)
+)
 print(result)
 ```
 
 # Rolling minimums
 
 ```{r}
-result <- microbenchmark("125" = roll_min(x, width = 125, min_obs = 1, weights = weights),
-                         "250" = roll_min(x, width = 250, min_obs = 1, weights = weights),
-                         "500" = roll_min(x, width = 500, min_obs = 1, weights = weights),
-                         "1000" = roll_min(x, width = 1000, min_obs = 1, weights = weights))
+result <- microbenchmark::microbenchmark(
+  "125" = roll::roll_min(x, width = 125, min_obs = 1, weights = weights),
+  "250" = roll::roll_min(x, width = 250, min_obs = 1, weights = weights),
+  "500" = roll::roll_min(x, width = 500, min_obs = 1, weights = weights),
+  "1000" = roll::roll_min(x, width = 1000, min_obs = 1, weights = weights)
+)
 print(result)
 ```
 
 # Rolling maximums
 
 ```{r}
-result <- microbenchmark("125" = roll_max(x, width = 125, min_obs = 1, weights = weights),
-                         "250" = roll_max(x, width = 250, min_obs = 1, weights = weights),
-                         "500" = roll_max(x, width = 500, min_obs = 1, weights = weights),
-                         "1000" = roll_max(x, width = 1000, min_obs = 1, weights = weights))
+result <- microbenchmark::microbenchmark(
+  "125" = roll::roll_max(x, width = 125, min_obs = 1, weights = weights),
+  "250" = roll::roll_max(x, width = 250, min_obs = 1, weights = weights),
+  "500" = roll::roll_max(x, width = 500, min_obs = 1, weights = weights),
+  "1000" = roll::roll_max(x, width = 1000, min_obs = 1, weights = weights)
+)
 print(result)
 ```
 
 # Rolling index of minimums
 
 ```{r}
-result <- microbenchmark("125" = roll_idxmin(x, width = 125, min_obs = 1, weights = weights),
-                         "250" = roll_idxmin(x, width = 250, min_obs = 1, weights = weights),
-                         "500" = roll_idxmin(x, width = 500, min_obs = 1, weights = weights),
-                         "1000" = roll_idxmin(x, width = 1000, min_obs = 1, weights = weights))
+result <- microbenchmark::microbenchmark(
+  "125" = roll::roll_idxmin(x, width = 125, min_obs = 1, weights = weights),
+  "250" = roll::roll_idxmin(x, width = 250, min_obs = 1, weights = weights),
+  "500" = roll::roll_idxmin(x, width = 500, min_obs = 1, weights = weights),
+  "1000" = roll::roll_idxmin(x, width = 1000, min_obs = 1, weights = weights)
+)
 print(result)
 ```
 
 # Rolling index of maximums
 
 ```{r}
-result <- microbenchmark("125" = roll_idxmax(x, width = 125, min_obs = 1, weights = weights),
-                         "250" = roll_idxmax(x, width = 250, min_obs = 1, weights = weights),
-                         "500" = roll_idxmax(x, width = 500, min_obs = 1, weights = weights),
-                         "1000" = roll_idxmax(x, width = 1000, min_obs = 1, weights = weights))
+result <- microbenchmark::microbenchmark(
+  "125" = roll::roll_idxmax(x, width = 125, min_obs = 1, weights = weights),
+  "250" = roll::roll_idxmax(x, width = 250, min_obs = 1, weights = weights),
+  "500" = roll::roll_idxmax(x, width = 500, min_obs = 1, weights = weights),
+  "1000" = roll::roll_idxmax(x, width = 1000, min_obs = 1, weights = weights)
+)
 print(result)
 ```
 
@@ -157,10 +173,12 @@ print(result)
 
 ```{r}
 # "'online' is only supported for equal 'weights'"
-result <- microbenchmark("125" = roll_median(x, width = 125, min_obs = 1),
-                         "250" = roll_median(x, width = 250, min_obs = 1),
-                         "500" = roll_median(x, width = 500, min_obs = 1),
-                         "1000" = roll_median(x, width = 1000, min_obs = 1))
+result <- microbenchmark::microbenchmark(
+  "125" = roll::roll_median(x, width = 125, min_obs = 1),
+  "250" = roll::roll_median(x, width = 250, min_obs = 1),
+  "500" = roll::roll_median(x, width = 500, min_obs = 1),
+  "1000" = roll::roll_median(x, width = 1000, min_obs = 1)
+)
 print(result)
 ```
 
@@ -168,10 +186,12 @@ print(result)
 
 ```{r}
 # "'online' is only supported for equal 'weights'"
-result <- microbenchmark("125" = roll_quantile(x, width = 125, min_obs = 1),
-                         "250" = roll_quantile(x, width = 250, min_obs = 1),
-                         "500" = roll_quantile(x, width = 500, min_obs = 1),
-                         "1000" = roll_quantile(x, width = 1000, min_obs = 1))
+result <- microbenchmark::microbenchmark(
+  "125" = roll::roll_quantile(x, width = 125, min_obs = 1),
+  "250" = roll::roll_quantile(x, width = 250, min_obs = 1),
+  "500" = roll::roll_quantile(x, width = 500, min_obs = 1),
+  "1000" = roll::roll_quantile(x, width = 1000, min_obs = 1)
+)
 print(result)
 ```
 
@@ -190,30 +210,36 @@ $$
 $$
 
 ```{r}
-result <- microbenchmark("125" = roll_var(x, width = 125, min_obs = 1, weights = weights),
-                         "250" = roll_var(x, width = 250, min_obs = 1, weights = weights),
-                         "500" = roll_var(x, width = 500, min_obs = 1, weights = weights),
-                         "1000" = roll_var(x, width = 1000, min_obs = 1, weights = weights))
+result <- microbenchmark::microbenchmark(
+  "125" = roll::roll_var(x, width = 125, min_obs = 1, weights = weights),
+  "250" = roll::roll_var(x, width = 250, min_obs = 1, weights = weights),
+  "500" = roll::roll_var(x, width = 500, min_obs = 1, weights = weights),
+  "1000" = roll::roll_var(x, width = 1000, min_obs = 1, weights = weights)
+)
 print(result)
 ```
 
 # Rolling standard deviations
 
 ```{r}
-result <- microbenchmark("125" = roll_sd(x, width = 125, min_obs = 1, weights = weights),
-                         "250" = roll_sd(x, width = 250, min_obs = 1, weights = weights),
-                         "500" = roll_sd(x, width = 500, min_obs = 1, weights = weights),
-                         "1000" = roll_sd(x, width = 1000, min_obs = 1, weights = weights))
+result <- microbenchmark::microbenchmark(
+  "125" = roll::roll_sd(x, width = 125, min_obs = 1, weights = weights),
+  "250" = roll::roll_sd(x, width = 250, min_obs = 1, weights = weights),
+  "500" = roll::roll_sd(x, width = 500, min_obs = 1, weights = weights),
+  "1000" = roll::roll_sd(x, width = 1000, min_obs = 1, weights = weights)
+)
 print(result)
 ```
 
 # Rolling scaling and centering
 
 ```{r}
-result <- microbenchmark("125" = roll_scale(x, width = 125, min_obs = 1, weights = weights),
-                         "250" = roll_scale(x, width = 250, min_obs = 1, weights = weights),
-                         "500" = roll_scale(x, width = 500, min_obs = 1, weights = weights),
-                         "1000" = roll_scale(x, width = 1000, min_obs = 1, weights = weights))
+result <- microbenchmark::microbenchmark(
+  "125" = roll::roll_scale(x, width = 125, min_obs = 1, weights = weights),
+  "250" = roll::roll_scale(x, width = 250, min_obs = 1, weights = weights),
+  "500" = roll::roll_scale(x, width = 500, min_obs = 1, weights = weights),
+  "1000" = roll::roll_scale(x, width = 1000, min_obs = 1, weights = weights)
+)
 print(result)
 ```
 
@@ -232,30 +258,36 @@ $$
 $$
 
 ```{r}
-result <- microbenchmark("125" = roll_cov(x, width = 125, min_obs = 1, weights = weights),
-                         "250" = roll_cov(x, width = 250, min_obs = 1, weights = weights),
-                         "500" = roll_cov(x, width = 500, min_obs = 1, weights = weights),
-                         "1000" = roll_cov(x, width = 1000, min_obs = 1, weights = weights))
+result <- microbenchmark::microbenchmark(
+  "125" = roll::roll_cov(x, width = 125, min_obs = 1, weights = weights),
+  "250" = roll::roll_cov(x, width = 250, min_obs = 1, weights = weights),
+  "500" = roll::roll_cov(x, width = 500, min_obs = 1, weights = weights),
+  "1000" = roll::roll_cov(x, width = 1000, min_obs = 1, weights = weights)
+)
 print(result)
 ```
 
 # Rolling correlations
 
 ```{r}
-result <- microbenchmark("125" = roll_cor(x, width = 125, min_obs = 1, weights = weights),
-                         "250" = roll_cor(x, width = 250, min_obs = 1, weights = weights),
-                         "500" = roll_cor(x, width = 500, min_obs = 1, weights = weights),
-                         "1000" = roll_cor(x, width = 1000, min_obs = 1, weights = weights))
+result <- microbenchmark::microbenchmark(
+  "125" = roll::roll_cor(x, width = 125, min_obs = 1, weights = weights),
+  "250" = roll::roll_cor(x, width = 250, min_obs = 1, weights = weights),
+  "500" = roll::roll_cor(x, width = 500, min_obs = 1, weights = weights),
+  "1000" = roll::roll_cor(x, width = 1000, min_obs = 1, weights = weights)
+)
 print(result)
 ```
 
 # Rolling crossproducts
 
 ```{r}
-result <- microbenchmark("125" = roll_crossprod(x, width = 125, min_obs = 1, weights = weights),
-                         "250" = roll_crossprod(x, width = 250, min_obs = 1, weights = weights),
-                         "500" = roll_crossprod(x, width = 500, min_obs = 1, weights = weights),
-                         "1000" = roll_crossprod(x, width = 1000, min_obs = 1, weights = weights))
+result <- microbenchmark::microbenchmark(
+  "125" = roll::roll_crossprod(x, width = 125, min_obs = 1, weights = weights),
+  "250" = roll::roll_crossprod(x, width = 250, min_obs = 1, weights = weights),
+  "500" = roll::roll_crossprod(x, width = 500, min_obs = 1, weights = weights),
+  "1000" = roll::roll_crossprod(x, width = 1000, min_obs = 1, weights = weights)
+)
 print(result)
 ```
 
@@ -274,10 +306,12 @@ $$
 $$
 
 ```{r}
-result <- microbenchmark("125" = roll_lm(x, y, width = 125, min_obs = 1, weights = weights),
-                         "250" = roll_lm(x, y, width = 250, min_obs = 1, weights = weights),
-                         "500" = roll_lm(x, y, width = 500, min_obs = 1, weights = weights),
-                         "1000" = roll_lm(x, y, width = 1000, min_obs = 1, weights = weights))
+result <- microbenchmark::microbenchmark(
+  "125" = roll::roll_lm(x, y, width = 125, min_obs = 1, weights = weights),
+  "250" = roll::roll_lm(x, y, width = 250, min_obs = 1, weights = weights),
+  "500" = roll::roll_lm(x, y, width = 500, min_obs = 1, weights = weights),
+  "1000" = roll::roll_lm(x, y, width = 1000, min_obs = 1, weights = weights)
+)
 print(result)
 ```
 
