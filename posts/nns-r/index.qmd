@@ -110,18 +110,25 @@ all.equal(sigma, (cl_pm + cu_pm) - (dl_pm + du_pm))
 ## Implied shocks
 
 ```{r}
-LV <- eigen(cov(cl_pm - (dl_pm + du_pm)))
-L <- LV[["values"]]
-V <- LV[["vectors"]]
-scale <- shock / (sqrt(L[comp]) * V[ , comp])[1]
-implied_shocks_pm <- scale * (sqrt(L[comp]) * V[ , comp]) * risk_sign
+# LV <- eigen(cov(cl_pm - (dl_pm + du_pm)))
+# L <- LV[["values"]]
+# V <- LV[["vectors"]]
+# scale <- shock / (sqrt(L[comp]) * V[ , comp])[1]
+# implied_shocks_pm <- scale * (sqrt(L[comp]) * V[ , comp]) * risk_sign
+
+cov_pm <- cov(cl_pm - (dl_pm + du_pm))
+cov_z_pm <- cov_pm[1, 1, drop = FALSE]
+cov_r_pm <- cov_pm[1, ]
+
+beta <- solve(cov_z_pm, t(cov_r_pm))
+implied_shocks_pm <- shock %*% beta * risk_sign
 ```
 
 ```{r}
 round(data.frame(
   implied_shocks = t(implied_shocks),
-  implied_shocks_pc = implied_shocks_pc,
-  implied_shocks_pm = implied_shocks_pm,
+  # implied_shocks_pc = implied_shocks_pc,
+  implied_shocks_pm = t(implied_shocks_pm),
   row.names = c("SP500", "USD", "US10Y", "USHY")
 ) * 100, 2)
 ```
@@ -151,32 +158,39 @@ returns_bs <- apply(returns_xts[idx, ], 2, function(x) {
 ```
 
 ```{r}
-pm <- NNS::PM.matrix(LPM_degree = 1, UPM_degree = 1, target = "mean",
+bs <- NNS::PM.matrix(LPM_degree = 1, UPM_degree = 1, target = "mean",
                      variable = returns_bs, pop_adj = TRUE)
 ```
 
 ```{r}
-cl_pm <- pm$clpm
-cu_pm <- pm$cupm
-dl_pm <- pm$dlpm
-du_pm <- pm$dupm
+cl_bs <- bs$clpm
+cu_bs <- bs$cupm
+dl_bs <- bs$dlpm
+du_bs <- bs$dupm
 ```
 
 ```{r}
-# LV <- eigen(cov(returns_bs))
-LV <- eigen(cov(cl_pm - (dl_pm + du_pm)))
-L <- LV[["values"]]
-V <- LV[["vectors"]]
-scale <- shock / (sqrt(L[comp]) * V[ , comp])[1]
-implied_shocks_bs <- scale * (sqrt(L[comp]) * V[ , comp]) * risk_sign
+# # LV <- eigen(cov(returns_bs))
+# LV <- eigen(cov(cl_pm - (dl_pm + du_pm)))
+# L <- LV[["values"]]
+# V <- LV[["vectors"]]
+# scale <- shock / (sqrt(L[comp]) * V[ , comp])[1]
+# implied_shocks_bs <- scale * (sqrt(L[comp]) * V[ , comp]) * risk_sign
+
+cov_bs <- cov(cl_bs - (dl_bs + du_bs))
+cov_z_bs <- cov_bs[1, 1, drop = FALSE]
+cov_r_bs <- cov_bs[1, ]
+
+beta <- solve(cov_z_bs, t(cov_r_bs))
+implied_shocks_bs <- shock %*% beta * risk_sign
 ```
 
 ```{r}
 round(data.frame(
   implied_shocks = t(implied_shocks),
-  implied_shocks_pc = implied_shocks_pc,
-  implied_shocks_pm = implied_shocks_pm,
-  implied_shocks_bs = implied_shocks_bs,
+  # implied_shocks_pc = implied_shocks_pc,
+  implied_shocks_pm = t(implied_shocks_pm),
+  implied_shocks_bs = t(implied_shocks_bs),
   row.names = c("SP500", "USD", "US10Y", "USHY")
 ) * 100, 2)
 ```
