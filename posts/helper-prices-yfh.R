@@ -69,9 +69,9 @@ if (status_t) {
   # if (status_f && exists("overlap_xts", inherits = TRUE) &&
   #     (ncol(overlap_xts) > 0)) {
   # 
-  #   overlap_xts <- na.omit(overlap_xts)
-  #   overlap_x_xts <- tail(overlap_xts[ , factors], width) # same dimension as `weights`
-  #   overlap_y_xts <- tail(overlap_xts[ , tickers], width)
+  #   overlap_xts <- tail(na.omit(overlap_xts), width) # same dimension as `weights`
+  #   overlap_x_xts <- overlap_xts[ , factors]
+  #   overlap_y_xts <- overlap_xts[ , tickers]
   # 
   # }
   

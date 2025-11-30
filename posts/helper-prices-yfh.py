@@ -69,6 +69,6 @@ if (status_t):
   # if status_f and exists("overlap_df") and \
   #   (get_var("overlap_df").shape[1] > 0):
   # 
-  #   overlap_df = overlap_df.dropna()
-  #   overlap_x_df = overlap_df[factors][-width:] # same dimension as `weights`
-  #   overlap_y_df = overlap_df[tickers][-width:]
+  #   overlap_df = overlap_df.dropna()[-width:] # same dimension as `weights`
+  #   overlap_x_df = overlap_df[factors]
+  #   overlap_y_df = overlap_df[tickers]
