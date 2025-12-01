@@ -50,27 +50,26 @@ round(data.frame(
 ) * 100, 2)
 ```
 
-
 # Principal components analysis
 
 ```{r}
-comp <- 1
+# comp <- 1
 ```
 
 ```{r}
-LV <- eigen(cov(returns_xts))
-L <- LV[["values"]]
-V <- LV[["vectors"]]
-scale <- shock / (sqrt(L[comp]) * V[ , comp])[1]
-implied_shocks_pc <- scale * (sqrt(L[comp]) * V[ , comp]) * risk_sign
+# LV <- eigen(cov(returns_xts))
+# L <- LV[["values"]]
+# V <- LV[["vectors"]]
+# scale <- shock / (sqrt(L[comp]) * V[ , comp])[1]
+# implied_shocks_pc <- scale * (sqrt(L[comp]) * V[ , comp]) * risk_sign
 ```
 
 ```{r}
-round(data.frame(
-  implied_shocks = t(implied_shocks),
-  implied_shocks_pc = implied_shocks_pc,
-  row.names = c("SP500", "USD", "US10Y", "USHY")
-) * 100, 2)
+# round(data.frame(
+#   implied_shocks = t(implied_shocks),
+#   implied_shocks_pc = implied_shocks_pc,
+#   row.names = c("SP500", "USD", "US10Y", "USHY")
+# ) * 100, 2)
 ```
 
 # Nonlinear nonparametric statistics
@@ -117,10 +116,10 @@ all.equal(sigma, (cl_pm + cu_pm) - (dl_pm + du_pm))
 # implied_shocks_pm <- scale * (sqrt(L[comp]) * V[ , comp]) * risk_sign
 
 cov_pm <- cov(cl_pm - (dl_pm + du_pm))
-cov_z_pm <- cov_pm[1, 1, drop = FALSE]
-cov_r_pm <- cov_pm[1, ]
+cov_zz_pm <- cov_pm[1, 1, drop = FALSE]
+cov_zx_pm <- cov_pm[1, ]
 
-beta <- solve(cov_z_pm, t(cov_r_pm))
+beta <- solve(cov_zz_pm, t(cov_zx_pm))
 implied_shocks_pm <- shock %*% beta * risk_sign
 ```
 
@@ -178,10 +177,10 @@ du_bs <- bs$dupm
 # implied_shocks_bs <- scale * (sqrt(L[comp]) * V[ , comp]) * risk_sign
 
 cov_bs <- cov(cl_bs - (dl_bs + du_bs))
-cov_z_bs <- cov_bs[1, 1, drop = FALSE]
-cov_r_bs <- cov_bs[1, ]
+cov_zz_bs <- cov_bs[1, 1, drop = FALSE]
+cov_zx_bs <- cov_bs[1, ]
 
-beta <- solve(cov_z_bs, t(cov_r_bs))
+beta <- solve(cov_zz_bs, t(cov_zx_bs))
 implied_shocks_bs <- shock %*% beta * risk_sign
 ```
 
