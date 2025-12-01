@@ -65,7 +65,7 @@ $$
 lm_coef <- function(x, y, weights, intercept) {
   
   # cbind.xts() changes names, e.g., "(Intercept)" => "X.Intercept."
-  if (intercept) x <- cbind("(Intercept)" = 1, zoo::coredata(x))
+  if (intercept) x <- cbind("(Intercept)" = 1, as.matrix(x))
   
   result <- solve(crossprod(x, diag(weights)) %*% x) %*% crossprod(x, diag(weights) %*% y)
   
@@ -104,7 +104,7 @@ lm_rsq <- function(x, y, weights, intercept) {
   coef <- lm_coef(x, y, weights, intercept)
   
   if (intercept) {
-      
+    
     x <- model.matrix(~ x)
     x <- sweep(x, 2, apply(x, 2, weighted.mean, w = weights), "-")
     y <- sweep(y, 2, apply(y, 2, weighted.mean, w = weights), "-")
