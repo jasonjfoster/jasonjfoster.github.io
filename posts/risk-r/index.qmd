@@ -8,6 +8,7 @@ categories:
   - r
 execute:
   freeze: false
+draft: false
 editor: 
   mode: source
 ---
@@ -410,7 +411,9 @@ lm_sar <- function(x, y, weights, intercept) {
   coef <- lm_coef(x, y, weights, intercept)
   rsq <- lm_rsq(x, y, weights, intercept)
   
-  if (intercept) x <- cbind(1, as.matrix(x))
+  # Error in `cov.wt()`: 'x' must contain finite values only
+  # if (intercept) x <- cbind(1, as.matrix(x))
+  if (intercept) x <- model.matrix(~ x)
   
   sigma <- cov.wt(cbind(x, y), wt = weights, center = intercept)$cov
   sar <- coef ^ 2 * diag(sigma[-ncol(sigma), -ncol(sigma)])
@@ -447,7 +450,9 @@ lm_mcr <- function(x, y, weights, intercept) {
   coef <- lm_coef(x, y, weights, intercept)
   rsq <- lm_rsq(x, y, weights, intercept)
   
-  if (intercept) x <- cbind(1, as.matrix(x))
+  # Error in `cov.wt()`: 'x' must contain finite values only
+  # if (intercept) x <- cbind(1, as.matrix(x))
+  if (intercept) x <- model.matrix(~ x)
   
   sigma <- cov.wt(cbind(x, y), wt = weights, center = intercept)$cov
   mcr <- coef * sigma[-ncol(sigma), -ncol(sigma)] %*% coef / sqrt(sigma[ncol(sigma), ncol(sigma)])
