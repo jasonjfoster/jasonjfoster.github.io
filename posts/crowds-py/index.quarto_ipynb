@@ -19,16 +19,16 @@
         "  mode: source\n",
         "---"
       ],
-      "id": "91120a01"
+      "id": "53509d86"
     },
     {
       "cell_type": "code",
       "metadata": {},
       "source": [
-        "factors_r = [\"SP500\"] # \"SP500\" does not contain dividends\n",
-        "factors_d = [\"DTB3\"]"
+        "# factors_r = [\"SP500\"] # \"SP500\" does not contain dividends\n",
+        "# factors_d = [\"DTB3\"]"
       ],
-      "id": "201255b4",
+      "id": "ad6a5b88",
       "execution_count": null,
       "outputs": []
     },
@@ -37,10 +37,11 @@
       "metadata": {},
       "source": [
         "#| echo: false\n",
-        "exec(open(\"../helper-levels.py\").read())\n",
-        "width = 20 * 3"
+        "# exec(open(\"posts/helper-levels.py\").read()) # local\n",
+        "# exec(open(\"../helper-levels.py\").read())\n",
+        "# width = 20 * 3"
       ],
-      "id": "88f3bc53",
+      "id": "8484db39",
       "execution_count": null,
       "outputs": []
     },
@@ -50,7 +51,7 @@
       "source": [
         "# Parse web"
       ],
-      "id": "20a7de86"
+      "id": "b6468e3d"
     },
     {
       "cell_type": "code",
@@ -58,7 +59,7 @@
       "source": [
         "import yfscreen as yfs"
       ],
-      "id": "b5cf862c",
+      "id": "87424d56",
       "execution_count": null,
       "outputs": []
     },
@@ -71,7 +72,7 @@
         "payload = yfs.create_payload(\"mutualfund\", query, 250)\n",
         "data = yfs.get_data(payload)"
       ],
-      "id": "5e4a1ba6",
+      "id": "4292296b",
       "execution_count": null,
       "outputs": []
     },
@@ -92,7 +93,7 @@
         ")\n",
         "tickers = sorted_df.loc[~sorted_df[\"netAssets.raw\"].duplicated(), \"symbol\"].tolist()"
       ],
-      "id": "ff7a2906",
+      "id": "83a7182e",
       "execution_count": null,
       "outputs": []
     },
@@ -100,10 +101,10 @@
       "cell_type": "code",
       "metadata": {},
       "source": [
-        "# allocations = [\"AOK\", \"AOM\", \"AOR\", \"AOA\"]\n",
-        "# tickers = tickers + allocations"
+        "allocations = [\"IVV\", \"IDEV\", \"IUSB\", \"IEMG\", \"IJH\", \"IAGG\", \"IJR\"]\n",
+        "tickers = tickers + allocations"
       ],
-      "id": "582d3b92",
+      "id": "dbdd5cbc",
       "execution_count": null,
       "outputs": []
     },
@@ -113,7 +114,7 @@
       "source": [
         "# Optimization"
       ],
-      "id": "1bd413f7"
+      "id": "d07e5aa2"
     },
     {
       "cell_type": "code",
@@ -122,7 +123,7 @@
         "import json\n",
         "import cvxpy as cp"
       ],
-      "id": "fee6253b",
+      "id": "df3464ec",
       "execution_count": null,
       "outputs": []
     },
@@ -143,7 +144,7 @@
         "    \n",
         "  return w.value"
       ],
-      "id": "95744034",
+      "id": "184e8682",
       "execution_count": null,
       "outputs": []
     },
@@ -153,16 +154,19 @@
       "source": [
         "#| echo: false\n",
         "#| output: false # pause one second after five requests\n",
+        "# exec(open(\"posts/helper-prices-yfh.py\").read()) # local\n",
         "exec(open(\"../helper-prices-yfh.py\").read()) # run then render\n",
         "\n",
         "overlap_df = returns_df.rolling(scale[\"overlap\"], min_periods = 1).mean()\n",
         "\n",
         "# overlap_df = overlap_df.dropna()\n",
-        "overlap_x_df = overlap_df[factors]\n",
-        "overlap_y_df = overlap_df[tickers]\n",
+        "# overlap_x_df = overlap_df[factors]\n",
+        "overlap_x_df = overlap_df[allocations]\n",
+        "# overlap_y_df = overlap_df.loc[:, ~overlap_df.columns.isin(factors + allocations)]\n",
+        "overlap_y_df = overlap_df.loc[:, ~overlap_df.columns.isin(allocations)]\n",
         "# overlap_z_df = overlap_df[allocations]"
       ],
-      "id": "ca1cf4c3",
+      "id": "bc16905a",
       "execution_count": null,
       "outputs": []
     },
@@ -173,7 +177,7 @@
         "def pnl(x):\n",
         "  return np.nanprod(1 + x) - 1"
       ],
-      "id": "63f76d82",
+      "id": "ab755902",
       "execution_count": null,
       "outputs": []
     },
@@ -183,7 +187,7 @@
       "source": [
         "performance_df = returns_df.rolling(width, min_periods = 1).apply(pnl, raw = False)"
       ],
-      "id": "f5b2cc7b",
+      "id": "8a8ada77",
       "execution_count": null,
       "outputs": []
     },
@@ -205,8 +209,7 @@
         "  tickers_ls = []\n",
         "  performance_ls = []\n",
         "  \n",
-        "  # for j in [ticker for ticker in tickers if ticker not in allocations]:\n",
-        "  for j in tickers:\n",
+        "  for j in [ticker for ticker in tickers if ticker not in allocations]:\n",
         "    \n",
         "    idx = ~x_subset.isna().any(axis = 1) & ~y_subset[j].isna()\n",
         "    x_complete = x_subset.loc[idx]\n",
@@ -229,7 +232,7 @@
         "    result_ls.append(result)\n",
         "    index_ls.append(overlap_x_df.index[i])"
       ],
-      "id": "418f6705",
+      "id": "683371a4",
       "execution_count": null,
       "outputs": []
     },
@@ -240,7 +243,7 @@
         "# json.dump([x.to_dict() for x in result_ls], open(\"result_ls.json\", \"w\"))\n",
         "# json.dump([x.isoformat() for x in index_ls], open(\"index_ls.json\", \"w\"))"
       ],
-      "id": "4b103da2",
+      "id": "23e962bb",
       "execution_count": null,
       "outputs": []
     },
@@ -250,7 +253,7 @@
       "source": [
         "# Performance"
       ],
-      "id": "07d289c2"
+      "id": "97554ed1"
     },
     {
       "cell_type": "code",
@@ -259,7 +262,7 @@
         "# result_ls = [pd.DataFrame(x) for x in json.load(open(\"result_ls.json\", \"r\"))]\n",
         "# index_ls = [pd.Timestamp(x) for x in json.load(open(\"index_ls.json\", \"r\"))]"
       ],
-      "id": "83e94ca8",
+      "id": "9db2fe9e",
       "execution_count": null,
       "outputs": []
     },
@@ -269,15 +272,16 @@
       "source": [
         "def quantile_cut(x):\n",
         "  \n",
-        "  result = pd.qcut(\n",
+        "  result = pd.cut(\n",
         "    -x,\n",
-        "    q = [0, 0.25, 0.5, 0.75, 1],\n",
-        "    labels = [\"Q1\", \"Q2\", \"Q3\", \"Q4\"]\n",
+        "    bins = np.nanquantile(-x, [0, 0.25, 0.5, 0.75, 1]),\n",
+        "    labels = [\"Q1\", \"Q2\", \"Q3\", \"Q4\"],\n",
+        "    include_lowest = True\n",
         "  )\n",
         "  \n",
         "  return result"
       ],
-      "id": "3b1aab23",
+      "id": "43c22e31",
       "execution_count": null,
       "outputs": []
     },
@@ -286,33 +290,34 @@
       "metadata": {},
       "source": [
         "n_rows = len(result_ls)\n",
+        "numeric_cols = allocations + [\"performance\"]\n",
         "score_ls = []\n",
         "\n",
         "for i in range(n_rows):\n",
         "  \n",
         "  score_df = pd.DataFrame(result_ls[i])\n",
-        "  score_df.columns = factors + [\"performance\"]\n",
+        "  score_df.columns = numeric_cols\n",
         "  \n",
         "  score_df[\"date\"] = index_ls[i]\n",
         "  score_df[\"quantile\"] = quantile_cut(score_df[\"performance\"])\n",
-        "  \n",
-        "  score = score_df.groupby([\"date\", \"quantile\"], observed = True).agg(\n",
-        "    weight = (factors[0], \"mean\"),\n",
-        "    performance = (\"performance\", \"mean\")\n",
-        "  ).reset_index()\n",
+        "\n",
+        "  score = score_df.groupby([\"date\", \"quantile\"], observed = True)[numeric_cols] \\\n",
+        "    .mean() \\\n",
+        "    .reset_index()\n",
+        "\n",
+        "  overall_means = score_df[numeric_cols].mean()\n",
         "  \n",
         "  overall = pd.DataFrame({\n",
         "    \"date\": [index_ls[i]],\n",
         "    \"quantile\": [\"Overall\"],\n",
-        "    \"weight\": [score_df[factors[0]].mean()],\n",
-        "    \"performance\": [score_df[\"performance\"].mean()]\n",
+        "    **{col: [overall_means[col]] for col in numeric_cols}\n",
         "  })\n",
         "  \n",
         "  score = pd.concat([score, overall], ignore_index = True)\n",
         "  \n",
         "  score_ls.append(score)"
       ],
-      "id": "1de8b6bf",
+      "id": "5ddcb115",
       "execution_count": null,
       "outputs": []
     },
@@ -323,7 +328,7 @@
         "score_df = pd.concat(score_ls, ignore_index = True)\n",
         "print(score_df)"
       ],
-      "id": "a88de895",
+      "id": "443393f4",
       "execution_count": null,
       "outputs": []
     },
@@ -333,7 +338,7 @@
       "source": [
         "# score_df.to_json(\"score_df.json\", date_format = \"iso\")"
       ],
-      "id": "cc290f71",
+      "id": "564fc14c",
       "execution_count": null,
       "outputs": []
     }

@@ -14,14 +14,15 @@ editor:
 ---
 
 ```{python}
-factors_r = ["SP500"] # "SP500" does not contain dividends
-factors_d = ["DTB3"]
+# factors_r = ["SP500"] # "SP500" does not contain dividends
+# factors_d = ["DTB3"]
 ```
 
 ```{python}
 #| echo: false
-exec(open("../helper-levels.py").read())
-width = 20 * 3
+# exec(open("posts/helper-levels.py").read()) # local
+# exec(open("../helper-levels.py").read())
+# width = 20 * 3
 ```
 
 # Parse web
@@ -53,8 +54,8 @@ tickers = sorted_df.loc[~sorted_df["netAssets.raw"].duplicated(), "symbol"].toli
 ```
 
 ```{python}
-# allocations = ["AOK", "AOM", "AOR", "AOA"]
-# tickers = tickers + allocations
+allocations = ["IVV", "IDEV", "IUSB", "IEMG", "IJH", "IAGG", "IJR"]
+tickers = tickers + allocations
 ```
 
 # Optimization
@@ -82,13 +83,16 @@ def min_rss_optim(x, y):
 ```{python}
 #| echo: false
 #| output: false # pause one second after five requests
+# exec(open("posts/helper-prices-yfh.py").read()) # local
 exec(open("../helper-prices-yfh.py").read()) # run then render
 
 overlap_df = returns_df.rolling(scale["overlap"], min_periods = 1).mean()
 
 # overlap_df = overlap_df.dropna()
-overlap_x_df = overlap_df[factors]
-overlap_y_df = overlap_df[tickers]
+# overlap_x_df = overlap_df[factors]
+overlap_x_df = overlap_df[allocations]
+# overlap_y_df = overlap_df.loc[:, ~overlap_df.columns.isin(factors + allocations)]
+overlap_y_df = overlap_df.loc[:, ~overlap_df.columns.isin(allocations)]
 # overlap_z_df = overlap_df[allocations]
 ```
 
@@ -116,8 +120,7 @@ for i in range(n_rows - 1, n_rows):
   tickers_ls = []
   performance_ls = []
   
-  # for j in [ticker for ticker in tickers if ticker not in allocations]:
-  for j in tickers:
+  for j in [ticker for ticker in tickers if ticker not in allocations]:
     
     idx = ~x_subset.isna().any(axis = 1) & ~y_subset[j].isna()
     x_complete = x_subset.loc[idx]
@@ -156,10 +159,11 @@ for i in range(n_rows - 1, n_rows):
 ```{python}
 def quantile_cut(x):
   
-  result = pd.qcut(
+  result = pd.cut(
     -x,
-    q = [0, 0.25, 0.5, 0.75, 1],
-    labels = ["Q1", "Q2", "Q3", "Q4"]
+    bins = np.nanquantile(-x, [0, 0.25, 0.5, 0.75, 1]),
+    labels = ["Q1", "Q2", "Q3", "Q4"],
+    include_lowest = True
   )
   
   return result
@@ -167,26 +171,27 @@ def quantile_cut(x):
 
 ```{python}
 n_rows = len(result_ls)
+numeric_cols = allocations + ["performance"]
 score_ls = []
 
 for i in range(n_rows):
   
   score_df = pd.DataFrame(result_ls[i])
-  score_df.columns = factors + ["performance"]
+  score_df.columns = numeric_cols
   
   score_df["date"] = index_ls[i]
   score_df["quantile"] = quantile_cut(score_df["performance"])
-  
-  score = score_df.groupby(["date", "quantile"], observed = True).agg(
-    weight = (factors[0], "mean"),
-    performance = ("performance", "mean")
-  ).reset_index()
+
+  score = score_df.groupby(["date", "quantile"], observed = True)[numeric_cols] \
+    .mean() \
+    .reset_index()
+
+  overall_means = score_df[numeric_cols].mean()
   
   overall = pd.DataFrame({
     "date": [index_ls[i]],
     "quantile": ["Overall"],
-    "weight": [score_df[factors[0]].mean()],
-    "performance": [score_df["performance"].mean()]
+    **{col: [overall_means[col]] for col in numeric_cols}
   })
   
   score = pd.concat([score, overall], ignore_index = True)

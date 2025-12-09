@@ -106,7 +106,7 @@ lm_rsq <- function(x, y, weights, intercept) {
   
   if (intercept) {
     
-    x <- cbind(1, as.matrix(x))
+    x <- cbind(1, x)
     x <- sweep(x, 2, apply(x, 2, weighted.mean, w = weights), "-")
     y <- sweep(y, 2, apply(y, 2, weighted.mean, w = weights), "-")
       
@@ -411,9 +411,7 @@ lm_sar <- function(x, y, weights, intercept) {
   coef <- lm_coef(x, y, weights, intercept)
   rsq <- lm_rsq(x, y, weights, intercept)
   
-  # Error in `cov.wt()`: 'x' must contain finite values only
-  # if (intercept) x <- cbind(1, as.matrix(x))
-  if (intercept) x <- model.matrix(~ x)
+  if (intercept) x <- cbind(1, x)
   
   sigma <- cov.wt(cbind(x, y), wt = weights, center = intercept)$cov
   sar <- coef ^ 2 * diag(sigma[-ncol(sigma), -ncol(sigma)])
@@ -450,9 +448,7 @@ lm_mcr <- function(x, y, weights, intercept) {
   coef <- lm_coef(x, y, weights, intercept)
   rsq <- lm_rsq(x, y, weights, intercept)
   
-  # Error in `cov.wt()`: 'x' must contain finite values only
-  # if (intercept) x <- cbind(1, as.matrix(x))
-  if (intercept) x <- model.matrix(~ x)
+  if (intercept) x <- cbind(1, x)
   
   sigma <- cov.wt(cbind(x, y), wt = weights, center = intercept)$cov
   mcr <- coef * sigma[-ncol(sigma), -ncol(sigma)] %*% coef / sqrt(sigma[ncol(sigma), ncol(sigma)])

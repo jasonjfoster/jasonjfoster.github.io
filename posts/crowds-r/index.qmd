@@ -20,8 +20,8 @@ editor:
 
 ```{r}
 #| echo: false
-source("../helper-levels.R")
-width <- 20 * 3
+# source("../helper-levels.R")
+# width <- 20 * 3
 ```
 
 # Parse web
@@ -82,6 +82,7 @@ tickers <- c(tickers, allocations)
 ```{r}
 #| echo: false
 #| output: false # pause one second after five requests
+# source("posts/helper-prices-yfh.R") # local
 source("../helper-prices-yfh.R")
 
 overlap_xts <- roll::roll_mean(returns_xts, scale[["overlap"]], min_obs = 1)
@@ -181,23 +182,24 @@ quantile_cut <- function(x) {
 
 ```{r}
 n_rows <- length(result_ls)
+numeric_cols <- c(allocations, "performance")
 score_ls <- list()
 
 for (i in 1:n_rows) {
   
   score_df <- data.frame(result_ls[[i]])
-  colnames(score_df) <- c(allocations, "performance")
+  colnames(score_df) <- numeric_cols
   
   score_df[["date"]] <- index_ls[[i]]
   score_df[["quantile"]] <- quantile_cut(score_df[["performance"]])
   
-  score_form <- as.formula(paste0("cbind(", paste(c(allocations, "performance"), collapse = ","), ") ~ date + quantile"))
-  overall_form <- as.formula(paste0("cbind(", paste(c(allocations, "performance"), collapse = ","), ") ~ date"))
+  score_form <- as.formula(paste0("cbind(", paste(numeric_cols, collapse = ","), ") ~ date + quantile"))
+  overall_form <- as.formula(paste0("cbind(", paste(numeric_cols, collapse = ","), ") ~ date"))
   
   score <- aggregate(score_form, data = score_df, FUN = function(x) mean(x, na.rm = TRUE))
   overall <- aggregate(overall_form, data = score_df, FUN = function(x) mean(x, na.rm = TRUE))
   overall[["quantile"]] <- "Overall"
-  overall <- overall[ , c("date", "quantile", allocations, "performance")]
+  overall <- overall[ , c("date", "quantile", numeric_cols)]
   
   score <- rbind(score, overall)
   
