@@ -1,7 +1,9 @@
+import os
 import pandas as pd
 import numpy as np
-import pandas_datareader as pdr # dev version
-# from pandas_datareader import data as pdr
+from fredapi import Fred
+
+fred = Fred(api_key = os.getenv("FRED_API_KEY"))
 
 def exists(name):
   
@@ -48,9 +50,8 @@ else:
 status_f = len(factors) > 0
 
 if status_f:
-
-  # https://pandas-datareader.readthedocs.io/en/latest/remote_data.html
-  levels_df = pdr.get_data_fred(factors, start = "1900-01-01")
+  
+  levels_df = pd.concat([fred.get_series(f, observation_start = "1900-01-01").rename(f) for f in factors], axis = 1, sort = False)
   levels_df.sort_index(axis = 0, inplace = True)
   
   # if not exists("returns_df"):
