@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Jason Foster">
-<meta name="dcterms.date" content="2026-03-23">
+<meta name="dcterms.date" content="2026-05-30">
 
 <title>Optimization – jasonjfoster.github.io</title>
 <style>
@@ -193,7 +193,7 @@ window.Quarto = {
       <div>
       <div class="quarto-title-meta-heading">Published</div>
       <div class="quarto-title-meta-contents">
-        <p class="date">March 23, 2026</p>
+        <p class="date">May 30, 2026</p>
       </div>
     </div>
     
@@ -534,15 +534,15 @@ This warning is displayed once per session.</code></pre>
 </div>
 <div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>params1</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>          [,1]      [,2]     [,3]         [,4]
-[1,] 0.3543997 0.1988249 0.446775 3.312145e-07</code></pre>
+<pre><code>          [,1]         [,2]      [,3]         [,4]
+[1,] 0.3891757 3.368937e-09 0.6108243 1.041538e-08</code></pre>
 </div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>params1 <span class="sc">%*%</span> mu</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>           [,1]
-[1,] 0.03754809</code></pre>
+[1,] 0.08840383</code></pre>
 </div>
 </div>
 <div class="cell">
@@ -553,8 +553,8 @@ This warning is displayed once per session.</code></pre>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="co"># # install.packages("devtools")</span></span>
-<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a><span class="co"># devtools::install_github("jasonjfoster/rolloptim") # roll (&gt;= 1.1.7)</span></span>
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="co"># # install.packages("pak")</span></span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a><span class="co"># pak::pak("jasonjfoster/rolloptim") # roll (&gt;= 1.1.7)</span></span>
 <span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a><span class="co"># library(rolloptim)</span></span>
 <span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a><span class="co"># </span></span>
 <span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a><span class="co"># mu &lt;- roll_mean(returns_x_xts, 5)</span></span>
@@ -647,8 +647,8 @@ e^{T} &amp; 0
 <div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>params2 <span class="ot">&lt;-</span> <span class="fu">t</span>(<span class="fu">min_var_optim</span>(mu, sigma, target))</span>
 <span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>params2</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>          [,1]      [,2]      [,3]          [,4]
-[1,] 0.2855461 0.1711535 0.5433004 -9.414744e-21</code></pre>
+<pre><code>          [,1]         [,2]      [,3]       [,4]
+[1,] 0.1286933 2.393965e-17 0.8206114 0.05069539</code></pre>
 </div>
 </div>
 <div class="cell">
@@ -662,7 +662,7 @@ e^{T} &amp; 0
 <div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sqrt</span>(params2 <span class="sc">%*%</span> sigma <span class="sc">%*%</span> <span class="fu">t</span>(params2))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>           [,1]
-[1,] 0.04821827</code></pre>
+[1,] 0.02211814</code></pre>
 </div>
 </div>
 <div class="cell">
@@ -749,22 +749,22 @@ e^{T} &amp; 0
 <div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>params3 <span class="ot">&lt;-</span> <span class="fu">t</span>(<span class="fu">max_utility_optim</span>(mu, sigma, target))</span>
 <span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>params3</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>          [,1]      [,2]      [,3]        [,4]
-[1,] 0.4501632 0.2375431 0.3122938 4.72664e-24</code></pre>
+<pre><code>     [,1]         [,2]          [,3]          [,4]
+[1,]    1 2.711492e-23 -9.417797e-29 -3.570034e-26</code></pre>
 </div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>params3 <span class="sc">%*%</span> mu </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>           [,1]
-[1,] 0.04804507</code></pre>
+<pre><code>          [,1]
+[1,] 0.2261429</code></pre>
 </div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sqrt</span>(params3 <span class="sc">%*%</span> sigma <span class="sc">%*%</span> <span class="fu">t</span>(params3))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>           [,1]
-[1,] 0.07645167</code></pre>
+<pre><code>         [,1]
+[1,] 0.151672</code></pre>
 </div>
 </div>
 <div class="cell">
@@ -850,22 +850,22 @@ X^{T}y \\
 <div class="sourceCode cell-code" id="cb50"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>params4 <span class="ot">&lt;-</span> <span class="fu">t</span>(<span class="fu">min_rss_optim1</span>(<span class="fu">crossprod</span>(overlap_x_xts, overlap_y_xts), <span class="fu">crossprod</span>(overlap_x_xts)))</span>
 <span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a>params4</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>          [,1]         [,2]      [,3]     [,4]
-[1,] 0.2793784 1.124207e-23 0.1523026 0.568319</code></pre>
+<pre><code>         [,1]         [,2]     [,3]          [,4]
+[1,] 0.292194 9.637189e-24 0.707806 -2.155388e-23</code></pre>
 </div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb52"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a>params4 <span class="sc">%*%</span> mu </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>           [,1]
-[1,] 0.03343758</code></pre>
+[1,] 0.06653475</code></pre>
 </div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb54"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sqrt</span>(params4 <span class="sc">%*%</span> sigma <span class="sc">%*%</span> <span class="fu">t</span>(params4))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>           [,1]
-[1,] 0.05804973</code></pre>
+[1,] 0.04558981</code></pre>
 </div>
 </div>
 <div class="cell">
@@ -892,22 +892,22 @@ X^{T}y \\
 <div class="sourceCode cell-code" id="cb58"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a>params5 <span class="ot">&lt;-</span> <span class="fu">t</span>(<span class="fu">min_rss_optim2</span>(zoo<span class="sc">::</span><span class="fu">coredata</span>(overlap_x_xts), zoo<span class="sc">::</span><span class="fu">coredata</span>(overlap_y_xts)))</span>
 <span id="cb58-2"><a href="#cb58-2" aria-hidden="true" tabindex="-1"></a>params5</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>          [,1]          [,2]      [,3]     [,4]
-[1,] 0.2793784 -2.048916e-20 0.1523026 0.568319</code></pre>
+<pre><code>         [,1]          [,2]     [,3]          [,4]
+[1,] 0.292194 -1.054654e-21 0.707806 -8.314191e-22</code></pre>
 </div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb60"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a>params5 <span class="sc">%*%</span> mu </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>           [,1]
-[1,] 0.03343758</code></pre>
+[1,] 0.06653475</code></pre>
 </div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb62"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sqrt</span>(params5 <span class="sc">%*%</span> sigma <span class="sc">%*%</span> <span class="fu">t</span>(params5))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>           [,1]
-[1,] 0.05804973</code></pre>
+[1,] 0.04558981</code></pre>
 </div>
 </div>
 <div class="cell">
@@ -920,10 +920,10 @@ X^{T}y \\
 <span id="cb64-7"><a href="#cb64-7" aria-hidden="true" tabindex="-1"></a><span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>  max_pnl min_risk max_utility min_rss1 min_rss2
-1   35.44    28.55       45.02    27.94    27.94
-2   19.88    17.12       23.75     0.00     0.00
-3   44.68    54.33       31.23    15.23    15.23
-4    0.00     0.00        0.00    56.83    56.83</code></pre>
+1   38.92    12.87         100    29.22    29.22
+2    0.00     0.00           0     0.00     0.00
+3   61.08    82.06           0    70.78    70.78
+4    0.00     5.07           0     0.00     0.00</code></pre>
 </div>
 </div>
 

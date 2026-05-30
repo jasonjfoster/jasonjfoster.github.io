@@ -510,19 +510,19 @@ e^{T} &amp; 0
 <div class="sourceCode cell-code" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>params1 <span class="op">=</span> max_mean_optim(mu, sigma, target)</span>
 <span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>params1</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>array([3.54400639e-01, 1.98846496e-01, 4.46752559e-01, 3.06152503e-07])</code></pre>
+<pre><code>array([3.89175676e-01, 4.02852708e-09, 6.10824309e-01, 1.09611559e-08])</code></pre>
 </div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>np.dot(mu, params1)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>np.float64(0.037548086507544744)</code></pre>
+<pre><code>np.float64(0.08840382597227049)</code></pre>
 </div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>np.sqrt(np.dot(params1, np.dot(sigma, params1)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>np.float64(0.05999999765333462)</code></pre>
+<pre><code>np.float64(0.05999999997770646)</code></pre>
 </div>
 </div>
 </section>
@@ -605,19 +605,19 @@ e^{T} &amp; 0
 <div class="sourceCode cell-code" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>params2 <span class="op">=</span> min_var_optim(mu, sigma, target)</span>
 <span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>params2</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>array([ 2.85546062e-01,  1.71153503e-01,  5.43300435e-01, -9.41508055e-21])</code></pre>
+<pre><code>array([1.28693263e-01, 2.39396306e-17, 8.20611350e-01, 5.06953866e-02])</code></pre>
 </div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>np.dot(mu, params2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>np.float64(0.03)</code></pre>
+<pre><code>np.float64(0.030000000000000023)</code></pre>
 </div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb34"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>np.sqrt(np.dot(params2, np.dot(sigma, params2))) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>np.float64(0.04821827148518768)</code></pre>
+<pre><code>np.float64(0.022118141993618102)</code></pre>
 </div>
 </div>
 </section>
@@ -699,19 +699,19 @@ e^{T} &amp; 0
 <div class="sourceCode cell-code" id="cb38"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>params3 <span class="op">=</span> max_utility_optim(mu, sigma, target)</span>
 <span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>params3</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>array([ 4.50163171e-01,  2.37543075e-01,  3.12293755e-01, -1.03709272e-23])</code></pre>
+<pre><code>array([ 1.00000000e+00,  2.71149101e-23, -9.55530883e-29, -3.57019356e-26])</code></pre>
 </div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb40"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>np.dot(mu, params3)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>np.float64(0.04804506816525493)</code></pre>
+<pre><code>np.float64(0.22614289730019177)</code></pre>
 </div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb42"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>np.sqrt(np.matmul(np.transpose(params3), np.matmul(sigma, params3)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>np.float64(0.07645167048921904)</code></pre>
+<pre><code>np.float64(0.1516720303823363)</code></pre>
 </div>
 </div>
 </section>
@@ -793,19 +793,19 @@ X^{T}y \\
 <span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a>                         np.dot(overlap_x_df.T.values, overlap_x_df.values))</span>
 <span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a>params4</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>array([2.79378770e-01, 3.14955232e-23, 1.52304730e-01, 5.68316500e-01])</code></pre>
+<pre><code>array([ 2.92193756e-01, -5.19884432e-23,  7.07806244e-01, -7.37248112e-24])</code></pre>
 </div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb47"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a>np.dot(mu, params4)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>np.float64(0.033437606238355275)</code></pre>
+<pre><code>np.float64(0.06653469085794034)</code></pre>
 </div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb49"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a>np.sqrt(np.matmul(np.transpose(params4), np.matmul(sigma, params4)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>np.float64(0.058049751691592225)</code></pre>
+<pre><code>np.float64(0.0455897724961367)</code></pre>
 </div>
 </div>
 <div class="cell">
@@ -827,19 +827,19 @@ X^{T}y \\
 <div class="sourceCode cell-code" id="cb52"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a>params5 <span class="op">=</span> min_rss_optim2(overlap_x_df.values, overlap_y_df.iloc[:, <span class="dv">0</span>].values)</span>
 <span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a>params5</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>array([ 2.79378770e-01, -2.04992721e-20,  1.52304730e-01,  5.68316500e-01])</code></pre>
+<pre><code>array([ 2.92193756e-01, -1.05380482e-21,  7.07806244e-01, -8.31130166e-22])</code></pre>
 </div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb54"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a>np.dot(mu, params5)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>np.float64(0.03343760623835823)</code></pre>
+<pre><code>np.float64(0.06653469085794034)</code></pre>
 </div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb56"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a>np.sqrt(np.matmul(np.transpose(params5), np.matmul(sigma, params5)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>np.float64(0.058049751691590046)</code></pre>
+<pre><code>np.float64(0.0455897724961367)</code></pre>
 </div>
 </div>
 <div class="cell">
@@ -852,10 +852,10 @@ X^{T}y \\
 <span id="cb58-7"><a href="#cb58-7" aria-hidden="true" tabindex="-1"></a>}).<span class="bu">round</span>(<span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>   max_pnl  min_risk  max_utility  min_rss1  min_rss2
-0    35.44     28.55        45.02     27.94     27.94
-1    19.88     17.12        23.75      0.00     -0.00
-2    44.68     54.33        31.23     15.23     15.23
-3     0.00     -0.00        -0.00     56.83     56.83</code></pre>
+0    38.92     12.87        100.0     29.22     29.22
+1     0.00      0.00          0.0     -0.00     -0.00
+2    61.08     82.06         -0.0     70.78     70.78
+3     0.00      5.07         -0.0     -0.00     -0.00</code></pre>
 </div>
 </div>
 

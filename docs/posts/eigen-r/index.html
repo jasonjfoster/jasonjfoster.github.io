@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Jason Foster">
-<meta name="dcterms.date" content="2025-11-23">
+<meta name="dcterms.date" content="2026-05-30">
 
 <title>Eigen – jasonjfoster.github.io</title>
 <style>
@@ -193,7 +193,7 @@ window.Quarto = {
       <div>
       <div class="quarto-title-meta-heading">Published</div>
       <div class="quarto-title-meta-contents">
-        <p class="date">November 23, 2025</p>
+        <p class="date">May 30, 2026</p>
       </div>
     </div>
     
@@ -258,11 +258,11 @@ window.Quarto = {
 <div class="cell">
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">eigen_decomp</span>(overlap_xts, comps) <span class="sc">*</span> scale[[<span class="st">"periods"</span>]] <span class="sc">*</span> scale[[<span class="st">"overlap"</span>]]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>              [,1]          [,2]          [,3]          [,4]
-[1,]  3.052294e-02 -3.999834e-03 -4.914879e-05  2.524190e-03
-[2,] -3.999834e-03  5.241523e-04  6.440631e-06 -3.307788e-04
-[3,] -4.914879e-05  6.440631e-06  7.914060e-08 -4.064513e-06
-[4,]  2.524190e-03 -3.307788e-04 -4.064513e-06  2.087458e-04</code></pre>
+<pre><code>             [,1]          [,2]          [,3]          [,4]
+[1,]  0.022896984 -1.839915e-03  2.004950e-04  1.430889e-03
+[2,] -0.001839915  1.478486e-04 -1.611102e-05 -1.149808e-04
+[3,]  0.000200495 -1.611102e-05  1.755613e-06  1.252943e-05
+[4,]  0.001430889 -1.149808e-04  1.252943e-05  8.941980e-05</code></pre>
 </div>
 </div>
 <div class="cell">
@@ -292,7 +292,7 @@ window.Quarto = {
 <div class="cell">
 <div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">variance_explained</span>(overlap_xts)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 0.8893793 0.9926739 0.9982088 1.0000000</code></pre>
+<pre><code>[1] 0.8726332 0.9947631 0.9979905 1.0000000</code></pre>
 </div>
 </div>
 </section>
@@ -354,8 +354,8 @@ window.Quarto = {
 <div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>raw_df <span class="ot">&lt;-</span> <span class="fu">roll_eigen1</span>(overlap_xts, width, comp)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># # install.packages("devtools")</span></span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="co"># devtools::install_github("jasonjfoster/rolleigen") # roll (&gt;= 1.1.7)</span></span>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># # install.packages("pak")</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="co"># pak::pak("jasonjfoster/rolleigen") # roll (&gt;= 1.1.7)</span></span>
 <span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="co"># raw_df &lt;- rolleigen::roll_eigen(overlap_xts, width, order = TRUE)[["vectors"]][ , comp, ]</span></span>
 <span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a><span class="co"># raw_df &lt;- xts::xts(t(raw_df), zoo::index(overlap_xts))</span></span>
 <span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a><span class="co"># colnames(raw_df) &lt;- colnames(overlap_xts)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
