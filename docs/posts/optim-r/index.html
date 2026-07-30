@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Jason Foster">
-<meta name="dcterms.date" content="2026-05-30">
+<meta name="dcterms.date" content="2026-07-30">
 
 <title>Optimization – jasonjfoster.github.io</title>
 <style>
@@ -193,7 +193,7 @@ window.Quarto = {
       <div>
       <div class="quarto-title-meta-heading">Published</div>
       <div class="quarto-title-meta-contents">
-        <p class="date">May 30, 2026</p>
+        <p class="date">July 30, 2026</p>
       </div>
     </div>
     
@@ -236,17 +236,17 @@ window.Quarto = {
 </div>
 <section id="random-weights" class="level1">
 <h1>Random weights</h1>
-<p>Need to generate uniformly distributed weights <span class="math inline">\(\mathbf{w}=(w_{1},w_{2},\ldots,w_{N})\)</span> such that <span class="math inline">\(\sum_{j=1}^{N}w_{i}=1\)</span> and <span class="math inline">\(w_{i}\geq0\)</span>:</p>
+<p>Need to generate uniformly distributed weights <span class="math inline">\(\mathbf{w}=(w_{1},w_{2},\ldots,w_{N})\)</span> such that <span class="math inline">\(\sum_{i=1}^{N}w_{i}=1\)</span> and <span class="math inline">\(w_{i}\geq0\)</span>:</p>
 <ul>
-<li><p><strong>Approach 1</strong>: tempting to use <span class="math inline">\(w_{i}=\frac{u_{i}}{\sum_{j=1}^{N}u_{i}}\)</span> where <span class="math inline">\(u_{i}\sim U(0,1)\)</span> but the distribution of <span class="math inline">\(\mathbf{w}\)</span> is not uniform</p></li>
+<li><p><strong>Approach 1</strong>: tempting to use <span class="math inline">\(w_{i}=\frac{u_{i}}{\sum_{j=1}^{N}u_{j}}\)</span> where <span class="math inline">\(u_{i}\sim U(0,1)\)</span> but the distribution of <span class="math inline">\(\mathbf{w}\)</span> is not uniform</p></li>
 <li><p><strong>Approach 2</strong>: instead, generate <span class="math inline">\(\text{Exp}(1)\)</span> and then normalize</p></li>
 </ul>
 <p>Can also scale random weights by <span class="math inline">\(M\)</span>, e.g.&nbsp;if sum of weights must be 10% then multiply weights by 10%.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>rand_weights1 <span class="ot">&lt;-</span> <span class="cf">function</span>(n_sim, n_assets) {</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  rand_exp <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">runif</span>(n_sim <span class="sc">*</span> n_assets), <span class="at">nrow =</span> n_sim, <span class="at">ncol =</span> n_assets)</span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  result <span class="ot">&lt;-</span> rand_exp <span class="sc">/</span> <span class="fu">rowSums</span>(rand_exp)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  rand_unif <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">runif</span>(n_sim <span class="sc">*</span> n_assets), <span class="at">nrow =</span> n_sim, <span class="at">ncol =</span> n_assets)</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  result <span class="ot">&lt;-</span> rand_unif <span class="sc">/</span> <span class="fu">rowSums</span>(rand_unif)</span>
 <span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    </span>
 <span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(result)</span>
 <span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    </span>
@@ -268,6 +268,7 @@ window.Quarto = {
 </div>
 </div>
 </div>
+<p>The weights cluster toward the center of the simplex, i.e.&nbsp;the distribution is not uniform.</p>
 <p><strong>Approach 2(a)</strong>: uniform sample from the simplex (<a href="http://mathoverflow.net/a/76258" class="uri">http://mathoverflow.net/a/76258</a>) and then normalize</p>
 <ul>
 <li>If <span class="math inline">\(u\sim U(0,1)\)</span> then <span class="math inline">\(-\ln(u)\)</span> is an <span class="math inline">\(\text{Exp}(1)\)</span> distribution</li>
@@ -326,7 +327,7 @@ window.Quarto = {
 <h2 class="anchored" data-anchor-id="random-turnover">Random turnover</h2>
 <p>How to generate random weights between lower bound <span class="math inline">\(a\)</span> and upper bound <span class="math inline">\(b\)</span> that sum to zero?</p>
 <ul>
-<li><p><strong>Approach 1</strong>: tempting to multiply random weights by <span class="math inline">\(M\)</span> and then subtract by <span class="math inline">\(\frac{M}{N}\)</span> but the distribution is not between <span class="math inline">\(a\)</span> and <span class="math inline">\(b\)</span></p></li>
+<li><p><strong>Approach 1</strong>: tempting to multiply random weights by <span class="math inline">\(M\)</span> and then subtract <span class="math inline">\(\frac{M}{N}\)</span> but the distribution is not between <span class="math inline">\(a\)</span> and <span class="math inline">\(b\)</span></p></li>
 <li><p><strong>Approach 2</strong>: instead, use an iterative approach for random turnover:</p>
 <ol type="1">
 <li>Generate <span class="math inline">\(N-1\)</span> uniformly distributed weights between <span class="math inline">\(a\)</span> and <span class="math inline">\(b\)</span></li>
@@ -341,7 +342,7 @@ window.Quarto = {
 <span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  rng <span class="ot">&lt;-</span> upper <span class="sc">-</span> lower</span>
 <span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  </span>
 <span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>  result <span class="ot">&lt;-</span> <span class="fu">rand_weights2b</span>(n_sim, n_assets) <span class="sc">*</span> rng</span>
-<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>  result <span class="ot">&lt;-</span> result <span class="sc">-</span> rng <span class="sc">/</span> n_assets</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>  result <span class="ot">&lt;-</span> result <span class="sc">-</span> rng <span class="sc">/</span> n_assets <span class="sc">+</span> target <span class="sc">/</span> n_assets</span>
 <span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>  </span>
 <span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(result)</span>
 <span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>    </span>
@@ -432,13 +433,25 @@ window.Quarto = {
 <li><a href="https://bookdown.org/compfinezbook/introFinRbook/Portfolio-Theory-with-Matrix-Algebra.html#algorithm-for-computing-efficient-frontier" class="uri">https://bookdown.org/compfinezbook/introFinRbook/Portfolio-Theory-with-Matrix-Algebra.html#algorithm-for-computing-efficient-frontier</a></li>
 <li><a href="https://palomar.home.ece.ust.hk/MAFS6010R_lectures/slides_robust_portfolio.html" class="uri">https://palomar.home.ece.ust.hk/MAFS6010R_lectures/slides_robust_portfolio.html</a></li>
 </ul>
+<p>The derivations below incorporate the budget constraint <span class="math inline">\(\mathbf{w}^{T}e=1\)</span> and, where applicable, a binding target constraint. The optimizers additionally impose the long-only constraint <span class="math inline">\(\mathbf{w}\geq0\)</span>, which has no closed-form solution and instead requires the Karush-Kuhn-Tucker (KKT) conditions; when the long-only constraint does not bind, the analytic and numerical solutions coincide.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>tickers <span class="ot">&lt;-</span> <span class="st">"BAICX"</span> <span class="co"># fund inception date is "2011-11-28" </span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>tickers <span class="ot">&lt;-</span> <span class="st">"BAICX"</span> <span class="co"># fund inception date is "2011-11-28"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>returns_x_xts <span class="ot">&lt;-</span> <span class="fu">na.omit</span>(returns_xts)[ , factors] <span class="co"># extended history</span></span>
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>returns_x_xts <span class="ot">&lt;-</span> <span class="fu">na.omit</span>(returns_xts)[ , factors] <span class="co"># extended history (since fund inception)</span></span>
 <span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>mu <span class="ot">&lt;-</span> <span class="fu">apply</span>(returns_x_xts, <span class="dv">2</span>, geometric_mean, <span class="at">scale =</span> scale[[<span class="st">"periods"</span>]])</span>
 <span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>sigma <span class="ot">&lt;-</span> <span class="fu">cov</span>(overlap_x_xts) <span class="sc">*</span> scale[[<span class="st">"periods"</span>]] <span class="sc">*</span> scale[[<span class="st">"overlap"</span>]]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="co"># # install.packages("pak")</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="co"># pak::pak("jasonjfoster/rolloptim") # roll (&gt;= 1.1.7)</span></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a><span class="co">#</span></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a><span class="co"># # double-check results using single-window inputs</span></span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a><span class="co"># mu_roll &lt;- matrix(mu, nrow = 1)</span></span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a><span class="co"># sigma_roll &lt;- array(sigma, dim = c(length(mu), length(mu), 1))</span></span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a><span class="co">#</span></span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a><span class="co"># xx_roll &lt;- array(crossprod(overlap_x_xts), dim = c(length(mu), length(mu), 1))</span></span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a><span class="co"># xy_roll &lt;- array(crossprod(overlap_x_xts, overlap_y_xts), dim = c(length(mu), 1, 1))</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <section id="maximize-mean" class="level2">
 <h2 class="anchored" data-anchor-id="maximize-mean">Maximize mean</h2>
@@ -451,74 +464,30 @@ window.Quarto = {
 \end{array}
 \end{aligned}
 \]</span></p>
-<p>To incorporate these conditions into one equation, introduce new variables <span class="math inline">\(\lambda_{i}\)</span> that are the Lagrange multipliers and define a new function <span class="math inline">\(\mathcal{L}\)</span> as follows:</p>
-<p><span class="math display">\[
-\begin{aligned}
-\mathcal{L}(\mathbf{w},\lambda)&amp;=-\mathbf{w}^{T}\mu-\lambda_{1}(\mathbf{w}^{T}e-1)
-\end{aligned}
-\]</span></p>
-<p>Then, to minimize this function, take derivatives with respect to <span class="math inline">\(w\)</span> and Lagrange multipliers <span class="math inline">\(\lambda_{i}\)</span>:</p>
-<p><span class="math display">\[
-\begin{aligned}
-\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial w}&amp;=-\mu-\lambda_{1}e=0\\
-\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial \lambda_{1}}&amp;=\mathbf{w}e^T-1=0
-\end{aligned}
-\]</span></p>
-<p>Simplify the equations above in matrix form and solve for the Lagrange multipliers <span class="math inline">\(\lambda_{i}\)</span>:</p>
-<p><span class="math display">\[
-\begin{aligned}
-\begin{bmatrix}
--\mu &amp; e \\
-e^{T} &amp; 0
-\end{bmatrix}
-\begin{bmatrix}
-\mathbf{w} \\
--\lambda_{1}
-\end{bmatrix}
-&amp;=
-\begin{bmatrix}
-0 \\
-1
-\end{bmatrix}
-\\
-\begin{bmatrix}
-\mathbf{w} \\
--\lambda_{1}
-\end{bmatrix}
-&amp;=
-\begin{bmatrix}
--\mu &amp; e \\
-e^{T} &amp; 0
-\end{bmatrix}^{-1}
-\begin{bmatrix}
-0 \\
-1
-\end{bmatrix}
-\end{aligned}
-\]</span></p>
+<p>Since the objective is linear, a Lagrangian with only the budget constraint <span class="math inline">\(\mathbf{w}^{T}e=1\)</span> has no solution: the first-order condition <span class="math inline">\(-\mu-\lambda_{1}e=0\)</span> contains no <span class="math inline">\(\mathbf{w}\)</span>. Instead, the volatility constraint must bind at the optimum, i.e.&nbsp;<span class="math inline">\(\mathbf{w}^{T}\Sigma\mathbf{w}=\sigma^{2}\)</span>, so the solution lies on the efficient frontier. Maximizing the mean subject to a volatility target selects the same frontier portfolio as minimizing variance subject to the corresponding return target <span class="math inline">\(M\)</span> (see the next section). A closed form requires solving the stationarity condition <span class="math inline">\(\mu=2\lambda_{2}\Sigma\mathbf{w}+\lambda_{1}e\)</span> together with both constraints, i.e.&nbsp;a quadratic equation in the multipliers, so solve the problem numerically instead.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>max_mean_optim <span class="ot">&lt;-</span> <span class="cf">function</span>(mu, sigma, target) {</span>
-<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>  params <span class="ot">&lt;-</span> CVXR<span class="sc">::</span><span class="fu">Variable</span>(<span class="fu">length</span>(mu))</span>
-<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>  obj <span class="ot">&lt;-</span> CVXR<span class="sc">::</span><span class="fu">Maximize</span>(<span class="fu">t</span>(params) <span class="sc">%*%</span> mu)</span>
-<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>  cons <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="fu">sum</span>(params) <span class="sc">==</span> <span class="dv">1</span>, params <span class="sc">&gt;=</span> <span class="dv">0</span>,</span>
-<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>               CVXR<span class="sc">::</span><span class="fu">quad_form</span>(params, sigma) <span class="sc">&lt;=</span> target <span class="sc">^</span> <span class="dv">2</span>)</span>
-<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a>  prob <span class="ot">&lt;-</span> CVXR<span class="sc">::</span><span class="fu">Problem</span>(obj, cons)</span>
-<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a>  result <span class="ot">&lt;-</span> <span class="fu">solve</span>(prob)<span class="sc">$</span><span class="fu">getValue</span>(params)</span>
-<span id="cb19-13"><a href="#cb19-13" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb19-14"><a href="#cb19-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(result)</span>
-<span id="cb19-15"><a href="#cb19-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb19-16"><a href="#cb19-16" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>max_mean_optim <span class="ot">&lt;-</span> <span class="cf">function</span>(mu, sigma, target) {</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>  params <span class="ot">&lt;-</span> CVXR<span class="sc">::</span><span class="fu">Variable</span>(<span class="fu">length</span>(mu))</span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>  obj <span class="ot">&lt;-</span> CVXR<span class="sc">::</span><span class="fu">Maximize</span>(<span class="fu">t</span>(params) <span class="sc">%*%</span> mu)</span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>  cons <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="fu">sum</span>(params) <span class="sc">==</span> <span class="dv">1</span>, params <span class="sc">&gt;=</span> <span class="dv">0</span>,</span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a>               CVXR<span class="sc">::</span><span class="fu">quad_form</span>(params, sigma) <span class="sc">&lt;=</span> target <span class="sc">^</span> <span class="dv">2</span>)</span>
+<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a>  prob <span class="ot">&lt;-</span> CVXR<span class="sc">::</span><span class="fu">Problem</span>(obj, cons)</span>
+<span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb20-12"><a href="#cb20-12" aria-hidden="true" tabindex="-1"></a>  result <span class="ot">&lt;-</span> <span class="fu">solve</span>(prob)<span class="sc">$</span><span class="fu">getValue</span>(params)</span>
+<span id="cb20-13"><a href="#cb20-13" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb20-14"><a href="#cb20-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(result)</span>
+<span id="cb20-15"><a href="#cb20-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-16"><a href="#cb20-16" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>target <span class="ot">&lt;-</span> <span class="fl">0.06</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>target <span class="ot">&lt;-</span> <span class="fl">0.06</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>params1 <span class="ot">&lt;-</span> <span class="fu">t</span>(<span class="fu">max_mean_optim</span>(mu, sigma, target))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>params1 <span class="ot">&lt;-</span> <span class="fu">t</span>(<span class="fu">max_mean_optim</span>(mu, sigma, target))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>ℹ In a future CVXR release, `solve()` will return the optimal value directly
   (like `psolve()`).
@@ -532,38 +501,28 @@ This message is displayed once per session.</code></pre>
 ℹ Use `value(x)` after solving instead.
 This warning is displayed once per session.</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>params1</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>params1</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>          [,1]         [,2]      [,3]         [,4]
-[1,] 0.3891757 3.368937e-09 0.6108243 1.041538e-08</code></pre>
+[1,] 0.3872512 1.236472e-08 0.6127488 9.525793e-09</code></pre>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>params1 <span class="sc">%*%</span> mu</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>params1 <span class="sc">%*%</span> mu</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>           [,1]
-[1,] 0.08840383</code></pre>
+[1,] 0.06908025</code></pre>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sqrt</span>(params1 <span class="sc">%*%</span> sigma <span class="sc">%*%</span> <span class="fu">t</span>(params1))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sqrt</span>(params1 <span class="sc">%*%</span> sigma <span class="sc">%*%</span> <span class="fu">t</span>(params1))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>     [,1]
 [1,] 0.06</code></pre>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="co"># # install.packages("pak")</span></span>
-<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a><span class="co"># pak::pak("jasonjfoster/rolloptim") # roll (&gt;= 1.1.7)</span></span>
-<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a><span class="co"># library(rolloptim)</span></span>
-<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a><span class="co"># </span></span>
-<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a><span class="co"># mu &lt;- roll_mean(returns_x_xts, 5)</span></span>
-<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a><span class="co"># sigma &lt;- roll_cov(returns_x_xts, width = 5)</span></span>
-<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a><span class="co"># </span></span>
-<span id="cb30-8"><a href="#cb30-8" aria-hidden="true" tabindex="-1"></a><span class="co"># xx &lt;- roll_crossprod(returns_x_xts, returns_x_xts, 5)</span></span>
-<span id="cb30-9"><a href="#cb30-9" aria-hidden="true" tabindex="-1"></a><span class="co"># xy &lt;- roll_crossprod(returns_x_xts, returns_y_xts, 5)</span></span>
-<span id="cb30-10"><a href="#cb30-10" aria-hidden="true" tabindex="-1"></a><span class="co"># </span></span>
-<span id="cb30-11"><a href="#cb30-11" aria-hidden="true" tabindex="-1"></a><span class="co"># roll_max_mean(mu)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="co"># rolloptim::roll_max_mean(mu_roll, sigma_roll, target = target ^ 2) # target variance</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="minimize-variance" class="level2">
@@ -577,96 +536,103 @@ This warning is displayed once per session.</code></pre>
 \end{array}
 \end{aligned}
 \]</span></p>
-<p>To incorporate these conditions into one equation, introduce new variables <span class="math inline">\(\lambda_{i}\)</span> that are the Lagrange multipliers and define a new function <span class="math inline">\(\mathcal{L}\)</span> as follows:</p>
+<p>Assume the return constraint binds at the optimum, i.e.&nbsp;the expected return of the unconstrained minimum variance portfolio is below <span class="math inline">\(M\)</span>, and treat it as an equality (otherwise omit the <span class="math inline">\(\lambda_{2}\)</span> terms). To incorporate these conditions into one equation, introduce new variables <span class="math inline">\(\lambda_{i}\)</span> that are the Lagrange multipliers and define a new function <span class="math inline">\(\mathcal{L}\)</span> as follows:</p>
 <p><span class="math display">\[
 \begin{aligned}
-\mathcal{L}(\mathbf{w},\lambda)&amp;=\frac{1}{2}\mathbf{w}^{T}\Sigma\mathbf{w}-\lambda_{1}(\mathbf{w}^{T}e-1)
+\mathcal{L}(\mathbf{w},\lambda)&amp;=\frac{1}{2}\mathbf{w}^{T}\Sigma\mathbf{w}-\lambda_{1}(\mathbf{w}^{T}e-1)-\lambda_{2}(\mu^{T}\mathbf{w}-M)
 \end{aligned}
 \]</span></p>
 <p>Then, to minimize this function, take derivatives with respect to <span class="math inline">\(w\)</span> and Lagrange multipliers <span class="math inline">\(\lambda_{i}\)</span>:</p>
 <p><span class="math display">\[
 \begin{aligned}
-\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial w}&amp;=\mathbf{w}\Sigma-\lambda_{1}e=0\\
-\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial \lambda_{1}}&amp;=\mathbf{w}e^T-1=0
+\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial w}&amp;=\Sigma\mathbf{w}-\lambda_{1}e-\lambda_{2}\mu=0\\
+\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial \lambda_{1}}&amp;=\mathbf{w}^{T}e-1=0\\
+\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial \lambda_{2}}&amp;=\mu^{T}\mathbf{w}-M=0
 \end{aligned}
 \]</span></p>
-<p>Simplify the equations above in matrix form and solve for the Lagrange multipliers <span class="math inline">\(\lambda_{i}\)</span>:</p>
+<p>Simplify the equations above in matrix form and solve for the weights <span class="math inline">\(\mathbf{w}\)</span> and Lagrange multipliers <span class="math inline">\(\lambda_{i}\)</span>:</p>
 <p><span class="math display">\[
 \begin{aligned}
 \begin{bmatrix}
-\Sigma &amp; e \\
-e^{T} &amp; 0
+\Sigma &amp; e &amp; \mu \\
+e^{T} &amp; 0 &amp; 0 \\
+\mu^{T} &amp; 0 &amp; 0
 \end{bmatrix}
 \begin{bmatrix}
 \mathbf{w} \\
--\lambda_{1}
+-\lambda_{1} \\
+-\lambda_{2}
 \end{bmatrix}
 &amp;=
 \begin{bmatrix}
 0 \\
-1
+1 \\
+M
 \end{bmatrix}
 \\
 \begin{bmatrix}
 \mathbf{w} \\
--\lambda_{1}
+-\lambda_{1} \\
+-\lambda_{2}
 \end{bmatrix}
 &amp;=
 \begin{bmatrix}
-\Sigma &amp; e \\
-e^{T} &amp; 0
+\Sigma &amp; e &amp; \mu \\
+e^{T} &amp; 0 &amp; 0 \\
+\mu^{T} &amp; 0 &amp; 0
 \end{bmatrix}^{-1}
 \begin{bmatrix}
 0 \\
-1
+1 \\
+M
 \end{bmatrix}
 \end{aligned}
 \]</span></p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>min_var_optim <span class="ot">&lt;-</span> <span class="cf">function</span>(mu, sigma, target) {</span>
-<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>  params <span class="ot">&lt;-</span> CVXR<span class="sc">::</span><span class="fu">Variable</span>(<span class="fu">length</span>(mu))</span>
-<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a>  obj <span class="ot">&lt;-</span> CVXR<span class="sc">::</span><span class="fu">Minimize</span>(CVXR<span class="sc">::</span><span class="fu">quad_form</span>(params, sigma))</span>
-<span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb31-7"><a href="#cb31-7" aria-hidden="true" tabindex="-1"></a>  cons <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="fu">sum</span>(params) <span class="sc">==</span> <span class="dv">1</span>, params <span class="sc">&gt;=</span> <span class="dv">0</span>,</span>
-<span id="cb31-8"><a href="#cb31-8" aria-hidden="true" tabindex="-1"></a>               <span class="fu">sum</span>(mu <span class="sc">*</span> params) <span class="sc">&gt;=</span> target)</span>
-<span id="cb31-9"><a href="#cb31-9" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb31-10"><a href="#cb31-10" aria-hidden="true" tabindex="-1"></a>  prob <span class="ot">&lt;-</span> CVXR<span class="sc">::</span><span class="fu">Problem</span>(obj, cons)</span>
-<span id="cb31-11"><a href="#cb31-11" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb31-12"><a href="#cb31-12" aria-hidden="true" tabindex="-1"></a>  result <span class="ot">&lt;-</span> <span class="fu">solve</span>(prob)<span class="sc">$</span><span class="fu">getValue</span>(params)</span>
-<span id="cb31-13"><a href="#cb31-13" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb31-14"><a href="#cb31-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(result)</span>
-<span id="cb31-15"><a href="#cb31-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb31-16"><a href="#cb31-16" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>min_var_optim <span class="ot">&lt;-</span> <span class="cf">function</span>(mu, sigma, target) {</span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>  params <span class="ot">&lt;-</span> CVXR<span class="sc">::</span><span class="fu">Variable</span>(<span class="fu">length</span>(mu))</span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a>  obj <span class="ot">&lt;-</span> CVXR<span class="sc">::</span><span class="fu">Minimize</span>(CVXR<span class="sc">::</span><span class="fu">quad_form</span>(params, sigma))</span>
+<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb32-7"><a href="#cb32-7" aria-hidden="true" tabindex="-1"></a>  cons <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="fu">sum</span>(params) <span class="sc">==</span> <span class="dv">1</span>, params <span class="sc">&gt;=</span> <span class="dv">0</span>,</span>
+<span id="cb32-8"><a href="#cb32-8" aria-hidden="true" tabindex="-1"></a>               <span class="fu">sum</span>(mu <span class="sc">*</span> params) <span class="sc">&gt;=</span> target)</span>
+<span id="cb32-9"><a href="#cb32-9" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb32-10"><a href="#cb32-10" aria-hidden="true" tabindex="-1"></a>  prob <span class="ot">&lt;-</span> CVXR<span class="sc">::</span><span class="fu">Problem</span>(obj, cons)</span>
+<span id="cb32-11"><a href="#cb32-11" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb32-12"><a href="#cb32-12" aria-hidden="true" tabindex="-1"></a>  result <span class="ot">&lt;-</span> <span class="fu">solve</span>(prob)<span class="sc">$</span><span class="fu">getValue</span>(params)</span>
+<span id="cb32-13"><a href="#cb32-13" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb32-14"><a href="#cb32-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(result)</span>
+<span id="cb32-15"><a href="#cb32-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-16"><a href="#cb32-16" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>target <span class="ot">&lt;-</span> <span class="fl">0.03</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>target <span class="ot">&lt;-</span> <span class="fl">0.03</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>params2 <span class="ot">&lt;-</span> <span class="fu">t</span>(<span class="fu">min_var_optim</span>(mu, sigma, target))</span>
-<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>params2</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>params2 <span class="ot">&lt;-</span> <span class="fu">t</span>(<span class="fu">min_var_optim</span>(mu, sigma, target))</span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>params2</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>          [,1]         [,2]      [,3]       [,4]
-[1,] 0.1286933 2.393965e-17 0.8206114 0.05069539</code></pre>
+<pre><code>          [,1]       [,2]      [,3]          [,4]
+[1,] 0.1671335 0.01942366 0.8134429 -3.039442e-20</code></pre>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>params2 <span class="sc">%*%</span> mu</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>params2 <span class="sc">%*%</span> mu</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>     [,1]
 [1,] 0.03</code></pre>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sqrt</span>(params2 <span class="sc">%*%</span> sigma <span class="sc">%*%</span> <span class="fu">t</span>(params2))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sqrt</span>(params2 <span class="sc">%*%</span> sigma <span class="sc">%*%</span> <span class="fu">t</span>(params2))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>           [,1]
-[1,] 0.02211814</code></pre>
+[1,] 0.02710698</code></pre>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="co"># roll_min_var(sigma)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="co"># rolloptim::roll_min_var(sigma_roll, mu_roll, target = target) # target mean</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="maximize-utility" class="level2">
@@ -682,21 +648,21 @@ e^{T} &amp; 0
 <p>To incorporate these conditions into one equation, introduce new variables <span class="math inline">\(\lambda_{i}\)</span> that are the Lagrange multipliers and define a new function <span class="math inline">\(\mathcal{L}\)</span> as follows:</p>
 <p><span class="math display">\[
 \begin{aligned}
-\mathcal{L}(\mathbf{w},\lambda)&amp;=\frac{1}{2}\mathbf{w}^{T}\Sigma\mathbf{w}-\mu^{T}\mathbf{w}-\lambda_{1}(\mathbf{w}^{T}e-1)
+\mathcal{L}(\mathbf{w},\lambda)&amp;=\frac{1}{2}\delta(\mathbf{w}^{T}\Sigma\mathbf{w})-\mu^{T}\mathbf{w}-\lambda_{1}(\mathbf{w}^{T}e-1)
 \end{aligned}
 \]</span></p>
 <p>Then, to minimize this function, take derivatives with respect to <span class="math inline">\(w\)</span> and Lagrange multipliers <span class="math inline">\(\lambda_{i}\)</span>:</p>
 <p><span class="math display">\[
 \begin{aligned}
-\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial w}&amp;=\mathbf{w}\Sigma-\mu^{T}-\lambda_{1}e=0\\
-\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial \lambda_{1}}&amp;=\mathbf{w}e^T-1=0
+\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial w}&amp;=\delta\Sigma\mathbf{w}-\mu-\lambda_{1}e=0\\
+\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial \lambda_{1}}&amp;=\mathbf{w}^{T}e-1=0
 \end{aligned}
 \]</span></p>
-<p>Simplify the equations above in matrix form and solve for the Lagrange multipliers <span class="math inline">\(\lambda_{i}\)</span>:</p>
+<p>Simplify the equations above in matrix form and solve for the weights <span class="math inline">\(\mathbf{w}\)</span> and Lagrange multiplier <span class="math inline">\(\lambda_{1}\)</span>:</p>
 <p><span class="math display">\[
 \begin{aligned}
 \begin{bmatrix}
-\Sigma &amp; e \\
+\delta\Sigma &amp; e \\
 e^{T} &amp; 0
 \end{bmatrix}
 \begin{bmatrix}
@@ -705,7 +671,7 @@ e^{T} &amp; 0
 \end{bmatrix}
 &amp;=
 \begin{bmatrix}
-\mu^{T} \\
+\mu \\
 1
 \end{bmatrix}
 \\
@@ -715,60 +681,63 @@ e^{T} &amp; 0
 \end{bmatrix}
 &amp;=
 \begin{bmatrix}
-\Sigma &amp; e \\
+\delta\Sigma &amp; e \\
 e^{T} &amp; 0
 \end{bmatrix}^{-1}
 \begin{bmatrix}
-\mu^{T} \\
+\mu \\
 1
 \end{bmatrix}
 \end{aligned}
 \]</span></p>
+<ul>
+<li><a href="https://en.wikipedia.org/wiki/Black%E2%80%93Litterman_model" class="uri">https://en.wikipedia.org/wiki/Black%E2%80%93Litterman_model</a></li>
+</ul>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>max_utility_optim <span class="ot">&lt;-</span> <span class="cf">function</span>(mu, sigma, target) {</span>
-<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>  params <span class="ot">&lt;-</span> CVXR<span class="sc">::</span><span class="fu">Variable</span>(<span class="fu">length</span>(mu))</span>
-<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb40-5"><a href="#cb40-5" aria-hidden="true" tabindex="-1"></a>  obj <span class="ot">&lt;-</span> CVXR<span class="sc">::</span><span class="fu">Minimize</span>(<span class="fl">0.5</span> <span class="sc">*</span> target <span class="sc">*</span> CVXR<span class="sc">::</span><span class="fu">quad_form</span>(params, sigma) <span class="sc">-</span> <span class="fu">t</span>(mu) <span class="sc">%*%</span> params)</span>
-<span id="cb40-6"><a href="#cb40-6" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb40-7"><a href="#cb40-7" aria-hidden="true" tabindex="-1"></a>  cons <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="fu">sum</span>(params) <span class="sc">==</span> <span class="dv">1</span>, params <span class="sc">&gt;=</span> <span class="dv">0</span>)</span>
-<span id="cb40-8"><a href="#cb40-8" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb40-9"><a href="#cb40-9" aria-hidden="true" tabindex="-1"></a>  prob <span class="ot">&lt;-</span> CVXR<span class="sc">::</span><span class="fu">Problem</span>(obj, cons)</span>
-<span id="cb40-10"><a href="#cb40-10" aria-hidden="true" tabindex="-1"></a>      </span>
-<span id="cb40-11"><a href="#cb40-11" aria-hidden="true" tabindex="-1"></a>  result <span class="ot">&lt;-</span> <span class="fu">solve</span>(prob)<span class="sc">$</span><span class="fu">getValue</span>(params)</span>
-<span id="cb40-12"><a href="#cb40-12" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb40-13"><a href="#cb40-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(result)</span>
-<span id="cb40-14"><a href="#cb40-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb40-15"><a href="#cb40-15" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>max_utility_optim <span class="ot">&lt;-</span> <span class="cf">function</span>(mu, sigma, target) {</span>
+<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a>  params <span class="ot">&lt;-</span> CVXR<span class="sc">::</span><span class="fu">Variable</span>(<span class="fu">length</span>(mu))</span>
+<span id="cb41-4"><a href="#cb41-4" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb41-5"><a href="#cb41-5" aria-hidden="true" tabindex="-1"></a>  obj <span class="ot">&lt;-</span> CVXR<span class="sc">::</span><span class="fu">Minimize</span>(<span class="fl">0.5</span> <span class="sc">*</span> target <span class="sc">*</span> CVXR<span class="sc">::</span><span class="fu">quad_form</span>(params, sigma) <span class="sc">-</span> <span class="fu">t</span>(mu) <span class="sc">%*%</span> params)</span>
+<span id="cb41-6"><a href="#cb41-6" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb41-7"><a href="#cb41-7" aria-hidden="true" tabindex="-1"></a>  cons <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="fu">sum</span>(params) <span class="sc">==</span> <span class="dv">1</span>, params <span class="sc">&gt;=</span> <span class="dv">0</span>)</span>
+<span id="cb41-8"><a href="#cb41-8" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb41-9"><a href="#cb41-9" aria-hidden="true" tabindex="-1"></a>  prob <span class="ot">&lt;-</span> CVXR<span class="sc">::</span><span class="fu">Problem</span>(obj, cons)</span>
+<span id="cb41-10"><a href="#cb41-10" aria-hidden="true" tabindex="-1"></a>      </span>
+<span id="cb41-11"><a href="#cb41-11" aria-hidden="true" tabindex="-1"></a>  result <span class="ot">&lt;-</span> <span class="fu">solve</span>(prob)<span class="sc">$</span><span class="fu">getValue</span>(params)</span>
+<span id="cb41-12"><a href="#cb41-12" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb41-13"><a href="#cb41-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(result)</span>
+<span id="cb41-14"><a href="#cb41-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-15"><a href="#cb41-15" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>ir <span class="ot">&lt;-</span> <span class="fl">0.5</span></span>
-<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>target <span class="ot">&lt;-</span> ir <span class="sc">/</span> <span class="fl">0.06</span> <span class="co"># ir / std (see Black-Litterman)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>ir <span class="ot">&lt;-</span> <span class="fl">0.5</span></span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>target <span class="ot">&lt;-</span> ir <span class="sc">/</span> <span class="fl">0.06</span> <span class="co"># implied risk aversion, i.e. ratio / risk (see Black-Litterman model)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>params3 <span class="ot">&lt;-</span> <span class="fu">t</span>(<span class="fu">max_utility_optim</span>(mu, sigma, target))</span>
-<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>params3</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>params3 <span class="ot">&lt;-</span> <span class="fu">t</span>(<span class="fu">max_utility_optim</span>(mu, sigma, target))</span>
+<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a>params3</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>     [,1]         [,2]          [,3]          [,4]
-[1,]    1 2.711492e-23 -9.417797e-29 -3.570034e-26</code></pre>
+<pre><code>          [,1]          [,2]       [,3]          [,4]
+[1,] 0.9152619 -4.963926e-24 0.08473813 -4.580262e-24</code></pre>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>params3 <span class="sc">%*%</span> mu </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>params3 <span class="sc">%*%</span> mu </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>          [,1]
-[1,] 0.2261429</code></pre>
+<pre><code>        [,1]
+[1,] 0.16194</code></pre>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sqrt</span>(params3 <span class="sc">%*%</span> sigma <span class="sc">%*%</span> <span class="fu">t</span>(params3))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb47"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sqrt</span>(params3 <span class="sc">%*%</span> sigma <span class="sc">%*%</span> <span class="fu">t</span>(params3))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>         [,1]
-[1,] 0.151672</code></pre>
+[1,] 0.139611</code></pre>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb48"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a><span class="co"># roll_max_utility(mu, sigma)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb49"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a><span class="co"># rolloptim::roll_max_utility(mu_roll, sigma_roll, lambda = target)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="minimize-residual-sum-of-squares" class="level2">
@@ -776,7 +745,7 @@ e^{T} &amp; 0
 <p><span class="math display">\[
 \begin{aligned}
 \begin{array}{rrcl}
-\displaystyle\min&amp;\frac{1}{2}\delta(\mathbf{w}^{T}X^{T}X\mathbf{w})-X^{T}y\mathbf{w}\\
+\displaystyle\min&amp;\frac{1}{2}\mathbf{w}^{T}X^{T}X\mathbf{w}-(X^{T}y)^{T}\mathbf{w}\\
 \textrm{s.t.}&amp;\mathbf{w}^{T}e&amp;=&amp;1\\
 \end{array}
 \end{aligned}
@@ -784,17 +753,17 @@ e^{T} &amp; 0
 <p>To incorporate these conditions into one equation, introduce new variables <span class="math inline">\(\lambda_{i}\)</span> that are the Lagrange multipliers and define a new function <span class="math inline">\(\mathcal{L}\)</span> as follows:</p>
 <p><span class="math display">\[
 \begin{aligned}
-\mathcal{L}(\mathbf{w},\lambda)&amp;=\frac{1}{2}\mathbf{w}^{T}X^{T}X\mathbf{w}-X^{T}y\mathbf{w}-\lambda_{1}(\mathbf{w}^{T}e-1)
+\mathcal{L}(\mathbf{w},\lambda)&amp;=\frac{1}{2}\mathbf{w}^{T}X^{T}X\mathbf{w}-(X^{T}y)^{T}\mathbf{w}-\lambda_{1}(\mathbf{w}^{T}e-1)
 \end{aligned}
 \]</span></p>
 <p>Then, to minimize this function, take derivatives with respect to <span class="math inline">\(w\)</span> and Lagrange multipliers <span class="math inline">\(\lambda_{i}\)</span>:</p>
 <p><span class="math display">\[
 \begin{aligned}
-\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial w}&amp;=\mathbf{w}X^{T}X-X^{T}y-\lambda_{1}e=0\\
-\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial \lambda_{1}}&amp;=\mathbf{w}e^T-1=0
+\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial w}&amp;=X^{T}X\mathbf{w}-X^{T}y-\lambda_{1}e=0\\
+\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial \lambda_{1}}&amp;=\mathbf{w}^{T}e-1=0
 \end{aligned}
 \]</span></p>
-<p>Simplify the equations above in matrix form and solve for the Lagrange multipliers <span class="math inline">\(\lambda_{i}\)</span>:</p>
+<p>Simplify the equations above in matrix form and solve for the weights <span class="math inline">\(\mathbf{w}\)</span> and Lagrange multiplier <span class="math inline">\(\lambda_{1}\)</span>:</p>
 <p><span class="math display">\[
 \begin{aligned}
 \begin{bmatrix}
@@ -830,100 +799,100 @@ X^{T}y \\
 <li><a href="https://scaron.info/blog/conversion-from-least-squares-to-quadratic-programming.html" class="uri">https://scaron.info/blog/conversion-from-least-squares-to-quadratic-programming.html</a></li>
 </ul>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb49"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a>min_rss_optim1 <span class="ot">&lt;-</span> <span class="cf">function</span>(mu, sigma) {</span>
-<span id="cb49-2"><a href="#cb49-2" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb49-3"><a href="#cb49-3" aria-hidden="true" tabindex="-1"></a>  params <span class="ot">&lt;-</span> CVXR<span class="sc">::</span><span class="fu">Variable</span>(<span class="fu">length</span>(mu))</span>
-<span id="cb49-4"><a href="#cb49-4" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb49-5"><a href="#cb49-5" aria-hidden="true" tabindex="-1"></a>  obj <span class="ot">&lt;-</span> CVXR<span class="sc">::</span><span class="fu">Minimize</span>(<span class="fl">0.5</span> <span class="sc">*</span> CVXR<span class="sc">::</span><span class="fu">quad_form</span>(params, sigma) <span class="sc">-</span> <span class="fu">t</span>(mu) <span class="sc">%*%</span> params)</span>
-<span id="cb49-6"><a href="#cb49-6" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb49-7"><a href="#cb49-7" aria-hidden="true" tabindex="-1"></a>  cons <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="fu">sum</span>(params) <span class="sc">==</span> <span class="dv">1</span>, params <span class="sc">&gt;=</span> <span class="dv">0</span>)</span>
-<span id="cb49-8"><a href="#cb49-8" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb49-9"><a href="#cb49-9" aria-hidden="true" tabindex="-1"></a>  prob <span class="ot">&lt;-</span> CVXR<span class="sc">::</span><span class="fu">Problem</span>(obj, cons)</span>
-<span id="cb49-10"><a href="#cb49-10" aria-hidden="true" tabindex="-1"></a>      </span>
-<span id="cb49-11"><a href="#cb49-11" aria-hidden="true" tabindex="-1"></a>  result <span class="ot">&lt;-</span> <span class="fu">solve</span>(prob)<span class="sc">$</span><span class="fu">getValue</span>(params)</span>
-<span id="cb49-12"><a href="#cb49-12" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb49-13"><a href="#cb49-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(result)</span>
-<span id="cb49-14"><a href="#cb49-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb49-15"><a href="#cb49-15" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb50"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>min_rss_optim1 <span class="ot">&lt;-</span> <span class="cf">function</span>(mu, sigma) {</span>
+<span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb50-3"><a href="#cb50-3" aria-hidden="true" tabindex="-1"></a>  params <span class="ot">&lt;-</span> CVXR<span class="sc">::</span><span class="fu">Variable</span>(<span class="fu">length</span>(mu))</span>
+<span id="cb50-4"><a href="#cb50-4" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb50-5"><a href="#cb50-5" aria-hidden="true" tabindex="-1"></a>  obj <span class="ot">&lt;-</span> CVXR<span class="sc">::</span><span class="fu">Minimize</span>(<span class="fl">0.5</span> <span class="sc">*</span> CVXR<span class="sc">::</span><span class="fu">quad_form</span>(params, sigma) <span class="sc">-</span> <span class="fu">t</span>(mu) <span class="sc">%*%</span> params)</span>
+<span id="cb50-6"><a href="#cb50-6" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb50-7"><a href="#cb50-7" aria-hidden="true" tabindex="-1"></a>  cons <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="fu">sum</span>(params) <span class="sc">==</span> <span class="dv">1</span>, params <span class="sc">&gt;=</span> <span class="dv">0</span>)</span>
+<span id="cb50-8"><a href="#cb50-8" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb50-9"><a href="#cb50-9" aria-hidden="true" tabindex="-1"></a>  prob <span class="ot">&lt;-</span> CVXR<span class="sc">::</span><span class="fu">Problem</span>(obj, cons)</span>
+<span id="cb50-10"><a href="#cb50-10" aria-hidden="true" tabindex="-1"></a>      </span>
+<span id="cb50-11"><a href="#cb50-11" aria-hidden="true" tabindex="-1"></a>  result <span class="ot">&lt;-</span> <span class="fu">solve</span>(prob)<span class="sc">$</span><span class="fu">getValue</span>(params)</span>
+<span id="cb50-12"><a href="#cb50-12" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb50-13"><a href="#cb50-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(result)</span>
+<span id="cb50-14"><a href="#cb50-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb50-15"><a href="#cb50-15" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb50"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>params4 <span class="ot">&lt;-</span> <span class="fu">t</span>(<span class="fu">min_rss_optim1</span>(<span class="fu">crossprod</span>(overlap_x_xts, overlap_y_xts), <span class="fu">crossprod</span>(overlap_x_xts)))</span>
-<span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a>params4</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb51"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a>params4 <span class="ot">&lt;-</span> <span class="fu">t</span>(<span class="fu">min_rss_optim1</span>(<span class="fu">crossprod</span>(overlap_x_xts, overlap_y_xts), <span class="fu">crossprod</span>(overlap_x_xts)))</span>
+<span id="cb51-2"><a href="#cb51-2" aria-hidden="true" tabindex="-1"></a>params4</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>         [,1]         [,2]     [,3]          [,4]
-[1,] 0.292194 9.637189e-24 0.707806 -2.155388e-23</code></pre>
+<pre><code>          [,1]         [,2]      [,3]         [,4]
+[1,] 0.2898034 3.714429e-23 0.7101966 1.021698e-23</code></pre>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb52"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a>params4 <span class="sc">%*%</span> mu </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>           [,1]
-[1,] 0.06653475</code></pre>
-</div>
-</div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb54"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sqrt</span>(params4 <span class="sc">%*%</span> sigma <span class="sc">%*%</span> <span class="fu">t</span>(params4))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb53"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a>params4 <span class="sc">%*%</span> mu </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>           [,1]
-[1,] 0.04558981</code></pre>
+[1,] 0.05194239</code></pre>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb56"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a><span class="co"># roll_min_rss(xx, xy)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb57"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a>min_rss_optim2 <span class="ot">&lt;-</span> <span class="cf">function</span>(x, y) {</span>
-<span id="cb57-2"><a href="#cb57-2" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb57-3"><a href="#cb57-3" aria-hidden="true" tabindex="-1"></a>  params <span class="ot">&lt;-</span> CVXR<span class="sc">::</span><span class="fu">Variable</span>(<span class="fu">ncol</span>(x))</span>
-<span id="cb57-4"><a href="#cb57-4" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb57-5"><a href="#cb57-5" aria-hidden="true" tabindex="-1"></a>  obj <span class="ot">&lt;-</span> CVXR<span class="sc">::</span><span class="fu">Minimize</span>(CVXR<span class="sc">::</span><span class="fu">sum_squares</span>(y <span class="sc">-</span> x <span class="sc">%*%</span> params))</span>
-<span id="cb57-6"><a href="#cb57-6" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb57-7"><a href="#cb57-7" aria-hidden="true" tabindex="-1"></a>  cons <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="fu">sum</span>(params) <span class="sc">==</span> <span class="dv">1</span>, params <span class="sc">&gt;=</span> <span class="dv">0</span>)</span>
-<span id="cb57-8"><a href="#cb57-8" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb57-9"><a href="#cb57-9" aria-hidden="true" tabindex="-1"></a>  prob <span class="ot">&lt;-</span> CVXR<span class="sc">::</span><span class="fu">Problem</span>(obj, cons)</span>
-<span id="cb57-10"><a href="#cb57-10" aria-hidden="true" tabindex="-1"></a>      </span>
-<span id="cb57-11"><a href="#cb57-11" aria-hidden="true" tabindex="-1"></a>  result <span class="ot">&lt;-</span> <span class="fu">solve</span>(prob)<span class="sc">$</span><span class="fu">getValue</span>(params)</span>
-<span id="cb57-12"><a href="#cb57-12" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb57-13"><a href="#cb57-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(result)</span>
-<span id="cb57-14"><a href="#cb57-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb57-15"><a href="#cb57-15" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb58"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a>params5 <span class="ot">&lt;-</span> <span class="fu">t</span>(<span class="fu">min_rss_optim2</span>(zoo<span class="sc">::</span><span class="fu">coredata</span>(overlap_x_xts), zoo<span class="sc">::</span><span class="fu">coredata</span>(overlap_y_xts)))</span>
-<span id="cb58-2"><a href="#cb58-2" aria-hidden="true" tabindex="-1"></a>params5</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb55"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sqrt</span>(params4 <span class="sc">%*%</span> sigma <span class="sc">%*%</span> <span class="fu">t</span>(params4))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>         [,1]          [,2]     [,3]          [,4]
-[1,] 0.292194 -1.054654e-21 0.707806 -8.314191e-22</code></pre>
+<pre><code>          [,1]
+[1,] 0.0454451</code></pre>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb60"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a>params5 <span class="sc">%*%</span> mu </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb57"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a><span class="co"># rolloptim::roll_min_rss(xx_roll, xy_roll)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb58"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a>min_rss_optim2 <span class="ot">&lt;-</span> <span class="cf">function</span>(x, y) {</span>
+<span id="cb58-2"><a href="#cb58-2" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb58-3"><a href="#cb58-3" aria-hidden="true" tabindex="-1"></a>  params <span class="ot">&lt;-</span> CVXR<span class="sc">::</span><span class="fu">Variable</span>(<span class="fu">ncol</span>(x))</span>
+<span id="cb58-4"><a href="#cb58-4" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb58-5"><a href="#cb58-5" aria-hidden="true" tabindex="-1"></a>  obj <span class="ot">&lt;-</span> CVXR<span class="sc">::</span><span class="fu">Minimize</span>(CVXR<span class="sc">::</span><span class="fu">sum_squares</span>(y <span class="sc">-</span> x <span class="sc">%*%</span> params))</span>
+<span id="cb58-6"><a href="#cb58-6" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb58-7"><a href="#cb58-7" aria-hidden="true" tabindex="-1"></a>  cons <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="fu">sum</span>(params) <span class="sc">==</span> <span class="dv">1</span>, params <span class="sc">&gt;=</span> <span class="dv">0</span>)</span>
+<span id="cb58-8"><a href="#cb58-8" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb58-9"><a href="#cb58-9" aria-hidden="true" tabindex="-1"></a>  prob <span class="ot">&lt;-</span> CVXR<span class="sc">::</span><span class="fu">Problem</span>(obj, cons)</span>
+<span id="cb58-10"><a href="#cb58-10" aria-hidden="true" tabindex="-1"></a>      </span>
+<span id="cb58-11"><a href="#cb58-11" aria-hidden="true" tabindex="-1"></a>  result <span class="ot">&lt;-</span> <span class="fu">solve</span>(prob)<span class="sc">$</span><span class="fu">getValue</span>(params)</span>
+<span id="cb58-12"><a href="#cb58-12" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb58-13"><a href="#cb58-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(result)</span>
+<span id="cb58-14"><a href="#cb58-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-15"><a href="#cb58-15" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb59"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a>params5 <span class="ot">&lt;-</span> <span class="fu">t</span>(<span class="fu">min_rss_optim2</span>(zoo<span class="sc">::</span><span class="fu">coredata</span>(overlap_x_xts), zoo<span class="sc">::</span><span class="fu">coredata</span>(overlap_y_xts)))</span>
+<span id="cb59-2"><a href="#cb59-2" aria-hidden="true" tabindex="-1"></a>params5</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>          [,1]          [,2]      [,3]          [,4]
+[1,] 0.2898034 -1.079115e-21 0.7101966 -8.514228e-22</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb61"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb61-1"><a href="#cb61-1" aria-hidden="true" tabindex="-1"></a>params5 <span class="sc">%*%</span> mu </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>           [,1]
-[1,] 0.06653475</code></pre>
+[1,] 0.05194239</code></pre>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb62"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sqrt</span>(params5 <span class="sc">%*%</span> sigma <span class="sc">%*%</span> <span class="fu">t</span>(params5))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb63"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb63-1"><a href="#cb63-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sqrt</span>(params5 <span class="sc">%*%</span> sigma <span class="sc">%*%</span> <span class="fu">t</span>(params5))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>           [,1]
-[1,] 0.04558981</code></pre>
+<pre><code>          [,1]
+[1,] 0.0454451</code></pre>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb64"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb64-1"><a href="#cb64-1" aria-hidden="true" tabindex="-1"></a><span class="fu">round</span>(<span class="fu">data.frame</span>(</span>
-<span id="cb64-2"><a href="#cb64-2" aria-hidden="true" tabindex="-1"></a>  <span class="st">"max_pnl"</span> <span class="ot">=</span> <span class="fu">t</span>(params1) <span class="sc">*</span> <span class="dv">100</span>,</span>
-<span id="cb64-3"><a href="#cb64-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">"min_risk"</span> <span class="ot">=</span> <span class="fu">t</span>(params2) <span class="sc">*</span> <span class="dv">100</span>,</span>
-<span id="cb64-4"><a href="#cb64-4" aria-hidden="true" tabindex="-1"></a>  <span class="st">"max_utility"</span> <span class="ot">=</span> <span class="fu">t</span>(params3) <span class="sc">*</span> <span class="dv">100</span>,</span>
-<span id="cb64-5"><a href="#cb64-5" aria-hidden="true" tabindex="-1"></a>  <span class="st">"min_rss1"</span> <span class="ot">=</span> <span class="fu">t</span>(params4) <span class="sc">*</span> <span class="dv">100</span>,</span>
-<span id="cb64-6"><a href="#cb64-6" aria-hidden="true" tabindex="-1"></a>  <span class="st">"min_rss2"</span> <span class="ot">=</span> <span class="fu">t</span>(params5) <span class="sc">*</span> <span class="dv">100</span>),</span>
-<span id="cb64-7"><a href="#cb64-7" aria-hidden="true" tabindex="-1"></a><span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb65"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb65-1"><a href="#cb65-1" aria-hidden="true" tabindex="-1"></a><span class="fu">round</span>(<span class="fu">data.frame</span>(</span>
+<span id="cb65-2"><a href="#cb65-2" aria-hidden="true" tabindex="-1"></a>  <span class="st">"max_mean"</span> <span class="ot">=</span> <span class="fu">t</span>(params1) <span class="sc">*</span> <span class="dv">100</span>,</span>
+<span id="cb65-3"><a href="#cb65-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">"min_var"</span> <span class="ot">=</span> <span class="fu">t</span>(params2) <span class="sc">*</span> <span class="dv">100</span>,</span>
+<span id="cb65-4"><a href="#cb65-4" aria-hidden="true" tabindex="-1"></a>  <span class="st">"max_utility"</span> <span class="ot">=</span> <span class="fu">t</span>(params3) <span class="sc">*</span> <span class="dv">100</span>,</span>
+<span id="cb65-5"><a href="#cb65-5" aria-hidden="true" tabindex="-1"></a>  <span class="st">"min_rss1"</span> <span class="ot">=</span> <span class="fu">t</span>(params4) <span class="sc">*</span> <span class="dv">100</span>,</span>
+<span id="cb65-6"><a href="#cb65-6" aria-hidden="true" tabindex="-1"></a>  <span class="st">"min_rss2"</span> <span class="ot">=</span> <span class="fu">t</span>(params5) <span class="sc">*</span> <span class="dv">100</span>),</span>
+<span id="cb65-7"><a href="#cb65-7" aria-hidden="true" tabindex="-1"></a><span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>  max_pnl min_risk max_utility min_rss1 min_rss2
-1   38.92    12.87         100    29.22    29.22
-2    0.00     0.00           0     0.00     0.00
-3   61.08    82.06           0    70.78    70.78
-4    0.00     5.07           0     0.00     0.00</code></pre>
+<pre><code>  max_mean min_var max_utility min_rss1 min_rss2
+1    38.73   16.71       91.53    28.98    28.98
+2     0.00    1.94        0.00     0.00     0.00
+3    61.27   81.34        8.47    71.02    71.02
+4     0.00    0.00        0.00     0.00     0.00</code></pre>
 </div>
 </div>
 

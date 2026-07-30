@@ -100,7 +100,7 @@ $$
 d_{1}&={\frac{\ln(S/K)+(r-q+\sigma^{2}/2)\tau}{\sigma{\sqrt{\tau}}}} \\
 d_{2}&={\frac{\ln(S/K)+(r-q-\sigma^{2}/2)\tau}{\sigma{\sqrt{\tau}}}}=d_{1}-\sigma{\sqrt{\tau}} \\
 \phi(x)&={\frac{e^{-{\frac {x^{2}}{2}}}}{\sqrt{2\pi}}} \\
-\Phi(x)&={\frac{1}{\sqrt{2\pi}}}\int_{-\infty}^{x}e^{-{\frac{y^{2}}{2}}}dy=1-{\frac{1}{\sqrt{2\pi}}}\int_{x}^{\infty}e^{-{\frac{y^{2}}{2}}dy}
+\Phi(x)&={\frac{1}{\sqrt{2\pi}}}\int_{-\infty}^{x}e^{-{\frac{y^{2}}{2}}}dy=1-{\frac{1}{\sqrt{2\pi}}}\int_{x}^{\infty}e^{-{\frac{y^{2}}{2}}}dy
 \end{aligned}
 $$
 
@@ -285,8 +285,8 @@ $$
 ```{r}
 bs_theta <- function(type, S, K, r, q, tau, sigma, d1, d2) {
   
-  r_df <- exp(r * tau)
-  q_df <- exp(q * tau)
+  r_df <- exp(-r * tau)
+  q_df <- exp(-q * tau)
 
   call_value <- -q_df * S * phi(d1) * sigma / (2 * sqrt(tau)) -
     r * K * r_df * Phi(d2) + q * S * q_df * Phi(d1)
@@ -366,13 +366,15 @@ P(y+\Delta y)-P(y)&\approx{\frac{P'(y)}{1!}}\Delta y+{\frac{P''(y)}{2!}}(\Delta 
 \end{aligned}
 $$
 
+Total return also includes income, i.e. the yield earned over the elapsed time $y\Delta t$, in addition to the price change:
+
 ```{r}
-pnl_bond <- function(duration, convexity, dy) {
-  
+pnl_bond <- function(duration, convexity, dy, y, t) {
+
   duration_pnl <- -duration * dy
-  convexity_pnl <- (convexity / 2) * dy ^ 2
-  income_pnl <- dy
-  
+  convexity_pnl <- (convexity * 100 / 2) * dy ^ 2
+  income_pnl <- (y / 100) * t
+
   result <- list(
     "total" = duration_pnl + convexity_pnl + income_pnl,
     "duration" = duration_pnl,
@@ -392,20 +394,21 @@ pnl_bond <- function(duration, convexity, dy) {
 ```{r}
 factor <- "DGS10"
 duration <- 6.5
-convexity <- 0.65
+convexity <- 0.65 # market convention, i.e. 65 / 100 (see duration-yield formula)
 y <- zoo::coredata(tail(zoo::na.locf(levels_xts[ , factor]), width)[1])
 ```
 
 ```{r}
 bonds_dt <- data.table::data.table(index = zoo::index(tail(levels_xts, width)),
                                    duration = duration, convexity = convexity,
-                                   dy = zoo::na.locf(tail(levels_xts[ , factor], width)))
-data.table::setnames(bonds_dt, c("index", "duration", "convexity", "dy"))
+                                   dy = zoo::na.locf(tail(levels_xts[ , factor], width)),
+                                   t = (seq_len(width) - 1) / scale[["periods"]])
+data.table::setnames(bonds_dt, c("index", "duration", "convexity", "dy", "t"))
 bonds_dt[ , dy := (dy - y) / 100, by = index]
 ```
 
 ```{r}
-attrib_dt <- bonds_dt[ , as.list(unlist(pnl_bond(duration, convexity, dy))), by = index]
+attrib_dt <- bonds_dt[ , as.list(unlist(pnl_bond(duration, convexity, dy, as.numeric(y), t))), by = index]
 ```
 
 ```{r}
@@ -423,7 +426,7 @@ The derivative of duration with respect to interest rates gives:
 
 $$
 \begin{aligned}
-\text{Drift}&=\frac{\partial D}{\partial y}=\frac{\partial}{\partial y}\left(-\frac{1}{P}\frac{\partial D}{\partial y}\right)\\
+\text{Drift}&=\frac{\partial D}{\partial y}=\frac{\partial}{\partial y}\left(-\frac{1}{P}\frac{\partial P}{\partial y}\right)\\
 &=-\frac{1}{P}\frac{\partial^{2}P}{\partial y^{2}}+\frac{1}{P^{2}}\frac{\partial P}{\partial y}\frac{\partial P}{\partial y}\\
 &=-C+D^{2}
 \end{aligned}
@@ -482,7 +485,7 @@ print(duration_plt)
 
 ## Second-order
 
-### Black's formula
+### Greeks P&L decomposition
 
 A similar formula holds for functions of several variables $f(x_{1},\ldots,x_{n})$. This is usually written as:
 
@@ -493,7 +496,7 @@ f(x_{1}+\Delta x_{1},\ldots,x_{n}+\Delta x_{n})&=f(x_{1},\ldots, x_{n})+ \sum _{
 \end{aligned}
 $$
 
-Using Black's formula, the estimated change of an option price is:
+Using the greeks, the estimated change of an option price is:
 
 $$
 \begin{aligned}
@@ -569,7 +572,7 @@ print(attrib_plt)
 
 ### Ito's lemma
 
-For a given diffiusion $X(t, w)$ driven by:
+For a given diffusion $X(t, \omega)$ driven by:
 
 $$
 \begin{aligned}
@@ -599,7 +602,7 @@ $$
 \end{aligned}
 $$
 
-Then apply Ito's lemma with $f(S)=log(S)$:
+Then apply Ito's lemma with $f(S)=\log(S)$:
 
 $$
 \begin{aligned}
@@ -613,7 +616,7 @@ It follows that:
 
 $$
 \begin{aligned}
-\log(S_{t})-\log(S_{0})=\sigma dB+\left(\mu-{\tfrac{\sigma^{2}}{2}}\right)dt
+\log(S_{t})-\log(S_{0})=\sigma B_{t}+\left(\mu-{\tfrac{\sigma^{2}}{2}}\right)t
 \end{aligned}
 $$
 
@@ -637,12 +640,13 @@ where $Z_{1},Z_{2},\ldots,Z_{n}$ are independent standard normals.
 
 ```{r}
 sim_gbm <- function(n_sim, S, mu, sigma, dt) {
-  
-  result <- S * exp(cumsum(sigma * sqrt(dt) * rnorm(n_sim)) +
-                    (mu - 0.5 * sigma ^ 2) * dt)
-  
+
+  X <- sigma * sqrt(dt) * rnorm(n_sim) + (mu - 0.5 * sigma ^ 2) * dt
+
+  result <- S * exp(cumsum(X))
+
   return(result)
-  
+
 }
 ```
 
@@ -686,6 +690,12 @@ dt <- 1 / scale[["periods"]]
 ```
 
 ```{r}
+levels_sim <- sim_gbm(width + 1, S[1], mu[1], sqrt(sigma[1, 1]), dt)
+```
+
+Then simulate correlated paths and compare the annualized mean and volatility of the simulated returns with the empirical estimates:
+
+```{r}
 mu_ls <- list()
 sigma_ls <- list()
 ```
@@ -693,7 +703,7 @@ sigma_ls <- list()
 ```{r}
 for (i in 1:1e4) {
   
-  # assumes stock prices
+  # assumes underlying stock price follows geometric Brownian motion with constant volatility
   levels_sim <- sim_multi_gbm(width + 1, S, mu, sigma, dt)
   returns_sim <- diff(log(levels_sim))
 
@@ -723,7 +733,7 @@ data.frame(
 ### Vasicek model
 
 ```{r}
-# assumes interest rates follow mean-reverting process with stochastic volatility
+# assumes interest rates follow mean-reverting process with constant volatility
 ```
 
 # Newton's method
@@ -798,37 +808,39 @@ implied_vol_newton(params1, type, S, K, r, q, tau)
 
 ## Yield-to-maturity
 
+Similarly, solve for the yield that equates the present value of cash flows to the target price, and compute duration and convexity from the first and second derivatives:
+
 ```{r}
 yld_newton <- function(params, cash_flows) {
   
   target0 <- 0
-  yld <- params[["cpn"]]
+  yld <- params[["cpn"]] / params[["freq"]]
   yld0 <- yld
   
   while (abs(target0 - params[["target"]]) > params[["tol"]]) {
-    
-  target0 <- 0
-  d_target0 <- 0
-  dd_target0 <- 0
-  
-  for (i in 1:length(cash_flows)) {
-    
-    t <- i
-    
-    # present value of cash flows
-    target0 <- target0 + cash_flows[i] / (1 + yld0) ^ t
-    
-    # first derivative of present value of cash flows
-    d_target0 <- d_target0 - t * cash_flows[i] / (1 + yld0) ^ (t + 1) # use t for Macaulay duration
-    
-    # second derivative of present value of cash flows
-    dd_target0 <- dd_target0 - t * (t + 1) * cash_flows[i] / (1 + yld0) ^ (t + 2)
-    
-  }
-  
-  yld <- yld0 - (target0 - params[["target"]]) / d_target0
-  yld0 <- yld
-    
+
+    target0 <- 0
+    d_target0 <- 0
+    dd_target0 <- 0
+
+    for (i in 1:length(cash_flows)) {
+
+      t <- i
+
+      # present value of cash flows
+      target0 <- target0 + cash_flows[i] / (1 + yld0) ^ t
+
+      # first derivative of present value of cash flows
+      d_target0 <- d_target0 - t * cash_flows[i] / (1 + yld0) ^ (t + 1) # use t for Macaulay duration
+
+      # second derivative of present value of cash flows
+      dd_target0 <- dd_target0 - t * (t + 1) * cash_flows[i] / (1 + yld0) ^ (t + 2)
+
+    }
+
+    yld <- yld0 - (target0 - params[["target"]]) / d_target0
+    yld0 <- yld
+
   }
   
   result <- list(
@@ -901,6 +913,8 @@ implied_vol_optim(start1, type, S, K, r, q, tau, target1)
 ```
 
 ## Yield-to-maturity
+
+Similarly, solve for the yield-to-maturity using optimization:
 
 ```{r}
 yld_obj <- function(param, cash_flows, target) {

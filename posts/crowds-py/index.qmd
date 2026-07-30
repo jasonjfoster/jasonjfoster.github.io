@@ -20,16 +20,21 @@ editor:
 
 ```{python}
 #| echo: false
-# exec(open("posts/helper-levels.py").read()) # local
 # exec(open("../helper-levels.py").read())
 # width = 20 * 3
 ```
 
 # Parse web
 
+The "wisdom of crowds" is the idea that the aggregated views of many independent participants are often more accurate than the views of any single participant. To measure the views of professional asset allocators, estimate the implied asset allocations of "Tactical Allocation" mutual funds using returns-based style analysis and then compare the average allocations of the best- and worst-performing funds.
+
+-   <https://en.wikipedia.org/wiki/Wisdom_of_the_crowd>
+
 ```{python}
 import yfscreen as yfs
 ```
+
+First, screen the mutual fund universe for the "Tactical Allocation" category using the `yfscreen` package:
 
 ```{python}
 filters = ["eq", ["categoryname", "Tactical Allocation"]]
@@ -37,6 +42,8 @@ query = yfs.create_query(filters)
 payload = yfs.create_payload("mutualfund", query, 250)
 data = yfs.get_data(payload)
 ```
+
+Then sort the funds by net assets and remove duplicates to keep the primary share class of each fund:
 
 ```{python}
 sorted_df = data.sort_values(
@@ -53,6 +60,8 @@ sorted_df = data.sort_values(
 tickers = sorted_df.loc[~sorted_df["netAssets.raw"].duplicated(), "symbol"].tolist()
 ```
 
+Finally, represent the asset allocation universe using iShares ETFs that span domestic and international equities and bonds:
+
 ```{python}
 allocations = ["IVV", "IDEV", "IUSB", "IEMG", "IJH", "IAGG", "IJR"]
 tickers = tickers + allocations
@@ -60,8 +69,24 @@ tickers = tickers + allocations
 
 # Optimization
 
+Estimate the implied allocations of each fund by regressing fund returns on the ETF returns with weights that are fully invested and long-only:
+
+$$
+\begin{aligned}
+\begin{array}{rrcl}
+\displaystyle\min&\left\|y-X\mathbf{w}\right\|^{2}\\
+\textrm{s.t.}&\mathbf{w}^{T}e&=&1\\
+&0\leq\mathbf{w}&\leq&1\\
+\end{array}
+\end{aligned}
+$$
+
+-   <https://web.stanford.edu/~wfsharpe/art/sa/sa.htm>
+
+Solve the constrained least squares problem with a general-purpose convex solver using the `cvxpy` package; see the R version for the analytic rolling implementation using the `rolloptim` package:
+
 ```{python}
-import json
+# import json # used by the commented cache process
 import cvxpy as cp
 ```
 
@@ -83,7 +108,6 @@ def min_rss_optim(x, y):
 ```{python}
 #| echo: false
 #| output: false # pause one second after five requests
-# exec(open("posts/helper-prices.py").read()) # local
 exec(open("../helper-prices.py").read()) # run then render
 
 overlap_df = returns_df.rolling(scale["overlap"], min_periods = 1).mean()
@@ -96,14 +120,13 @@ overlap_y_df = overlap_df.loc[:, ~overlap_df.columns.isin(allocations)]
 # overlap_z_df = overlap_df[allocations]
 ```
 
-```{python}
-def pnl(x):
-  return np.nanprod(1 + x) - 1
-```
+Also compute the trailing one-year performance of each fund:
 
 ```{python}
-performance_df = returns_df.rolling(width, min_periods = 1).apply(pnl, raw = False)
+performance_df = np.exp(returns_df.rolling(width, min_periods = 1).sum()) - 1
 ```
+
+Then estimate the implied allocations of each fund over the trailing window:
 
 ```{python}
 n_rows = overlap_df.shape[0]
@@ -111,7 +134,7 @@ result_ls = []
 index_ls = []
 
 # for i in range(width - 1, n_rows):
-for i in range(n_rows - 1, n_rows):
+for i in range(n_rows - 1, n_rows): # last window only to limit render time
   
   idx = range(max(i - width + 1, 0), i + 1)
   x_subset = overlap_x_df.iloc[idx]
@@ -145,6 +168,7 @@ for i in range(n_rows - 1, n_rows):
 ```
 
 ```{python}
+# cache full-history results for time-series analysis (regenerate after logic changes)
 # json.dump([x.to_dict() for x in result_ls], open("result_ls.json", "w"))
 # json.dump([x.isoformat() for x in index_ls], open("index_ls.json", "w"))
 ```
@@ -152,9 +176,12 @@ for i in range(n_rows - 1, n_rows):
 # Performance
 
 ```{python}
+# load cached full-history results for time-series analysis
 # result_ls = [pd.DataFrame(x) for x in json.load(open("result_ls.json", "r"))]
 # index_ls = [pd.Timestamp(x) for x in json.load(open("index_ls.json", "r"))]
 ```
+
+Bucket funds into quartiles by trailing performance, where Q1 contains the best-performing funds:
 
 ```{python}
 def quantile_cut(x):
@@ -168,6 +195,8 @@ def quantile_cut(x):
   
   return result
 ```
+
+Then average the implied allocations within each quartile, as well as overall, for each date:
 
 ```{python}
 n_rows = len(result_ls)
@@ -206,4 +235,6 @@ print(score_df)
 
 ```{python}
 # score_df.to_json("score_df.json", date_format = "iso")
+# score_ts = score_df[score_df["quantile"] == "Q1"].set_index("date")[allocations]
+# score_ts.plot()
 ```

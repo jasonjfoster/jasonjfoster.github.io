@@ -21,10 +21,15 @@ editor:
 ```{r}
 #| echo: false
 # source("../helper-levels.R")
-# width <- 20 * 3
 ```
 
 # Parse web
+
+The "wisdom of crowds" is the idea that the aggregated views of many independent participants are often more accurate than the views of any single participant. To measure the views of professional asset allocators, estimate the implied asset allocations of "Tactical Allocation" mutual funds using returns-based style analysis and then compare the average allocations of the best- and worst-performing funds.
+
+-   <https://en.wikipedia.org/wiki/Wisdom_of_the_crowd>
+
+First, screen the mutual fund universe for the "Tactical Allocation" category using the `yfscreen` package:
 
 ```{r}
 filters <- list("eq", list("categoryname", "Tactical Allocation"))
@@ -32,6 +37,8 @@ query <- yfscreen::create_query(filters)
 payload <- yfscreen::create_payload("mutualfund", query, 250)
 data <- yfscreen::get_data(payload)
 ```
+
+Then sort the funds by net assets and remove duplicates to keep the primary share class of each fund:
 
 ```{r}
 sorted_df <- data[order(
@@ -44,12 +51,30 @@ sorted_df <- data[order(
 tickers <- sorted_df[!duplicated(sorted_df[["netAssets.raw"]]), "symbol"]
 ```
 
+Finally, represent the asset allocation universe using iShares ETFs that span domestic and international equities and bonds:
+
 ```{r}
 allocations <- c("IVV", "IDEV", "IUSB", "IEMG", "IJH", "IAGG", "IJR")
 tickers <- c(tickers, allocations)
 ```
 
 # Optimization
+
+Estimate the implied allocations of each fund by regressing fund returns on the ETF returns with weights that are fully invested and long-only:
+
+$$
+\begin{aligned}
+\begin{array}{rrcl}
+\displaystyle\min&\left\|y-X\mathbf{w}\right\|^{2}\\
+\textrm{s.t.}&\mathbf{w}^{T}e&=&1\\
+&0\leq\mathbf{w}&\leq&1\\
+\end{array}
+\end{aligned}
+$$
+
+-   <https://web.stanford.edu/~wfsharpe/art/sa/sa.htm>
+
+Solve the constrained least squares problem analytically for rolling windows using the `rolloptim` package; the commented `CVXR` implementation below is the original version, kept for reference:
 
 ```{r}
 # install.packages("pak")
@@ -82,8 +107,8 @@ tickers <- c(tickers, allocations)
 ```{r}
 #| echo: false
 #| output: false # pause one second after five requests
-# source("posts/helper-prices.R") # local
-source("../helper-prices.R")
+# width <- 20 * 3
+source("../helper-prices.R") # run then render
 
 overlap_xts <- roll::roll_mean(returns_xts, scale[["overlap"]], min_obs = 1)
 
@@ -95,9 +120,13 @@ overlap_y_xts <- overlap_xts[ , !colnames(overlap_xts) %in% allocations]
 # overlap_z_xts <- overlap_xts[ , allocations]
 ```
 
+Also compute the trailing one-year performance of each fund:
+
 ```{r}
-performance_xts <- roll::roll_prod(1 + returns_xts, width, min_obs = 1) - 1
+performance_xts <- exp(roll::roll_sum(returns_xts, width, min_obs = 1)) - 1
 ```
+
+Then estimate the implied allocations of each fund over the trailing window:
 
 ```{r}
 n_rows <- nrow(overlap_xts)
@@ -105,7 +134,7 @@ result_ls <- list()
 index_ls <- list()
 
 # for (i in width:n_rows) {
-for (i in n_rows) {
+for (i in n_rows) { # last window only to limit render time
     
   idx <- max(i - width + 1, 1):i
   x_subset <- zoo::coredata(overlap_x_xts[idx, ])
@@ -153,6 +182,7 @@ for (i in n_rows) {
 ```
 
 ```{r}
+# cache full-history results for time-series analysis (regenerate after logic changes)
 # save(result_ls, file = "result_ls.rda")
 # save(index_ls, file = "index_ls.rda")
 ```
@@ -160,9 +190,12 @@ for (i in n_rows) {
 # Performance
 
 ```{r}
+# load cached full-history results for time-series analysis
 # load("result_ls.rda")
 # load("index_ls.rda")
 ```
+
+Bucket funds into quartiles by trailing performance, where Q1 contains the best-performing funds:
 
 ```{r}
 quantile_cut <- function(x) {
@@ -179,6 +212,8 @@ quantile_cut <- function(x) {
 
 }
 ```
+
+Then average the implied allocations within each quartile, as well as overall, for each date:
 
 ```{r}
 n_rows <- length(result_ls)
@@ -214,8 +249,8 @@ print(score_df)
 ```
 
 ```{r}
-# save(score_df, file = "score_df.rda") # see test-crowds-r
-# score_xts <- xts(score_df[score_df[["quantile"]] == "Q1", "weight"],
-#                  score_df[score_df[["quantile"]] == "Q1", "date"])
+# save(score_df, file = "score_df.rda")
+# score_xts <- xts::xts(score_df[score_df[["quantile"]] == "Q1", allocations],
+#                       score_df[score_df[["quantile"]] == "Q1", "date"])
 # plot(score_xts)
 ```

@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Jason Foster">
-<meta name="dcterms.date" content="2025-12-13">
+<meta name="dcterms.date" content="2026-07-30">
 
 <title>Optimization – jasonjfoster.github.io</title>
 <style>
@@ -193,7 +193,7 @@ window.Quarto = {
       <div>
       <div class="quarto-title-meta-heading">Published</div>
       <div class="quarto-title-meta-contents">
-        <p class="date">December 13, 2025</p>
+        <p class="date">July 30, 2026</p>
       </div>
     </div>
     
@@ -236,19 +236,19 @@ window.Quarto = {
 </div>
 <section id="random-weights" class="level1">
 <h1>Random weights</h1>
-<p>Need to generate uniformly distributed weights <span class="math inline">\(\mathbf{w}=(w_{1},w_{2},\ldots,w_{N})\)</span> such that <span class="math inline">\(\sum_{j=1}^{N}w_{i}=1\)</span> and <span class="math inline">\(w_{i}\geq0\)</span>:</p>
+<p>Need to generate uniformly distributed weights <span class="math inline">\(\mathbf{w}=(w_{1},w_{2},\ldots,w_{N})\)</span> such that <span class="math inline">\(\sum_{i=1}^{N}w_{i}=1\)</span> and <span class="math inline">\(w_{i}\geq0\)</span>:</p>
 <ul>
-<li><p><strong>Approach 1</strong>: tempting to use <span class="math inline">\(w_{i}=\frac{u_{i}}{\sum_{j=1}^{N}u_{i}}\)</span> where <span class="math inline">\(u_{i}\sim U(0,1)\)</span> but the distribution of <span class="math inline">\(\mathbf{w}\)</span> is not uniform</p></li>
+<li><p><strong>Approach 1</strong>: tempting to use <span class="math inline">\(w_{i}=\frac{u_{i}}{\sum_{j=1}^{N}u_{j}}\)</span> where <span class="math inline">\(u_{i}\sim U(0,1)\)</span> but the distribution of <span class="math inline">\(\mathbf{w}\)</span> is not uniform</p></li>
 <li><p><strong>Approach 2</strong>: instead, generate <span class="math inline">\(\text{Exp}(1)\)</span> and then normalize</p></li>
 </ul>
 <p>Can also scale random weights by <span class="math inline">\(M\)</span>, e.g.&nbsp;if sum of weights must be 10% then multiply weights by 10%.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> rand_weights1(n_sim, n_assets):  </span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  rand_exp <span class="op">=</span> np.matrix(np.random.uniform(size <span class="op">=</span> (n_sim, n_assets)))</span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  rand_exp_sum <span class="op">=</span> np.<span class="bu">sum</span>(rand_exp, axis <span class="op">=</span> <span class="dv">1</span>)</span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>  result <span class="op">=</span> rand_exp <span class="op">/</span> rand_exp_sum</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  rand_unif <span class="op">=</span> np.random.uniform(size <span class="op">=</span> (n_sim, n_assets))</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  rand_unif_sum <span class="op">=</span> np.<span class="bu">sum</span>(rand_unif, axis <span class="op">=</span> <span class="dv">1</span>, keepdims <span class="op">=</span> <span class="va">True</span>)</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>  result <span class="op">=</span> rand_unif <span class="op">/</span> rand_unif_sum</span>
 <span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>  </span>
 <span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> result</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
@@ -268,6 +268,7 @@ window.Quarto = {
 </div>
 </div>
 </div>
+<p>The weights cluster toward the center of the simplex, i.e.&nbsp;the distribution is not uniform.</p>
 <p><strong>Approach 2(a)</strong>: uniform sample from the simplex (<a href="http://mathoverflow.net/a/76258" class="uri">http://mathoverflow.net/a/76258</a>) and then normalize</p>
 <ul>
 <li>If <span class="math inline">\(u\sim U(0,1)\)</span> then <span class="math inline">\(-\ln(u)\)</span> is an <span class="math inline">\(\text{Exp}(1)\)</span> distribution</li>
@@ -277,8 +278,8 @@ window.Quarto = {
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> rand_weights2a(n_sim, n_assets, lmbda):   </span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  </span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="co"># inverse transform sampling: https://en.wikipedia.org/wiki/Inverse_transform_sampling</span></span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  rand_exp <span class="op">=</span> np.matrix(<span class="op">-</span>np.log(<span class="dv">1</span> <span class="op">-</span> np.random.uniform(size <span class="op">=</span> (n_sim, n_assets))) <span class="op">/</span> lmbda)</span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  rand_exp_sum <span class="op">=</span> np.<span class="bu">sum</span>(rand_exp, axis <span class="op">=</span> <span class="dv">1</span>)</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  rand_exp <span class="op">=</span> <span class="op">-</span>np.log(<span class="dv">1</span> <span class="op">-</span> np.random.uniform(size <span class="op">=</span> (n_sim, n_assets))) <span class="op">/</span> lmbda</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  rand_exp_sum <span class="op">=</span> np.<span class="bu">sum</span>(rand_exp, axis <span class="op">=</span> <span class="dv">1</span>, keepdims <span class="op">=</span> <span class="va">True</span>)</span>
 <span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>  </span>
 <span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  result <span class="op">=</span> rand_exp <span class="op">/</span> rand_exp_sum</span>
 <span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>  </span>
@@ -303,8 +304,8 @@ window.Quarto = {
 <div class="cell">
 <div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> rand_weights2b(n_sim, n_assets):</span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  rand_exp <span class="op">=</span> np.matrix(np.random.exponential(size <span class="op">=</span> (n_sim, n_assets)))</span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  rand_exp_sum <span class="op">=</span> np.<span class="bu">sum</span>(rand_exp, axis <span class="op">=</span> <span class="dv">1</span>)</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  rand_exp <span class="op">=</span> np.random.exponential(size <span class="op">=</span> (n_sim, n_assets))</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  rand_exp_sum <span class="op">=</span> np.<span class="bu">sum</span>(rand_exp, axis <span class="op">=</span> <span class="dv">1</span>, keepdims <span class="op">=</span> <span class="va">True</span>)</span>
 <span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>  </span>
 <span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>  result <span class="op">=</span> rand_exp <span class="op">/</span> rand_exp_sum</span>
 <span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>  </span>
@@ -326,7 +327,7 @@ window.Quarto = {
 <h2 class="anchored" data-anchor-id="random-turnover">Random turnover</h2>
 <p>How to generate random weights between lower bound <span class="math inline">\(a\)</span> and upper bound <span class="math inline">\(b\)</span> that sum to zero?</p>
 <ul>
-<li><p><strong>Approach 1</strong>: tempting to multiply random weights by <span class="math inline">\(M\)</span> and then subtract by <span class="math inline">\(\frac{M}{N}\)</span> but the distribution is not between <span class="math inline">\(a\)</span> and <span class="math inline">\(b\)</span></p></li>
+<li><p><strong>Approach 1</strong>: tempting to multiply random weights by <span class="math inline">\(M\)</span> and then subtract <span class="math inline">\(\frac{M}{N}\)</span> but the distribution is not between <span class="math inline">\(a\)</span> and <span class="math inline">\(b\)</span></p></li>
 <li><p><strong>Approach 2</strong>: instead, use an iterative approach for random turnover:</p>
 <ol type="1">
 <li>Generate <span class="math inline">\(N-1\)</span> uniformly distributed weights between <span class="math inline">\(a\)</span> and <span class="math inline">\(b\)</span></li>
@@ -341,7 +342,7 @@ window.Quarto = {
 <span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  rng <span class="op">=</span> upper <span class="op">-</span> lower</span>
 <span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  </span>
 <span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>  result <span class="op">=</span> rand_weights2b(n_sim, n_assets) <span class="op">*</span> rng</span>
-<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>  result <span class="op">=</span> result <span class="op">-</span> rng <span class="op">/</span> n_assets</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>  result <span class="op">=</span> result <span class="op">-</span> rng <span class="op">/</span> n_assets <span class="op">+</span> target <span class="op">/</span> n_assets</span>
 <span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>  </span>
 <span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> result</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
@@ -413,7 +414,7 @@ window.Quarto = {
 <div class="cell">
 <div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> geometric_mean(x, scale):</span>
 <span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>  result <span class="op">=</span> np.prod(<span class="dv">1</span> <span class="op">+</span> x) <span class="op">**</span> (scale<span class="op">/</span> <span class="bu">len</span>(x)) <span class="op">-</span> <span class="dv">1</span></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>  result <span class="op">=</span> np.prod(<span class="dv">1</span> <span class="op">+</span> x) <span class="op">**</span> (scale <span class="op">/</span> <span class="bu">len</span>(x)) <span class="op">-</span> <span class="dv">1</span></span>
 <span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>  </span>
 <span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> result</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
@@ -423,11 +424,12 @@ window.Quarto = {
 <li><a href="https://bookdown.org/compfinezbook/introFinRbook/Portfolio-Theory-with-Matrix-Algebra.html#algorithm-for-computing-efficient-frontier" class="uri">https://bookdown.org/compfinezbook/introFinRbook/Portfolio-Theory-with-Matrix-Algebra.html#algorithm-for-computing-efficient-frontier</a></li>
 <li><a href="https://palomar.home.ece.ust.hk/MAFS6010R_lectures/slides_robust_portfolio.html" class="uri">https://palomar.home.ece.ust.hk/MAFS6010R_lectures/slides_robust_portfolio.html</a></li>
 </ul>
+<p>The derivations below incorporate the budget constraint <span class="math inline">\(\mathbf{w}^{T}e=1\)</span> and, where applicable, a binding target constraint. The optimizers additionally impose the long-only constraint <span class="math inline">\(\mathbf{w}\geq0\)</span>, which has no closed-form solution and instead requires the Karush-Kuhn-Tucker (KKT) conditions; when the long-only constraint does not bind, the analytic and numerical solutions coincide.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>tickers <span class="op">=</span> [<span class="st">"BAICX"</span>] <span class="co"># fund inception date is "2011-11-28"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>returns_x_df <span class="op">=</span> returns_df.dropna()[factors] <span class="co"># extended history</span></span>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>returns_x_df <span class="op">=</span> returns_df.dropna()[factors] <span class="co"># extended history (since fund inception)</span></span>
 <span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>mu <span class="op">=</span> returns_x_df.<span class="bu">apply</span>(geometric_mean, axis <span class="op">=</span> <span class="dv">0</span>, scale <span class="op">=</span> scale[<span class="st">"periods"</span>])</span>
 <span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>sigma <span class="op">=</span> np.cov(overlap_x_df.T, ddof <span class="op">=</span> <span class="dv">1</span>) <span class="op">*</span> scale[<span class="st">"periods"</span>] <span class="op">*</span> scale[<span class="st">"overlap"</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
@@ -442,51 +444,7 @@ window.Quarto = {
 \end{array}
 \end{aligned}
 \]</span></p>
-<p>To incorporate these conditions into one equation, introduce new variables <span class="math inline">\(\lambda_{i}\)</span> that are the Lagrange multipliers and define a new function <span class="math inline">\(\mathcal{L}\)</span> as follows:</p>
-<p><span class="math display">\[
-\begin{aligned}
-\mathcal{L}(\mathbf{w},\lambda)&amp;=-\mathbf{w}^{T}\mu-\lambda_{1}(\mathbf{w}^{T}e-1)
-\end{aligned}
-\]</span></p>
-<p>Then, to minimize this function, take derivatives with respect to <span class="math inline">\(w\)</span> and Lagrange multipliers <span class="math inline">\(\lambda_{i}\)</span>:</p>
-<p><span class="math display">\[
-\begin{aligned}
-\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial w}&amp;=-\mu-\lambda_{1}e=0\\
-\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial \lambda_{1}}&amp;=\mathbf{w}e^T-1=0
-\end{aligned}
-\]</span></p>
-<p>Simplify the equations above in matrix form and solve for the Lagrange multipliers <span class="math inline">\(\lambda_{i}\)</span>:</p>
-<p><span class="math display">\[
-\begin{aligned}
-\begin{bmatrix}
--\mu &amp; e \\
-e^{T} &amp; 0
-\end{bmatrix}
-\begin{bmatrix}
-\mathbf{w} \\
--\lambda_{1}
-\end{bmatrix}
-&amp;=
-\begin{bmatrix}
-0 \\
-1
-\end{bmatrix}
-\\
-\begin{bmatrix}
-\mathbf{w} \\
--\lambda_{1}
-\end{bmatrix}
-&amp;=
-\begin{bmatrix}
--\mu &amp; e \\
-e^{T} &amp; 0
-\end{bmatrix}^{-1}
-\begin{bmatrix}
-0 \\
-1
-\end{bmatrix}
-\end{aligned}
-\]</span></p>
+<p>Since the objective is linear, a Lagrangian with only the budget constraint <span class="math inline">\(\mathbf{w}^{T}e=1\)</span> has no solution: the first-order condition <span class="math inline">\(-\mu-\lambda_{1}e=0\)</span> contains no <span class="math inline">\(\mathbf{w}\)</span>. Instead, the volatility constraint must bind at the optimum, i.e.&nbsp;<span class="math inline">\(\mathbf{w}^{T}\Sigma\mathbf{w}=\sigma^{2}\)</span>, so the solution lies on the efficient frontier. Maximizing the mean subject to a volatility target selects the same frontier portfolio as minimizing variance subject to the corresponding return target <span class="math inline">\(M\)</span> (see the next section). A closed form requires solving the stationarity condition <span class="math inline">\(\mu=2\lambda_{2}\Sigma\mathbf{w}+\lambda_{1}e\)</span> together with both constraints, i.e.&nbsp;a quadratic equation in the multipliers, so solve the problem numerically instead.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> max_mean_optim(mu, sigma, target):</span>
 <span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>  </span>
@@ -510,19 +468,19 @@ e^{T} &amp; 0
 <div class="sourceCode cell-code" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>params1 <span class="op">=</span> max_mean_optim(mu, sigma, target)</span>
 <span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>params1</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>array([3.89175676e-01, 4.02852708e-09, 6.10824309e-01, 1.09611559e-08])</code></pre>
+<pre><code>array([3.87251192e-01, 8.37762679e-08, 6.12748666e-01, 5.85479598e-08])</code></pre>
 </div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>np.dot(mu, params1)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>np.float64(0.08840382597227049)</code></pre>
+<pre><code>np.float64(0.06908025153180782)</code></pre>
 </div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>np.sqrt(np.dot(params1, np.dot(sigma, params1)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>np.float64(0.05999999997770646)</code></pre>
+<pre><code>np.float64(0.059999999741262175)</code></pre>
 </div>
 </div>
 </section>
@@ -537,48 +495,55 @@ e^{T} &amp; 0
 \end{array}
 \end{aligned}
 \]</span></p>
-<p>To incorporate these conditions into one equation, introduce new variables <span class="math inline">\(\lambda_{i}\)</span> that are the Lagrange multipliers and define a new function <span class="math inline">\(\mathcal{L}\)</span> as follows:</p>
+<p>Assume the return constraint binds at the optimum, i.e.&nbsp;the expected return of the unconstrained minimum variance portfolio is below <span class="math inline">\(M\)</span>, and treat it as an equality (otherwise omit the <span class="math inline">\(\lambda_{2}\)</span> terms). To incorporate these conditions into one equation, introduce new variables <span class="math inline">\(\lambda_{i}\)</span> that are the Lagrange multipliers and define a new function <span class="math inline">\(\mathcal{L}\)</span> as follows:</p>
 <p><span class="math display">\[
 \begin{aligned}
-\mathcal{L}(\mathbf{w},\lambda)&amp;=\frac{1}{2}\mathbf{w}^{T}\Sigma\mathbf{w}-\lambda_{1}(\mathbf{w}^{T}e-1)
+\mathcal{L}(\mathbf{w},\lambda)&amp;=\frac{1}{2}\mathbf{w}^{T}\Sigma\mathbf{w}-\lambda_{1}(\mathbf{w}^{T}e-1)-\lambda_{2}(\mu^{T}\mathbf{w}-M)
 \end{aligned}
 \]</span></p>
 <p>Then, to minimize this function, take derivatives with respect to <span class="math inline">\(w\)</span> and Lagrange multipliers <span class="math inline">\(\lambda_{i}\)</span>:</p>
 <p><span class="math display">\[
 \begin{aligned}
-\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial w}&amp;=\mathbf{w}\Sigma-\lambda_{1}e=0\\
-\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial \lambda_{1}}&amp;=\mathbf{w}e^T-1=0
+\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial w}&amp;=\Sigma\mathbf{w}-\lambda_{1}e-\lambda_{2}\mu=0\\
+\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial \lambda_{1}}&amp;=\mathbf{w}^{T}e-1=0\\
+\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial \lambda_{2}}&amp;=\mu^{T}\mathbf{w}-M=0
 \end{aligned}
 \]</span></p>
-<p>Simplify the equations above in matrix form and solve for the Lagrange multipliers <span class="math inline">\(\lambda_{i}\)</span>:</p>
+<p>Simplify the equations above in matrix form and solve for the weights <span class="math inline">\(\mathbf{w}\)</span> and Lagrange multipliers <span class="math inline">\(\lambda_{i}\)</span>:</p>
 <p><span class="math display">\[
 \begin{aligned}
 \begin{bmatrix}
-\Sigma &amp; e \\
-e^{T} &amp; 0
+\Sigma &amp; e &amp; \mu \\
+e^{T} &amp; 0 &amp; 0 \\
+\mu^{T} &amp; 0 &amp; 0
 \end{bmatrix}
 \begin{bmatrix}
 \mathbf{w} \\
--\lambda_{1}
+-\lambda_{1} \\
+-\lambda_{2}
 \end{bmatrix}
 &amp;=
 \begin{bmatrix}
 0 \\
-1
+1 \\
+M
 \end{bmatrix}
 \\
 \begin{bmatrix}
 \mathbf{w} \\
--\lambda_{1}
+-\lambda_{1} \\
+-\lambda_{2}
 \end{bmatrix}
 &amp;=
 \begin{bmatrix}
-\Sigma &amp; e \\
-e^{T} &amp; 0
+\Sigma &amp; e &amp; \mu \\
+e^{T} &amp; 0 &amp; 0 \\
+\mu^{T} &amp; 0 &amp; 0
 \end{bmatrix}^{-1}
 \begin{bmatrix}
 0 \\
-1
+1 \\
+M
 \end{bmatrix}
 \end{aligned}
 \]</span></p>
@@ -605,19 +570,19 @@ e^{T} &amp; 0
 <div class="sourceCode cell-code" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>params2 <span class="op">=</span> min_var_optim(mu, sigma, target)</span>
 <span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>params2</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>array([1.28693263e-01, 2.39396306e-17, 8.20611350e-01, 5.06953866e-02])</code></pre>
+<pre><code>array([ 1.67133455e-01,  1.94236602e-02,  8.13442885e-01, -3.03945049e-20])</code></pre>
 </div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>np.dot(mu, params2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>np.float64(0.030000000000000023)</code></pre>
+<pre><code>np.float64(0.029999999999999995)</code></pre>
 </div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb34"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>np.sqrt(np.dot(params2, np.dot(sigma, params2))) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>np.float64(0.022118141993618102)</code></pre>
+<pre><code>np.float64(0.027106980332836386)</code></pre>
 </div>
 </div>
 </section>
@@ -634,21 +599,21 @@ e^{T} &amp; 0
 <p>To incorporate these conditions into one equation, introduce new variables <span class="math inline">\(\lambda_{i}\)</span> that are the Lagrange multipliers and define a new function <span class="math inline">\(\mathcal{L}\)</span> as follows:</p>
 <p><span class="math display">\[
 \begin{aligned}
-\mathcal{L}(\mathbf{w},\lambda)&amp;=\frac{1}{2}\mathbf{w}^{T}\Sigma\mathbf{w}-\mu^{T}\mathbf{w}-\lambda_{1}(\mathbf{w}^{T}e-1)
+\mathcal{L}(\mathbf{w},\lambda)&amp;=\frac{1}{2}\delta(\mathbf{w}^{T}\Sigma\mathbf{w})-\mu^{T}\mathbf{w}-\lambda_{1}(\mathbf{w}^{T}e-1)
 \end{aligned}
 \]</span></p>
 <p>Then, to minimize this function, take derivatives with respect to <span class="math inline">\(w\)</span> and Lagrange multipliers <span class="math inline">\(\lambda_{i}\)</span>:</p>
 <p><span class="math display">\[
 \begin{aligned}
-\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial w}&amp;=\mathbf{w}\Sigma-\mu^{T}-\lambda_{1}e=0\\
-\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial \lambda_{1}}&amp;=\mathbf{w}e^T-1=0
+\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial w}&amp;=\delta\Sigma\mathbf{w}-\mu-\lambda_{1}e=0\\
+\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial \lambda_{1}}&amp;=\mathbf{w}^{T}e-1=0
 \end{aligned}
 \]</span></p>
-<p>Simplify the equations above in matrix form and solve for the Lagrange multipliers <span class="math inline">\(\lambda_{i}\)</span>:</p>
+<p>Simplify the equations above in matrix form and solve for the weights <span class="math inline">\(\mathbf{w}\)</span> and Lagrange multiplier <span class="math inline">\(\lambda_{1}\)</span>:</p>
 <p><span class="math display">\[
 \begin{aligned}
 \begin{bmatrix}
-\Sigma &amp; e \\
+\delta\Sigma &amp; e \\
 e^{T} &amp; 0
 \end{bmatrix}
 \begin{bmatrix}
@@ -657,7 +622,7 @@ e^{T} &amp; 0
 \end{bmatrix}
 &amp;=
 \begin{bmatrix}
-\mu^{T} \\
+\mu \\
 1
 \end{bmatrix}
 \\
@@ -667,15 +632,18 @@ e^{T} &amp; 0
 \end{bmatrix}
 &amp;=
 \begin{bmatrix}
-\Sigma &amp; e \\
+\delta\Sigma &amp; e \\
 e^{T} &amp; 0
 \end{bmatrix}^{-1}
 \begin{bmatrix}
-\mu^{T} \\
+\mu \\
 1
 \end{bmatrix}
 \end{aligned}
 \]</span></p>
+<ul>
+<li><a href="https://en.wikipedia.org/wiki/Black%E2%80%93Litterman_model" class="uri">https://en.wikipedia.org/wiki/Black%E2%80%93Litterman_model</a></li>
+</ul>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb36"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> max_utility_optim(mu, sigma, target):</span>
 <span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>  </span>
@@ -693,25 +661,25 @@ e^{T} &amp; 0
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb37"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>ir <span class="op">=</span> <span class="fl">0.5</span></span>
-<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>target <span class="op">=</span> ir <span class="op">/</span> <span class="fl">0.06</span> <span class="co"># ir / std (see Black-Litterman)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>target <span class="op">=</span> ir <span class="op">/</span> <span class="fl">0.06</span> <span class="co"># implied risk aversion, i.e. ratio / risk (see Black-Litterman model)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb38"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>params3 <span class="op">=</span> max_utility_optim(mu, sigma, target)</span>
 <span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>params3</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>array([ 1.00000000e+00,  2.71149101e-23, -9.55530883e-29, -3.57019356e-26])</code></pre>
+<pre><code>array([9.15261871e-01, 1.14730649e-23, 8.47381292e-02, 1.64515074e-24])</code></pre>
 </div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb40"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>np.dot(mu, params3)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>np.float64(0.22614289730019177)</code></pre>
+<pre><code>np.float64(0.16193997889757472)</code></pre>
 </div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb42"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>np.sqrt(np.matmul(np.transpose(params3), np.matmul(sigma, params3)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>np.float64(0.1516720303823363)</code></pre>
+<pre><code>np.float64(0.13961096308461435)</code></pre>
 </div>
 </div>
 </section>
@@ -720,7 +688,7 @@ e^{T} &amp; 0
 <p><span class="math display">\[
 \begin{aligned}
 \begin{array}{rrcl}
-\displaystyle\min&amp;\frac{1}{2}\delta(\mathbf{w}^{T}X^{T}X\mathbf{w})-X^{T}y\mathbf{w}\\
+\displaystyle\min&amp;\frac{1}{2}\mathbf{w}^{T}X^{T}X\mathbf{w}-(X^{T}y)^{T}\mathbf{w}\\
 \textrm{s.t.}&amp;\mathbf{w}^{T}e&amp;=&amp;1\\
 \end{array}
 \end{aligned}
@@ -728,17 +696,17 @@ e^{T} &amp; 0
 <p>To incorporate these conditions into one equation, introduce new variables <span class="math inline">\(\lambda_{i}\)</span> that are the Lagrange multipliers and define a new function <span class="math inline">\(\mathcal{L}\)</span> as follows:</p>
 <p><span class="math display">\[
 \begin{aligned}
-\mathcal{L}(\mathbf{w},\lambda)&amp;=\frac{1}{2}\mathbf{w}^{T}X^{T}X\mathbf{w}-X^{T}y\mathbf{w}-\lambda_{1}(\mathbf{w}^{T}e-1)
+\mathcal{L}(\mathbf{w},\lambda)&amp;=\frac{1}{2}\mathbf{w}^{T}X^{T}X\mathbf{w}-(X^{T}y)^{T}\mathbf{w}-\lambda_{1}(\mathbf{w}^{T}e-1)
 \end{aligned}
 \]</span></p>
 <p>Then, to minimize this function, take derivatives with respect to <span class="math inline">\(w\)</span> and Lagrange multipliers <span class="math inline">\(\lambda_{i}\)</span>:</p>
 <p><span class="math display">\[
 \begin{aligned}
-\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial w}&amp;=\mathbf{w}X^{T}X-X^{T}y-\lambda_{1}e=0\\
-\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial \lambda_{1}}&amp;=\mathbf{w}e^T-1=0
+\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial w}&amp;=X^{T}X\mathbf{w}-X^{T}y-\lambda_{1}e=0\\
+\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial \lambda_{1}}&amp;=\mathbf{w}^{T}e-1=0
 \end{aligned}
 \]</span></p>
-<p>Simplify the equations above in matrix form and solve for the Lagrange multipliers <span class="math inline">\(\lambda_{i}\)</span>:</p>
+<p>Simplify the equations above in matrix form and solve for the weights <span class="math inline">\(\mathbf{w}\)</span> and Lagrange multiplier <span class="math inline">\(\lambda_{1}\)</span>:</p>
 <p><span class="math display">\[
 \begin{aligned}
 \begin{bmatrix}
@@ -793,19 +761,19 @@ X^{T}y \\
 <span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a>                         np.dot(overlap_x_df.T.values, overlap_x_df.values))</span>
 <span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a>params4</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>array([ 2.92193756e-01, -5.19884432e-23,  7.07806244e-01, -7.37248112e-24])</code></pre>
+<pre><code>array([ 2.89803232e-01, -1.48688649e-23,  7.10196768e-01, -1.04172390e-23])</code></pre>
 </div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb47"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a>np.dot(mu, params4)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>np.float64(0.06653469085794034)</code></pre>
+<pre><code>np.float64(0.05194235923928506)</code></pre>
 </div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb49"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a>np.sqrt(np.matmul(np.transpose(params4), np.matmul(sigma, params4)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>np.float64(0.0455897724961367)</code></pre>
+<pre><code>np.float64(0.045445067226020285)</code></pre>
 </div>
 </div>
 <div class="cell">
@@ -827,35 +795,35 @@ X^{T}y \\
 <div class="sourceCode cell-code" id="cb52"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a>params5 <span class="op">=</span> min_rss_optim2(overlap_x_df.values, overlap_y_df.iloc[:, <span class="dv">0</span>].values)</span>
 <span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a>params5</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>array([ 2.92193756e-01, -1.05380482e-21,  7.07806244e-01, -8.31130166e-22])</code></pre>
+<pre><code>array([ 2.89803232e-01, -1.07896992e-21,  7.10196768e-01, -8.51817318e-22])</code></pre>
 </div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb54"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a>np.dot(mu, params5)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>np.float64(0.06653469085794034)</code></pre>
+<pre><code>np.float64(0.05194235923928508)</code></pre>
 </div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb56"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a>np.sqrt(np.matmul(np.transpose(params5), np.matmul(sigma, params5)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>np.float64(0.0455897724961367)</code></pre>
+<pre><code>np.float64(0.0454450672260203)</code></pre>
 </div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb58"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a>pd.DataFrame({</span>
-<span id="cb58-2"><a href="#cb58-2" aria-hidden="true" tabindex="-1"></a>  <span class="st">"max_pnl"</span>: params1 <span class="op">*</span> <span class="dv">100</span>,</span>
-<span id="cb58-3"><a href="#cb58-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">"min_risk"</span>: params2 <span class="op">*</span> <span class="dv">100</span>,</span>
+<span id="cb58-2"><a href="#cb58-2" aria-hidden="true" tabindex="-1"></a>  <span class="st">"max_mean"</span>: params1 <span class="op">*</span> <span class="dv">100</span>,</span>
+<span id="cb58-3"><a href="#cb58-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">"min_var"</span>: params2 <span class="op">*</span> <span class="dv">100</span>,</span>
 <span id="cb58-4"><a href="#cb58-4" aria-hidden="true" tabindex="-1"></a>  <span class="st">"max_utility"</span>: params3 <span class="op">*</span> <span class="dv">100</span>,</span>
 <span id="cb58-5"><a href="#cb58-5" aria-hidden="true" tabindex="-1"></a>  <span class="st">"min_rss1"</span>: params4 <span class="op">*</span> <span class="dv">100</span>,</span>
 <span id="cb58-6"><a href="#cb58-6" aria-hidden="true" tabindex="-1"></a>  <span class="st">"min_rss2"</span>: params5 <span class="op">*</span> <span class="dv">100</span></span>
 <span id="cb58-7"><a href="#cb58-7" aria-hidden="true" tabindex="-1"></a>}).<span class="bu">round</span>(<span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>   max_pnl  min_risk  max_utility  min_rss1  min_rss2
-0    38.92     12.87        100.0     29.22     29.22
-1     0.00      0.00          0.0     -0.00     -0.00
-2    61.08     82.06         -0.0     70.78     70.78
-3     0.00      5.07         -0.0     -0.00     -0.00</code></pre>
+<pre><code>   max_mean  min_var  max_utility  min_rss1  min_rss2
+0     38.73    16.71        91.53     28.98     28.98
+1      0.00     1.94         0.00     -0.00     -0.00
+2     61.27    81.34         8.47     71.02     71.02
+3      0.00    -0.00         0.00     -0.00     -0.00</code></pre>
 </div>
 </div>
 

@@ -35,9 +35,9 @@ names(palette) <- c("Overall", reticulate::py$factors)
 
 # Random weights
 
-Need to generate uniformly distributed weights $\mathbf{w}=(w_{1},w_{2},\ldots,w_{N})$ such that $\sum_{j=1}^{N}w_{i}=1$ and $w_{i}\geq0$:
+Need to generate uniformly distributed weights $\mathbf{w}=(w_{1},w_{2},\ldots,w_{N})$ such that $\sum_{i=1}^{N}w_{i}=1$ and $w_{i}\geq0$:
 
--   **Approach 1**: tempting to use $w_{i}=\frac{u_{i}}{\sum_{j=1}^{N}u_{i}}$ where $u_{i}\sim U(0,1)$ but the distribution of $\mathbf{w}$ is not uniform
+-   **Approach 1**: tempting to use $w_{i}=\frac{u_{i}}{\sum_{j=1}^{N}u_{j}}$ where $u_{i}\sim U(0,1)$ but the distribution of $\mathbf{w}$ is not uniform
 
 -   **Approach 2**: instead, generate $\text{Exp}(1)$ and then normalize
 
@@ -46,10 +46,10 @@ Can also scale random weights by $M$, e.g. if sum of weights must be 10% then mu
 ```{python}
 def rand_weights1(n_sim, n_assets):  
   
-  rand_exp = np.matrix(np.random.uniform(size = (n_sim, n_assets)))
-  rand_exp_sum = np.sum(rand_exp, axis = 1)
-  
-  result = rand_exp / rand_exp_sum
+  rand_unif = np.random.uniform(size = (n_sim, n_assets))
+  rand_unif_sum = np.sum(rand_unif, axis = 1, keepdims = True)
+
+  result = rand_unif / rand_unif_sum
   
   return result
 ```
@@ -70,6 +70,8 @@ approach1 = rand_weights1(n_sim, n_assets)
 plot_pairs(data.table::as.data.table(reticulate::py$approach1), title = "Weight (%)")
 ```
 
+The weights cluster toward the center of the simplex, i.e. the distribution is not uniform.
+
 **Approach 2(a)**: uniform sample from the simplex (<http://mathoverflow.net/a/76258>) and then normalize
 
 -   If $u\sim U(0,1)$ then $-\ln(u)$ is an $\text{Exp}(1)$ distribution
@@ -80,8 +82,8 @@ This is also known as generating a random vector from the symmetric Dirichlet di
 def rand_weights2a(n_sim, n_assets, lmbda):   
   
   # inverse transform sampling: https://en.wikipedia.org/wiki/Inverse_transform_sampling
-  rand_exp = np.matrix(-np.log(1 - np.random.uniform(size = (n_sim, n_assets))) / lmbda)
-  rand_exp_sum = np.sum(rand_exp, axis = 1)
+  rand_exp = -np.log(1 - np.random.uniform(size = (n_sim, n_assets))) / lmbda
+  rand_exp_sum = np.sum(rand_exp, axis = 1, keepdims = True)
   
   result = rand_exp / rand_exp_sum
   
@@ -108,8 +110,8 @@ plot_pairs(data.table::as.data.table(reticulate::py$approach2a), title = "Weight
 ```{python}
 def rand_weights2b(n_sim, n_assets):
   
-  rand_exp = np.matrix(np.random.exponential(size = (n_sim, n_assets)))
-  rand_exp_sum = np.sum(rand_exp, axis = 1)
+  rand_exp = np.random.exponential(size = (n_sim, n_assets))
+  rand_exp_sum = np.sum(rand_exp, axis = 1, keepdims = True)
   
   result = rand_exp / rand_exp_sum
   
@@ -131,7 +133,7 @@ plot_pairs(data.table::as.data.table(reticulate::py$approach2b), title = "Weight
 
 How to generate random weights between lower bound $a$ and upper bound $b$ that sum to zero?
 
--   **Approach 1**: tempting to multiply random weights by $M$ and then subtract by $\frac{M}{N}$ but the distribution is not between $a$ and $b$
+-   **Approach 1**: tempting to multiply random weights by $M$ and then subtract $\frac{M}{N}$ but the distribution is not between $a$ and $b$
 
 -   **Approach 2**: instead, use an iterative approach for random turnover:
 
@@ -147,7 +149,7 @@ def rand_turnover1(n_sim, n_assets, lower, upper, target):
   rng = upper - lower
   
   result = rand_weights2b(n_sim, n_assets) * rng
-  result = result - rng / n_assets
+  result = result - rng / n_assets + target / n_assets
   
   return result
 ```
@@ -220,7 +222,7 @@ import cvxpy as cp
 ```{python}
 def geometric_mean(x, scale):
   
-  result = np.prod(1 + x) ** (scale/ len(x)) - 1
+  result = np.prod(1 + x) ** (scale / len(x)) - 1
   
   return result
 ```
@@ -229,6 +231,8 @@ def geometric_mean(x, scale):
 -   <https://or.stackexchange.com/a/3738>
 -   <https://bookdown.org/compfinezbook/introFinRbook/Portfolio-Theory-with-Matrix-Algebra.html#algorithm-for-computing-efficient-frontier>
 -   <https://palomar.home.ece.ust.hk/MAFS6010R_lectures/slides_robust_portfolio.html>
+
+The derivations below incorporate the budget constraint $\mathbf{w}^{T}e=1$ and, where applicable, a binding target constraint. The optimizers additionally impose the long-only constraint $\mathbf{w}\geq0$, which has no closed-form solution and instead requires the Karush-Kuhn-Tucker (KKT) conditions; when the long-only constraint does not bind, the analytic and numerical solutions coincide.
 
 ```{python}
 tickers = ["BAICX"] # fund inception date is "2011-11-28"
@@ -246,7 +250,7 @@ overlap_y_df = overlap_df[tickers]
 ```
 
 ```{python}
-returns_x_df = returns_df.dropna()[factors] # extended history
+returns_x_df = returns_df.dropna()[factors] # extended history (since fund inception)
 mu = returns_x_df.apply(geometric_mean, axis = 0, scale = scale["periods"])
 sigma = np.cov(overlap_x_df.T, ddof = 1) * scale["periods"] * scale["overlap"]
 ```
@@ -263,56 +267,7 @@ $$
 \end{aligned}
 $$
 
-To incorporate these conditions into one equation, introduce new variables $\lambda_{i}$ that are the Lagrange multipliers and define a new function $\mathcal{L}$ as follows:
-
-$$
-\begin{aligned}
-\mathcal{L}(\mathbf{w},\lambda)&=-\mathbf{w}^{T}\mu-\lambda_{1}(\mathbf{w}^{T}e-1)
-\end{aligned}
-$$
-
-Then, to minimize this function, take derivatives with respect to $w$ and Lagrange multipliers $\lambda_{i}$:
-
-$$
-\begin{aligned}
-\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial w}&=-\mu-\lambda_{1}e=0\\
-\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial \lambda_{1}}&=\mathbf{w}e^T-1=0
-\end{aligned}
-$$
-
-Simplify the equations above in matrix form and solve for the Lagrange multipliers $\lambda_{i}$:
-
-$$
-\begin{aligned}
-\begin{bmatrix}
--\mu & e \\
-e^{T} & 0
-\end{bmatrix}
-\begin{bmatrix}
-\mathbf{w} \\
--\lambda_{1}
-\end{bmatrix}
-&=
-\begin{bmatrix}
-0 \\
-1
-\end{bmatrix}
-\\
-\begin{bmatrix}
-\mathbf{w} \\
--\lambda_{1}
-\end{bmatrix}
-&=
-\begin{bmatrix}
--\mu & e \\
-e^{T} & 0
-\end{bmatrix}^{-1}
-\begin{bmatrix}
-0 \\
-1
-\end{bmatrix}
-\end{aligned}
-$$
+Since the objective is linear, a Lagrangian with only the budget constraint $\mathbf{w}^{T}e=1$ has no solution: the first-order condition $-\mu-\lambda_{1}e=0$ contains no $\mathbf{w}$. Instead, the volatility constraint must bind at the optimum, i.e. $\mathbf{w}^{T}\Sigma\mathbf{w}=\sigma^{2}$, so the solution lies on the efficient frontier. Maximizing the mean subject to a volatility target selects the same frontier portfolio as minimizing variance subject to the corresponding return target $M$ (see the next section). A closed form requires solving the stationarity condition $\mu=2\lambda_{2}\Sigma\mathbf{w}+\lambda_{1}e$ together with both constraints, i.e. a quadratic equation in the multipliers, so solve the problem numerically instead.
 
 ```{python}
 def max_mean_optim(mu, sigma, target):
@@ -360,11 +315,11 @@ $$
 \end{aligned}
 $$
 
-To incorporate these conditions into one equation, introduce new variables $\lambda_{i}$ that are the Lagrange multipliers and define a new function $\mathcal{L}$ as follows:
+Assume the return constraint binds at the optimum, i.e. the expected return of the unconstrained minimum variance portfolio is below $M$, and treat it as an equality (otherwise omit the $\lambda_{2}$ terms). To incorporate these conditions into one equation, introduce new variables $\lambda_{i}$ that are the Lagrange multipliers and define a new function $\mathcal{L}$ as follows:
 
 $$
 \begin{aligned}
-\mathcal{L}(\mathbf{w},\lambda)&=\frac{1}{2}\mathbf{w}^{T}\Sigma\mathbf{w}-\lambda_{1}(\mathbf{w}^{T}e-1)
+\mathcal{L}(\mathbf{w},\lambda)&=\frac{1}{2}\mathbf{w}^{T}\Sigma\mathbf{w}-\lambda_{1}(\mathbf{w}^{T}e-1)-\lambda_{2}(\mu^{T}\mathbf{w}-M)
 \end{aligned}
 $$
 
@@ -372,41 +327,48 @@ Then, to minimize this function, take derivatives with respect to $w$ and Lagran
 
 $$
 \begin{aligned}
-\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial w}&=\mathbf{w}\Sigma-\lambda_{1}e=0\\
-\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial \lambda_{1}}&=\mathbf{w}e^T-1=0
+\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial w}&=\Sigma\mathbf{w}-\lambda_{1}e-\lambda_{2}\mu=0\\
+\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial \lambda_{1}}&=\mathbf{w}^{T}e-1=0\\
+\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial \lambda_{2}}&=\mu^{T}\mathbf{w}-M=0
 \end{aligned}
 $$
 
-Simplify the equations above in matrix form and solve for the Lagrange multipliers $\lambda_{i}$:
+Simplify the equations above in matrix form and solve for the weights $\mathbf{w}$ and Lagrange multipliers $\lambda_{i}$:
 
 $$
 \begin{aligned}
 \begin{bmatrix}
-\Sigma & e \\
-e^{T} & 0
+\Sigma & e & \mu \\
+e^{T} & 0 & 0 \\
+\mu^{T} & 0 & 0
 \end{bmatrix}
 \begin{bmatrix}
 \mathbf{w} \\
--\lambda_{1}
+-\lambda_{1} \\
+-\lambda_{2}
 \end{bmatrix}
 &=
 \begin{bmatrix}
 0 \\
-1
+1 \\
+M
 \end{bmatrix}
 \\
 \begin{bmatrix}
 \mathbf{w} \\
--\lambda_{1}
+-\lambda_{1} \\
+-\lambda_{2}
 \end{bmatrix}
 &=
 \begin{bmatrix}
-\Sigma & e \\
-e^{T} & 0
+\Sigma & e & \mu \\
+e^{T} & 0 & 0 \\
+\mu^{T} & 0 & 0
 \end{bmatrix}^{-1}
 \begin{bmatrix}
 0 \\
-1
+1 \\
+M
 \end{bmatrix}
 \end{aligned}
 $$
@@ -460,7 +422,7 @@ To incorporate these conditions into one equation, introduce new variables $\lam
 
 $$
 \begin{aligned}
-\mathcal{L}(\mathbf{w},\lambda)&=\frac{1}{2}\mathbf{w}^{T}\Sigma\mathbf{w}-\mu^{T}\mathbf{w}-\lambda_{1}(\mathbf{w}^{T}e-1)
+\mathcal{L}(\mathbf{w},\lambda)&=\frac{1}{2}\delta(\mathbf{w}^{T}\Sigma\mathbf{w})-\mu^{T}\mathbf{w}-\lambda_{1}(\mathbf{w}^{T}e-1)
 \end{aligned}
 $$
 
@@ -468,17 +430,17 @@ Then, to minimize this function, take derivatives with respect to $w$ and Lagran
 
 $$
 \begin{aligned}
-\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial w}&=\mathbf{w}\Sigma-\mu^{T}-\lambda_{1}e=0\\
-\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial \lambda_{1}}&=\mathbf{w}e^T-1=0
+\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial w}&=\delta\Sigma\mathbf{w}-\mu-\lambda_{1}e=0\\
+\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial \lambda_{1}}&=\mathbf{w}^{T}e-1=0
 \end{aligned}
 $$
 
-Simplify the equations above in matrix form and solve for the Lagrange multipliers $\lambda_{i}$:
+Simplify the equations above in matrix form and solve for the weights $\mathbf{w}$ and Lagrange multiplier $\lambda_{1}$:
 
 $$
 \begin{aligned}
 \begin{bmatrix}
-\Sigma & e \\
+\delta\Sigma & e \\
 e^{T} & 0
 \end{bmatrix}
 \begin{bmatrix}
@@ -487,7 +449,7 @@ e^{T} & 0
 \end{bmatrix}
 &=
 \begin{bmatrix}
-\mu^{T} \\
+\mu \\
 1
 \end{bmatrix}
 \\
@@ -497,15 +459,17 @@ e^{T} & 0
 \end{bmatrix}
 &=
 \begin{bmatrix}
-\Sigma & e \\
+\delta\Sigma & e \\
 e^{T} & 0
 \end{bmatrix}^{-1}
 \begin{bmatrix}
-\mu^{T} \\
+\mu \\
 1
 \end{bmatrix}
 \end{aligned}
 $$
+
+-   <https://en.wikipedia.org/wiki/Black%E2%80%93Litterman_model>
 
 ```{python}
 def max_utility_optim(mu, sigma, target):
@@ -525,7 +489,7 @@ def max_utility_optim(mu, sigma, target):
 
 ```{python}
 ir = 0.5
-target = ir / 0.06 # ir / std (see Black-Litterman)
+target = ir / 0.06 # implied risk aversion, i.e. ratio / risk (see Black-Litterman model)
 ```
 
 ```{python}
@@ -546,7 +510,7 @@ np.sqrt(np.matmul(np.transpose(params3), np.matmul(sigma, params3)))
 $$
 \begin{aligned}
 \begin{array}{rrcl}
-\displaystyle\min&\frac{1}{2}\delta(\mathbf{w}^{T}X^{T}X\mathbf{w})-X^{T}y\mathbf{w}\\
+\displaystyle\min&\frac{1}{2}\mathbf{w}^{T}X^{T}X\mathbf{w}-(X^{T}y)^{T}\mathbf{w}\\
 \textrm{s.t.}&\mathbf{w}^{T}e&=&1\\
 \end{array}
 \end{aligned}
@@ -556,7 +520,7 @@ To incorporate these conditions into one equation, introduce new variables $\lam
 
 $$
 \begin{aligned}
-\mathcal{L}(\mathbf{w},\lambda)&=\frac{1}{2}\mathbf{w}^{T}X^{T}X\mathbf{w}-X^{T}y\mathbf{w}-\lambda_{1}(\mathbf{w}^{T}e-1)
+\mathcal{L}(\mathbf{w},\lambda)&=\frac{1}{2}\mathbf{w}^{T}X^{T}X\mathbf{w}-(X^{T}y)^{T}\mathbf{w}-\lambda_{1}(\mathbf{w}^{T}e-1)
 \end{aligned}
 $$
 
@@ -564,12 +528,12 @@ Then, to minimize this function, take derivatives with respect to $w$ and Lagran
 
 $$
 \begin{aligned}
-\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial w}&=\mathbf{w}X^{T}X-X^{T}y-\lambda_{1}e=0\\
-\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial \lambda_{1}}&=\mathbf{w}e^T-1=0
+\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial w}&=X^{T}X\mathbf{w}-X^{T}y-\lambda_{1}e=0\\
+\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial \lambda_{1}}&=\mathbf{w}^{T}e-1=0
 \end{aligned}
 $$
 
-Simplify the equations above in matrix form and solve for the Lagrange multipliers $\lambda_{i}$:
+Simplify the equations above in matrix form and solve for the weights $\mathbf{w}$ and Lagrange multiplier $\lambda_{1}$:
 
 $$
 \begin{aligned}
@@ -666,8 +630,8 @@ np.sqrt(np.matmul(np.transpose(params5), np.matmul(sigma, params5)))
 
 ```{python}
 pd.DataFrame({
-  "max_pnl": params1 * 100,
-  "min_risk": params2 * 100,
+  "max_mean": params1 * 100,
+  "min_var": params2 * 100,
   "max_utility": params3 * 100,
   "min_rss1": params4 * 100,
   "min_rss2": params5 * 100

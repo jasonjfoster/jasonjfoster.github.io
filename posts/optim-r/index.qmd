@@ -32,9 +32,9 @@ names(palette) <- c("Overall", factors)
 
 # Random weights
 
-Need to generate uniformly distributed weights $\mathbf{w}=(w_{1},w_{2},\ldots,w_{N})$ such that $\sum_{j=1}^{N}w_{i}=1$ and $w_{i}\geq0$:
+Need to generate uniformly distributed weights $\mathbf{w}=(w_{1},w_{2},\ldots,w_{N})$ such that $\sum_{i=1}^{N}w_{i}=1$ and $w_{i}\geq0$:
 
--   **Approach 1**: tempting to use $w_{i}=\frac{u_{i}}{\sum_{j=1}^{N}u_{i}}$ where $u_{i}\sim U(0,1)$ but the distribution of $\mathbf{w}$ is not uniform
+-   **Approach 1**: tempting to use $w_{i}=\frac{u_{i}}{\sum_{j=1}^{N}u_{j}}$ where $u_{i}\sim U(0,1)$ but the distribution of $\mathbf{w}$ is not uniform
 
 -   **Approach 2**: instead, generate $\text{Exp}(1)$ and then normalize
 
@@ -43,8 +43,8 @@ Can also scale random weights by $M$, e.g. if sum of weights must be 10% then mu
 ```{r}
 rand_weights1 <- function(n_sim, n_assets) {
   
-  rand_exp <- matrix(runif(n_sim * n_assets), nrow = n_sim, ncol = n_assets)
-  result <- rand_exp / rowSums(rand_exp)
+  rand_unif <- matrix(runif(n_sim * n_assets), nrow = n_sim, ncol = n_assets)
+  result <- rand_unif / rowSums(rand_unif)
     
   return(result)
     
@@ -66,6 +66,8 @@ approach1 <- rand_weights1(n_sim, n_assets)
 #| fig.height: 4
 plot_pairs(data.table::as.data.table(approach1), title = "Weight (%)")
 ```
+
+The weights cluster toward the center of the simplex, i.e. the distribution is not uniform.
 
 **Approach 2(a)**: uniform sample from the simplex (<http://mathoverflow.net/a/76258>) and then normalize
 
@@ -128,7 +130,7 @@ plot_pairs(data.table::as.data.table(approach2b), title = "Weight (%)")
 
 How to generate random weights between lower bound $a$ and upper bound $b$ that sum to zero?
 
--   **Approach 1**: tempting to multiply random weights by $M$ and then subtract by $\frac{M}{N}$ but the distribution is not between $a$ and $b$
+-   **Approach 1**: tempting to multiply random weights by $M$ and then subtract $\frac{M}{N}$ but the distribution is not between $a$ and $b$
 
 -   **Approach 2**: instead, use an iterative approach for random turnover:
 
@@ -144,7 +146,7 @@ rand_turnover1 <- function(n_sim, n_assets, lower, upper, target) {
   rng <- upper - lower
   
   result <- rand_weights2b(n_sim, n_assets) * rng
-  result <- result - rng / n_assets
+  result <- result - rng / n_assets + target / n_assets
   
   return(result)
     
@@ -235,8 +237,10 @@ geometric_mean <- function(x, scale) {
 -   <https://bookdown.org/compfinezbook/introFinRbook/Portfolio-Theory-with-Matrix-Algebra.html#algorithm-for-computing-efficient-frontier>
 -   <https://palomar.home.ece.ust.hk/MAFS6010R_lectures/slides_robust_portfolio.html>
 
+The derivations below incorporate the budget constraint $\mathbf{w}^{T}e=1$ and, where applicable, a binding target constraint. The optimizers additionally impose the long-only constraint $\mathbf{w}\geq0$, which has no closed-form solution and instead requires the Karush-Kuhn-Tucker (KKT) conditions; when the long-only constraint does not bind, the analytic and numerical solutions coincide.
+
 ```{r}
-tickers <- "BAICX" # fund inception date is "2011-11-28" 
+tickers <- "BAICX" # fund inception date is "2011-11-28"
 ```
 
 ```{r}
@@ -251,9 +255,21 @@ overlap_y_xts <- overlap_xts[ , tickers]
 ```
 
 ```{r}
-returns_x_xts <- na.omit(returns_xts)[ , factors] # extended history
+returns_x_xts <- na.omit(returns_xts)[ , factors] # extended history (since fund inception)
 mu <- apply(returns_x_xts, 2, geometric_mean, scale = scale[["periods"]])
 sigma <- cov(overlap_x_xts) * scale[["periods"]] * scale[["overlap"]]
+```
+
+```{r}
+# # install.packages("pak")
+# pak::pak("jasonjfoster/rolloptim") # roll (>= 1.1.7)
+#
+# # double-check results using single-window inputs
+# mu_roll <- matrix(mu, nrow = 1)
+# sigma_roll <- array(sigma, dim = c(length(mu), length(mu), 1))
+#
+# xx_roll <- array(crossprod(overlap_x_xts), dim = c(length(mu), length(mu), 1))
+# xy_roll <- array(crossprod(overlap_x_xts, overlap_y_xts), dim = c(length(mu), 1, 1))
 ```
 
 ## Maximize mean
@@ -268,56 +284,7 @@ $$
 \end{aligned}
 $$
 
-To incorporate these conditions into one equation, introduce new variables $\lambda_{i}$ that are the Lagrange multipliers and define a new function $\mathcal{L}$ as follows:
-
-$$
-\begin{aligned}
-\mathcal{L}(\mathbf{w},\lambda)&=-\mathbf{w}^{T}\mu-\lambda_{1}(\mathbf{w}^{T}e-1)
-\end{aligned}
-$$
-
-Then, to minimize this function, take derivatives with respect to $w$ and Lagrange multipliers $\lambda_{i}$:
-
-$$
-\begin{aligned}
-\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial w}&=-\mu-\lambda_{1}e=0\\
-\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial \lambda_{1}}&=\mathbf{w}e^T-1=0
-\end{aligned}
-$$
-
-Simplify the equations above in matrix form and solve for the Lagrange multipliers $\lambda_{i}$:
-
-$$
-\begin{aligned}
-\begin{bmatrix}
--\mu & e \\
-e^{T} & 0
-\end{bmatrix}
-\begin{bmatrix}
-\mathbf{w} \\
--\lambda_{1}
-\end{bmatrix}
-&=
-\begin{bmatrix}
-0 \\
-1
-\end{bmatrix}
-\\
-\begin{bmatrix}
-\mathbf{w} \\
--\lambda_{1}
-\end{bmatrix}
-&=
-\begin{bmatrix}
--\mu & e \\
-e^{T} & 0
-\end{bmatrix}^{-1}
-\begin{bmatrix}
-0 \\
-1
-\end{bmatrix}
-\end{aligned}
-$$
+Since the objective is linear, a Lagrangian with only the budget constraint $\mathbf{w}^{T}e=1$ has no solution: the first-order condition $-\mu-\lambda_{1}e=0$ contains no $\mathbf{w}$. Instead, the volatility constraint must bind at the optimum, i.e. $\mathbf{w}^{T}\Sigma\mathbf{w}=\sigma^{2}$, so the solution lies on the efficient frontier. Maximizing the mean subject to a volatility target selects the same frontier portfolio as minimizing variance subject to the corresponding return target $M$ (see the next section). A closed form requires solving the stationarity condition $\mu=2\lambda_{2}\Sigma\mathbf{w}+\lambda_{1}e$ together with both constraints, i.e. a quadratic equation in the multipliers, so solve the problem numerically instead.
 
 ```{r}
 max_mean_optim <- function(mu, sigma, target) {
@@ -356,17 +323,7 @@ sqrt(params1 %*% sigma %*% t(params1))
 ```
 
 ```{r}
-# # install.packages("pak")
-# pak::pak("jasonjfoster/rolloptim") # roll (>= 1.1.7)
-# library(rolloptim)
-# 
-# mu <- roll_mean(returns_x_xts, 5)
-# sigma <- roll_cov(returns_x_xts, width = 5)
-# 
-# xx <- roll_crossprod(returns_x_xts, returns_x_xts, 5)
-# xy <- roll_crossprod(returns_x_xts, returns_y_xts, 5)
-# 
-# roll_max_mean(mu)
+# rolloptim::roll_max_mean(mu_roll, sigma_roll, target = target ^ 2) # target variance
 ```
 
 ## Minimize variance
@@ -381,11 +338,11 @@ $$
 \end{aligned}
 $$
 
-To incorporate these conditions into one equation, introduce new variables $\lambda_{i}$ that are the Lagrange multipliers and define a new function $\mathcal{L}$ as follows:
+Assume the return constraint binds at the optimum, i.e. the expected return of the unconstrained minimum variance portfolio is below $M$, and treat it as an equality (otherwise omit the $\lambda_{2}$ terms). To incorporate these conditions into one equation, introduce new variables $\lambda_{i}$ that are the Lagrange multipliers and define a new function $\mathcal{L}$ as follows:
 
 $$
 \begin{aligned}
-\mathcal{L}(\mathbf{w},\lambda)&=\frac{1}{2}\mathbf{w}^{T}\Sigma\mathbf{w}-\lambda_{1}(\mathbf{w}^{T}e-1)
+\mathcal{L}(\mathbf{w},\lambda)&=\frac{1}{2}\mathbf{w}^{T}\Sigma\mathbf{w}-\lambda_{1}(\mathbf{w}^{T}e-1)-\lambda_{2}(\mu^{T}\mathbf{w}-M)
 \end{aligned}
 $$
 
@@ -393,41 +350,48 @@ Then, to minimize this function, take derivatives with respect to $w$ and Lagran
 
 $$
 \begin{aligned}
-\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial w}&=\mathbf{w}\Sigma-\lambda_{1}e=0\\
-\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial \lambda_{1}}&=\mathbf{w}e^T-1=0
+\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial w}&=\Sigma\mathbf{w}-\lambda_{1}e-\lambda_{2}\mu=0\\
+\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial \lambda_{1}}&=\mathbf{w}^{T}e-1=0\\
+\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial \lambda_{2}}&=\mu^{T}\mathbf{w}-M=0
 \end{aligned}
 $$
 
-Simplify the equations above in matrix form and solve for the Lagrange multipliers $\lambda_{i}$:
+Simplify the equations above in matrix form and solve for the weights $\mathbf{w}$ and Lagrange multipliers $\lambda_{i}$:
 
 $$
 \begin{aligned}
 \begin{bmatrix}
-\Sigma & e \\
-e^{T} & 0
+\Sigma & e & \mu \\
+e^{T} & 0 & 0 \\
+\mu^{T} & 0 & 0
 \end{bmatrix}
 \begin{bmatrix}
 \mathbf{w} \\
--\lambda_{1}
+-\lambda_{1} \\
+-\lambda_{2}
 \end{bmatrix}
 &=
 \begin{bmatrix}
 0 \\
-1
+1 \\
+M
 \end{bmatrix}
 \\
 \begin{bmatrix}
 \mathbf{w} \\
--\lambda_{1}
+-\lambda_{1} \\
+-\lambda_{2}
 \end{bmatrix}
 &=
 \begin{bmatrix}
-\Sigma & e \\
-e^{T} & 0
+\Sigma & e & \mu \\
+e^{T} & 0 & 0 \\
+\mu^{T} & 0 & 0
 \end{bmatrix}^{-1}
 \begin{bmatrix}
 0 \\
-1
+1 \\
+M
 \end{bmatrix}
 \end{aligned}
 $$
@@ -469,7 +433,7 @@ sqrt(params2 %*% sigma %*% t(params2))
 ```
 
 ```{r}
-# roll_min_var(sigma)
+# rolloptim::roll_min_var(sigma_roll, mu_roll, target = target) # target mean
 ```
 
 ## Maximize utility
@@ -487,7 +451,7 @@ To incorporate these conditions into one equation, introduce new variables $\lam
 
 $$
 \begin{aligned}
-\mathcal{L}(\mathbf{w},\lambda)&=\frac{1}{2}\mathbf{w}^{T}\Sigma\mathbf{w}-\mu^{T}\mathbf{w}-\lambda_{1}(\mathbf{w}^{T}e-1)
+\mathcal{L}(\mathbf{w},\lambda)&=\frac{1}{2}\delta(\mathbf{w}^{T}\Sigma\mathbf{w})-\mu^{T}\mathbf{w}-\lambda_{1}(\mathbf{w}^{T}e-1)
 \end{aligned}
 $$
 
@@ -495,17 +459,17 @@ Then, to minimize this function, take derivatives with respect to $w$ and Lagran
 
 $$
 \begin{aligned}
-\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial w}&=\mathbf{w}\Sigma-\mu^{T}-\lambda_{1}e=0\\
-\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial \lambda_{1}}&=\mathbf{w}e^T-1=0
+\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial w}&=\delta\Sigma\mathbf{w}-\mu-\lambda_{1}e=0\\
+\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial \lambda_{1}}&=\mathbf{w}^{T}e-1=0
 \end{aligned}
 $$
 
-Simplify the equations above in matrix form and solve for the Lagrange multipliers $\lambda_{i}$:
+Simplify the equations above in matrix form and solve for the weights $\mathbf{w}$ and Lagrange multiplier $\lambda_{1}$:
 
 $$
 \begin{aligned}
 \begin{bmatrix}
-\Sigma & e \\
+\delta\Sigma & e \\
 e^{T} & 0
 \end{bmatrix}
 \begin{bmatrix}
@@ -514,7 +478,7 @@ e^{T} & 0
 \end{bmatrix}
 &=
 \begin{bmatrix}
-\mu^{T} \\
+\mu \\
 1
 \end{bmatrix}
 \\
@@ -524,15 +488,17 @@ e^{T} & 0
 \end{bmatrix}
 &=
 \begin{bmatrix}
-\Sigma & e \\
+\delta\Sigma & e \\
 e^{T} & 0
 \end{bmatrix}^{-1}
 \begin{bmatrix}
-\mu^{T} \\
+\mu \\
 1
 \end{bmatrix}
 \end{aligned}
 $$
+
+-   <https://en.wikipedia.org/wiki/Black%E2%80%93Litterman_model>
 
 ```{r}
 max_utility_optim <- function(mu, sigma, target) {
@@ -554,7 +520,7 @@ max_utility_optim <- function(mu, sigma, target) {
 
 ```{r}
 ir <- 0.5
-target <- ir / 0.06 # ir / std (see Black-Litterman)
+target <- ir / 0.06 # implied risk aversion, i.e. ratio / risk (see Black-Litterman model)
 ```
 
 ```{r}
@@ -571,7 +537,7 @@ sqrt(params3 %*% sigma %*% t(params3))
 ```
 
 ```{r}
-# roll_max_utility(mu, sigma)
+# rolloptim::roll_max_utility(mu_roll, sigma_roll, lambda = target)
 ```
 
 ## Minimize residual sum of squares
@@ -579,7 +545,7 @@ sqrt(params3 %*% sigma %*% t(params3))
 $$
 \begin{aligned}
 \begin{array}{rrcl}
-\displaystyle\min&\frac{1}{2}\delta(\mathbf{w}^{T}X^{T}X\mathbf{w})-X^{T}y\mathbf{w}\\
+\displaystyle\min&\frac{1}{2}\mathbf{w}^{T}X^{T}X\mathbf{w}-(X^{T}y)^{T}\mathbf{w}\\
 \textrm{s.t.}&\mathbf{w}^{T}e&=&1\\
 \end{array}
 \end{aligned}
@@ -589,7 +555,7 @@ To incorporate these conditions into one equation, introduce new variables $\lam
 
 $$
 \begin{aligned}
-\mathcal{L}(\mathbf{w},\lambda)&=\frac{1}{2}\mathbf{w}^{T}X^{T}X\mathbf{w}-X^{T}y\mathbf{w}-\lambda_{1}(\mathbf{w}^{T}e-1)
+\mathcal{L}(\mathbf{w},\lambda)&=\frac{1}{2}\mathbf{w}^{T}X^{T}X\mathbf{w}-(X^{T}y)^{T}\mathbf{w}-\lambda_{1}(\mathbf{w}^{T}e-1)
 \end{aligned}
 $$
 
@@ -597,12 +563,12 @@ Then, to minimize this function, take derivatives with respect to $w$ and Lagran
 
 $$
 \begin{aligned}
-\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial w}&=\mathbf{w}X^{T}X-X^{T}y-\lambda_{1}e=0\\
-\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial \lambda_{1}}&=\mathbf{w}e^T-1=0
+\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial w}&=X^{T}X\mathbf{w}-X^{T}y-\lambda_{1}e=0\\
+\frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial \lambda_{1}}&=\mathbf{w}^{T}e-1=0
 \end{aligned}
 $$
 
-Simplify the equations above in matrix form and solve for the Lagrange multipliers $\lambda_{i}$:
+Simplify the equations above in matrix form and solve for the weights $\mathbf{w}$ and Lagrange multiplier $\lambda_{1}$:
 
 $$
 \begin{aligned}
@@ -670,7 +636,7 @@ sqrt(params4 %*% sigma %*% t(params4))
 ```
 
 ```{r}
-# roll_min_rss(xx, xy)
+# rolloptim::roll_min_rss(xx_roll, xy_roll)
 ```
 
 ```{r}
@@ -706,8 +672,8 @@ sqrt(params5 %*% sigma %*% t(params5))
 
 ```{r}
 round(data.frame(
-  "max_pnl" = t(params1) * 100,
-  "min_risk" = t(params2) * 100,
+  "max_mean" = t(params1) * 100,
+  "min_var" = t(params2) * 100,
   "max_utility" = t(params3) * 100,
   "min_rss1" = t(params4) * 100,
   "min_rss2" = t(params5) * 100),

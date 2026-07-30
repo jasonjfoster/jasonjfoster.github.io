@@ -3,6 +3,8 @@ import pandas as pd
 import numpy as np
 import yfhist as yfh
 
+pd.set_option("future.infer_string", False) # reticulate does not convert pyarrow-backed strings (pandas >= 3.0)
+
 def exists(name):
   
   result = (name in locals()) or (name in globals())
