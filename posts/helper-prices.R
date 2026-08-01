@@ -48,21 +48,21 @@ if (status_t) {
       overlap_xts <- do.call(merge, c(
         list(overlap_xts,
              roll::roll_mean(returns_xts[ , tickers], scale[["overlap"]],
-                             min_obs = 1, na_restore = TRUE)),
+                             min_obs = 1)),
         list(all = TRUE)
       ))
       colnames(overlap_xts) <- c(factors, tickers)
       
     } else {
       overlap_xts <- roll::roll_mean(returns_xts[ , tickers], scale[["overlap"]],
-                                     min_obs = 1, na_restore = TRUE)
+                                     min_obs = 1)
     }
     
   } else {
     
     returns_xts <- diff(log(prices_xts))
     overlap_xts <- roll::roll_mean(returns_xts[ , tickers], scale[["overlap"]],
-                                   min_obs = 1, na_restore = TRUE)
+                                   min_obs = 1)
     
   }
   

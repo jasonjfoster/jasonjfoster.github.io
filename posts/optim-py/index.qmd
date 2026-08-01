@@ -147,10 +147,14 @@ Then add random turnover to previous period's random weights.
 def rand_turnover1(n_sim, n_assets, lower, upper, target):
   
   rng = upper - lower
-  
+
   result = rand_weights2b(n_sim, n_assets) * rng
   result = result - rng / n_assets + target / n_assets
-  
+
+  # or draw uniforms between bounds and then subtract the row means
+  # result = np.random.uniform(lower, upper, size = (n_sim, n_assets))
+  # result = result - result.mean(axis = 1, keepdims = True) + target / n_assets
+
   return result
 ```
 

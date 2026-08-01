@@ -209,7 +209,10 @@ risk_parity_optim <- function(sigma, target) {
             
     obj <- Maximize((sum(log(params)) - (1 / risk_contrib) * (risk - target ^ 2)))
         
-    result <- solve(Problem(obj))$getValue(params)
+    prob <- Problem(obj)
+    psolve(prob)
+
+    result <- value(params)
     result <- result / sum(result) # no leverage
     
     return(result)

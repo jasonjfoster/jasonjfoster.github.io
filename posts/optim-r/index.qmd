@@ -144,10 +144,15 @@ Then add random turnover to previous period's random weights.
 rand_turnover1 <- function(n_sim, n_assets, lower, upper, target) {
     
   rng <- upper - lower
-  
+
   result <- rand_weights2b(n_sim, n_assets) * rng
   result <- result - rng / n_assets + target / n_assets
-  
+
+  # or draw uniforms between bounds and then subtract the row means
+  # result <- matrix(runif(n_sim * n_assets, min = lower, max = upper),
+  #                  nrow = n_sim, ncol = n_assets)
+  # result <- result - rowMeans(result) + target / n_assets
+
   return(result)
     
 }
@@ -298,7 +303,9 @@ max_mean_optim <- function(mu, sigma, target) {
   
   prob <- CVXR::Problem(obj, cons)
   
-  result <- solve(prob)$getValue(params)
+  CVXR::psolve(prob)
+
+  result <- CVXR::value(params)
   
   return(result)
 
@@ -408,7 +415,9 @@ min_var_optim <- function(mu, sigma, target) {
   
   prob <- CVXR::Problem(obj, cons)
   
-  result <- solve(prob)$getValue(params)
+  CVXR::psolve(prob)
+
+  result <- CVXR::value(params)
   
   return(result)
 
@@ -511,7 +520,9 @@ max_utility_optim <- function(mu, sigma, target) {
   
   prob <- CVXR::Problem(obj, cons)
       
-  result <- solve(prob)$getValue(params)
+  CVXR::psolve(prob)
+
+  result <- CVXR::value(params)
   
   return(result)
 
@@ -615,7 +626,9 @@ min_rss_optim1 <- function(mu, sigma) {
   
   prob <- CVXR::Problem(obj, cons)
       
-  result <- solve(prob)$getValue(params)
+  CVXR::psolve(prob)
+
+  result <- CVXR::value(params)
   
   return(result)
 
@@ -650,7 +663,9 @@ min_rss_optim2 <- function(x, y) {
   
   prob <- CVXR::Problem(obj, cons)
       
-  result <- solve(prob)$getValue(params)
+  CVXR::psolve(prob)
+
+  result <- CVXR::value(params)
   
   return(result)
 

@@ -62,7 +62,7 @@ if (length(factors) > 0) {
   
   # if (exists("returns_xts", inherits = TRUE) && !is.null(returns_xts) && (ncol(returns_xts) > 0)) {
     overlap_xts <- roll::roll_mean(returns_xts, scale[["overlap"]],
-                                   min_obs = 1, na_restore = TRUE)
+                                   min_obs = 1)
   # }
   
 }
