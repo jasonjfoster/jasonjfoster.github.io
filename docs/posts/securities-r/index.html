@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Jason Foster">
-<meta name="dcterms.date" content="2026-07-30">
+<meta name="dcterms.date" content="2026-08-03">
 
 <title>Securities – jasonjfoster.github.io</title>
 <style>
@@ -193,7 +193,7 @@ window.Quarto = {
       <div>
       <div class="quarto-title-meta-heading">Published</div>
       <div class="quarto-title-meta-contents">
-        <p class="date">July 30, 2026</p>
+        <p class="date">August 3, 2026</p>
       </div>
     </div>
     
@@ -281,7 +281,7 @@ window.Quarto = {
 <div class="cell">
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>factor <span class="ot">&lt;-</span> <span class="st">"SP500"</span></span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>types <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"call"</span>, <span class="st">"put"</span>)</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>S <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(zoo<span class="sc">::</span><span class="fu">coredata</span>(zoo<span class="sc">::</span><span class="fu">na.locf</span>(levels_xts[<span class="fu">nrow</span>(levels_xts), factor]))) <span class="co"># Recycling array of length 1 in vector-array arithmetic is deprecated. Use c() or as.vector() instead.</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>S <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(zoo<span class="sc">::</span><span class="fu">coredata</span>(zoo<span class="sc">::</span><span class="fu">na.locf</span>(levels_xts)[<span class="fu">nrow</span>(levels_xts), factor])) <span class="co"># Recycling array of length 1 in vector-array arithmetic is deprecated. Use c() or as.vector() instead.</span></span>
 <span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>K <span class="ot">&lt;-</span> S</span>
 <span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>r <span class="ot">&lt;-</span> <span class="dv">0</span> <span class="co"># use "USD3MTD156N"</span></span>
 <span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>q <span class="ot">&lt;-</span> <span class="dv">0</span> <span class="co"># see https://stackoverflow.com/a/11286679 </span></span>
@@ -601,7 +601,7 @@ P(y+\Delta y)-P(y)&amp;\approx{\frac{P'(y)}{1!}}\Delta y+{\frac{P''(y)}{2!}}(\De
 <div class="cell">
 <div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>bonds_dt <span class="ot">&lt;-</span> data.table<span class="sc">::</span><span class="fu">data.table</span>(<span class="at">index =</span> zoo<span class="sc">::</span><span class="fu">index</span>(<span class="fu">tail</span>(levels_xts, width)),</span>
 <span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>                                   <span class="at">duration =</span> duration, <span class="at">convexity =</span> convexity,</span>
-<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>                                   <span class="at">dy =</span> zoo<span class="sc">::</span><span class="fu">na.locf</span>(<span class="fu">tail</span>(levels_xts[ , factor], width)),</span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>                                   <span class="at">dy =</span> <span class="fu">tail</span>(zoo<span class="sc">::</span><span class="fu">na.locf</span>(levels_xts[ , factor]), width),</span>
 <span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>                                   <span class="at">t =</span> (<span class="fu">seq_len</span>(width) <span class="sc">-</span> <span class="dv">1</span>) <span class="sc">/</span> scale[[<span class="st">"periods"</span>]])</span>
 <span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>data.table<span class="sc">::</span><span class="fu">setnames</span>(bonds_dt, <span class="fu">c</span>(<span class="st">"index"</span>, <span class="st">"duration"</span>, <span class="st">"convexity"</span>, <span class="st">"dy"</span>, <span class="st">"t"</span>))</span>
 <span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>bonds_dt[ , dy <span class="sc">:</span><span class="er">=</span> (dy <span class="sc">-</span> y) <span class="sc">/</span> <span class="dv">100</span>, by <span class="ot">=</span> index]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -735,7 +735,7 @@ V(S+\Delta S,\sigma+\Delta\sigma,t+\Delta t)-V(S,\sigma,t)&amp;\approx{\frac{\pa
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>options_dt <span class="ot">&lt;-</span> data.table<span class="sc">::</span><span class="fu">data.table</span>(<span class="at">index =</span> zoo<span class="sc">::</span><span class="fu">index</span>(<span class="fu">tail</span>(levels_xts, width)),</span>
-<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>                                     <span class="at">spot =</span> zoo<span class="sc">::</span><span class="fu">na.locf</span>(<span class="fu">tail</span>(levels_xts[ , factor], width)),</span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>                                     <span class="at">spot =</span> <span class="fu">tail</span>(zoo<span class="sc">::</span><span class="fu">na.locf</span>(levels_xts[ , factor]), width),</span>
 <span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>                                     <span class="at">sigma =</span> <span class="fu">tail</span>(sd_xts[ , factor], width))</span>
 <span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>data.table<span class="sc">::</span><span class="fu">setnames</span>(options_dt, <span class="fu">c</span>(<span class="st">"index"</span>, <span class="st">"spot"</span>, <span class="st">"sigma"</span>))</span>
 <span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a>options_dt[ , dS <span class="sc">:</span><span class="er">=</span> spot <span class="sc">-</span> S, by <span class="ot">=</span> index]</span>
@@ -882,14 +882,14 @@ S_{k}(t_{i+1})&amp;=S_{k}(t_{i})\exp\left(\sqrt{t_{i+1}-t_{i}}\sum_{j=1}^{d}{A_{
 <div class="cell">
 <div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="fu">data.frame</span>(</span>
 <span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>  <span class="st">"empirical"</span> <span class="ot">=</span> <span class="fu">colMeans</span>(<span class="fu">na.omit</span>(returns_xts)) <span class="sc">*</span> scale[[<span class="st">"periods"</span>]],</span>
-<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">"theoretical"</span> <span class="ot">=</span> <span class="fu">colMeans</span>(<span class="fu">do.call</span>(rbind, mu_ls)</span>
-<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">"theoretical"</span> <span class="ot">=</span> <span class="fu">colMeans</span>(<span class="fu">do.call</span>(rbind, mu_ls))</span>
+<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>                empirical  theoretical
-SP500         0.175549266  0.173975080
-DTWEXAFEGS   -0.019268680 -0.019892731
-DGS10         0.001303448  0.001323972
-BAMLH0A0HYM2  0.003837931  0.003925600</code></pre>
+<pre><code>              empirical  theoretical
+SP500         0.1757898  0.175114111
+DTWEXAFEGS   -0.0232465 -0.023222736
+DGS10         0.0013320  0.001414344
+BAMLH0A0HYM2  0.0036360  0.003598867</code></pre>
 </div>
 </div>
 <div class="cell">
@@ -899,10 +899,10 @@ BAMLH0A0HYM2  0.003837931  0.003925600</code></pre>
 <span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>               empirical theoretical
-SP500        0.151668080 0.151352696
-DTWEXAFEGS   0.056599648 0.056548421
-DGS10        0.008637954 0.008629593
-BAMLH0A0HYM2 0.011538425 0.011523203</code></pre>
+SP500        0.151835610 0.151703861
+DTWEXAFEGS   0.056957724 0.056864232
+DGS10        0.008627612 0.008623688
+BAMLH0A0HYM2 0.011510465 0.011492778</code></pre>
 </div>
 </div>
 </section>
@@ -924,7 +924,7 @@ BAMLH0A0HYM2 0.011538425 0.011523203</code></pre>
 x_{n+1}=x_{n}-{\frac{f(x_{n})}{f'(x_{n})}}
 \end{aligned}
 \]</span></p>
-<p>To solve <span class="math inline">\(V(\sigma_{n})-V=0\)</span> for <span class="math inline">\(\sigma_{n}\)</span>, use Newton’s method and repeat until <span class="math inline">\(\left|\sigma_{n+1}-\sigma_{n}\right|&lt;\varepsilon\)</span>:</p>
+<p>To solve <span class="math inline">\(V(\sigma_{n})-V=0\)</span> for <span class="math inline">\(\sigma_{n}\)</span>, use Newton’s method and repeat until <span class="math inline">\(\left|V(\sigma_{n})-V\right|&lt;\varepsilon\)</span>:</p>
 <p><span class="math display">\[
 \begin{aligned}
 \sigma_{n+1}=\sigma_{n}-{\frac{V(\sigma_{n})-V}{V'(\sigma_{n})}}

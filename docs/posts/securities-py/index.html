@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Jason Foster">
-<meta name="dcterms.date" content="2026-07-30">
+<meta name="dcterms.date" content="2026-08-03">
 
 <title>Securities – jasonjfoster.github.io</title>
 <style>
@@ -193,7 +193,7 @@ window.Quarto = {
       <div>
       <div class="quarto-title-meta-heading">Published</div>
       <div class="quarto-title-meta-contents">
-        <p class="date">July 30, 2026</p>
+        <p class="date">August 3, 2026</p>
       </div>
     </div>
     
@@ -864,10 +864,10 @@ S_{k}(t_{i+1})&amp;=S_{k}(t_{i})\exp\left(\sqrt{t_{i+1}-t_{i}}\sum_{j=1}^{d}{A_{
 <span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>   empirical  theoretical
-0   0.175549     0.175178
-1  -0.019269    -0.019619
-2   0.001303     0.001346
-3   0.003838     0.003772</code></pre>
+0   0.175790     0.175406
+1  -0.023246    -0.023447
+2   0.001332     0.001290
+3   0.003636     0.003549</code></pre>
 </div>
 </div>
 <div class="cell">
@@ -877,10 +877,10 @@ S_{k}(t_{i+1})&amp;=S_{k}(t_{i})\exp\left(\sqrt{t_{i+1}-t_{i}}\sum_{j=1}^{d}{A_{
 <span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>   empirical  theoretical
-0   0.151668     0.151507
-1   0.056600     0.056544
-2   0.008638     0.008634
-3   0.011538     0.011524</code></pre>
+0   0.151836     0.151581
+1   0.056958     0.056875
+2   0.008628     0.008619
+3   0.011510     0.011495</code></pre>
 </div>
 </div>
 </section>
@@ -902,7 +902,7 @@ S_{k}(t_{i+1})&amp;=S_{k}(t_{i})\exp\left(\sqrt{t_{i+1}-t_{i}}\sum_{j=1}^{d}{A_{
 x_{n+1}=x_{n}-{\frac{f(x_{n})}{f'(x_{n})}}
 \end{aligned}
 \]</span></p>
-<p>To solve <span class="math inline">\(V(\sigma_{n})-V=0\)</span> for <span class="math inline">\(\sigma_{n}\)</span>, use Newton’s method and repeat until <span class="math inline">\(\left|\sigma_{n+1}-\sigma_{n}\right|&lt;\varepsilon\)</span>:</p>
+<p>To solve <span class="math inline">\(V(\sigma_{n})-V=0\)</span> for <span class="math inline">\(\sigma_{n}\)</span>, use Newton’s method and repeat until <span class="math inline">\(\left|V(\sigma_{n})-V\right|&lt;\varepsilon\)</span>:</p>
 <p><span class="math display">\[
 \begin{aligned}
 \sigma_{n+1}=\sigma_{n}-{\frac{V(\sigma_{n})-V}{V'(\sigma_{n})}}
@@ -1068,9 +1068,9 @@ x_{n+1}=x_{n}-{\frac{f(x_{n})}{f'(x_{n})}}
 <span id="cb59-6"><a href="#cb59-6" aria-hidden="true" tabindex="-1"></a>      </span>
 <span id="cb59-7"><a href="#cb59-7" aria-hidden="true" tabindex="-1"></a>    target0 <span class="op">+=</span> cash_flows[i] <span class="op">/</span> (<span class="dv">1</span> <span class="op">+</span> param) <span class="op">**</span> (i <span class="op">+</span> <span class="dv">1</span>)</span>
 <span id="cb59-8"><a href="#cb59-8" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb59-9"><a href="#cb59-9" aria-hidden="true" tabindex="-1"></a>  target0 <span class="op">=</span> <span class="bu">abs</span>(target0 <span class="op">-</span> target)</span>
-<span id="cb59-10"><a href="#cb59-10" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb59-11"><a href="#cb59-11" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> target0</span>
+<span id="cb59-9"><a href="#cb59-9" aria-hidden="true" tabindex="-1"></a>  result <span class="op">=</span> <span class="bu">abs</span>(target0 <span class="op">-</span> target)</span>
+<span id="cb59-10"><a href="#cb59-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb59-11"><a href="#cb59-11" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> result</span>
 <span id="cb59-12"><a href="#cb59-12" aria-hidden="true" tabindex="-1"></a>  </span>
 <span id="cb59-13"><a href="#cb59-13" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> yld_optim(params, cash_flows, target):</span>
 <span id="cb59-14"><a href="#cb59-14" aria-hidden="true" tabindex="-1"></a></span>
