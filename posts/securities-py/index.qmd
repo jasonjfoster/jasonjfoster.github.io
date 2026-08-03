@@ -736,7 +736,7 @@ x_{n+1}=x_{n}-{\frac{f(x_{n})}{f'(x_{n})}}
 \end{aligned}
 $$
 
-To solve $V(\sigma_{n})-V=0$ for $\sigma_{n}$, use Newton's method and repeat until $\left|\sigma_{n+1}-\sigma_{n}\right|<\varepsilon$:
+To solve $V(\sigma_{n})-V=0$ for $\sigma_{n}$, use Newton's method and repeat until $\left|V(\sigma_{n})-V\right|<\varepsilon$:
 
 $$
 \begin{aligned}
@@ -903,9 +903,9 @@ def yld_obj(param, cash_flows, target):
       
     target0 += cash_flows[i] / (1 + param) ** (i + 1)
   
-  target0 = abs(target0 - target)
-  
-  return target0
+  result = abs(target0 - target)
+
+  return result
   
 def yld_optim(params, cash_flows, target):
 
