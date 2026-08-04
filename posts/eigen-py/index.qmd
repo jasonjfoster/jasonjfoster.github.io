@@ -1,7 +1,7 @@
 ---
 title: "Eigen"
 author: "[Jason Foster](mailto:jason.j.foster@gmail.com)"
-date: last-modified
+date: today
 categories:
   - analysis
   - finance
@@ -40,12 +40,12 @@ overlap_df = overlap_df.dropna()
 
 # Decomposition
 
-Underlying returns are structural bets that can be analyzed through dimension reduction techniques such as principal components analysis (PCA). Most empirical studies apply PCA to a covariance matrix (*note: for multi-asset portfolios, use the correlation matrix because asset-class variances are on different scales*) of equity returns (yield changes) and find that movements in the equity markets (yield curve) can be explained by a subset of principal components. For example, the yield curve can be decomposed in terms of shift, twist, and butterfly, respectively.
+Underlying returns are structural bets that can be analyzed through dimension reduction techniques such as principal component analysis (PCA). Most empirical studies apply PCA to a covariance matrix (*note: for multi-asset portfolios, the correlation matrix is often used instead because asset-class variances are on different scales*) of equity returns (yield changes) and find that movements in the equity markets (yield curve) can be explained by a subset of principal components. For example, the first three principal components of the yield curve can be interpreted as shift, twist, and butterfly, respectively.
 
 $$
 \begin{aligned}
 \boldsymbol{\Sigma}&=\lambda_{1}\mathbf{v}_{1}\mathbf{v}_{1}^\mathrm{T}+\lambda_{2}\mathbf{v}_{2}\mathbf{v}_{2}^\mathrm{T}+\cdots+\lambda_{k}\mathbf{v}_{k}\mathbf{v}_{k}^\mathrm{T}\\
-&=V\Lambda V^{\mathrm{T}}
+&=V\Lambda V^\mathrm{T}
 \end{aligned}
 $$
 
@@ -54,10 +54,9 @@ $$
 ```{python}
 def eigen(x):
   
-  L, V = np.linalg.eig(np.cov(x.T, ddof = 1))
-  idx = L.argsort()[::-1]
-  L = L[idx]
-  V = V[:, idx]
+  L, V = np.linalg.eigh(np.cov(x.T, ddof = 1))
+  L = L[::-1]
+  V = V[:, ::-1]
   
   result = {
     "values": L,
@@ -74,9 +73,9 @@ def eigen_decomp(x, comps):
   L = LV["values"][:comps]
   V = LV["vectors"][:, :comps]
   
-  result = np.dot(V, np.multiply(L, V.T))
+  result = np.dot(V, np.multiply(L[:, None], V.T))
   
-  return np.ravel(result)
+  return result
 ```
 
 ```{python}
@@ -136,7 +135,7 @@ def similarity(V, V0):
   for i in range(n_cols_v):
     for j in range(n_cols_v0):
       result[i, j] = np.dot(V[:, i], V0[:, j]) / \
-      np.sqrt(np.dot(V[:, i], V[:, i]) * np.dot(V0[:, j], V0[:, j]))
+        np.sqrt(np.dot(V[:, i], V[:, i]) * np.dot(V0[:, j], V0[:, j]))
       
   return result
 ```
@@ -176,7 +175,7 @@ raw_df = roll_eigen1(overlap_df, width, comp)
 #| fig.height: 3
 raw_mlt <- data.table::melt(data.table::as.data.table(reticulate::py$raw_df, keep.rownames = "index"), id.vars = "index")
 raw_mlt[ , index := as.Date(index)]
-raw_plt <- plot_ts(raw_mlt, title = "Eigenvector 1Y")
+raw_plt <- plot_ts(raw_mlt, title = "Eigenvector 1Y (raw)")
 print(raw_plt)
 ```
 
@@ -200,10 +199,10 @@ def roll_eigen2(x, width, comp):
     if i > width - 1:
         
       # cosine = np.dot(V.T, V_ls[-1])
-      cosine = similarity(V.T, V_ls[-1])
-      order = np.argmax(np.abs(cosine), axis = 1)
-      V = np.sign(np.diag(cosine[:, order])) * V[:, order]
-        
+      cosine = similarity(V, V_ls[-1])
+      order = np.argmax(np.abs(cosine), axis = 0) # assumes a one-to-one match between windows
+      V = np.sign(np.diag(cosine[order, :])) * V[:, order]
+
     V_ls.append(V)
     result_ls.append(V[:, comp - 1])
   
@@ -223,13 +222,19 @@ clean_df = roll_eigen2(overlap_df, width, comp)
 #| fig.height: 3
 clean_mlt <- data.table::melt(data.table::as.data.table(reticulate::py$clean_df, keep.rownames = "index"), id.vars = "index")
 clean_mlt[ , index := as.Date(index)]
-clean_plt <- plot_ts(clean_mlt, title = "Eigenvector 1Y")
+clean_plt <- plot_ts(clean_mlt, title = "Eigenvector 1Y (clean)")
 print(clean_plt)
 ```
 
 # Implied shocks
 
-Product of the $n$th eigenvector and square root of the $n$th eigenvalue:
+Implied shocks are the product of the $n$th eigenvector and the square root of the $n$th eigenvalue (annualized using the square root of time):
+
+$$
+\begin{aligned}
+\sqrt{\lambda_{n}}\mathbf{v}_{n}
+\end{aligned}
+$$
 
 ```{python}
 def roll_shocks(x, width, comp):
@@ -246,13 +251,13 @@ def roll_shocks(x, width, comp):
     L = LV["values"]
     V = LV["vectors"]
     
-    if len(V_ls) > 1:
-        
+    if i > width - 1:
+
       # cosine = np.dot(V.T, V_ls[-1])
-      cosine = similarity(V.T, V_ls[-1])
-      order = np.argmax(np.abs(cosine), axis = 1)
+      cosine = similarity(V, V_ls[-1])
+      order = np.argmax(np.abs(cosine), axis = 0) # assumes a one-to-one match between windows
       L = L[order]
-      V = np.sign(np.diag(cosine[:, order])) * V[:, order]
+      V = np.sign(np.diag(cosine[order, :])) * V[:, order]
     
     shocks = np.sqrt(L[comp - 1]) * V[:, comp - 1]
     V_ls.append(V)
