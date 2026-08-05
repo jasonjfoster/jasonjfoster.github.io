@@ -8,7 +8,8 @@ categories:
   - python
 execute:
   freeze: false
-editor: 
+engine: knitr
+editor:
   mode: source
 ---
 
@@ -25,11 +26,6 @@ tickers = ["BAICX"] # fund inception date is "2011-11-28"
 intercept = True
 ```
 
-```{r}
-#| echo: false
-source("../plot/theme_jjf.R")
-```
-
 ```{python}
 #| echo: false
 exec(open("../helper-levels.py").read())
@@ -39,18 +35,16 @@ weights = np.ones((width, 1))
 
 overlap_df = returns_df.rolling(scale["overlap"], min_periods = 1).mean()
 
-overlap_df = overlap_df.dropna() [-width:] # same dimension as `weights`
-overlap_x_df = overlap_df.dropna()[factors]
-overlap_y_df = overlap_df.dropna()[tickers]
-```
-
-```{r}
-#| echo: false
-palette <- c("black", palette_jjf(length(reticulate::py$factors)))
-names(palette) <- c("Overall", reticulate::py$factors)
+overlap_df = overlap_df.dropna()[-width:] # same dimension as `weights`
+overlap_x_df = overlap_df[factors]
+overlap_y_df = overlap_df[tickers]
 ```
 
 # Regression analysis
+
+A factor model expresses fund returns as exposures to a set of market factors, which can be estimated with regression analysis. To measure the risk of a fund, estimate factor exposures for an allocation fund, decompose volatility into factor contributions, and then stress the factors under scenarios.
+
+The example uses equity, currency, interest rate, and credit factors with a trailing one-year window of overlapping returns and equal weights (*note: rates and spreads are negated yield changes, i.e. duration-style returns, and volatility is annualized using the square root of time*).
 
 ```{python}
 import math
@@ -60,6 +54,8 @@ import statsmodels.api as sm
 ## Ordinary least squares
 
 ### Coefficients
+
+Solve for the weighted least squares coefficients in matrix form:
 
 $$
 \begin{aligned}
@@ -96,6 +92,8 @@ np.array(fit.params)
 
 ### R-squared
 
+Then compute the weighted R-squared, i.e. the proportion of variance explained by the factors:
+
 $$
 \begin{aligned}
 R^{2}=\frac{\hat{\beta}^\mathrm{T}(X^\mathrm{T}WX)\hat{\beta}}{y^\mathrm{T}Wy}
@@ -105,7 +103,7 @@ $$
 ```{python}
 def lm_rsq(x, y, weights, intercept):
           
-  coef = np.matrix(lm_coef(x, y, weights, intercept))
+  coef = lm_coef(x, y, weights, intercept)
   
   if (intercept):
     
@@ -129,12 +127,14 @@ fit.rsquared
 
 ### Standard errors
 
+Also compute the standard errors of the intercept and coefficients using the residual variance:
+
 $$
 \begin{aligned}
 \sigma_{\hat{\beta}}^{2}&=\sigma_{\varepsilon}^{2}(X^\mathrm{T}WX)^{-1}\\
-&=\frac{(1-R^{2})}{n-p}(X^\mathrm{T}WX)^{-1}\\
+&=\frac{(1-R^{2})(y^\mathrm{T}Wy)}{n-p}(X^\mathrm{T}WX)^{-1}\\
 &=\frac{SSE}{df_{E}}(X^\mathrm{T}WX)^{-1}\\
-\sigma_{\hat{\alpha}}^{2}&=\sigma_{\varepsilon}^{2}\left(\frac{1}{n}+\mu^\mathrm{T}(X^\mathrm{T}WX)^{-1}\mu\right)
+\sigma_{\hat{\alpha}}^{2}&=\sigma_{\varepsilon}^{2}\left(\frac{1}{\sum_{i=1}^{n}w_{i}}+\mu^\mathrm{T}(X^\mathrm{T}WX)^{-1}\mu\right)
 \end{aligned}
 $$
 
@@ -175,6 +175,8 @@ np.array(fit.bse)
 ```
 
 ### Shapley values
+
+Since the factors are correlated, allocate the R-squared to each factor using the Shapley value, i.e. the average marginal contribution across all combinations of factors:
 
 $$
 R^{2}_{i}=\sum_{S\subseteq N\setminus\{i\}}{\frac{|S|!\;(n-|S|-1)!}{n!}}(R^{2}(S\cup\{i\})-R^{2}(S))
@@ -234,7 +236,7 @@ def lm_shap(x, y, weights, intercept):
         / math.factorial(n_cols)
       result[j] += weight * rsq_diff[k]
 
-  return result
+  return pd.Series(result, index = x.columns)
 ```
 
 ```{python}
@@ -242,6 +244,8 @@ lm_shap(overlap_x_df, overlap_y_df, weights, intercept)
 ```
 
 ## Principal component regression
+
+Alternatively, to address correlated factors, regress on the principal components of the factors and then map the coefficients to the original variables:
 
 ```{python}
 from sklearn.decomposition import PCA
@@ -268,9 +272,8 @@ $$
 def pcr_coef(x, y, comps):
   
   x = x - np.average(x, axis = 0)
-  L, V = np.linalg.eig(np.cov(x.T, ddof = 1))
-  idx = L.argsort()[::-1]
-  V = V[:, idx]
+  _, V = np.linalg.eigh(np.cov(x.T, ddof = 1))
+  V = V[:, ::-1]
   
   W = np.dot(x, V)
   gamma = np.dot(np.dot(np.linalg.inv(np.dot(W.T, W)), W.T), y)
@@ -308,7 +311,7 @@ np.dot(pca.components_.T[:, :comps], gamma.T[:comps]).ravel()
 ```{python}
 def pcr_rsq(x, y, comps):
   
-  coef = np.matrix(pcr_coef(x, y, comps))
+  coef = pcr_coef(x, y, comps)
   
   x = x - np.average(x, axis = 0)
   y = y - np.average(y, axis = 0)
@@ -326,6 +329,11 @@ pcr_rsq(scale_x_df, overlap_y_df, comps)
 pcr_rsq(overlap_x_df, overlap_y_df, comps)
 ```
 
+```{python}
+fit = LinearRegression().fit(pca_x_df[:, :comps], overlap_y_df)
+fit.score(pca_x_df[:, :comps], overlap_y_df)
+```
+
 ### Standard errors
 
 $$
@@ -336,18 +344,18 @@ $$
 \end{aligned}
 $$
 
+Standard errors are equivalent to the standard errors from a regression on the principal component scores mapped to the original coefficients, i.e. use the residual degrees of freedom for the $k$ retained components:
+
 ```{python}
-# unable to verify the result
 def pcr_se(x, y, comps):
-  
+
   n_rows = x.shape[0]
-  n_cols = x.shape[1]
-  
+
   rsq = pcr_rsq(x, y, comps)
-  
+
   y = y - np.average(y, axis = 0)
-  
-  df_resid = n_rows - n_cols - 1
+
+  df_resid = n_rows - comps - 1
   
   var_y = np.dot(y.T, y)   
   var_resid = (1 - rsq) * var_y / df_resid
@@ -370,11 +378,22 @@ pcr_se(scale_x_df, overlap_y_df, comps)
 pcr_se(overlap_x_df, overlap_y_df, comps)
 ```
 
+```{python}
+fit = sm.OLS(overlap_y_df.values, sm.add_constant(pca_x_df[:, :comps])).fit()
+
+V = pca.components_.T[:, :comps]
+np.sqrt(np.dot(V, np.dot(fit.cov_params()[1:, 1:], V.T)).diagonal())
+```
+
 ## Partial least squares
 
 # Risk decomposition
 
+Next, decompose the volatility of the fund using the factor model:
+
 ## Standalone risk
+
+Standalone risk is the volatility of each factor exposure in isolation, i.e. ignoring correlations, so the components do not sum to the total:
 
 $$
 \begin{aligned}
@@ -412,11 +431,9 @@ def lm_sar(x, y, weights, intercept):
   sar = np.multiply(np.power(coef, 2).T, sigma[:-1, :-1].diagonal())
   sar_eps = (1 - rsq) * sigma[-1, -1]
   
-  result = np.sqrt(np.concatenate((np.matrix(sigma[-1, -1]),
-                                   np.matrix(sar),
-                                   np.matrix(sar_eps)), axis = 1))
-  
-  return np.ravel(result)
+  result = np.sqrt(np.concatenate(([sigma[-1, -1]], sar, [sar_eps])))
+
+  return pd.Series(result, index = ["total"] + list(x.columns) + ["eps"])
 ```
 
 ```{python}
@@ -425,10 +442,12 @@ lm_sar(overlap_x_df, overlap_y_df, weights, intercept) * np.sqrt(scale["periods"
 
 ## Risk contribution
 
+Marginal contribution to risk allocates the total volatility to each factor exposure, i.e. including correlations, so the components sum to the total:
+
 $$
 \begin{aligned}
-\text{MCR}&=w^\mathrm{T}\frac{\partial\sigma_{y}}{\partial w}\\
-&=w^\mathrm{T}\frac{\Sigma w}{\sigma_{y}}\\
+\text{MCR}_{k}&=w_{k}\frac{\partial\sigma_{y}}{\partial w_{k}}\\
+&=w_{k}\frac{(\Sigma w)_{k}}{\sigma_{y}}\\
 \text{MCR}_{\varepsilon}&=\sigma_{y}-\sum_{k=1}^{n}\text{MCR}_{k}
 \end{aligned}
 $$
@@ -438,22 +457,20 @@ $$
 ```{python}
 def lm_mcr(x, y, weights, intercept):
     
-  coef = np.matrix(lm_coef(x, y, weights, intercept)).T
+  coef = lm_coef(x, y, weights, intercept)
   rsq = lm_rsq(x, y, weights, intercept)
       
   if (intercept): x = sm.add_constant(x)
   
-#     sigma = np.cov(np.concatenate((x, y), axis = 1).T,
-#                    aweights = weights.reshape(-1))
+  # sigma = np.cov(np.concatenate((x, y), axis = 1).T,
+  #                aweights = weights.reshape(-1))
   sigma = cov_wt(np.concatenate((x, y), axis = 1), weights, intercept)
   mcr = np.multiply(coef, np.dot(sigma[:-1, :-1], coef)) / np.sqrt(sigma[-1, -1])
   mcr_eps = np.sqrt(sigma[-1, -1]) - sum(mcr)
   
-  result = np.concatenate((np.sqrt(np.matrix(sigma[-1, -1])),
-                           np.matrix(mcr).T,
-                           np.matrix(mcr_eps)), axis = 1)
-  
-  return np.ravel(result)
+  result = np.concatenate(([np.sqrt(sigma[-1, -1])], mcr, [mcr_eps]))
+
+  return pd.Series(result, index = ["total"] + list(x.columns) + ["eps"])
 ```
 
 ```{python}
@@ -462,7 +479,11 @@ lm_mcr(overlap_x_df, overlap_y_df, weights, intercept) * np.sqrt(scale["periods"
 
 # Scenario analysis
 
+Finally, estimate the impact of scenarios on the fund using the factor exposures:
+
 ## Implied shocks
+
+Implied shocks translate a scenario for a subset of factors into consistent shocks for all factors using weighted least squares:
 
 $$
 \begin{aligned}
@@ -473,7 +494,7 @@ $$
 ```{python}
 def implied_shocks(shocks, x, z, weights):
 
-  beta = np.linalg.lstsq(np.multiply(weights, z), np.multiply(weights, x), rcond = None)[0]
+  beta = np.linalg.lstsq(np.multiply(np.sqrt(weights), z), np.multiply(np.sqrt(weights), x), rcond = None)[0]
                    
   result = np.dot(shocks, beta)
   
@@ -490,6 +511,8 @@ implied_shocks(shocks, overlap_x_df, overlap_z_df, weights)
 ```
 
 ## Stress P&L
+
+Stress P&L applies the implied shocks to the factor exposures. Note: if an intercept is included, then alpha is stressed along with the factors, i.e. the constant is passed through the implied shocks regression:
 
 ```{python}
 def pnl_stress(shocks, x, y, z, weights, intercept):

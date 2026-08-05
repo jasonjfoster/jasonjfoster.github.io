@@ -18,7 +18,7 @@ factors_d <- c("DGS10", "BAMLH0A0HYM2")
 ```
 
 ```{r}
-tickers <- "BAICX" # fund inception date is "2011-11-28" 
+tickers <- c("BAICX") # fund inception date is "2011-11-28"
 ```
 
 ```{r}
@@ -28,7 +28,6 @@ intercept <- TRUE
 ```{r}
 #| echo: false
 #| output: false # Registered S3 method overwritten by 'quantmod': method as.zoo.data.frame from zoo
-source("../plot/theme_jjf.R")
 source("../helper-levels.R")
 source("../helper-prices.R")
 # weights <- 0.9 ^ ((width - 1):0)
@@ -41,17 +40,17 @@ overlap_x_xts <- overlap_xts[ , factors]
 overlap_y_xts <- overlap_xts[ , tickers]
 ```
 
-```{r}
-#| echo: false
-palette <- c("black", palette_jjf(length(factors)))
-names(palette) <- c("Overall", factors)
-```
-
 # Regression analysis
+
+A factor model expresses fund returns as exposures to a set of market factors, which can be estimated with regression analysis. To measure the risk of a fund, estimate factor exposures for an allocation fund, decompose volatility into factor contributions, and then stress the factors under scenarios.
+
+The example uses equity, currency, interest rate, and credit factors with a trailing one-year window of overlapping returns and equal weights (*note: rates and spreads are negated yield changes, i.e. duration-style returns, and volatility is annualized using the square root of time*).
 
 ## Ordinary least squares
 
 ### Coefficients
+
+Solve for the weighted least squares coefficients in matrix form:
 
 $$
 \begin{aligned}
@@ -92,6 +91,8 @@ coef(fit)
 
 ### R-squared
 
+Then compute the weighted R-squared, i.e. the proportion of variance explained by the factors:
+
 $$
 \begin{aligned}
 R^{2}=\frac{\hat{\beta}^\mathrm{T}(X^\mathrm{T}WX)\hat{\beta}}{y^\mathrm{T}Wy}
@@ -129,12 +130,14 @@ summary(fit)$r.squared
 
 ### Standard errors
 
+Also compute the standard errors of the intercept and coefficients using the residual variance:
+
 $$
 \begin{aligned}
 \sigma_{\hat{\beta}}^{2}&=\sigma_{\varepsilon}^{2}(X^\mathrm{T}WX)^{-1}\\
-&=\frac{(1-R^{2})}{n-p}(X^\mathrm{T}WX)^{-1}\\
+&=\frac{(1-R^{2})(y^\mathrm{T}Wy)}{n-p}(X^\mathrm{T}WX)^{-1}\\
 &=\frac{SSE}{df_{E}}(X^\mathrm{T}WX)^{-1}\\
-\sigma_{\hat{\alpha}}^{2}&=\sigma_{\varepsilon}^{2}\left(\frac{1}{n}+\mu^\mathrm{T}(X^\mathrm{T}WX)^{-1}\mu\right)
+\sigma_{\hat{\alpha}}^{2}&=\sigma_{\varepsilon}^{2}\left(\frac{1}{\sum_{i=1}^{n}w_{i}}+\mu^\mathrm{T}(X^\mathrm{T}WX)^{-1}\mu\right)
 \end{aligned}
 $$
 
@@ -180,6 +183,8 @@ coef(summary(fit))[ , "Std. Error"]
 
 ### Shapley values
 
+Since the factors are correlated, allocate the R-squared to each factor using the Shapley value, i.e. the average marginal contribution across all combinations of factors:
+
 $$
 R^{2}_{i}=\sum_{S\subseteq N\setminus\{i\}}{\frac{|S|!\;(n-|S|-1)!}{n!}}(R^{2}(S\cup\{i\})-R^{2}(S))
 $$
@@ -210,7 +215,7 @@ lm_shap <- function(x, y, weights, intercept) {
         
         n <- n + 1
         
-        ix_mat[j, k] = j - 1 + 1
+        ix_mat[j, k] <- j
         
       }
       
@@ -222,7 +227,7 @@ lm_shap <- function(x, y, weights, intercept) {
     
     if (n > 0) {
       
-      ix_subset<- which(ix_mat[ , k] != 0)
+      ix_subset <- which(ix_mat[ , k] != 0)
       x_subset <- x[ , ix_subset]
       
       rsq[k] <- lm_rsq(x_subset, y, weights, intercept)
@@ -246,8 +251,10 @@ lm_shap <- function(x, y, weights, intercept) {
       result[j] <- result[j] + weight * rsq_diff[k]
 
     }
-    
+
   }
+
+  names(result) <- colnames(x)
 
   return(result)
   
@@ -259,6 +266,8 @@ lm_shap(overlap_x_xts, overlap_y_xts, weights, intercept)
 ```
 
 ## Principal component regression
+
+Alternatively, to address correlated factors, regress on the principal components of the factors and then map the coefficients to the original variables:
 
 ```{r}
 #| output: false # Attaching package: 'pls' - The following object is masked from 'package:stats': loadings
@@ -356,18 +365,18 @@ $$
 \end{aligned}
 $$
 
+Standard errors are equivalent to the standard errors from a regression on the principal component scores mapped to the original coefficients, i.e. use the residual degrees of freedom for the $k$ retained components:
+
 ```{r}
-# unable to verify the result
 pcr_se <- function(x, y, comps) {
-  
+
   n_rows <- nrow(x)
-  n_cols <- ncol(x)
-  
+
   rsq <- pcr_rsq(x, y, comps)
-  
+
   y <- sweep(y, 2, colMeans(y), "-")
-  
-  df_resid <- n_rows - n_cols - 1
+
+  df_resid <- n_rows - comps - 1
   
   var_y <- crossprod(y)
   var_resid <- as.numeric((1 - rsq) * var_y / df_resid)
@@ -391,11 +400,24 @@ pcr_se(scale_x_xts, overlap_y_xts, comps)
 pcr_se(overlap_x_xts, overlap_y_xts, comps)
 ```
 
+```{r}
+LV <- eigen(cov(scale_x_xts))
+V <- as.matrix(LV[["vectors"]][ , 1:comps])
+W <- scale_x_xts %*% V
+
+fit <- lm(zoo::coredata(overlap_y_xts) ~ W)
+sqrt(diag(V %*% as.matrix(vcov(fit)[-1, -1]) %*% t(V)))
+```
+
 ## Partial least squares
 
 # Risk decomposition
 
+Next, decompose the volatility of the fund using the factor model:
+
 ## Standalone risk
+
+Standalone risk is the volatility of each factor exposure in isolation, i.e. ignoring correlations, so the components do not sum to the total:
 
 $$
 \begin{aligned}
@@ -419,6 +441,7 @@ lm_sar <- function(x, y, weights, intercept) {
   result <- sqrt(c(sigma[ncol(sigma), ncol(sigma)],
                    sar,
                    sar_eps))
+  names(result) <- c("total", rownames(coef), "eps")
   
   return(result)
   
@@ -431,10 +454,12 @@ lm_sar(overlap_x_xts, overlap_y_xts, weights, intercept) * sqrt(scale[["periods"
 
 ## Risk contribution
 
+Marginal contribution to risk allocates the total volatility to each factor exposure, i.e. including correlations, so the components sum to the total:
+
 $$
 \begin{aligned}
-\text{MCR}&=w^\mathrm{T}\frac{\partial\sigma_{y}}{\partial w}\\
-&=w^\mathrm{T}\frac{\Sigma w}{\sigma_{y}}\\
+\text{MCR}_{k}&=w_{k}\frac{\partial\sigma_{y}}{\partial w_{k}}\\
+&=w_{k}\frac{(\Sigma w)_{k}}{\sigma_{y}}\\
 \text{MCR}_{\varepsilon}&=\sigma_{y}-\sum_{k=1}^{n}\text{MCR}_{k}
 \end{aligned}
 $$
@@ -456,6 +481,7 @@ lm_mcr <- function(x, y, weights, intercept) {
   result <- c(sqrt(sigma[ncol(sigma), ncol(sigma)]),
               mcr,
               mcr_eps)
+  names(result) <- c("total", rownames(coef), "eps")
   
   return(result)
   
@@ -468,7 +494,11 @@ lm_mcr(overlap_x_xts, overlap_y_xts, weights, intercept) * sqrt(scale[["periods"
 
 # Scenario analysis
 
+Finally, estimate the impact of scenarios on the fund using the factor exposures:
+
 ## Implied shocks
+
+Implied shocks translate a scenario for a subset of factors into consistent shocks for all factors using weighted least squares:
 
 $$
 \begin{aligned}
@@ -498,6 +528,8 @@ implied_shocks(shocks, overlap_x_xts, overlap_z_xts, weights)
 ```
 
 ## Stress P&L
+
+Stress P&L applies the implied shocks to the factor exposures. Note: if an intercept is included, then alpha is stressed along with the factors, i.e. the constant is passed through the implied shocks regression:
 
 ```{r}
 pnl_stress <- function(shocks, x, y, z, weights, intercept) {

@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Jason Foster">
-<meta name="dcterms.date" content="2025-12-13">
+<meta name="dcterms.date" content="2026-08-05">
 
 <title>Risk – jasonjfoster.github.io</title>
 <style>
@@ -193,7 +193,7 @@ window.Quarto = {
       <div>
       <div class="quarto-title-meta-heading">Published</div>
       <div class="quarto-title-meta-contents">
-        <p class="date">December 13, 2025</p>
+        <p class="date">August 5, 2026</p>
       </div>
     </div>
     
@@ -258,6 +258,8 @@ window.Quarto = {
 </div>
 <section id="regression-analysis" class="level1">
 <h1>Regression analysis</h1>
+<p>A factor model expresses fund returns as exposures to a set of market factors, which can be estimated with regression analysis. To measure the risk of a fund, estimate factor exposures for an allocation fund, decompose volatility into factor contributions, and then stress the factors under scenarios.</p>
+<p>The example uses equity, currency, interest rate, and credit factors with a trailing one-year window of overlapping returns and equal weights (<em>note: rates and spreads are negated yield changes, i.e.&nbsp;duration-style returns, and volatility is annualized using the square root of time</em>).</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> math</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> statsmodels.api <span class="im">as</span> sm</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -266,6 +268,7 @@ window.Quarto = {
 <h2 class="anchored" data-anchor-id="ordinary-least-squares">Ordinary least squares</h2>
 <section id="coefficients" class="level3">
 <h3 class="anchored" data-anchor-id="coefficients">Coefficients</h3>
+<p>Solve for the weighted least squares coefficients in matrix form:</p>
 <p><span class="math display">\[
 \begin{aligned}
 \hat{\beta}=(X^\mathrm{T}WX)^{-1}X^\mathrm{T}Wy
@@ -287,8 +290,8 @@ window.Quarto = {
 <div class="cell">
 <div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>lm_coef(overlap_x_df, overlap_y_df, weights, intercept)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>array([ 1.82377645e-04,  2.04707296e-01, -1.45298306e-01,  2.61284481e+00,
-        1.24999829e+00])</code></pre>
+<pre><code>array([ 1.84382504e-04,  2.08594870e-01, -1.57216671e-01,  2.59259338e+00,
+        1.23461607e+00])</code></pre>
 </div>
 </div>
 <div class="cell">
@@ -300,13 +303,14 @@ window.Quarto = {
 <span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>np.array(fit.params)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>array([ 1.82377645e-04,  2.04707296e-01, -1.45298306e-01,  2.61284481e+00,
-        1.24999829e+00])</code></pre>
+<pre><code>array([ 1.84382504e-04,  2.08594870e-01, -1.57216671e-01,  2.59259338e+00,
+        1.23461607e+00])</code></pre>
 </div>
 </div>
 </section>
 <section id="r-squared" class="level3">
 <h3 class="anchored" data-anchor-id="r-squared">R-squared</h3>
+<p>Then compute the weighted R-squared, i.e.&nbsp;the proportion of variance explained by the factors:</p>
 <p><span class="math display">\[
 \begin{aligned}
 R^{2}=\frac{\hat{\beta}^\mathrm{T}(X^\mathrm{T}WX)\hat{\beta}}{y^\mathrm{T}Wy}
@@ -315,7 +319,7 @@ R^{2}=\frac{\hat{\beta}^\mathrm{T}(X^\mathrm{T}WX)\hat{\beta}}{y^\mathrm{T}Wy}
 <div class="cell">
 <div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> lm_rsq(x, y, weights, intercept):</span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>          </span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  coef <span class="op">=</span> np.matrix(lm_coef(x, y, weights, intercept))</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  coef <span class="op">=</span> lm_coef(x, y, weights, intercept)</span>
 <span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  </span>
 <span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (intercept):</span>
 <span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>    </span>
@@ -331,24 +335,25 @@ R^{2}=\frac{\hat{\beta}^\mathrm{T}(X^\mathrm{T}WX)\hat{\beta}}{y^\mathrm{T}Wy}
 <div class="cell">
 <div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>lm_rsq(overlap_x_df, overlap_y_df, weights, intercept)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>np.float64(0.6602889339051902)</code></pre>
+<pre><code>np.float64(0.6785308877563113)</code></pre>
 </div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>fit.rsquared</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>np.float64(0.660288933905191)</code></pre>
+<pre><code>np.float64(0.6785308877563121)</code></pre>
 </div>
 </div>
 </section>
 <section id="standard-errors" class="level3">
 <h3 class="anchored" data-anchor-id="standard-errors">Standard errors</h3>
+<p>Also compute the standard errors of the intercept and coefficients using the residual variance:</p>
 <p><span class="math display">\[
 \begin{aligned}
 \sigma_{\hat{\beta}}^{2}&amp;=\sigma_{\varepsilon}^{2}(X^\mathrm{T}WX)^{-1}\\
-&amp;=\frac{(1-R^{2})}{n-p}(X^\mathrm{T}WX)^{-1}\\
+&amp;=\frac{(1-R^{2})(y^\mathrm{T}Wy)}{n-p}(X^\mathrm{T}WX)^{-1}\\
 &amp;=\frac{SSE}{df_{E}}(X^\mathrm{T}WX)^{-1}\\
-\sigma_{\hat{\alpha}}^{2}&amp;=\sigma_{\varepsilon}^{2}\left(\frac{1}{n}+\mu^\mathrm{T}(X^\mathrm{T}WX)^{-1}\mu\right)
+\sigma_{\hat{\alpha}}^{2}&amp;=\sigma_{\varepsilon}^{2}\left(\frac{1}{\sum_{i=1}^{n}w_{i}}+\mu^\mathrm{T}(X^\mathrm{T}WX)^{-1}\mu\right)
 \end{aligned}
 \]</span></p>
 <ul>
@@ -382,20 +387,21 @@ R^{2}=\frac{\hat{\beta}^\mathrm{T}(X^\mathrm{T}WX)\hat{\beta}}{y^\mathrm{T}Wy}
 <div class="cell">
 <div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>lm_se(overlap_x_df, overlap_y_df, weights, intercept)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>array([5.97207872e-05, 2.31575203e-02, 4.43795178e-02, 3.30835447e-01,
-       3.44747396e-01])</code></pre>
+<pre><code>array([6.01463155e-05, 2.30882995e-02, 4.37016483e-02, 3.34457917e-01,
+       3.48221379e-01])</code></pre>
 </div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>np.array(fit.bse)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>array([5.97207872e-05, 2.31575203e-02, 4.43795178e-02, 3.30835447e-01,
-       3.44747396e-01])</code></pre>
+<pre><code>array([6.01463155e-05, 2.30882995e-02, 4.37016483e-02, 3.34457917e-01,
+       3.48221379e-01])</code></pre>
 </div>
 </div>
 </section>
 <section id="shapley-values" class="level3">
 <h3 class="anchored" data-anchor-id="shapley-values">Shapley values</h3>
+<p>Since the factors are correlated, allocate the R-squared to each factor using the Shapley value, i.e.&nbsp;the average marginal contribution across all combinations of factors:</p>
 <p><span class="math display">\[
 R^{2}_{i}=\sum_{S\subseteq N\setminus\{i\}}{\frac{|S|!\;(n-|S|-1)!}{n!}}(R^{2}(S\cup\{i\})-R^{2}(S))
 \]</span></p>
@@ -454,18 +460,23 @@ R^{2}_{i}=\sum_{S\subseteq N\setminus\{i\}}{\frac{|S|!\;(n-|S|-1)!}{n!}}(R^{2}(S
 <span id="cb20-49"><a href="#cb20-49" aria-hidden="true" tabindex="-1"></a>        <span class="op">/</span> math.factorial(n_cols)</span>
 <span id="cb20-50"><a href="#cb20-50" aria-hidden="true" tabindex="-1"></a>      result[j] <span class="op">+=</span> weight <span class="op">*</span> rsq_diff[k]</span>
 <span id="cb20-51"><a href="#cb20-51" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-52"><a href="#cb20-52" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> result</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb20-52"><a href="#cb20-52" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> pd.Series(result, index <span class="op">=</span> x.columns)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>lm_shap(overlap_x_df, overlap_y_df, weights, intercept)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>array([0.29899097, 0.098513  , 0.12872329, 0.13406167])</code></pre>
+<pre><code>SP500           0.306923
+DTWEXAFEGS      0.113845
+DGS10           0.121869
+BAMLH0A0HYM2    0.135894
+dtype: float64</code></pre>
 </div>
 </div>
 </section>
 </section>
 <section id="principal-component-regression" class="level2">
 <h2 class="anchored" data-anchor-id="principal-component-regression">Principal component regression</h2>
+<p>Alternatively, to address correlated factors, regress on the principal components of the factors and then map the coefficients to the original variables:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.decomposition <span class="im">import</span> PCA</span>
 <span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.linear_model <span class="im">import</span> LinearRegression</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -489,16 +500,15 @@ W_{k}&amp;=\mathbf{X}V_{k}=[\mathbf{X}\mathbf{v}_{1},\ldots,\mathbf{X}\mathbf{v}
 <div class="sourceCode cell-code" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> pcr_coef(x, y, comps):</span>
 <span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>  </span>
 <span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>  x <span class="op">=</span> x <span class="op">-</span> np.average(x, axis <span class="op">=</span> <span class="dv">0</span>)</span>
-<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>  L, V <span class="op">=</span> np.linalg.eig(np.cov(x.T, ddof <span class="op">=</span> <span class="dv">1</span>))</span>
-<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>  idx <span class="op">=</span> L.argsort()[::<span class="op">-</span><span class="dv">1</span>]</span>
-<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a>  V <span class="op">=</span> V[:, idx]</span>
-<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a>  W <span class="op">=</span> np.dot(x, V)</span>
-<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a>  gamma <span class="op">=</span> np.dot(np.dot(np.linalg.inv(np.dot(W.T, W)), W.T), y)</span>
-<span id="cb25-10"><a href="#cb25-10" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb25-11"><a href="#cb25-11" aria-hidden="true" tabindex="-1"></a>  result <span class="op">=</span> np.dot(V[:, :comps], gamma[:comps])</span>
-<span id="cb25-12"><a href="#cb25-12" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb25-13"><a href="#cb25-13" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> np.ravel(result)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>  _, V <span class="op">=</span> np.linalg.eigh(np.cov(x.T, ddof <span class="op">=</span> <span class="dv">1</span>))</span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>  V <span class="op">=</span> V[:, ::<span class="op">-</span><span class="dv">1</span>]</span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a>  W <span class="op">=</span> np.dot(x, V)</span>
+<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a>  gamma <span class="op">=</span> np.dot(np.dot(np.linalg.inv(np.dot(W.T, W)), W.T), y)</span>
+<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb25-10"><a href="#cb25-10" aria-hidden="true" tabindex="-1"></a>  result <span class="op">=</span> np.dot(V[:, :comps], gamma[:comps])</span>
+<span id="cb25-11"><a href="#cb25-11" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb25-12"><a href="#cb25-12" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> np.ravel(result)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>scale_x_df <span class="op">=</span> (overlap_x_df <span class="op">-</span> np.average(overlap_x_df, axis <span class="op">=</span> <span class="dv">0</span>)) <span class="op">\</span></span>
@@ -507,13 +517,13 @@ W_{k}&amp;=\mathbf{X}V_{k}=[\mathbf{X}\mathbf{v}_{1},\ldots,\mathbf{X}\mathbf{v}
 <div class="cell">
 <div class="sourceCode cell-code" id="cb27"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>pcr_coef(scale_x_df, overlap_y_df, comps)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>array([ 0.00053566, -0.00042649,  0.0001793 ,  0.00046814])</code></pre>
+<pre><code>array([ 0.00055485, -0.00045295,  0.00018369,  0.00048168])</code></pre>
 </div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb29"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>pcr_coef(overlap_x_df, overlap_y_df, comps)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>array([ 0.30133916, -0.0651647 ,  0.00327157,  0.012411  ])</code></pre>
+<pre><code>array([ 0.30583242, -0.07173271,  0.00327104,  0.01238441])</code></pre>
 </div>
 </div>
 <div class="cell">
@@ -525,7 +535,7 @@ W_{k}&amp;=\mathbf{X}V_{k}=[\mathbf{X}\mathbf{v}_{1},\ldots,\mathbf{X}\mathbf{v}
 <span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a>gamma <span class="op">=</span> fit.coef_</span>
 <span id="cb31-7"><a href="#cb31-7" aria-hidden="true" tabindex="-1"></a>np.dot(pca.components_.T[:, :comps], gamma.T[:comps]).ravel()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>array([ 0.00053566, -0.00042649,  0.0001793 ,  0.00046814])</code></pre>
+<pre><code>array([ 0.00055485, -0.00045295,  0.00018369,  0.00048168])</code></pre>
 </div>
 </div>
 </section>
@@ -534,7 +544,7 @@ W_{k}&amp;=\mathbf{X}V_{k}=[\mathbf{X}\mathbf{v}_{1},\ldots,\mathbf{X}\mathbf{v}
 <div class="cell">
 <div class="sourceCode cell-code" id="cb33"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> pcr_rsq(x, y, comps):</span>
 <span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>  coef <span class="op">=</span> np.matrix(pcr_coef(x, y, comps))</span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>  coef <span class="op">=</span> pcr_coef(x, y, comps)</span>
 <span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>  </span>
 <span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a>  x <span class="op">=</span> x <span class="op">-</span> np.average(x, axis <span class="op">=</span> <span class="dv">0</span>)</span>
 <span id="cb33-6"><a href="#cb33-6" aria-hidden="true" tabindex="-1"></a>  y <span class="op">=</span> y <span class="op">-</span> np.average(y, axis <span class="op">=</span> <span class="dv">0</span>)</span>
@@ -546,13 +556,20 @@ W_{k}&amp;=\mathbf{X}V_{k}=[\mathbf{X}\mathbf{v}_{1},\ldots,\mathbf{X}\mathbf{v}
 <div class="cell">
 <div class="sourceCode cell-code" id="cb34"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>pcr_rsq(scale_x_df, overlap_y_df, comps)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>np.float64(0.5981472307432101)</code></pre>
+<pre><code>np.float64(0.6210781019600036)</code></pre>
 </div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb36"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>pcr_rsq(overlap_x_df, overlap_y_df, comps)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>np.float64(0.558660181982741)</code></pre>
+<pre><code>np.float64(0.5852532817982772)</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>fit <span class="op">=</span> LinearRegression().fit(pca_x_df[:, :comps], overlap_y_df)</span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>fit.score(pca_x_df[:, :comps], overlap_y_df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>0.621078101960004</code></pre>
 </div>
 </div>
 </section>
@@ -565,41 +582,49 @@ W_{k}&amp;=\mathbf{X}V_{k}=[\mathbf{X}\mathbf{v}_{1},\ldots,\mathbf{X}\mathbf{v}
 &amp;=\sigma^{2}\sum_{j=1}^{k}{\frac{\mathbf{v}_{j}\mathbf{v}_{j}^\mathrm{T}}{\lambda_{j}}}
 \end{aligned}
 \]</span></p>
+<p>Standard errors are equivalent to the standard errors from a regression on the principal component scores mapped to the original coefficients, i.e.&nbsp;use the residual degrees of freedom for the <span class="math inline">\(k\)</span> retained components:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="co"># unable to verify the result</span></span>
-<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> pcr_se(x, y, comps):</span>
-<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a>  n_rows <span class="op">=</span> x.shape[<span class="dv">0</span>]</span>
-<span id="cb38-5"><a href="#cb38-5" aria-hidden="true" tabindex="-1"></a>  n_cols <span class="op">=</span> x.shape[<span class="dv">1</span>]</span>
-<span id="cb38-6"><a href="#cb38-6" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb38-7"><a href="#cb38-7" aria-hidden="true" tabindex="-1"></a>  rsq <span class="op">=</span> pcr_rsq(x, y, comps)</span>
-<span id="cb38-8"><a href="#cb38-8" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb38-9"><a href="#cb38-9" aria-hidden="true" tabindex="-1"></a>  y <span class="op">=</span> y <span class="op">-</span> np.average(y, axis <span class="op">=</span> <span class="dv">0</span>)</span>
-<span id="cb38-10"><a href="#cb38-10" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb38-11"><a href="#cb38-11" aria-hidden="true" tabindex="-1"></a>  df_resid <span class="op">=</span> n_rows <span class="op">-</span> n_cols <span class="op">-</span> <span class="dv">1</span></span>
-<span id="cb38-12"><a href="#cb38-12" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb38-13"><a href="#cb38-13" aria-hidden="true" tabindex="-1"></a>  var_y <span class="op">=</span> np.dot(y.T, y)   </span>
-<span id="cb38-14"><a href="#cb38-14" aria-hidden="true" tabindex="-1"></a>  var_resid <span class="op">=</span> (<span class="dv">1</span> <span class="op">-</span> rsq) <span class="op">*</span> var_y <span class="op">/</span> df_resid</span>
-<span id="cb38-15"><a href="#cb38-15" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb38-16"><a href="#cb38-16" aria-hidden="true" tabindex="-1"></a>  <span class="co"># uses statsmodels for illustrative purposes</span></span>
-<span id="cb38-17"><a href="#cb38-17" aria-hidden="true" tabindex="-1"></a>  pca <span class="op">=</span> sm.multivariate.PCA(x, standardize <span class="op">=</span> <span class="va">False</span>, demean <span class="op">=</span> <span class="va">True</span>)</span>
-<span id="cb38-18"><a href="#cb38-18" aria-hidden="true" tabindex="-1"></a>  L <span class="op">=</span> pca.eigenvals[:comps]</span>
-<span id="cb38-19"><a href="#cb38-19" aria-hidden="true" tabindex="-1"></a>  V <span class="op">=</span> pca.eigenvecs.iloc[:, :comps]</span>
-<span id="cb38-20"><a href="#cb38-20" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb38-21"><a href="#cb38-21" aria-hidden="true" tabindex="-1"></a>  result <span class="op">=</span> np.sqrt(var_resid <span class="op">*</span> np.dot(V, np.dot(np.diag(<span class="dv">1</span> <span class="op">/</span> L), V.T)).diagonal())</span>
-<span id="cb38-22"><a href="#cb38-22" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb38-23"><a href="#cb38-23" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> np.ravel(result)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> pcr_se(x, y, comps):</span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>  n_rows <span class="op">=</span> x.shape[<span class="dv">0</span>]</span>
+<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-5"><a href="#cb40-5" aria-hidden="true" tabindex="-1"></a>  rsq <span class="op">=</span> pcr_rsq(x, y, comps)</span>
+<span id="cb40-6"><a href="#cb40-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-7"><a href="#cb40-7" aria-hidden="true" tabindex="-1"></a>  y <span class="op">=</span> y <span class="op">-</span> np.average(y, axis <span class="op">=</span> <span class="dv">0</span>)</span>
+<span id="cb40-8"><a href="#cb40-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-9"><a href="#cb40-9" aria-hidden="true" tabindex="-1"></a>  df_resid <span class="op">=</span> n_rows <span class="op">-</span> comps <span class="op">-</span> <span class="dv">1</span></span>
+<span id="cb40-10"><a href="#cb40-10" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb40-11"><a href="#cb40-11" aria-hidden="true" tabindex="-1"></a>  var_y <span class="op">=</span> np.dot(y.T, y)   </span>
+<span id="cb40-12"><a href="#cb40-12" aria-hidden="true" tabindex="-1"></a>  var_resid <span class="op">=</span> (<span class="dv">1</span> <span class="op">-</span> rsq) <span class="op">*</span> var_y <span class="op">/</span> df_resid</span>
+<span id="cb40-13"><a href="#cb40-13" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb40-14"><a href="#cb40-14" aria-hidden="true" tabindex="-1"></a>  <span class="co"># uses statsmodels for illustrative purposes</span></span>
+<span id="cb40-15"><a href="#cb40-15" aria-hidden="true" tabindex="-1"></a>  pca <span class="op">=</span> sm.multivariate.PCA(x, standardize <span class="op">=</span> <span class="va">False</span>, demean <span class="op">=</span> <span class="va">True</span>)</span>
+<span id="cb40-16"><a href="#cb40-16" aria-hidden="true" tabindex="-1"></a>  L <span class="op">=</span> pca.eigenvals[:comps]</span>
+<span id="cb40-17"><a href="#cb40-17" aria-hidden="true" tabindex="-1"></a>  V <span class="op">=</span> pca.eigenvecs.iloc[:, :comps]</span>
+<span id="cb40-18"><a href="#cb40-18" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb40-19"><a href="#cb40-19" aria-hidden="true" tabindex="-1"></a>  result <span class="op">=</span> np.sqrt(var_resid <span class="op">*</span> np.dot(V, np.dot(np.diag(<span class="dv">1</span> <span class="op">/</span> L), V.T)).diagonal())</span>
+<span id="cb40-20"><a href="#cb40-20" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb40-21"><a href="#cb40-21" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> np.ravel(result)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>pcr_se(scale_x_df, overlap_y_df, comps)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>pcr_se(scale_x_df, overlap_y_df, comps)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>array([2.79361715e-05, 2.22429816e-05, 9.35113063e-06, 2.44150760e-05])</code></pre>
+<pre><code>array([2.74097110e-05, 2.23761089e-05, 9.07435648e-06, 2.37953162e-05])</code></pre>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>pcr_se(overlap_x_df, overlap_y_df, comps)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>pcr_se(overlap_x_df, overlap_y_df, comps)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>array([0.01704197, 0.00368533, 0.00018502, 0.00070189])</code></pre>
+<pre><code>array([0.01628295, 0.00381915, 0.00017415, 0.00065936])</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>fit <span class="op">=</span> sm.OLS(overlap_y_df.values, sm.add_constant(pca_x_df[:, :comps])).fit()</span>
+<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a>V <span class="op">=</span> pca.components_.T[:, :comps]</span>
+<span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a>np.sqrt(np.dot(V, np.dot(fit.cov_params()[<span class="dv">1</span>:, <span class="dv">1</span>:], V.T)).diagonal())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>array([2.74097110e-05, 2.23761089e-05, 9.07435648e-06, 2.37953162e-05])</code></pre>
 </div>
 </div>
 </section>
@@ -610,8 +635,10 @@ W_{k}&amp;=\mathbf{X}V_{k}=[\mathbf{X}\mathbf{v}_{1},\ldots,\mathbf{X}\mathbf{v}
 </section>
 <section id="risk-decomposition" class="level1">
 <h1>Risk decomposition</h1>
+<p>Next, decompose the volatility of the fund using the factor model:</p>
 <section id="standalone-risk" class="level2">
 <h2 class="anchored" data-anchor-id="standalone-risk">Standalone risk</h2>
+<p>Standalone risk is the volatility of each factor exposure in isolation, i.e.&nbsp;ignoring correlations, so the components do not sum to the total:</p>
 <p><span class="math display">\[
 \begin{aligned}
 \text{SAR}_{k}&amp;=\sqrt{w_{k}^{2}\sigma_{k}^{2}}\\
@@ -619,53 +646,58 @@ W_{k}&amp;=\mathbf{X}V_{k}=[\mathbf{X}\mathbf{v}_{1},\ldots,\mathbf{X}\mathbf{v}
 \end{aligned}
 \]</span></p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> cov_wt(x, weights, center):</span>
-<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a>  sum_w <span class="op">=</span> <span class="bu">sum</span>(weights)</span>
-<span id="cb43-4"><a href="#cb43-4" aria-hidden="true" tabindex="-1"></a>  sumsq_w <span class="op">=</span> <span class="bu">sum</span>(np.power(weights, <span class="dv">2</span>))</span>
-<span id="cb43-5"><a href="#cb43-5" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb43-6"><a href="#cb43-6" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (center):</span>
-<span id="cb43-7"><a href="#cb43-7" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb43-8"><a href="#cb43-8" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> x <span class="op">-</span> np.average(x, axis <span class="op">=</span> <span class="dv">0</span>, weights <span class="op">=</span> weights.reshape(<span class="op">-</span><span class="dv">1</span>))</span>
-<span id="cb43-9"><a href="#cb43-9" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb43-10"><a href="#cb43-10" aria-hidden="true" tabindex="-1"></a>  result <span class="op">=</span> np.dot(x.T, np.multiply(weights, x)) <span class="op">/</span> (sum_w <span class="op">-</span> sumsq_w <span class="op">/</span> sum_w)</span>
-<span id="cb43-11"><a href="#cb43-11" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb43-12"><a href="#cb43-12" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> result</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb47"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> cov_wt(x, weights, center):</span>
+<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb47-3"><a href="#cb47-3" aria-hidden="true" tabindex="-1"></a>  sum_w <span class="op">=</span> <span class="bu">sum</span>(weights)</span>
+<span id="cb47-4"><a href="#cb47-4" aria-hidden="true" tabindex="-1"></a>  sumsq_w <span class="op">=</span> <span class="bu">sum</span>(np.power(weights, <span class="dv">2</span>))</span>
+<span id="cb47-5"><a href="#cb47-5" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb47-6"><a href="#cb47-6" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (center):</span>
+<span id="cb47-7"><a href="#cb47-7" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb47-8"><a href="#cb47-8" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> x <span class="op">-</span> np.average(x, axis <span class="op">=</span> <span class="dv">0</span>, weights <span class="op">=</span> weights.reshape(<span class="op">-</span><span class="dv">1</span>))</span>
+<span id="cb47-9"><a href="#cb47-9" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb47-10"><a href="#cb47-10" aria-hidden="true" tabindex="-1"></a>  result <span class="op">=</span> np.dot(x.T, np.multiply(weights, x)) <span class="op">/</span> (sum_w <span class="op">-</span> sumsq_w <span class="op">/</span> sum_w)</span>
+<span id="cb47-11"><a href="#cb47-11" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb47-12"><a href="#cb47-12" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> result</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> lm_sar(x, y, weights, intercept):</span>
-<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a>  coef <span class="op">=</span> lm_coef(x, y, weights, intercept)</span>
-<span id="cb44-4"><a href="#cb44-4" aria-hidden="true" tabindex="-1"></a>  rsq <span class="op">=</span> lm_rsq(x, y, weights, intercept)</span>
-<span id="cb44-5"><a href="#cb44-5" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb44-6"><a href="#cb44-6" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (intercept): x <span class="op">=</span> sm.add_constant(x)</span>
-<span id="cb44-7"><a href="#cb44-7" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb44-8"><a href="#cb44-8" aria-hidden="true" tabindex="-1"></a>  <span class="co"># sigma = np.cov(np.concatenate((x, y), axis = 1).T,</span></span>
-<span id="cb44-9"><a href="#cb44-9" aria-hidden="true" tabindex="-1"></a>  <span class="co">#                aweights = weights.reshape(-1))</span></span>
-<span id="cb44-10"><a href="#cb44-10" aria-hidden="true" tabindex="-1"></a>  sigma <span class="op">=</span> cov_wt(np.concatenate((x, y), axis <span class="op">=</span> <span class="dv">1</span>), weights, intercept)</span>
-<span id="cb44-11"><a href="#cb44-11" aria-hidden="true" tabindex="-1"></a>  sar <span class="op">=</span> np.multiply(np.power(coef, <span class="dv">2</span>).T, sigma[:<span class="op">-</span><span class="dv">1</span>, :<span class="op">-</span><span class="dv">1</span>].diagonal())</span>
-<span id="cb44-12"><a href="#cb44-12" aria-hidden="true" tabindex="-1"></a>  sar_eps <span class="op">=</span> (<span class="dv">1</span> <span class="op">-</span> rsq) <span class="op">*</span> sigma[<span class="op">-</span><span class="dv">1</span>, <span class="op">-</span><span class="dv">1</span>]</span>
-<span id="cb44-13"><a href="#cb44-13" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb44-14"><a href="#cb44-14" aria-hidden="true" tabindex="-1"></a>  result <span class="op">=</span> np.sqrt(np.concatenate((np.matrix(sigma[<span class="op">-</span><span class="dv">1</span>, <span class="op">-</span><span class="dv">1</span>]),</span>
-<span id="cb44-15"><a href="#cb44-15" aria-hidden="true" tabindex="-1"></a>                                   np.matrix(sar),</span>
-<span id="cb44-16"><a href="#cb44-16" aria-hidden="true" tabindex="-1"></a>                                   np.matrix(sar_eps)), axis <span class="op">=</span> <span class="dv">1</span>))</span>
-<span id="cb44-17"><a href="#cb44-17" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb44-18"><a href="#cb44-18" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> np.ravel(result)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb48"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> lm_sar(x, y, weights, intercept):</span>
+<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb48-3"><a href="#cb48-3" aria-hidden="true" tabindex="-1"></a>  coef <span class="op">=</span> lm_coef(x, y, weights, intercept)</span>
+<span id="cb48-4"><a href="#cb48-4" aria-hidden="true" tabindex="-1"></a>  rsq <span class="op">=</span> lm_rsq(x, y, weights, intercept)</span>
+<span id="cb48-5"><a href="#cb48-5" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb48-6"><a href="#cb48-6" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (intercept): x <span class="op">=</span> sm.add_constant(x)</span>
+<span id="cb48-7"><a href="#cb48-7" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb48-8"><a href="#cb48-8" aria-hidden="true" tabindex="-1"></a>  <span class="co"># sigma = np.cov(np.concatenate((x, y), axis = 1).T,</span></span>
+<span id="cb48-9"><a href="#cb48-9" aria-hidden="true" tabindex="-1"></a>  <span class="co">#                aweights = weights.reshape(-1))</span></span>
+<span id="cb48-10"><a href="#cb48-10" aria-hidden="true" tabindex="-1"></a>  sigma <span class="op">=</span> cov_wt(np.concatenate((x, y), axis <span class="op">=</span> <span class="dv">1</span>), weights, intercept)</span>
+<span id="cb48-11"><a href="#cb48-11" aria-hidden="true" tabindex="-1"></a>  sar <span class="op">=</span> np.multiply(np.power(coef, <span class="dv">2</span>).T, sigma[:<span class="op">-</span><span class="dv">1</span>, :<span class="op">-</span><span class="dv">1</span>].diagonal())</span>
+<span id="cb48-12"><a href="#cb48-12" aria-hidden="true" tabindex="-1"></a>  sar_eps <span class="op">=</span> (<span class="dv">1</span> <span class="op">-</span> rsq) <span class="op">*</span> sigma[<span class="op">-</span><span class="dv">1</span>, <span class="op">-</span><span class="dv">1</span>]</span>
+<span id="cb48-13"><a href="#cb48-13" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb48-14"><a href="#cb48-14" aria-hidden="true" tabindex="-1"></a>  result <span class="op">=</span> np.sqrt(np.concatenate(([sigma[<span class="op">-</span><span class="dv">1</span>, <span class="op">-</span><span class="dv">1</span>]], sar, [sar_eps])))</span>
+<span id="cb48-15"><a href="#cb48-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb48-16"><a href="#cb48-16" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> pd.Series(result, index <span class="op">=</span> [<span class="st">"total"</span>] <span class="op">+</span> <span class="bu">list</span>(x.columns) <span class="op">+</span> [<span class="st">"eps"</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>lm_sar(overlap_x_df, overlap_y_df, weights, intercept) <span class="op">*</span> np.sqrt(scale[<span class="st">"periods"</span>] <span class="op">*</span> scale[<span class="st">"overlap"</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb49"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a>lm_sar(overlap_x_df, overlap_y_df, weights, intercept) <span class="op">*</span> np.sqrt(scale[<span class="st">"periods"</span>] <span class="op">*</span> scale[<span class="st">"overlap"</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>array([0.05536985, 0.        , 0.02688475, 0.00769781, 0.0172496 ,
-       0.01022155, 0.03227217])</code></pre>
+<pre><code>total           0.057105
+const           0.000000
+SP500           0.028283
+DTWEXAFEGS      0.008686
+DGS10           0.017042
+BAMLH0A0HYM2    0.010144
+eps             0.032378
+dtype: float64</code></pre>
 </div>
 </div>
 </section>
 <section id="risk-contribution" class="level2">
 <h2 class="anchored" data-anchor-id="risk-contribution">Risk contribution</h2>
+<p>Marginal contribution to risk allocates the total volatility to each factor exposure, i.e.&nbsp;including correlations, so the components sum to the total:</p>
 <p><span class="math display">\[
 \begin{aligned}
-\text{MCR}&amp;=w^\mathrm{T}\frac{\partial\sigma_{y}}{\partial w}\\
-&amp;=w^\mathrm{T}\frac{\Sigma w}{\sigma_{y}}\\
+\text{MCR}_{k}&amp;=w_{k}\frac{\partial\sigma_{y}}{\partial w_{k}}\\
+&amp;=w_{k}\frac{(\Sigma w)_{k}}{\sigma_{y}}\\
 \text{MCR}_{\varepsilon}&amp;=\sigma_{y}-\sum_{k=1}^{n}\text{MCR}_{k}
 \end{aligned}
 \]</span></p>
@@ -673,81 +705,87 @@ W_{k}&amp;=\mathbf{X}V_{k}=[\mathbf{X}\mathbf{v}_{1},\ldots,\mathbf{X}\mathbf{v}
 <li><a href="https://bookdown.org/compfinezbook/introcompfinr/Portfolio-risk-reports.html" class="uri">https://bookdown.org/compfinezbook/introcompfinr/Portfolio-risk-reports.html</a></li>
 </ul>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb47"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> lm_mcr(x, y, weights, intercept):</span>
-<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb47-3"><a href="#cb47-3" aria-hidden="true" tabindex="-1"></a>  coef <span class="op">=</span> np.matrix(lm_coef(x, y, weights, intercept)).T</span>
-<span id="cb47-4"><a href="#cb47-4" aria-hidden="true" tabindex="-1"></a>  rsq <span class="op">=</span> lm_rsq(x, y, weights, intercept)</span>
-<span id="cb47-5"><a href="#cb47-5" aria-hidden="true" tabindex="-1"></a>      </span>
-<span id="cb47-6"><a href="#cb47-6" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (intercept): x <span class="op">=</span> sm.add_constant(x)</span>
-<span id="cb47-7"><a href="#cb47-7" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb47-8"><a href="#cb47-8" aria-hidden="true" tabindex="-1"></a><span class="co">#     sigma = np.cov(np.concatenate((x, y), axis = 1).T,</span></span>
-<span id="cb47-9"><a href="#cb47-9" aria-hidden="true" tabindex="-1"></a><span class="co">#                    aweights = weights.reshape(-1))</span></span>
-<span id="cb47-10"><a href="#cb47-10" aria-hidden="true" tabindex="-1"></a>  sigma <span class="op">=</span> cov_wt(np.concatenate((x, y), axis <span class="op">=</span> <span class="dv">1</span>), weights, intercept)</span>
-<span id="cb47-11"><a href="#cb47-11" aria-hidden="true" tabindex="-1"></a>  mcr <span class="op">=</span> np.multiply(coef, np.dot(sigma[:<span class="op">-</span><span class="dv">1</span>, :<span class="op">-</span><span class="dv">1</span>], coef)) <span class="op">/</span> np.sqrt(sigma[<span class="op">-</span><span class="dv">1</span>, <span class="op">-</span><span class="dv">1</span>])</span>
-<span id="cb47-12"><a href="#cb47-12" aria-hidden="true" tabindex="-1"></a>  mcr_eps <span class="op">=</span> np.sqrt(sigma[<span class="op">-</span><span class="dv">1</span>, <span class="op">-</span><span class="dv">1</span>]) <span class="op">-</span> <span class="bu">sum</span>(mcr)</span>
-<span id="cb47-13"><a href="#cb47-13" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb47-14"><a href="#cb47-14" aria-hidden="true" tabindex="-1"></a>  result <span class="op">=</span> np.concatenate((np.sqrt(np.matrix(sigma[<span class="op">-</span><span class="dv">1</span>, <span class="op">-</span><span class="dv">1</span>])),</span>
-<span id="cb47-15"><a href="#cb47-15" aria-hidden="true" tabindex="-1"></a>                           np.matrix(mcr).T,</span>
-<span id="cb47-16"><a href="#cb47-16" aria-hidden="true" tabindex="-1"></a>                           np.matrix(mcr_eps)), axis <span class="op">=</span> <span class="dv">1</span>)</span>
-<span id="cb47-17"><a href="#cb47-17" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb47-18"><a href="#cb47-18" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> np.ravel(result)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb51"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> lm_mcr(x, y, weights, intercept):</span>
+<span id="cb51-2"><a href="#cb51-2" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb51-3"><a href="#cb51-3" aria-hidden="true" tabindex="-1"></a>  coef <span class="op">=</span> lm_coef(x, y, weights, intercept)</span>
+<span id="cb51-4"><a href="#cb51-4" aria-hidden="true" tabindex="-1"></a>  rsq <span class="op">=</span> lm_rsq(x, y, weights, intercept)</span>
+<span id="cb51-5"><a href="#cb51-5" aria-hidden="true" tabindex="-1"></a>      </span>
+<span id="cb51-6"><a href="#cb51-6" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (intercept): x <span class="op">=</span> sm.add_constant(x)</span>
+<span id="cb51-7"><a href="#cb51-7" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb51-8"><a href="#cb51-8" aria-hidden="true" tabindex="-1"></a>  <span class="co"># sigma = np.cov(np.concatenate((x, y), axis = 1).T,</span></span>
+<span id="cb51-9"><a href="#cb51-9" aria-hidden="true" tabindex="-1"></a>  <span class="co">#                aweights = weights.reshape(-1))</span></span>
+<span id="cb51-10"><a href="#cb51-10" aria-hidden="true" tabindex="-1"></a>  sigma <span class="op">=</span> cov_wt(np.concatenate((x, y), axis <span class="op">=</span> <span class="dv">1</span>), weights, intercept)</span>
+<span id="cb51-11"><a href="#cb51-11" aria-hidden="true" tabindex="-1"></a>  mcr <span class="op">=</span> np.multiply(coef, np.dot(sigma[:<span class="op">-</span><span class="dv">1</span>, :<span class="op">-</span><span class="dv">1</span>], coef)) <span class="op">/</span> np.sqrt(sigma[<span class="op">-</span><span class="dv">1</span>, <span class="op">-</span><span class="dv">1</span>])</span>
+<span id="cb51-12"><a href="#cb51-12" aria-hidden="true" tabindex="-1"></a>  mcr_eps <span class="op">=</span> np.sqrt(sigma[<span class="op">-</span><span class="dv">1</span>, <span class="op">-</span><span class="dv">1</span>]) <span class="op">-</span> <span class="bu">sum</span>(mcr)</span>
+<span id="cb51-13"><a href="#cb51-13" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb51-14"><a href="#cb51-14" aria-hidden="true" tabindex="-1"></a>  result <span class="op">=</span> np.concatenate(([np.sqrt(sigma[<span class="op">-</span><span class="dv">1</span>, <span class="op">-</span><span class="dv">1</span>])], mcr, [mcr_eps]))</span>
+<span id="cb51-15"><a href="#cb51-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb51-16"><a href="#cb51-16" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> pd.Series(result, index <span class="op">=</span> [<span class="st">"total"</span>] <span class="op">+</span> <span class="bu">list</span>(x.columns) <span class="op">+</span> [<span class="st">"eps"</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb48"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>lm_mcr(overlap_x_df, overlap_y_df, weights, intercept) <span class="op">*</span> np.sqrt(scale[<span class="st">"periods"</span>] <span class="op">*</span> scale[<span class="st">"overlap"</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb52"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a>lm_mcr(overlap_x_df, overlap_y_df, weights, intercept) <span class="op">*</span> np.sqrt(scale[<span class="st">"periods"</span>] <span class="op">*</span> scale[<span class="st">"overlap"</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>array([0.05536985, 0.        , 0.01981657, 0.00378665, 0.00748519,
-       0.00547169, 0.01880975])</code></pre>
+<pre><code>total           0.057105
+const           0.000000
+SP500           0.021323
+DTWEXAFEGS      0.004590
+DGS10           0.007300
+BAMLH0A0HYM2    0.005536
+eps             0.018358
+dtype: float64</code></pre>
 </div>
 </div>
 </section>
 </section>
 <section id="scenario-analysis" class="level1">
 <h1>Scenario analysis</h1>
+<p>Finally, estimate the impact of scenarios on the fund using the factor exposures:</p>
 <section id="implied-shocks" class="level2">
 <h2 class="anchored" data-anchor-id="implied-shocks">Implied shocks</h2>
+<p>Implied shocks translate a scenario for a subset of factors into consistent shocks for all factors using weighted least squares:</p>
 <p><span class="math display">\[
 \begin{aligned}
 \hat{\beta}&amp;=(Z^\mathrm{T}WZ)^{-1}Z^\mathrm{T}WX
 \end{aligned}
 \]</span></p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb50"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> implied_shocks(shocks, x, z, weights):</span>
-<span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb50-3"><a href="#cb50-3" aria-hidden="true" tabindex="-1"></a>  beta <span class="op">=</span> np.linalg.lstsq(np.multiply(weights, z), np.multiply(weights, x), rcond <span class="op">=</span> <span class="va">None</span>)[<span class="dv">0</span>]</span>
-<span id="cb50-4"><a href="#cb50-4" aria-hidden="true" tabindex="-1"></a>                   </span>
-<span id="cb50-5"><a href="#cb50-5" aria-hidden="true" tabindex="-1"></a>  result <span class="op">=</span> np.dot(shocks, beta)</span>
-<span id="cb50-6"><a href="#cb50-6" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb50-7"><a href="#cb50-7" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> result</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb54"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> implied_shocks(shocks, x, z, weights):</span>
+<span id="cb54-2"><a href="#cb54-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-3"><a href="#cb54-3" aria-hidden="true" tabindex="-1"></a>  beta <span class="op">=</span> np.linalg.lstsq(np.multiply(np.sqrt(weights), z), np.multiply(np.sqrt(weights), x), rcond <span class="op">=</span> <span class="va">None</span>)[<span class="dv">0</span>]</span>
+<span id="cb54-4"><a href="#cb54-4" aria-hidden="true" tabindex="-1"></a>                   </span>
+<span id="cb54-5"><a href="#cb54-5" aria-hidden="true" tabindex="-1"></a>  result <span class="op">=</span> np.dot(shocks, beta)</span>
+<span id="cb54-6"><a href="#cb54-6" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb54-7"><a href="#cb54-7" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> result</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb51"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a>shocks <span class="op">=</span> np.array([<span class="op">-</span><span class="fl">0.1</span>, <span class="fl">0.1</span>])</span>
-<span id="cb51-2"><a href="#cb51-2" aria-hidden="true" tabindex="-1"></a>overlap_z_df <span class="op">=</span> overlap_x_df.iloc[:, [<span class="dv">0</span>, <span class="dv">1</span>]]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb55"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a>shocks <span class="op">=</span> np.array([<span class="op">-</span><span class="fl">0.1</span>, <span class="fl">0.1</span>])</span>
+<span id="cb55-2"><a href="#cb55-2" aria-hidden="true" tabindex="-1"></a>overlap_z_df <span class="op">=</span> overlap_x_df.iloc[:, [<span class="dv">0</span>, <span class="dv">1</span>]]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb52"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a>implied_shocks(shocks, overlap_x_df, overlap_z_df, weights)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb56"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a>implied_shocks(shocks, overlap_x_df, overlap_z_df, weights)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>array([-0.1       ,  0.1       , -0.00257718, -0.00407529])</code></pre>
+<pre><code>array([-0.1       ,  0.1       , -0.00246123, -0.00389872])</code></pre>
 </div>
 </div>
 </section>
 <section id="stress-pl" class="level2">
 <h2 class="anchored" data-anchor-id="stress-pl">Stress P&amp;L</h2>
+<p>Stress P&amp;L applies the implied shocks to the factor exposures. Note: if an intercept is included, then alpha is stressed along with the factors, i.e.&nbsp;the constant is passed through the implied shocks regression:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb54"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> pnl_stress(shocks, x, y, z, weights, intercept):</span>
-<span id="cb54-2"><a href="#cb54-2" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb54-3"><a href="#cb54-3" aria-hidden="true" tabindex="-1"></a>  coef <span class="op">=</span> lm_coef(x, y, weights, intercept)</span>
-<span id="cb54-4"><a href="#cb54-4" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb54-5"><a href="#cb54-5" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (intercept): x <span class="op">=</span> sm.add_constant(x)</span>
-<span id="cb54-6"><a href="#cb54-6" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb54-7"><a href="#cb54-7" aria-hidden="true" tabindex="-1"></a>  result <span class="op">=</span> np.multiply(coef.T, implied_shocks(shocks, x, z, weights))</span>
-<span id="cb54-8"><a href="#cb54-8" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb54-9"><a href="#cb54-9" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> result</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb58"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> pnl_stress(shocks, x, y, z, weights, intercept):</span>
+<span id="cb58-2"><a href="#cb58-2" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb58-3"><a href="#cb58-3" aria-hidden="true" tabindex="-1"></a>  coef <span class="op">=</span> lm_coef(x, y, weights, intercept)</span>
+<span id="cb58-4"><a href="#cb58-4" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb58-5"><a href="#cb58-5" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (intercept): x <span class="op">=</span> sm.add_constant(x)</span>
+<span id="cb58-6"><a href="#cb58-6" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb58-7"><a href="#cb58-7" aria-hidden="true" tabindex="-1"></a>  result <span class="op">=</span> np.multiply(coef.T, implied_shocks(shocks, x, z, weights))</span>
+<span id="cb58-8"><a href="#cb58-8" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb58-9"><a href="#cb58-9" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> result</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb55"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a>pnl_stress(shocks, overlap_x_df, overlap_y_df, overlap_z_df, weights, intercept)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb59"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a>pnl_stress(shocks, overlap_x_df, overlap_y_df, overlap_z_df, weights, intercept)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>array([ 3.08388420e-06, -2.04707296e-02, -1.45298306e-02, -6.73376799e-03,
-       -5.09410923e-03])</code></pre>
+<pre><code>array([-0.0001582 , -0.02085949, -0.01572167, -0.00638097, -0.00481343])</code></pre>
 </div>
 </div>
 
