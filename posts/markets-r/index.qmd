@@ -32,7 +32,7 @@ names(palette) <- c("Overall", factors)
 
 # Price momentum
 
-One month reversal and 2-12 month momentum are two ends of the spectrum. The general trend indicates that positive acceleration leads to reversals or negative acceleration leads to rebounds. An unsustainable acceleration leading to reversal can reconcile the one-month reversal and 2-12 month momentum. The key is that it implies that acceleration is not sustainable.
+One month reversal and 2-12 month momentum are two ends of the spectrum. The general trend indicates that positive acceleration leads to reversals and negative acceleration leads to rebounds, i.e. acceleration is not sustainable. An unsustainable acceleration leading to reversal can reconcile the one-month reversal and 2-12 month momentum.
 
 ```{r}
 order <- 20
@@ -40,7 +40,7 @@ order <- 20
 
 ```{r}
 # "Momentum, Acceleration, and Reversal"
-momentum_xts <- na.omit(lag(roll::roll_prod(1 + returns_xts, width - order, min_obs = 1) - 1, order))
+momentum_xts <- na.omit(lag(exp(roll::roll_sum(returns_xts, width - order, min_obs = 1)) - 1, order))
 ```
 
 ```{r}
@@ -127,7 +127,7 @@ print(score_plt)
 
 ## Interquartile range
 
-Outliers are defined as the regression residuals that fall below $Q_{1}−1.5\times IQR$ or above $Q_{3}+1.5\times IQR$:
+Outliers are defined as the regression residuals that fall below $Q_{1}-1.5\times IQR$ or above $Q_{3}+1.5\times IQR$:
 
 -   <https://stats.stackexchange.com/a/1153>
 -   <https://stats.stackexchange.com/a/108951>
@@ -190,11 +190,85 @@ print(outliers_plt)
 
 ## Contour ellipsoid
 
-# Granger causality
+The contours of a multivariate normal (MVN) distribution are ellipsoids centered at the mean. The directions of the axes are given by the eigenvectors of the covariance matrix and squared lengths are given by the eigenvalues:
 
 $$
 \begin{aligned}
-\left(R\hat{\beta}-r\right)^\mathrm{T}\left(R\hat{V}R^\mathrm{T}\right)^{-1}\left(R\hat{\beta}-r\right)\xrightarrow\quad\chi_{Q}^{2}
+({\mathbf{x}}-{\boldsymbol{\mu}})^{\mathrm{T}}{\boldsymbol{\Sigma}}^{-1}({\mathbf{x}}-{\boldsymbol{\mu}})=c^{2}
+\end{aligned}
+$$
+
+Or, in general parametric form:
+
+$$
+\begin{aligned}
+X(t)&=X_{c}+a\,\cos t\,\cos \varphi -b\,\sin t\,\sin \varphi\\
+Y(t)&=Y_{c}+a\,\cos t\,\sin \varphi +b\,\sin t\,\cos \varphi
+\end{aligned}
+$$ where $t$ varies from $0,\ldots,2\pi$. Here $(X_{c},Y_{c})$ is the center of the ellipse and $\varphi$ is the angle between the x-axis and the major axis of the ellipse.
+
+Specifically:
+
+$$
+\begin{aligned}
+&\text{Center: }\boldsymbol{\mu}=(X_{c},Y_{c})\\
+&\text{Radius: }c^{2}= \chi_{\alpha}^{2}(df)\\
+&\text{Length: }a=c\sqrt{\lambda_{k}}\\
+&\text{Angle of rotation: }\varphi=\text{atan2}\left(V_{k}(2),V_{k}(1)\right)
+\end{aligned}
+$$
+
+Note: the radius converts a normal quantile into a chi-squared quantile, i.e. $c^{2}=\chi_{\alpha}^{2}(2)$ with $\alpha=2\Phi(\sigma)-1$, so a one-sigma ellipse covers $2\Phi(1)-1\approx68\%$ of the distribution, i.e. the familiar two-sided normal coverage.
+
+```{r}
+# https://www.visiondummy.com/2014/04/draw-error-ellipse-representing-covariance-matrix/
+# https://maitra.public.iastate.edu/stat501/lectures/MultivariateNormalDistribution-I.pdf
+# https://en.wikipedia.org/wiki/Multivariate_normal_distribution
+# https://en.wikipedia.org/wiki/Ellipse#General_parametric_form
+ellipse <- function(n_sim, x, y, sigma) {
+
+    data <- cbind(x, y)
+    LV <- eigen(cov(data))
+    L <- LV$values
+    V <- LV$vectors
+
+    c <- sqrt(qchisq(2 * pnorm(sigma) - 1, 2))
+    t <- seq(0, 2 * pi, len = n_sim)
+    phi <- atan2(V[2, 1], V[1, 1])
+    a <- c * sqrt(L[1]) * cos(t)
+    b <- c * sqrt(L[2]) * sin(t)
+    R <- matrix(c(cos(phi), -sin(phi), sin(phi), cos(phi)), nrow = 2, ncol = 2)
+    r <- t(rbind(a, b)) %*% R
+
+    result <- sweep(r, 2, colMeans(data), "+") # 2D only
+
+    return(result)
+
+}
+```
+
+```{r}
+returns_x_xts <- na.omit(returns_xts)[ , factors] # extended history
+ellipse_x_xts <- ellipse(1000, returns_x_xts[ , 1], returns_x_xts[ , 3], 1)
+```
+
+```{r}
+#| echo: false
+#| fig.width: 3
+#| fig.height: 3
+ellipse_plt <- plot_scatter(data.table::data.table(returns_x_xts[ , c(1, 3)]), x = "SP500", y = "DGS10",
+                            title = "Return 1D (%)") +
+  ggplot2::geom_point(data = data.table::data.table(ellipse_x_xts), ggplot2::aes(x = V1 * 100, y = V2 * 100))
+print(ellipse_plt)
+```
+
+# Granger causality
+
+Granger causality tests whether lagged values of one series improve predictions of another series. Regress each series on lagged values of itself and the other series, then use a Wald test on the coefficient of the other series, i.e. the restriction $R\hat{\beta}=r$ (*note: condition on all own lags up to the momentum order but test a single cross lag at the momentum order*):
+
+$$
+\begin{aligned}
+\left(R\hat{\beta}-r\right)^\mathrm{T}\left(R\hat{V}R^\mathrm{T}\right)^{-1}\left(R\hat{\beta}-r\right)\xrightarrow{d}\chi_{Q}^{2}
 \end{aligned}
 $$
 
@@ -204,33 +278,33 @@ $$
 
 ```{r}
 granger_test <- function(x, y, order) {
-    
+
   # compute lagged observations
   lag_x <- lag(x, order)
-  lag_y <- lag(y, order)
-  
+  lag_y <- lag(y, 1:order)
+
   # collect series
-  data <- merge(x, y, lag_x, lag_y)
-  colnames(data) <- c("x", "y", "lag_x", "lag_y")
-  
+  data <- merge(y, lag_y, lag_x)
+  colnames(data) <- c("y", paste0("lag_y", 1:order), "lag_x")
+
   # fit full model
-  fit <- lm(y ~ lag_y + lag_x, data = data)
-  
-  R <- matrix(c(0, 0, 1), nrow = 1)
+  fit <- lm(y ~ ., data = data)
+
+  R <- matrix(c(rep(0, order + 1), 1), nrow = 1)
   coef <- fit$coefficients
   r <- 0 # technically a matrix (see Stack Exchange)
-  
+
   wald <- t(R %*% coef - r) %*% solve(R %*% vcov(fit) %*% t(R)) %*% (R %*% coef - r)
-  
+
   result <- 1 - pchisq(wald, 1)
-  
+
   return(result)
-    
+
 }
 ```
 
 ```{r}
-roll_lead_lag <- function(x, y, width, order, p_value) {
+roll_lead_lag <- function(x, y, width, order, sig_level) {
     
   n_rows <- nrow(x)
   x_name <- names(x)
@@ -245,8 +319,8 @@ roll_lead_lag <- function(x, y, width, order, p_value) {
     x_y <- granger_test(x[idx], y[idx], order)
     y_x <- granger_test(y[idx], x[idx], order)
     
-    x_y_status <- (x_y < p_value) && (y_x > p_value)
-    y_x_status <- (x_y > p_value) && (y_x < p_value)
+    x_y_status <- (x_y < sig_level) && (y_x > sig_level)
+    y_x_status <- (x_y > sig_level) && (y_x < sig_level)
     
     x_y_ls <- append(x_y_ls, list(x_y_status))
     y_x_ls <- append(y_x_ls, list(y_x_status))
@@ -263,7 +337,7 @@ roll_lead_lag <- function(x, y, width, order, p_value) {
 ```
 
 ```{r}
-p_value <- 0.05
+sig_level <- 0.05
 ```
 
 ```{r}
@@ -272,7 +346,7 @@ score_y_xts <- score_xts[ , "DGS10"]
 ```
 
 ```{r}
-lead_lag_xts <- roll_lead_lag(score_x_xts, score_y_xts, width, order, p_value)
+lead_lag_xts <- roll_lead_lag(score_x_xts, score_y_xts, width, order, sig_level)
 ```
 
 ```{r}
@@ -280,7 +354,7 @@ lead_lag_xts <- roll_lead_lag(score_x_xts, score_y_xts, width, order, p_value)
 #| fig.width: 6
 #| fig.height: 3
 lead_lag_mlt <- data.table::melt(data.table::as.data.table(lead_lag_xts), id.vars = "index")
-lead_lag_plt <- plot_ts_decomp(lead_lag_mlt, decomp = "Total", title = "Lead lag 1M", palette = palette) +
+lead_lag_plt <- plot_ts_decomp(lead_lag_mlt, decomp = "Total", title = "Lead lag 1Y", palette = palette) +
   ggplot2::theme(axis.text.y = ggplot2::element_blank())
 print(lead_lag_plt)
 ```

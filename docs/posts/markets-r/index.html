@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Jason Foster">
-<meta name="dcterms.date" content="2025-11-27">
+<meta name="dcterms.date" content="2026-08-07">
 
 <title>Markets – jasonjfoster.github.io</title>
 <style>
@@ -193,7 +193,7 @@ window.Quarto = {
       <div>
       <div class="quarto-title-meta-heading">Published</div>
       <div class="quarto-title-meta-contents">
-        <p class="date">November 27, 2025</p>
+        <p class="date">August 7, 2026</p>
       </div>
     </div>
     
@@ -237,13 +237,13 @@ window.Quarto = {
 </div>
 <section id="price-momentum" class="level1">
 <h1>Price momentum</h1>
-<p>One month reversal and 2-12 month momentum are two ends of the spectrum. The general trend indicates that positive acceleration leads to reversals or negative acceleration leads to rebounds. An unsustainable acceleration leading to reversal can reconcile the one-month reversal and 2-12 month momentum. The key is that it implies that acceleration is not sustainable.</p>
+<p>One month reversal and 2-12 month momentum are two ends of the spectrum. The general trend indicates that positive acceleration leads to reversals and negative acceleration leads to rebounds, i.e.&nbsp;acceleration is not sustainable. An unsustainable acceleration leading to reversal can reconcile the one-month reversal and 2-12 month momentum.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>order <span class="ot">&lt;-</span> <span class="dv">20</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># "Momentum, Acceleration, and Reversal"</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>momentum_xts <span class="ot">&lt;-</span> <span class="fu">na.omit</span>(<span class="fu">lag</span>(roll<span class="sc">::</span><span class="fu">roll_prod</span>(<span class="dv">1</span> <span class="sc">+</span> returns_xts, width <span class="sc">-</span> order, <span class="at">min_obs =</span> <span class="dv">1</span>) <span class="sc">-</span> <span class="dv">1</span>, order))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>momentum_xts <span class="ot">&lt;-</span> <span class="fu">na.omit</span>(<span class="fu">lag</span>(<span class="fu">exp</span>(roll<span class="sc">::</span><span class="fu">roll_sum</span>(returns_xts, width <span class="sc">-</span> order, <span class="at">min_obs =</span> <span class="dv">1</span>)) <span class="sc">-</span> <span class="dv">1</span>, order))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
 <div class="cell-output-display">
@@ -322,7 +322,7 @@ window.Quarto = {
 <h1>Outlier detection</h1>
 <section id="interquartile-range" class="level2">
 <h2 class="anchored" data-anchor-id="interquartile-range">Interquartile range</h2>
-<p>Outliers are defined as the regression residuals that fall below <span class="math inline">\(Q_{1}−1.5\times IQR\)</span> or above <span class="math inline">\(Q_{3}+1.5\times IQR\)</span>:</p>
+<p>Outliers are defined as the regression residuals that fall below <span class="math inline">\(Q_{1}-1.5\times IQR\)</span> or above <span class="math inline">\(Q_{3}+1.5\times IQR\)</span>:</p>
 <ul>
 <li><a href="https://stats.stackexchange.com/a/1153" class="uri">https://stats.stackexchange.com/a/1153</a></li>
 <li><a href="https://stats.stackexchange.com/a/108951" class="uri">https://stats.stackexchange.com/a/108951</a></li>
@@ -379,13 +379,76 @@ window.Quarto = {
 </section>
 <section id="contour-ellipsoid" class="level2">
 <h2 class="anchored" data-anchor-id="contour-ellipsoid">Contour ellipsoid</h2>
+<p>The contours of a multivariate normal (MVN) distribution are ellipsoids centered at the mean. The directions of the axes are given by the eigenvectors of the covariance matrix and squared lengths are given by the eigenvalues:</p>
+<p><span class="math display">\[
+\begin{aligned}
+({\mathbf{x}}-{\boldsymbol{\mu}})^{\mathrm{T}}{\boldsymbol{\Sigma}}^{-1}({\mathbf{x}}-{\boldsymbol{\mu}})=c^{2}
+\end{aligned}
+\]</span></p>
+<p>Or, in general parametric form:</p>
+<p><span class="math display">\[
+\begin{aligned}
+X(t)&amp;=X_{c}+a\,\cos t\,\cos \varphi -b\,\sin t\,\sin \varphi\\
+Y(t)&amp;=Y_{c}+a\,\cos t\,\sin \varphi +b\,\sin t\,\cos \varphi
+\end{aligned}
+\]</span> where <span class="math inline">\(t\)</span> varies from <span class="math inline">\(0,\ldots,2\pi\)</span>. Here <span class="math inline">\((X_{c},Y_{c})\)</span> is the center of the ellipse and <span class="math inline">\(\varphi\)</span> is the angle between the x-axis and the major axis of the ellipse.</p>
+<p>Specifically:</p>
+<p><span class="math display">\[
+\begin{aligned}
+&amp;\text{Center: }\boldsymbol{\mu}=(X_{c},Y_{c})\\
+&amp;\text{Radius: }c^{2}= \chi_{\alpha}^{2}(df)\\
+&amp;\text{Length: }a=c\sqrt{\lambda_{k}}\\
+&amp;\text{Angle of rotation: }\varphi=\text{atan2}\left(V_{k}(2),V_{k}(1)\right)
+\end{aligned}
+\]</span></p>
+<p>Note: the radius converts a normal quantile into a chi-squared quantile, i.e.&nbsp;<span class="math inline">\(c^{2}=\chi_{\alpha}^{2}(2)\)</span> with <span class="math inline">\(\alpha=2\Phi(\sigma)-1\)</span>, so a one-sigma ellipse covers <span class="math inline">\(2\Phi(1)-1\approx68\%\)</span> of the distribution, i.e.&nbsp;the familiar two-sided normal coverage.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># https://www.visiondummy.com/2014/04/draw-error-ellipse-representing-covariance-matrix/</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="co"># https://maitra.public.iastate.edu/stat501/lectures/MultivariateNormalDistribution-I.pdf</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="co"># https://en.wikipedia.org/wiki/Multivariate_normal_distribution</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="co"># https://en.wikipedia.org/wiki/Ellipse#General_parametric_form</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>ellipse <span class="ot">&lt;-</span> <span class="cf">function</span>(n_sim, x, y, sigma) {</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>    data <span class="ot">&lt;-</span> <span class="fu">cbind</span>(x, y)</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>    LV <span class="ot">&lt;-</span> <span class="fu">eigen</span>(<span class="fu">cov</span>(data))</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>    L <span class="ot">&lt;-</span> LV<span class="sc">$</span>values</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>    V <span class="ot">&lt;-</span> LV<span class="sc">$</span>vectors</span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>    c <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(<span class="fu">qchisq</span>(<span class="dv">2</span> <span class="sc">*</span> <span class="fu">pnorm</span>(sigma) <span class="sc">-</span> <span class="dv">1</span>, <span class="dv">2</span>))</span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>    t <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">2</span> <span class="sc">*</span> pi, <span class="at">len =</span> n_sim)</span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>    phi <span class="ot">&lt;-</span> <span class="fu">atan2</span>(V[<span class="dv">2</span>, <span class="dv">1</span>], V[<span class="dv">1</span>, <span class="dv">1</span>])</span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>    a <span class="ot">&lt;-</span> c <span class="sc">*</span> <span class="fu">sqrt</span>(L[<span class="dv">1</span>]) <span class="sc">*</span> <span class="fu">cos</span>(t)</span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>    b <span class="ot">&lt;-</span> c <span class="sc">*</span> <span class="fu">sqrt</span>(L[<span class="dv">2</span>]) <span class="sc">*</span> <span class="fu">sin</span>(t)</span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>    R <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="fu">cos</span>(phi), <span class="sc">-</span><span class="fu">sin</span>(phi), <span class="fu">sin</span>(phi), <span class="fu">cos</span>(phi)), <span class="at">nrow =</span> <span class="dv">2</span>, <span class="at">ncol =</span> <span class="dv">2</span>)</span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>    r <span class="ot">&lt;-</span> <span class="fu">t</span>(<span class="fu">rbind</span>(a, b)) <span class="sc">%*%</span> R</span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>    result <span class="ot">&lt;-</span> <span class="fu">sweep</span>(r, <span class="dv">2</span>, <span class="fu">colMeans</span>(data), <span class="st">"+"</span>) <span class="co"># 2D only</span></span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(result)</span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>returns_x_xts <span class="ot">&lt;-</span> <span class="fu">na.omit</span>(returns_xts)[ , factors] <span class="co"># extended history</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>ellipse_x_xts <span class="ot">&lt;-</span> <span class="fu">ellipse</span>(<span class="dv">1000</span>, returns_x_xts[ , <span class="dv">1</span>], returns_x_xts[ , <span class="dv">3</span>], <span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/unnamed-chunk-16-1.png" class="img-fluid figure-img" width="288"></p>
+</figure>
+</div>
+</div>
+</div>
 </section>
 </section>
 <section id="granger-causality" class="level1">
 <h1>Granger causality</h1>
+<p>Granger causality tests whether lagged values of one series improve predictions of another series. Regress each series on lagged values of itself and the other series, then use a Wald test on the coefficient of the other series, i.e.&nbsp;the restriction <span class="math inline">\(R\hat{\beta}=r\)</span> (<em>note: condition on all own lags up to the momentum order but test a single cross lag at the momentum order</em>):</p>
 <p><span class="math display">\[
 \begin{aligned}
-\left(R\hat{\beta}-r\right)^\mathrm{T}\left(R\hat{V}R^\mathrm{T}\right)^{-1}\left(R\hat{\beta}-r\right)\xrightarrow\quad\chi_{Q}^{2}
+\left(R\hat{\beta}-r\right)^\mathrm{T}\left(R\hat{V}R^\mathrm{T}\right)^{-1}\left(R\hat{\beta}-r\right)\xrightarrow{d}\chi_{Q}^{2}
 \end{aligned}
 \]</span></p>
 <ul>
@@ -394,78 +457,78 @@ window.Quarto = {
 <li><a href="https://math.stackexchange.com/a/1591946" class="uri">https://math.stackexchange.com/a/1591946</a></li>
 </ul>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>granger_test <span class="ot">&lt;-</span> <span class="cf">function</span>(x, y, order) {</span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  <span class="co"># compute lagged observations</span></span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>  lag_x <span class="ot">&lt;-</span> <span class="fu">lag</span>(x, order)</span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>  lag_y <span class="ot">&lt;-</span> <span class="fu">lag</span>(y, order)</span>
-<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>  <span class="co"># collect series</span></span>
-<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>  data <span class="ot">&lt;-</span> <span class="fu">merge</span>(x, y, lag_x, lag_y)</span>
-<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">colnames</span>(data) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"x"</span>, <span class="st">"y"</span>, <span class="st">"lag_x"</span>, <span class="st">"lag_y"</span>)</span>
-<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>  <span class="co"># fit full model</span></span>
-<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>  fit <span class="ot">&lt;-</span> <span class="fu">lm</span>(y <span class="sc">~</span> lag_y <span class="sc">+</span> lag_x, <span class="at">data =</span> data)</span>
-<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>  R <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>), <span class="at">nrow =</span> <span class="dv">1</span>)</span>
-<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>  coef <span class="ot">&lt;-</span> fit<span class="sc">$</span>coefficients</span>
-<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>  r <span class="ot">&lt;-</span> <span class="dv">0</span> <span class="co"># technically a matrix (see Stack Exchange)</span></span>
-<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>  wald <span class="ot">&lt;-</span> <span class="fu">t</span>(R <span class="sc">%*%</span> coef <span class="sc">-</span> r) <span class="sc">%*%</span> <span class="fu">solve</span>(R <span class="sc">%*%</span> <span class="fu">vcov</span>(fit) <span class="sc">%*%</span> <span class="fu">t</span>(R)) <span class="sc">%*%</span> (R <span class="sc">%*%</span> coef <span class="sc">-</span> r)</span>
-<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>  result <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">-</span> <span class="fu">pchisq</span>(wald, <span class="dv">1</span>)</span>
-<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(result)</span>
-<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>granger_test <span class="ot">&lt;-</span> <span class="cf">function</span>(x, y, order) {</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  <span class="co"># compute lagged observations</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>  lag_x <span class="ot">&lt;-</span> <span class="fu">lag</span>(x, order)</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>  lag_y <span class="ot">&lt;-</span> <span class="fu">lag</span>(y, <span class="dv">1</span><span class="sc">:</span>order)</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>  <span class="co"># collect series</span></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>  data <span class="ot">&lt;-</span> <span class="fu">merge</span>(y, lag_y, lag_x)</span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">colnames</span>(data) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"y"</span>, <span class="fu">paste0</span>(<span class="st">"lag_y"</span>, <span class="dv">1</span><span class="sc">:</span>order), <span class="st">"lag_x"</span>)</span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>  <span class="co"># fit full model</span></span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>  fit <span class="ot">&lt;-</span> <span class="fu">lm</span>(y <span class="sc">~</span> ., <span class="at">data =</span> data)</span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>  R <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="fu">rep</span>(<span class="dv">0</span>, order <span class="sc">+</span> <span class="dv">1</span>), <span class="dv">1</span>), <span class="at">nrow =</span> <span class="dv">1</span>)</span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>  coef <span class="ot">&lt;-</span> fit<span class="sc">$</span>coefficients</span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a>  r <span class="ot">&lt;-</span> <span class="dv">0</span> <span class="co"># technically a matrix (see Stack Exchange)</span></span>
+<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a>  wald <span class="ot">&lt;-</span> <span class="fu">t</span>(R <span class="sc">%*%</span> coef <span class="sc">-</span> r) <span class="sc">%*%</span> <span class="fu">solve</span>(R <span class="sc">%*%</span> <span class="fu">vcov</span>(fit) <span class="sc">%*%</span> <span class="fu">t</span>(R)) <span class="sc">%*%</span> (R <span class="sc">%*%</span> coef <span class="sc">-</span> r)</span>
+<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a>  result <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">-</span> <span class="fu">pchisq</span>(wald, <span class="dv">1</span>)</span>
+<span id="cb11-21"><a href="#cb11-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-22"><a href="#cb11-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(result)</span>
+<span id="cb11-23"><a href="#cb11-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-24"><a href="#cb11-24" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>roll_lead_lag <span class="ot">&lt;-</span> <span class="cf">function</span>(x, y, width, order, p_value) {</span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  n_rows <span class="ot">&lt;-</span> <span class="fu">nrow</span>(x)</span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  x_name <span class="ot">&lt;-</span> <span class="fu">names</span>(x)</span>
-<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>  y_name <span class="ot">&lt;-</span> <span class="fu">names</span>(y)</span>
-<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>  x_y_ls <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
-<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>  y_x_ls <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
-<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (i <span class="cf">in</span> width<span class="sc">:</span>n_rows) {</span>
-<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>    idx <span class="ot">&lt;-</span> <span class="fu">max</span>(i <span class="sc">-</span> width <span class="sc">+</span> <span class="dv">1</span>, <span class="dv">1</span>)<span class="sc">:</span>i</span>
-<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>    x_y <span class="ot">&lt;-</span> <span class="fu">granger_test</span>(x[idx], y[idx], order)</span>
-<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>    y_x <span class="ot">&lt;-</span> <span class="fu">granger_test</span>(y[idx], x[idx], order)</span>
-<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>    x_y_status <span class="ot">&lt;-</span> (x_y <span class="sc">&lt;</span> p_value) <span class="sc">&amp;&amp;</span> (y_x <span class="sc">&gt;</span> p_value)</span>
-<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>    y_x_status <span class="ot">&lt;-</span> (x_y <span class="sc">&gt;</span> p_value) <span class="sc">&amp;&amp;</span> (y_x <span class="sc">&lt;</span> p_value)</span>
-<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a>    x_y_ls <span class="ot">&lt;-</span> <span class="fu">append</span>(x_y_ls, <span class="fu">list</span>(x_y_status))</span>
-<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a>    y_x_ls <span class="ot">&lt;-</span> <span class="fu">append</span>(y_x_ls, <span class="fu">list</span>(y_x_status))</span>
-<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a>  result <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="fu">do.call</span>(c, x_y_ls), <span class="fu">do.call</span>(c, y_x_ls))</span>
-<span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a>  result <span class="ot">&lt;-</span> xts<span class="sc">::</span><span class="fu">xts</span>(result, zoo<span class="sc">::</span><span class="fu">index</span>(x)[width<span class="sc">:</span>n_rows])</span>
-<span id="cb10-26"><a href="#cb10-26" aria-hidden="true" tabindex="-1"></a>  <span class="fu">colnames</span>(result) <span class="ot">&lt;-</span> <span class="fu">c</span>(x_name, y_name)</span>
-<span id="cb10-27"><a href="#cb10-27" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb10-28"><a href="#cb10-28" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(result)</span>
-<span id="cb10-29"><a href="#cb10-29" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb10-30"><a href="#cb10-30" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>roll_lead_lag <span class="ot">&lt;-</span> <span class="cf">function</span>(x, y, width, order, sig_level) {</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>  n_rows <span class="ot">&lt;-</span> <span class="fu">nrow</span>(x)</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>  x_name <span class="ot">&lt;-</span> <span class="fu">names</span>(x)</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>  y_name <span class="ot">&lt;-</span> <span class="fu">names</span>(y)</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>  x_y_ls <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>  y_x_ls <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (i <span class="cf">in</span> width<span class="sc">:</span>n_rows) {</span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>    idx <span class="ot">&lt;-</span> <span class="fu">max</span>(i <span class="sc">-</span> width <span class="sc">+</span> <span class="dv">1</span>, <span class="dv">1</span>)<span class="sc">:</span>i</span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>    x_y <span class="ot">&lt;-</span> <span class="fu">granger_test</span>(x[idx], y[idx], order)</span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>    y_x <span class="ot">&lt;-</span> <span class="fu">granger_test</span>(y[idx], x[idx], order)</span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a>    x_y_status <span class="ot">&lt;-</span> (x_y <span class="sc">&lt;</span> sig_level) <span class="sc">&amp;&amp;</span> (y_x <span class="sc">&gt;</span> sig_level)</span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a>    y_x_status <span class="ot">&lt;-</span> (x_y <span class="sc">&gt;</span> sig_level) <span class="sc">&amp;&amp;</span> (y_x <span class="sc">&lt;</span> sig_level)</span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a>    x_y_ls <span class="ot">&lt;-</span> <span class="fu">append</span>(x_y_ls, <span class="fu">list</span>(x_y_status))</span>
+<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a>    y_x_ls <span class="ot">&lt;-</span> <span class="fu">append</span>(y_x_ls, <span class="fu">list</span>(y_x_status))</span>
+<span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb12-22"><a href="#cb12-22" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb12-23"><a href="#cb12-23" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb12-24"><a href="#cb12-24" aria-hidden="true" tabindex="-1"></a>  result <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="fu">do.call</span>(c, x_y_ls), <span class="fu">do.call</span>(c, y_x_ls))</span>
+<span id="cb12-25"><a href="#cb12-25" aria-hidden="true" tabindex="-1"></a>  result <span class="ot">&lt;-</span> xts<span class="sc">::</span><span class="fu">xts</span>(result, zoo<span class="sc">::</span><span class="fu">index</span>(x)[width<span class="sc">:</span>n_rows])</span>
+<span id="cb12-26"><a href="#cb12-26" aria-hidden="true" tabindex="-1"></a>  <span class="fu">colnames</span>(result) <span class="ot">&lt;-</span> <span class="fu">c</span>(x_name, y_name)</span>
+<span id="cb12-27"><a href="#cb12-27" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb12-28"><a href="#cb12-28" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(result)</span>
+<span id="cb12-29"><a href="#cb12-29" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb12-30"><a href="#cb12-30" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>p_value <span class="ot">&lt;-</span> <span class="fl">0.05</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>sig_level <span class="ot">&lt;-</span> <span class="fl">0.05</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>score_x_xts <span class="ot">&lt;-</span> score_xts[ , <span class="st">"SP500"</span>]</span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>score_y_xts <span class="ot">&lt;-</span> score_xts[ , <span class="st">"DGS10"</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>score_x_xts <span class="ot">&lt;-</span> score_xts[ , <span class="st">"SP500"</span>]</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>score_y_xts <span class="ot">&lt;-</span> score_xts[ , <span class="st">"DGS10"</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>lead_lag_xts <span class="ot">&lt;-</span> <span class="fu">roll_lead_lag</span>(score_x_xts, score_y_xts, width, order, p_value)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>lead_lag_xts <span class="ot">&lt;-</span> <span class="fu">roll_lead_lag</span>(score_x_xts, score_y_xts, width, order, sig_level)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/unnamed-chunk-19-1.png" class="img-fluid figure-img" width="576"></p>
+<p><img src="index_files/figure-html/unnamed-chunk-22-1.png" class="img-fluid figure-img" width="576"></p>
 </figure>
 </div>
 </div>
