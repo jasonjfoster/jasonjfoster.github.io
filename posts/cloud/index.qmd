@@ -22,33 +22,33 @@ editor:
 
 `PuTTYgen > Load an existing private key file > Save private key > *.ppk`
 
-Host Name: `ec2-user\@ec2-1-23-456-789.us-east-2.compute.amazonaws.com`
+Host Name: `ec2-user@ec2-1-23-456-789.us-east-2.compute.amazonaws.com`
 
 `Connection > SSH > Auth & WinSCP > Auth > Private key file for authentication`
 
-```         
+Open inbound ports for the servers: `EC2 > Network & Security > Security Groups > Edit inbound rules > Custom TCP: 8888, 8787, 3838`
+
+```
 sudo yum update
 ```
 
 ## Jupyter Server
 
-Install `Amazon Linux 2`
+Install `Anaconda` on `Amazon Linux 2`
 
-```         
-wget https://repo.anaconda.com/archive/Anaconda3-2023.03-Linux-x86_64.sh
+```
+wget https://repo.anaconda.com/archive/Anaconda3-YYYY.MM-Linux-x86_64.sh
 
-bash Anaconda3-2023.03-Linux-x86_64.sh
+bash Anaconda3-YYYY.MM-Linux-x86_64.sh
 ```
 
 Then close and re-open current shell
 
 -   <https://pypi.org/project/ipython/#history>
-
 -   <https://stackoverflow.com/a/76521018>
-
 -   <https://stackoverflow.com/a/77117477>
 
-```         
+```
 pip install 'ipython==7.34.0' --force-reinstall
 ipython
 from IPython.lib import passwd
@@ -57,28 +57,28 @@ passwd("12345")
 exit()
 ```
 
-```         
-jupyter notebook --generate-config 
-vi ~/.jupyter/jupyter_notebook_config.py
+```
+jupyter server --generate-config
+vi ~/.jupyter/jupyter_server_config.py
 
 # [i]
 c = get_config()  # Get the config object.
-# c.NotebookApp.certfile = u'/home/ubuntu/ssl/cert.pem' # path to the certificate we generated
-# c.NotebookApp.keyfile = u'/home/ubuntu/ssl/cert.key' # path to the certificate key we generated
-c.NotebookApp.ip = '0.0.0.0' # serve notebooks locally
-c.NotebookApp.open_browser = False # do not open a browser window by default when using notebooks.
-c.NotebookApp.password = 'sha1:asdfasdf:asfasdfasdf'
+# c.ServerApp.certfile = u'/home/ubuntu/ssl/cert.pem' # path to the certificate we generated
+# c.ServerApp.keyfile = u'/home/ubuntu/ssl/cert.key' # path to the certificate key we generated
+c.ServerApp.ip = '0.0.0.0' # serve notebooks locally
+c.ServerApp.open_browser = False # do not open a browser window by default when using notebooks.
+c.ServerApp.password = 'sha1:asdfasdf:asfasdfasdf'
 # [ESC][:wq][ENTER]
 ```
 
-```         
+```
 # nohup jupyter notebook
 nohup jupyter lab
 ```
 
 Then close and re-open current shell
 
-```         
+```
 jupyter nbconvert --to python <notebook>.ipynb
 sudo service crond start
 crontab -e
@@ -96,44 +96,44 @@ crontab -e
 
 Install `R`
 
-```         
+```
 sudo su
 # yum install -y R # Amazon Linux
 # amazon-linux-extras list
-sudo amazon-linux-extras install R3.4 # Amazon Linux 2
+sudo amazon-linux-extras install R1.2 # Amazon Linux 2
 ```
 
 Install `RStudio Server`
 
 -   <https://posit.co/download/rstudio-server/>
 
-```         
-wget https://download2.rstudio.org/server/centos6/x86_64/rstudio-server-rhel-1.2.5019-x86_64.rpm
-yum install rstudio-server-rhel-1.2.5019-x86_64.rpm
-rm rstudio-server-rhel-1.2.5019-x86_64.rpm
+```
+wget https://download2.rstudio.org/server/centos6/x86_64/rstudio-server-rhel-1.2.3-x86_64.rpm
+yum install rstudio-server-rhel-1.2.3-x86_64.rpm
+rm rstudio-server-rhel-1.2.3-x86_64.rpm
 ```
 
 Install `Shiny Server`
 
 -   <https://posit.co/download/shiny-server/>
 
-```         
-R -e "install.packages('shiny', repos = 'http://cran.rstudio.com/')"
-wget https://download3.rstudio.org/centos6.3/x86_64/shiny-server-1.5.12.933-x86_64.rpm
-yum install --nogpgcheck shiny-server-1.5.12.933-x86_64.rpm
-rm shiny-server-1.5.12.933-x86_64.rpm
+```
+R -e "install.packages('shiny', repos = 'https://cran.rstudio.com/')"
+wget https://download3.rstudio.org/centos6.3/x86_64/shiny-server-1.2.3.456-x86_64.rpm
+yum install --nogpgcheck shiny-server-1.2.3.456-x86_64.rpm
+rm shiny-server-1.2.3.456-x86_64.rpm
 ```
 
 Add user(s)
 
-```         
+```
 useradd -m jjf234
 sudo passwd jjf234 # prompt to enter password
 ```
 
 Need to create `/ShinyApps` under `/ec2-user` and then subfolders with code, e.g. `/home/ec2-user/ShinyApps/hello`
 
-```         
+```
 # sudo /opt/shiny-server/bin/deploy-example user-dirs
 # mkdir ~/ShinyApps
 # sudo cp -R /opt/shiny-server/samples/sample-apps/hello ~/ShinyApps
@@ -141,35 +141,35 @@ Need to create `/ShinyApps` under `/ec2-user` and then subfolders with code, e.g
 
 Install `pak`
 
-```         
+```
 sudo yum install libcurl-devel
 sudo yum install openssl-devel
 sudo yum install libxml2-devel
-R -e "install.packages('pak', repos = 'http://cran.rstudio.com/')"
+R -e "install.packages('pak', repos = 'https://cran.rstudio.com/')"
 ```
 
 Install `RcppParallel`
 
-```         
-R -e "install.packages('RcppParallel', repos = 'http://cran.rstudio.com/')"
+```
+R -e "install.packages('RcppParallel', repos = 'https://cran.rstudio.com/')"
 ```
 
 Install `RcppArmadillo`
 
-```         
-R -e "install.packages('RcppArmadillo', repos = 'http://cran.rstudio.com/')"
+```
+R -e "install.packages('RcppArmadillo', repos = 'https://cran.rstudio.com/')"
 ```
 
 Install other packages
 
-```         
+```
 R -e "install.packages(c('data.table', 'xts', 'testthat', 'microbenchmark'),
-repos = 'http://cran.rstudio.com/')"
+                       repos = 'https://cran.rstudio.com/')"
 ```
 
 Install `roll`
 
-```         
+```
 R -e "pak::pak('jasonjfoster/roll')"
 ```
 

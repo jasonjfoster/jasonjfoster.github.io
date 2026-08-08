@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Jason Foster">
-<meta name="dcterms.date" content="2026-08-04">
+<meta name="dcterms.date" content="2026-08-07">
 
 <title>Eigen – jasonjfoster.github.io</title>
 <style>
@@ -193,7 +193,7 @@ window.Quarto = {
       <div>
       <div class="quarto-title-meta-heading">Published</div>
       <div class="quarto-title-meta-contents">
-        <p class="date">August 4, 2026</p>
+        <p class="date">August 7, 2026</p>
       </div>
     </div>
     
@@ -270,14 +270,14 @@ window.Quarto = {
 <div class="cell">
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>eigen_decomp(overlap_df, comps) <span class="op">*</span> scale[<span class="st">"periods"</span>] <span class="op">*</span> scale[<span class="st">"overlap"</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>array([[ 2.32143149e-02, -1.75348441e-03,  1.89937448e-04,
-         1.31483513e-03],
-       [-1.75348441e-03,  1.32448775e-04, -1.43468526e-05,
-        -9.93155694e-05],
-       [ 1.89937448e-04, -1.43468526e-05,  1.55405121e-06,
-         1.07578634e-05],
-       [ 1.31483513e-03, -9.93155694e-05,  1.07578634e-05,
-         7.44709213e-05]])</code></pre>
+<pre><code>array([[ 2.34341940e-02, -1.89208617e-03,  1.90887646e-04,
+         1.31249237e-03],
+       [-1.89208617e-03,  1.52767792e-04, -1.54123447e-05,
+        -1.05971157e-04],
+       [ 1.90887646e-04, -1.54123447e-05,  1.55491132e-06,
+         1.06911541e-05],
+       [ 1.31249237e-03, -1.05971157e-04,  1.06911541e-05,
+         7.35095140e-05]])</code></pre>
 </div>
 </div>
 <div class="cell">
@@ -305,7 +305,7 @@ window.Quarto = {
 <div class="cell">
 <div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>variance_explained(overlap_df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>array([0.87179181, 0.99496842, 0.99799922, 1.        ])</code></pre>
+<pre><code>array([0.87130267, 0.99493594, 0.99797036, 1.        ])</code></pre>
 </div>
 </div>
 </section>
@@ -384,7 +384,7 @@ window.Quarto = {
 <span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>    LV <span class="op">=</span> eigen(x.iloc[idx])</span>
 <span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>    V <span class="op">=</span> LV[<span class="st">"vectors"</span>]</span>
 <span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> i <span class="op">&gt;</span> width <span class="op">-</span> <span class="dv">1</span>:</span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (i <span class="op">&gt;</span> width <span class="op">-</span> <span class="dv">1</span>):</span>
 <span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a>        </span>
 <span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a>      <span class="co"># cosine = np.dot(V.T, V_ls[-1])</span></span>
 <span id="cb15-17"><a href="#cb15-17" aria-hidden="true" tabindex="-1"></a>      cosine <span class="op">=</span> similarity(V, V_ls[<span class="op">-</span><span class="dv">1</span>])</span>
@@ -435,7 +435,7 @@ window.Quarto = {
 <span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a>    L <span class="op">=</span> LV[<span class="st">"values"</span>]</span>
 <span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a>    V <span class="op">=</span> LV[<span class="st">"vectors"</span>]</span>
 <span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb17-15"><a href="#cb17-15" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> i <span class="op">&gt;</span> width <span class="op">-</span> <span class="dv">1</span>:</span>
+<span id="cb17-15"><a href="#cb17-15" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (i <span class="op">&gt;</span> width <span class="op">-</span> <span class="dv">1</span>):</span>
 <span id="cb17-16"><a href="#cb17-16" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb17-17"><a href="#cb17-17" aria-hidden="true" tabindex="-1"></a>      <span class="co"># cosine = np.dot(V.T, V_ls[-1])</span></span>
 <span id="cb17-18"><a href="#cb17-18" aria-hidden="true" tabindex="-1"></a>      cosine <span class="op">=</span> similarity(V, V_ls[<span class="op">-</span><span class="dv">1</span>])</span>

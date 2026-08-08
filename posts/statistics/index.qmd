@@ -14,7 +14,7 @@ default-image-extension: ""
 
 <!---# https://github.com/quarto-dev/quarto-cli/issues/6092 -->
 
-[![](https://github.com/jasonjfoster/roll/workflows/R-CMD-check/badge.svg)](https://github.com/jasonjfoster/roll/actions) [![](https://www.r-pkg.org/badges/version/roll)](https://cran.r-project.org/package=roll) [![](https://codecov.io/gh/jasonjfoster/roll/graph/badge.svg)](https://codecov.io/github/jasonjfoster/roll) [![](https://cranlogs.r-pkg.org/badges/last-day/roll?color=brightgreen)](https://cranlogs.r-pkg.org/badges/last-day/roll) [![](https://cranlogs.r-pkg.org/badges/last-week/roll?color=brightgreen)](https://cranlogs.r-pkg.org/badges/last-week/roll) [![](https://cranlogs.r-pkg.org/badges/roll?color=brightgreen)](https://cranlogs.r-pkg.org/badges/roll) [![](https://cranlogs.r-pkg.org/badges/grand-total/roll?color=brightgreen)](https://cranlogs.r-pkg.org/badges/grand-total/roll)
+[![](https://github.com/jasonjfoster/roll/actions/workflows/check-standard.yaml/badge.svg)](https://github.com/jasonjfoster/roll/actions/workflows/check-standard.yaml) [![](https://www.r-pkg.org/badges/version/roll)](https://cran.r-project.org/package=roll) [![](https://codecov.io/gh/jasonjfoster/roll/graph/badge.svg)](https://app.codecov.io/github/jasonjfoster/roll) [![](https://cranlogs.r-pkg.org/badges/last-day/roll?color=brightgreen)](https://www.r-pkg.org/pkg/roll) [![](https://cranlogs.r-pkg.org/badges/last-week/roll?color=brightgreen)](https://www.r-pkg.org/pkg/roll) [![](https://cranlogs.r-pkg.org/badges/roll?color=brightgreen)](https://www.r-pkg.org/pkg/roll) [![](https://cranlogs.r-pkg.org/badges/grand-total/roll?color=brightgreen)](https://www.r-pkg.org/pkg/roll)
 
 # Usage
 
@@ -60,7 +60,7 @@ print(result)
 
 $$
 \begin{aligned}
-&\text{Expanding window} \\
+&\text{Expanding window}\\
 &\bullet\text{sum}_{x}\leftarrow\lambda\times\text{sum}_{x}+\text{w}_{new}\times\text{x}_{new}\\
 &\text{Rolling window}\\
 &\bullet\text{sum}_{x}\leftarrow\lambda\times\text{sum}_{x}+\text{w}_{new}\times\text{x}_{new}-\lambda\times\text{w}_{old}\times\text{x}_{old}
@@ -107,7 +107,7 @@ $$
 &\bullet\text{sum}_{w}\leftarrow\text{sum}_{w}+\text{w}_{new}\\
 &\bullet\text{sum}_{x}\leftarrow\lambda\times\text{sum}_{x}+\text{w}_{new}\times\text{x}_{new}\\
 &\text{Rolling window}\\
-&\bullet\text{sum}_{x}\leftarrow\lambda\times\text{sum}_{x}+\text{w}_{new}\times\text{x}_{new}-\lambda\times\text{w}_{old}\times \text{x}_{old}
+&\bullet\text{sum}_{x}\leftarrow\lambda\times\text{sum}_{x}+\text{w}_{new}\times\text{x}_{new}-\lambda\times\text{w}_{old}\times\text{x}_{old}
 \end{aligned}
 $$
 
@@ -202,10 +202,10 @@ $$
 &\text{Expanding window}\\
 &\bullet\text{sum}_{w}\leftarrow\text{sum}_{w}+\text{w}_{new}\\
 &\bullet\text{sumsq}_{w}\leftarrow\text{sumsq}_{w}+\text{w}_{new}^{2}\\
-&\bullet\text{sumsq}_{x}\leftarrow\lambda\times\text{sumsq}_{x}+\text{w}_{new}\times (\text{x}_{new}-\text{mean}_{x})(\text{x}_{new}-\text{mean}_{prev_x})\\
+&\bullet\text{sumsq}_{x}\leftarrow\lambda\times\text{sumsq}_{x}+\text{w}_{new}\times(\text{x}_{new}-\text{mean}_{x})(\text{x}_{new}-\text{mean}_{prev_x})\\
 &\text{Rolling window}\\
-&\bullet\text{sumsq}_{x}\leftarrow\lambda\times\text{sumsq}_{x}+\text{w}_{new}\times (\text{x}_{new}-\text{mean}_{x})(\text{x}_{new}-\text{mean}_{prev_x})-\\
-&\lambda\times\text{w}_{old}\times (\text{x}_{old}-\text{mean}_{x})(\text{x}_{old}-\text{mean}_{prev_x})
+&\bullet\text{sumsq}_{x}\leftarrow\lambda\times\text{sumsq}_{x}+\text{w}_{new}\times(\text{x}_{new}-\text{mean}_{x})(\text{x}_{new}-\text{mean}_{prev_x})-\\
+&\lambda\times\text{w}_{old}\times(\text{x}_{old}-\text{mean}_{x})(\text{x}_{old}-\text{mean}_{prev_x})
 \end{aligned}
 $$
 
@@ -250,10 +250,10 @@ $$
 &\text{Expanding window}\\
 &\bullet\text{sum}_{w}\leftarrow\text{sum}_{w}+\text{w}_{new}\\
 &\bullet\text{sumsq}_{w}\leftarrow\text{sumsq}_{w}+\text{w}_{new}^{2}\\
-&\bullet\text{sumsq}_{xy}\leftarrow\lambda\times\text{sumsq}_{xy}+\text{w}_{new}\times (\text{x}_{new}-\text{mean}_{x})(\text{y}_{new}-\text{mean}_{prev_y})\\
+&\bullet\text{sumsq}_{xy}\leftarrow\lambda\times\text{sumsq}_{xy}+\text{w}_{new}\times(\text{x}_{new}-\text{mean}_{x})(\text{y}_{new}-\text{mean}_{prev_y})\\
 &\text{Rolling window}\\
-&\bullet\text{sumsq}_{xy}\leftarrow\lambda\times\text{sumsq}_{xy}+\text{w}_{new}\times (\text{x}_{new}-\text{mean}_{x})(\text{y}_{new}-\text{mean}_{prev_y})-\\
-&\lambda\times\text{w}_{old}\times (\text{x}_{old}-\text{mean}_{x})(\text{y}_{old}-\text{mean}_{prev_y})
+&\bullet\text{sumsq}_{xy}\leftarrow\lambda\times\text{sumsq}_{xy}+\text{w}_{new}\times(\text{x}_{new}-\text{mean}_{x})(\text{y}_{new}-\text{mean}_{prev_y})-\\
+&\lambda\times\text{w}_{old}\times(\text{x}_{old}-\text{mean}_{x})(\text{y}_{old}-\text{mean}_{prev_y})
 \end{aligned}
 $$
 

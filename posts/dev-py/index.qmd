@@ -15,6 +15,14 @@ editor:
 
 # System setup
 
+-   <https://www.python.org/ftp/python/>
+
+```
+python-3.10.11-amd64.exe
+```
+
+Check box for `Add python.exe to PATH`
+
 `C:\Users\username\AppData\Local\Programs\Python\Python123\Lib\site-packages`
 
 ## Version labels
@@ -26,16 +34,36 @@ editor:
 | 0.1.0rc1    | Release Candidate 1    |
 | 0.1.0       | Final release          |
 
+## Quarto
+
+```
+pip install pyyaml jupyter
+```
+
+## Issues
+
+-   <https://github.com/osqp/osqp/issues/385>
+
+Use python 3.10 for `qdldl`
+
+-   <https://github.com/pydata/pandas-datareader/issues/965>
+
+```
+pip install git+https://github.com/pydata/pandas-datareader.git
+```
+
 # PyPI
 
-- <https://pypi.org/search/>
-- <https://pypi.org/classifiers/>
-- <https://packaging.python.org/en/latest/tutorials/packaging-projects/>
+-   <https://pypi.org/search/>
+-   <https://pypi.org/classifiers/>
+-   <https://packaging.python.org/en/latest/tutorials/packaging-projects/>
+-   <https://pypi.org/help/#apitoken>
 
 Build the package:
 
 ```
 cd path/to/mypackage/
+python -m pip install --upgrade build
 python -m build
 ```
 
@@ -52,7 +80,7 @@ Then install from TestPyPI:
 python -m pip install -i https://test.pypi.org/simple/ mypackage
 ```
 
-Upload to PyPI (use recovery code then regenerate): 
+Upload to PyPI (use recovery code then regenerate): <https://pypi.org/project/mypackage/1.2.3/>
 
 ```
 python -m twine upload dist/*

@@ -17,15 +17,15 @@ editor:
 
 ```{r}
 .libPaths()
-# > C:\Users\username\AppData\Local
+# > C:\Users\username\AppData\Local\R\win-library\1.2
 # > C:\Program Files\R\R-1.2.3\library
 ```
 
-Set environment variable: `PATH=c:\rtools<123>\usr\bin`
+Set environment variable: `PATH=C:\rtools123\usr\bin`
 
 # Git and GitHub
 
-```         
+```
 git config --global user.name "<NAME>"
 git config --global user.email "<EMAIL>"
 ```
@@ -36,7 +36,7 @@ Then give GitHub your SSH public key: `GitHub > SSH and GPG Keys > New SSH key`
 
 Create a new repository on the command line
 
-```         
+```
 echo "# <REPO>" >> README.md
 git init
 git add README.md
@@ -48,20 +48,20 @@ git push -u origin main
 
 ...or push an existing repository from the command line
 
-```         
+```
 git remote add origin git@github.com:<OWNER>/<REPO>.git
 git branch -M main
 git push -u origin main
 ```
 
-```         
+```
 # git remote set-url origin git@github.com:<OWNER>/<REPO>.git
 ```
 
 # Development workflow
 
 ```{r}
-RcppArmadillo::RcppArmadillo.package.skeleton(name = "anRpackage",
+RcppArmadillo::RcppArmadillo.package.skeleton(name = "mypackage",
                                               path = ".",
                                               example_code = FALSE)
 ```
@@ -92,31 +92,3 @@ usethis::use_github_action("test-coverage")
 1.  Codecov.io: `Settings > General > Tokens > CODECOV_TOKEN`
 
 2.  GitHub: `Settings > Secrets and variables > Actions > New repository secret > CODECOV_TOKEN`
-
-# Python
-
--   <https://www.python.org/ftp/python/>
-
-```         
-python-3.10.11-amd64.exe
-```
-
-Check box for `Add python.exe to PATH`
-
-## Quarto
-
-```         
-pip install pyyaml jupyter
-```
-
-## Issues
-
--   <https://github.com/osqp/osqp/issues/385>
-
-Use python 3.10 for `qdldl`
-
--   <https://github.com/pydata/pandas-datareader/issues/965>
-
-```         
-pip install git+https://github.com/pydata/pandas-datareader.git
-```

@@ -35,6 +35,8 @@ returns_xts <- na.omit(returns_xts)
 
 # Ordinary least squares
 
+Implied shocks translate a shock in one factor into consistent shocks to the remaining factors using regression betas:
+
 ```{r}
 shock <- -0.1
 returns_z_xts <- returns_xts[ , "SP500"]
@@ -78,6 +80,8 @@ round(data.frame(
 
 ## Partial moments
 
+Partial moments decompose the covariance matrix into concordant and discordant co-movements relative to a target, i.e. $\Sigma=\left(\text{CLPM}+\text{CUPM}\right)-\left(\text{DLPM}+\text{DUPM}\right)$:
+
 -   <https://cran.r-project.org/web/packages/NNS/vignettes/NNSvignette_Partial_Moments.html>
 
 ```{r}
@@ -85,10 +89,7 @@ sigma <- cov(returns_xts)
 ```
 
 ```{r}
-#| output: false
-# Registered S3 method overwritten by 'data.table': print.data.table
-# Registered S3 methods overwritten by 'htmltools': print.html (from=tools:rstudio), print.shiny.tag (from=tools:rstudio), print.shiny.tag.list (from=tools:rstudio)
-# Registered S3 method overwritten by 'htmlwidgets': print.htmlwidget (from=tools:rstudio)
+#| output: false # Registered S3 methods overwritten by 'data.table', 'htmltools', and 'htmlwidgets'
 pm <- NNS::PM.matrix(LPM_degree = 1, UPM_degree = 1, target = "mean",
                      variable = returns_xts, pop_adj = TRUE)
 ```
@@ -110,14 +111,16 @@ all.equal(sigma, (cl_pm + cu_pm) - (dl_pm + du_pm))
 
 ## Implied shocks
 
+Exclude the co-upper partial moment to focus on downside co-movements and then compute implied shocks using the modified covariance matrix:
+
 ```{r}
-# LV <- eigen(cov(cl_pm - (dl_pm + du_pm)))
+# LV <- eigen(cl_pm - (dl_pm + du_pm))
 # L <- LV[["values"]]
 # V <- LV[["vectors"]]
 # scale <- shock / (sqrt(L[comp]) * V[ , comp])[1]
 # implied_shocks_pm <- scale * (sqrt(L[comp]) * V[ , comp]) * risk_sign
 
-cov_pm <- cov(cl_pm - (dl_pm + du_pm))
+cov_pm <- cl_pm - (dl_pm + du_pm)
 cov_zz_pm <- cov_pm[1, 1, drop = FALSE]
 cov_zx_pm <- cov_pm[1, ]
 
@@ -136,8 +139,10 @@ round(data.frame(
 
 ## Bootstrapping
 
-- <https://github.com/OVVO-Financial/Finance/blob/main/stress_test.md>
-- <https://cran.r-project.org/web/packages/NNS/vignettes/NNSvignette_Sampling.html>
+Bootstrap the historical returns excluding the co-upper quadrant, i.e. periods when all factors exceed the target, to stress downside co-movements:
+
+-   <https://github.com/OVVO-Financial/Finance/blob/main/stress_test.md>
+-   <https://cran.r-project.org/web/packages/NNS/vignettes/NNSvignette_Sampling.html>
 
 ```{r}
 target <- 0
@@ -172,13 +177,13 @@ du_bs <- bs$dupm
 
 ```{r}
 # # LV <- eigen(cov(returns_bs))
-# LV <- eigen(cov(cl_pm - (dl_pm + du_pm)))
+# LV <- eigen(cl_bs - (dl_bs + du_bs))
 # L <- LV[["values"]]
 # V <- LV[["vectors"]]
 # scale <- shock / (sqrt(L[comp]) * V[ , comp])[1]
 # implied_shocks_bs <- scale * (sqrt(L[comp]) * V[ , comp]) * risk_sign
 
-cov_bs <- cov(cl_bs - (dl_bs + du_bs))
+cov_bs <- cl_bs - (dl_bs + du_bs)
 cov_zz_bs <- cov_bs[1, 1, drop = FALSE]
 cov_zx_bs <- cov_bs[1, ]
 
