@@ -113,30 +113,11 @@ yum install rstudio-server-rhel-1.2.3-x86_64.rpm
 rm rstudio-server-rhel-1.2.3-x86_64.rpm
 ```
 
-Install `Shiny Server`
-
--   <https://posit.co/download/shiny-server/>
-
-```
-R -e "install.packages('shiny', repos = 'https://cran.rstudio.com/')"
-wget https://download3.rstudio.org/centos6.3/x86_64/shiny-server-1.2.3.456-x86_64.rpm
-yum install --nogpgcheck shiny-server-1.2.3.456-x86_64.rpm
-rm shiny-server-1.2.3.456-x86_64.rpm
-```
-
 Add user(s)
 
 ```
-useradd -m jjf234
-sudo passwd jjf234 # prompt to enter password
-```
-
-Need to create `/ShinyApps` under `/ec2-user` and then subfolders with code, e.g. `/home/ec2-user/ShinyApps/hello`
-
-```
-# sudo /opt/shiny-server/bin/deploy-example user-dirs
-# mkdir ~/ShinyApps
-# sudo cp -R /opt/shiny-server/samples/sample-apps/hello ~/ShinyApps
+useradd -m <username>
+sudo passwd <username> # prompt to enter password
 ```
 
 Install `pak`
@@ -174,6 +155,28 @@ R -e "pak::pak('jasonjfoster/roll')"
 ```
 
 -   <http://1.23.456.789:8787/>
+
+## Shiny Server
+
+-   <https://posit.co/download/shiny-server/>
+
+Install `Shiny Server`
+
+```
+R -e "install.packages('shiny', repos = 'https://cran.rstudio.com/')"
+wget https://download3.rstudio.org/centos6.3/x86_64/shiny-server-1.2.3.456-x86_64.rpm
+yum install --nogpgcheck shiny-server-1.2.3.456-x86_64.rpm
+rm shiny-server-1.2.3.456-x86_64.rpm
+```
+
+Need to create `/ShinyApps` under `/ec2-user` and then subfolders with code, e.g. `/home/ec2-user/ShinyApps/hello`
+
+```
+# sudo /opt/shiny-server/bin/deploy-example user-dirs
+# mkdir ~/ShinyApps
+# sudo cp -R /opt/shiny-server/samples/sample-apps/hello ~/ShinyApps
+```
+
 -   <http://1.23.456.789:3838/ec2-user/hello/>
 
 # Amazon Route 53
