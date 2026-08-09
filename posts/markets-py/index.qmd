@@ -121,13 +121,13 @@ score_df = (momentum_df / momentum_df.rolling(width, min_periods = 1).apply(sd, 
 ```
 
 ```{python}
-# overall_df = score_df.mean(axis = 1)
-# overall_df = overall_df / overall_df.rolling(width, min_periods = 1).apply(sd, raw = False)
+overall_df = score_df.mean(axis = 1)
+overall_df = overall_df / overall_df.rolling(width, min_periods = 1).apply(sd, raw = False)
 ```
 
 ```{python}
-# score_df.insert(loc = 0, column = "Overall", value = overall_df)
-# score_df = score_df.dropna()
+score_df.insert(loc = 0, column = "Overall", value = overall_df)
+score_df = score_df.dropna()
 ```
 
 ```{r}
@@ -192,7 +192,7 @@ def outliers(z):
 ```
 
 ```{python}
-outliers_df = outliers(score_df)
+outliers_df = outliers(score_df[factors])
 ```
 
 ```{r}
@@ -202,7 +202,8 @@ outliers_df = outliers(score_df)
 #| fig.height: 3
 outliers_mlt <- data.table::melt(data.table::as.data.table(reticulate::py$outliers_df, keep.rownames = "index"), id.vars = "index")
 outliers_mlt[ , index := as.Date(index)]
-outliers_plt <- score_plt +
+outliers_plt <- plot_ts_decomp(score_mlt[variable != "Overall"], decomp = "Overall", title = "Score 1Y", multiple = 1) +
+  ggplot2::facet_wrap(~ variable) +
   ggplot2::geom_point(
     data = outliers_mlt,
     ggplot2::aes(x = index, y = value, fill = variable)

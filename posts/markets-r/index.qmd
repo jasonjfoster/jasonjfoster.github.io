@@ -104,13 +104,13 @@ score_xts <- na.omit(momentum_xts / roll::roll_sd(momentum_xts, width, center = 
 ```
 
 ```{r}
-# overall_xts <- xts::xts(rowMeans(score_xts), zoo::index(score_xts))
-# overall_xts <- overall_xts / roll::roll_sd(overall_xts, width, center = FALSE, min_obs = 1)
-# colnames(overall_xts) <- "Overall"
+overall_xts <- xts::xts(rowMeans(score_xts), zoo::index(score_xts))
+overall_xts <- overall_xts / roll::roll_sd(overall_xts, width, center = FALSE, min_obs = 1)
+colnames(overall_xts) <- "Overall"
 ```
 
 ```{r}
-# score_xts <- na.omit(merge(overall_xts, score_xts))
+score_xts <- na.omit(merge(overall_xts, score_xts))
 ```
 
 ```{r}
@@ -171,7 +171,7 @@ outliers <- function(z) {
 ```
 
 ```{r}
-outliers_xts <- outliers(score_xts)
+outliers_xts <- outliers(score_xts[ , factors])
 ```
 
 ```{r}
@@ -180,7 +180,8 @@ outliers_xts <- outliers(score_xts)
 #| fig.width: 6
 #| fig.height: 3
 outliers_mlt <- data.table::melt(data.table::as.data.table(outliers_xts), id.vars = "index")
-outliers_plt <- score_plt +
+outliers_plt <- plot_ts_decomp(score_mlt[variable != "Overall"], decomp = "Overall", title = "Score 1Y", multiple = 1) +
+  ggplot2::facet_wrap(~ variable) +
   ggplot2::geom_point(
     data = outliers_mlt,
     ggplot2::aes(x = index, y = value, fill = variable)
