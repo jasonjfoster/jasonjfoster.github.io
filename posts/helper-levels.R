@@ -38,7 +38,30 @@ if (length(factors) > 0) {
     }),
     list(all = TRUE)
   ))
-  
+
+  # extended history: splice cached levels beneath the FRED download, i.e. FRED truncates licensed series (see data-raw)
+  if (file.exists("../../data/data_h0a0.rda") && file.exists("../../data/data_spx.rda")) {
+
+    load("../../data/data_h0a0.rda")
+    load("../../data/data_spx.rda")
+
+    cache_ls <- list(
+      "BAMLH0A0HYM2" = xts::xts(data_h0a0[["oas"]] / 100, as.Date(data_h0a0[["date"]])), # convert bps to percent
+      "SP500" = xts::xts(data_spx[["px_last"]], as.Date(data_spx[["date"]]))
+    )
+
+    for (i in intersect(names(cache_ls), factors)) {
+
+      levels_xts <- merge(levels_xts, cache_ls[[i]], all = TRUE)
+
+      idx <- which(is.na(levels_xts[ , i]))
+      levels_xts[idx, i] <- zoo::coredata(levels_xts[ , ncol(levels_xts)])[idx]
+      levels_xts <- levels_xts[ , -ncol(levels_xts)]
+
+    }
+
+  }
+
   # if (!exists("returns_xts", inherits = TRUE)) {
     
     returns_xts <- do.call(merge, c(

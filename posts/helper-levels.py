@@ -55,7 +55,26 @@ if status_f:
   
   levels_df = pd.concat([fred.get_series(f, observation_start = "1900-01-01").rename(f) for f in factors], axis = 1, sort = False)
   levels_df.sort_index(axis = 0, inplace = True)
-  
+
+  # extended history: splice cached levels beneath the FRED download, i.e. FRED truncates licensed series (see data-raw)
+  if (os.path.exists("../../data-raw/h0a0.csv") and os.path.exists("../../data-raw/spx.csv")):
+
+    h0a0_df = pd.read_csv("../../data-raw/h0a0.csv")
+    spx_df = pd.read_csv("../../data-raw/spx.csv")
+
+    cache_df = pd.concat([
+      pd.Series(h0a0_df["oas"].values / 100, index = pd.to_datetime(h0a0_df["date"]), name = "BAMLH0A0HYM2"), # convert bps to percent
+      pd.Series(spx_df["px_last"].values, index = pd.to_datetime(spx_df["date"]), name = "SP500")
+    ], axis = 1, sort = False)
+
+    cols = [i for i in factors if i in cache_df.columns]
+
+    if (cols):
+
+      levels_df = levels_df.combine_first(cache_df[cols])
+      levels_df = levels_df[factors]
+      levels_df.sort_index(axis = 0, inplace = True)
+
   # if not exists("returns_df"):
     
   returns_ls = []
