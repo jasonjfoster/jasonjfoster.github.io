@@ -56,24 +56,26 @@ round(data.frame(
 
 # Principal components analysis
 
+Alternatively, scale the movement along the first principal component, i.e. $\sqrt{\lambda_{n}}\mathbf{v}_{n}$, so the shocked factor matches the target and read the implied shocks from the remaining factors:
+
 ```{r}
-# comp <- 1
+comp <- 1
 ```
 
 ```{r}
-# LV <- eigen(cov(returns_xts))
-# L <- LV[["values"]]
-# V <- LV[["vectors"]]
-# scale <- shock / (sqrt(L[comp]) * V[ , comp])[1]
-# implied_shocks_pc <- scale * (sqrt(L[comp]) * V[ , comp]) * risk_sign
+LV <- eigen(cov(returns_xts))
+L <- LV[["values"]]
+V <- LV[["vectors"]]
+scale <- shock / (sqrt(L[comp]) * V[ , comp])[1]
+implied_shocks_pc <- scale * (sqrt(L[comp]) * V[ , comp]) * risk_sign
 ```
 
 ```{r}
-# round(data.frame(
-#   implied_shocks = t(implied_shocks),
-#   implied_shocks_pc = implied_shocks_pc,
-#   row.names = c("SP500", "USD", "US10Y", "USHY")
-# ) * 100, 2)
+round(data.frame(
+  implied_shocks = t(implied_shocks),
+  implied_shocks_pc = implied_shocks_pc,
+  row.names = c("SP500", "USD", "US10Y", "USHY")
+) * 100, 2)
 ```
 
 # Nonlinear nonparametric statistics
@@ -194,7 +196,7 @@ implied_shocks_bs <- shock %*% beta * risk_sign
 ```{r}
 round(data.frame(
   implied_shocks = t(implied_shocks),
-  # implied_shocks_pc = implied_shocks_pc,
+  implied_shocks_pc = implied_shocks_pc,
   implied_shocks_pm = t(implied_shocks_pm),
   implied_shocks_bs = t(implied_shocks_bs),
   row.names = c("SP500", "USD", "US10Y", "USHY")
