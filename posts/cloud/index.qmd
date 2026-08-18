@@ -29,12 +29,12 @@ Host Name: `ec2-user@ec2-1-23-456-789.us-east-2.compute.amazonaws.com`
 Open inbound ports for the servers: `EC2 > Network & Security > Security Groups > Edit inbound rules > Custom TCP: 8888, 8787, 3838`
 
 ```
-sudo yum update
+sudo dnf update
 ```
 
 ## Jupyter Server
 
-Install `Anaconda` on `Amazon Linux 2`
+Install `Anaconda` on `Amazon Linux 2023`
 
 ```
 wget https://repo.anaconda.com/archive/Anaconda3-YYYY.MM-Linux-x86_64.sh
@@ -44,17 +44,9 @@ bash Anaconda3-YYYY.MM-Linux-x86_64.sh
 
 Then close and re-open current shell
 
--   <https://pypi.org/project/ipython/#history>
--   <https://stackoverflow.com/a/76521018>
--   <https://stackoverflow.com/a/77117477>
-
 ```
-pip install 'ipython==7.34.0' --force-reinstall
-ipython
-from IPython.lib import passwd
-passwd("12345")
-# sha1:asdfasdf:asfasdfasdf
-exit()
+jupyter server password
+# hashed password is written to ~/.jupyter/jupyter_server_config.json
 ```
 
 ```
@@ -67,7 +59,6 @@ c = get_config()  # Get the config object.
 # c.ServerApp.keyfile = u'/home/ubuntu/ssl/cert.key' # path to the certificate key we generated
 c.ServerApp.ip = '0.0.0.0' # serve notebooks locally
 c.ServerApp.open_browser = False # do not open a browser window by default when using notebooks.
-c.ServerApp.password = 'sha1:asdfasdf:asfasdfasdf'
 # [ESC][:wq][ENTER]
 ```
 
@@ -80,7 +71,8 @@ Then close and re-open current shell
 
 ```
 jupyter nbconvert --to python <notebook>.ipynb
-sudo service crond start
+sudo dnf install cronie
+sudo systemctl enable --now crond
 crontab -e
 # [i]
 # https://crontab.guru/
@@ -92,15 +84,17 @@ crontab -e
 
 ## RStudio Server
 
--   <https://aws.amazon.com/blogs/big-data/running-r-on-aws/>
+-   <https://docs.posit.co/resources/install-r/>
 
 Install `R`
 
 ```
 sudo su
-# yum install -y R # Amazon Linux
-# amazon-linux-extras list
-sudo amazon-linux-extras install R1.2 # Amazon Linux 2
+curl -O https://cdn.posit.co/r/rhel-9/pkgs/R-1.2.3-1-1.x86_64.rpm
+dnf install R-1.2.3-1-1.x86_64.rpm
+rm R-1.2.3-1-1.x86_64.rpm
+ln -s /opt/R/1.2.3/bin/R /usr/local/bin/R
+ln -s /opt/R/1.2.3/bin/Rscript /usr/local/bin/Rscript
 ```
 
 Install `RStudio Server`
@@ -108,8 +102,8 @@ Install `RStudio Server`
 -   <https://posit.co/download/rstudio-server/>
 
 ```
-wget https://download2.rstudio.org/server/centos6/x86_64/rstudio-server-rhel-1.2.3-x86_64.rpm
-yum install rstudio-server-rhel-1.2.3-x86_64.rpm
+wget https://download2.rstudio.org/server/rhel9/x86_64/rstudio-server-rhel-1.2.3-x86_64.rpm
+dnf install rstudio-server-rhel-1.2.3-x86_64.rpm
 rm rstudio-server-rhel-1.2.3-x86_64.rpm
 ```
 
@@ -123,9 +117,9 @@ sudo passwd <username> # prompt to enter password
 Install `pak`
 
 ```
-sudo yum install libcurl-devel
-sudo yum install openssl-devel
-sudo yum install libxml2-devel
+sudo dnf install libcurl-devel
+sudo dnf install openssl-devel
+sudo dnf install libxml2-devel
 R -e "install.packages('pak', repos = 'https://cran.rstudio.com/')"
 ```
 
@@ -164,8 +158,8 @@ Install `Shiny Server`
 
 ```
 R -e "install.packages('shiny', repos = 'https://cran.rstudio.com/')"
-wget https://download3.rstudio.org/centos6.3/x86_64/shiny-server-1.2.3.456-x86_64.rpm
-yum install --nogpgcheck shiny-server-1.2.3.456-x86_64.rpm
+wget https://download3.rstudio.org/centos8/x86_64/shiny-server-1.2.3.456-x86_64.rpm
+dnf install --nogpgcheck shiny-server-1.2.3.456-x86_64.rpm
 rm shiny-server-1.2.3.456-x86_64.rpm
 ```
 
