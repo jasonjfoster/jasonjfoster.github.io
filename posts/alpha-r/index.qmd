@@ -20,15 +20,35 @@ source("../plot/theme_jjf.R")
 
 # Question
 
-Could an optimally combined portfolio of hedge funds have won Warren Buffet's 10-year bet against the S&P 500?
+Could an optimally combined portfolio of hedge funds have won Warren Buffett's 10-year bet against the S&P 500?
 
 -   <https://longbets.org/362/>
+
+Use the annual returns of the five funds-of-funds, labeled "A" through "E", and the S&P 500 index fund from 2008 through 2016 as reported in Berkshire Hathaway's shareholder letter:
+
+-   <https://www.berkshirehathaway.com/letters/2016ltr.pdf>
 
 ```{r}
 load("returns.rda") # fund-of-funds and S&P 500 index fund returns for the 10-year bet
 ```
 
 # Optimization
+
+Combine the funds-of-funds by regressing the index fund returns on the fund returns with weights that are fully invested and long-only:
+
+$$
+\begin{aligned}
+\begin{array}{rrcl}
+\displaystyle\min&\left\|y-X\mathbf{w}\right\|^{2}\\
+\textrm{s.t.}&\mathbf{w}^{T}e&=&1\\
+&0\leq\mathbf{w}&\leq&1\\
+\end{array}
+\end{aligned}
+$$
+
+-   <https://web.stanford.edu/~wfsharpe/art/sa/sa.htm>
+
+Solve the constrained least squares problem analytically using the `rolloptim` package; the commented `CVXR` implementation below is the original version, kept for reference:
 
 ```{r}
 # install.packages("pak")
@@ -62,6 +82,10 @@ load("returns.rda") # fund-of-funds and S&P 500 index fund returns for the 10-ye
 ```
 
 # Bootstrapping
+
+Resample the historical returns using a stationary bootstrap that restarts at a random index with probability $1/p$, i.e. expected block length of $p$ periods, to preserve short-run autocorrelation; the commented `NNS.meboot` implementation below is a maximum entropy alternative, kept for reference:
+
+-   <https://cran.r-project.org/web/packages/NNS/vignettes/NNSvignette_Sampling.html>
 
 ```{r}
 # library(NNS)
@@ -121,6 +145,8 @@ optim_te_ls <- list()
 ```{r}
 # colnames(returns_boot) <- colnames(returns)
 ```
+
+For each replicate, solve for the optimal weights and then compute alpha, i.e. the annualized return of the optimized portfolio minus the benchmark, and tracking error:
 
 ```{r}
 for (z in 1:n_boot) {
