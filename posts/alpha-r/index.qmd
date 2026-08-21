@@ -24,7 +24,7 @@ Could an optimally combined portfolio of hedge funds have won Warren Buffett's 1
 
 -   <https://longbets.org/362/>
 
-Use the annual returns of the five funds-of-funds, labeled "A" through "E", and the S&P 500 index fund from 2008 through 2016 as reported in Berkshire Hathaway's shareholder letter:
+Use the annual returns of the five funds-of-funds, labeled "A" through "E", and the S&P 500 index fund from 2008 through 2016, the first nine years of the bet, as reported in Berkshire Hathaway's 2016 shareholder letter:
 
 -   <https://www.berkshirehathaway.com/letters/2016ltr.pdf>
 
@@ -56,7 +56,6 @@ Solve the constrained least squares problem analytically using the `rolloptim` p
 ```
 
 ```{r}
-#| output: false # Attaching package: 'CVXR' - The following object is masked from 'package:stats': power
 # library(CVXR)
 ```
 
@@ -123,26 +122,25 @@ boot <- function(n, p = 1) {
 
 ```{r}
 n_rows <- nrow(returns)
-n_cols <- ncol(returns)
 n_boot <- 1000
 optim_weights_ls <- list()
 optim_alpha_ls <- list()
 optim_te_ls <- list()
-# returns_boot <- array(NA, dim = c(n_rows, n_cols, n_boot)) # time, asset, and bootstrap
 ```
 
 ```{r}
+# n_cols <- ncol(returns)
+# returns_boot <- array(NA, dim = c(n_rows, n_cols, n_boot)) # time, asset, and bootstrap
+#
 # for (j in 1:n_cols) {
-# 
+#
 #   col_boot <- NNS.meboot(as.vector(returns[ , j]), reps = n_boot,
 #                          rho = 1, type = "pearson")["replicates", ]$replicates
-# 
+#
 #   returns_boot[ , j, ] <- col_boot
-# 
+#
 # }
-```
-
-```{r}
+#
 # colnames(returns_boot) <- colnames(returns)
 ```
 
@@ -150,23 +148,18 @@ For each replicate, solve for the optimal weights and then compute alpha, i.e. t
 
 ```{r}
 for (z in 1:n_boot) {
-  
-  # idx <- sample(1:n_rows, n_rows, replace = TRUE)
+
   idx <- boot(n_rows, p = 2)
-  # boot_sample <- returns_boot[ , , z]
-  
+
   x_boot <- returns[idx, colnames(returns) != "S&P Index Fund"]
   y_boot <- returns[idx, "S&P Index Fund"]
-  # x_boot <- boot_sample[ , colnames(boot_sample) != "S&P Index Fund"]
-  # y_boot <- boot_sample[ , "S&P Index Fund"]
-  
-  # optim_weights <- min_rss_optim(x_boot, y_boot)
-  
+
   xx <- roll::roll_crossprod(x_boot, x_boot, width = nrow(x_boot))
   xy <- roll::roll_crossprod(x_boot, y_boot, width = nrow(x_boot))
-  
-  optim_weights <- rolloptim::roll_min_rss(xx, xy, total = 1, lower = 0, upper = 1)[nrow(x_boot), ]
-  
+
+  optim_weights <- rolloptim::roll_min_rss(xx, xy, total = 1, lower = 0,
+                                           upper = 1)[nrow(x_boot), ]
+
   optim_returns <- x_boot %*% optim_weights
   optim_port <- prod(1 + optim_returns) ^ (1 / n_rows) - 1
   optim_bench <- prod(1 + y_boot) ^ (1 / n_rows) - 1
@@ -188,29 +181,29 @@ optim_te <- do.call(rbind, optim_te_ls)
 
 # Answer
 
-Analysis shows that `{r} round(mean(optim_alpha > 0), 2) * 100`% of the optimized portfolios produced alpha values greater than zero, which means that `{r} round(mean(optim_alpha <= 0), 2) * 100`% of optimized combinations did not outperform the S&P 500. Also the median information ratio across the optimized portfolios, i.e. alpha per unit of tracking error, is `{r} round(median(optim_alpha / optim_te), 2)`.
+No: only `{r} round(mean(optim_alpha > 0), 2) * 100`% of the optimized portfolios produced alpha greater than zero, and the median information ratio across the optimized portfolios, i.e. alpha per unit of tracking error, is `{r} round(median(optim_alpha / optim_te), 2)`.
 
 ```{r}
 #| echo: false
 #| fig.width: 6
 #| fig.height: 3
 alpha_dt <- data.table::data.table(optim_alpha = as.vector(optim_alpha))
-q_vals <- quantile(alpha_dt$optim_alpha, probs = c(0.05, 0.50, 0.95))
+q_vals <- quantile(alpha_dt[["optim_alpha"]], probs = c(0.05, 0.50, 0.95))
 
-hist_data <- hist(alpha_dt$optim_alpha, breaks = 30, plot = FALSE)
-bin_width <- diff(hist_data$breaks)[1]
+hist_data <- hist(alpha_dt[["optim_alpha"]], breaks = 30, plot = FALSE)
+bin_width <- diff(hist_data[["breaks"]])[1]
 hist_dt <- data.table::data.table(
-  mids = hist_data$mids * 100,
-  freq_pct = hist_data$counts / sum(hist_data$counts) * 100
+  mids = hist_data[["mids"]] * 100,
+  freq_pct = hist_data[["counts"]] / sum(hist_data[["counts"]]) * 100
 )
 
-dens <- density(alpha_dt$optim_alpha)
+dens <- density(alpha_dt[["optim_alpha"]])
 density_dt <- data.table::data.table(
-  alpha_pct = dens$x * 100,
-  density = dens$y * bin_width * 100 # convert density to frequency (%)
+  alpha_pct = dens[["x"]] * 100,
+  density = dens[["y"]] * bin_width * 100 # convert density to frequency (%)
 )
 
-y_max <- max(hist_dt$freq_pct)
+y_max <- max(hist_dt[["freq_pct"]])
 
 alpha_plt <- ggplot2::ggplot() +
   theme_jjf() +
@@ -234,4 +227,10 @@ alpha_plt <- ggplot2::ggplot() +
   ggplot2::annotate("text", x = q_vals[3] * 100, y = y_max, label = "95%",
                     color = palette_jjf(1), hjust = 1)
 print(alpha_plt)
+```
+
+The median optimal weights concentrate in a subset of the funds-of-funds:
+
+```{r}
+round(apply(optim_weights, 2, median), 2)
 ```
