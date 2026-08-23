@@ -108,7 +108,8 @@ capitalize <- function(string) {
 
 }
 
-plot_jjf <- function(dt, x, y, z, decomp, title, xlab, ylab, multiple, palette, stack) {
+plot_jjf <- function(dt, x, y, z, decomp, title, xlab, ylab, multiple, palette, stack,
+                     hline = NULL) {
 
   dt <- data.table::copy(dt)
 
@@ -121,6 +122,22 @@ plot_jjf <- function(dt, x, y, z, decomp, title, xlab, ylab, multiple, palette, 
   result <- ggplot2::ggplot() +
     theme_jjf() +
     ggplot2::labs(title = title, x = xlab, y = ylab)
+  
+  if (!is.null(hline)) {
+    
+    # reference lines draw beneath the data: solid at zero, dashed at thresholds
+    for (h in hline) {
+      
+      result <- result +
+        ggplot2::geom_hline(
+          yintercept = h * multiple,
+          linetype = if (h == 0) "solid" else "dashed",
+          color = grDevices::rgb(127, 127, 127, maxColorValue = 255)
+        )
+      
+    }
+    
+  }
   
   if (stack) {
     
@@ -177,9 +194,10 @@ plot_jjf <- function(dt, x, y, z, decomp, title, xlab, ylab, multiple, palette, 
 
 plot_ts <- function(dt, x = "index", y = "value", z = "variable",
                     title = NULL, xlab = NULL, ylab = NULL,
-                    multiple = 1, palette = NULL, stack = FALSE) {
+                    multiple = 1, palette = NULL, stack = FALSE, hline = NULL) {
   
-  result <- plot_jjf(dt, x, y, z, NULL, title, xlab, ylab, multiple, palette, stack)
+  result <- plot_jjf(dt, x, y, z, NULL, title, xlab, ylab, multiple, palette, stack,
+                     hline)
   
   return(result)
   
@@ -187,9 +205,10 @@ plot_ts <- function(dt, x = "index", y = "value", z = "variable",
 
 plot_ts_decomp <- function(dt, x = "index", y = "value", z = "variable", decomp = "",
                            title = NULL, xlab = NULL, ylab = NULL,
-                           multiple = 100, palette = NULL, stack = TRUE) {
+                           multiple = 100, palette = NULL, stack = TRUE, hline = NULL) {
   
-  result <- plot_jjf(dt, x, y, z, decomp, title, xlab, ylab, multiple, palette, stack)
+  result <- plot_jjf(dt, x, y, z, decomp, title, xlab, ylab, multiple, palette, stack,
+                     hline)
   
   return(result)
   
@@ -197,9 +216,10 @@ plot_ts_decomp <- function(dt, x = "index", y = "value", z = "variable", decomp 
 
 plot_scen <- function(dt, x = "shock", y = "value", z = "variable",
                       title = NULL, xlab = NULL, ylab = NULL,
-                      multiple = 1, palette = NULL, stack = FALSE) {
+                      multiple = 1, palette = NULL, stack = FALSE, hline = NULL) {
   
-  result <- plot_jjf(dt, x, y, z, NULL, title, xlab, ylab, multiple, palette, stack)
+  result <- plot_jjf(dt, x, y, z, NULL, title, xlab, ylab, multiple, palette, stack,
+                     hline)
   
   return(result)
   
