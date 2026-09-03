@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Jason Foster">
-<meta name="dcterms.date" content="2026-07-31">
+<meta name="dcterms.date" content="2026-09-01">
 
 <title>Optimization – jasonjfoster.github.io</title>
 <style>
@@ -193,7 +193,7 @@ window.Quarto = {
       <div>
       <div class="quarto-title-meta-heading">Published</div>
       <div class="quarto-title-meta-contents">
-        <p class="date">July 31, 2026</p>
+        <p class="date">September 1, 2026</p>
       </div>
     </div>
     
@@ -497,15 +497,15 @@ window.Quarto = {
 <div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>params1 <span class="ot">&lt;-</span> <span class="fu">t</span>(<span class="fu">max_mean_optim</span>(mu, sigma, target))</span>
 <span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>params1</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>          [,1]      [,2]      [,3]         [,4]
-[1,] 0.3327325 0.3702915 0.2969756 4.139558e-07</code></pre>
+<pre><code>          [,1]     [,2]     [,3]         [,4]
+[1,] 0.3334143 0.364038 0.302547 7.578782e-07</code></pre>
 </div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>params1 <span class="sc">%*%</span> mu</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>           [,1]
-[1,] 0.02693413</code></pre>
+[1,] 0.02667545</code></pre>
 </div>
 </div>
 <div class="cell">
@@ -536,7 +536,7 @@ window.Quarto = {
 \mathcal{L}(\mathbf{w},\lambda)&amp;=\frac{1}{2}\mathbf{w}^{T}\Sigma\mathbf{w}-\lambda_{1}(\mathbf{w}^{T}e-1)-\lambda_{2}(\mu^{T}\mathbf{w}-M)
 \end{aligned}
 \]</span></p>
-<p>Then, to minimize this function, take derivatives with respect to <span class="math inline">\(w\)</span> and Lagrange multipliers <span class="math inline">\(\lambda_{i}\)</span>:</p>
+<p>Then, to minimize this function, take derivatives with respect to <span class="math inline">\(\mathbf{w}\)</span> and Lagrange multipliers <span class="math inline">\(\lambda_{i}\)</span>:</p>
 <p><span class="math display">\[
 \begin{aligned}
 \frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial w}&amp;=\Sigma\mathbf{w}-\lambda_{1}e-\lambda_{2}\mu=0\\
@@ -609,8 +609,8 @@ M
 <div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>params2 <span class="ot">&lt;-</span> <span class="fu">t</span>(<span class="fu">min_var_optim</span>(mu, sigma, target))</span>
 <span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>params2</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>          [,1]      [,2]      [,3]         [,4]
-[1,] 0.3715686 0.4111047 0.2173266 2.120353e-21</code></pre>
+<pre><code>          [,1]      [,2]     [,3]         [,4]
+[1,] 0.3760005 0.4078925 0.216107 2.155626e-21</code></pre>
 </div>
 </div>
 <div class="cell">
@@ -624,7 +624,7 @@ M
 <div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sqrt</span>(params2 <span class="sc">%*%</span> sigma <span class="sc">%*%</span> <span class="fu">t</span>(params2))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>           [,1]
-[1,] 0.06720131</code></pre>
+[1,] 0.06788076</code></pre>
 </div>
 </div>
 <div class="cell">
@@ -647,7 +647,7 @@ M
 \mathcal{L}(\mathbf{w},\lambda)&amp;=\frac{1}{2}\delta(\mathbf{w}^{T}\Sigma\mathbf{w})-\mu^{T}\mathbf{w}-\lambda_{1}(\mathbf{w}^{T}e-1)
 \end{aligned}
 \]</span></p>
-<p>Then, to minimize this function, take derivatives with respect to <span class="math inline">\(w\)</span> and Lagrange multipliers <span class="math inline">\(\lambda_{i}\)</span>:</p>
+<p>Then, to minimize this function, take derivatives with respect to <span class="math inline">\(\mathbf{w}\)</span> and Lagrange multipliers <span class="math inline">\(\lambda_{i}\)</span>:</p>
 <p><span class="math display">\[
 \begin{aligned}
 \frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial w}&amp;=\delta\Sigma\mathbf{w}-\mu-\lambda_{1}e=0\\
@@ -717,21 +717,21 @@ e^{T} &amp; 0
 <span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>params3</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>          [,1]      [,2]      [,3]         [,4]
-[1,] 0.2859608 0.3213001 0.3927391 5.720612e-23</code></pre>
+[1,] 0.2840944 0.3135031 0.4024026 2.698134e-23</code></pre>
 </div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>params3 <span class="sc">%*%</span> mu </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>           [,1]
-[1,] 0.02324242</code></pre>
+[1,] 0.02282614</code></pre>
 </div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sqrt</span>(params3 <span class="sc">%*%</span> sigma <span class="sc">%*%</span> <span class="fu">t</span>(params3))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>           [,1]
-[1,] 0.05135493</code></pre>
+[1,] 0.05090478</code></pre>
 </div>
 </div>
 <div class="cell">
@@ -754,7 +754,7 @@ e^{T} &amp; 0
 \mathcal{L}(\mathbf{w},\lambda)&amp;=\frac{1}{2}\mathbf{w}^{T}X^{T}X\mathbf{w}-(X^{T}y)^{T}\mathbf{w}-\lambda_{1}(\mathbf{w}^{T}e-1)
 \end{aligned}
 \]</span></p>
-<p>Then, to minimize this function, take derivatives with respect to <span class="math inline">\(w\)</span> and Lagrange multipliers <span class="math inline">\(\lambda_{i}\)</span>:</p>
+<p>Then, to minimize this function, take derivatives with respect to <span class="math inline">\(\mathbf{w}\)</span> and Lagrange multipliers <span class="math inline">\(\lambda_{i}\)</span>:</p>
 <p><span class="math display">\[
 \begin{aligned}
 \frac{\partial\mathcal{L}(\mathbf{w},\lambda)}{\partial w}&amp;=X^{T}X\mathbf{w}-X^{T}y-\lambda_{1}e=0\\
@@ -819,22 +819,22 @@ X^{T}y \\
 <div class="sourceCode cell-code" id="cb48"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>params4 <span class="ot">&lt;-</span> <span class="fu">t</span>(<span class="fu">min_rss_optim1</span>(<span class="fu">crossprod</span>(overlap_x_xts, overlap_y_xts), <span class="fu">crossprod</span>(overlap_x_xts)))</span>
 <span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a>params4</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>         [,1]         [,2]         [,3]     [,4]
-[1,] 0.292327 5.132356e-23 4.191957e-24 0.707673</code></pre>
+<pre><code>          [,1]          [,2]         [,3]      [,4]
+[1,] 0.2923912 -1.292809e-23 4.710805e-24 0.7076088</code></pre>
 </div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb50"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>params4 <span class="sc">%*%</span> mu </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>           [,1]
-[1,] 0.02426322</code></pre>
+[1,] 0.02414869</code></pre>
 </div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb52"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sqrt</span>(params4 <span class="sc">%*%</span> sigma <span class="sc">%*%</span> <span class="fu">t</span>(params4))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>           [,1]
-[1,] 0.06749713</code></pre>
+[1,] 0.06742108</code></pre>
 </div>
 </div>
 <div class="cell">
@@ -863,22 +863,22 @@ X^{T}y \\
 <div class="sourceCode cell-code" id="cb56"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a>params5 <span class="ot">&lt;-</span> <span class="fu">t</span>(<span class="fu">min_rss_optim2</span>(zoo<span class="sc">::</span><span class="fu">coredata</span>(overlap_x_xts), zoo<span class="sc">::</span><span class="fu">coredata</span>(overlap_y_xts)))</span>
 <span id="cb56-2"><a href="#cb56-2" aria-hidden="true" tabindex="-1"></a>params5</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>         [,1]          [,2]          [,3]     [,4]
-[1,] 0.292327 -3.943227e-23 -1.643379e-23 0.707673</code></pre>
+<pre><code>          [,1]         [,2]         [,3]      [,4]
+[1,] 0.2923912 6.316346e-24 -1.52334e-23 0.7076088</code></pre>
 </div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb58"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a>params5 <span class="sc">%*%</span> mu </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>           [,1]
-[1,] 0.02426322</code></pre>
+[1,] 0.02414869</code></pre>
 </div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb60"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sqrt</span>(params5 <span class="sc">%*%</span> sigma <span class="sc">%*%</span> <span class="fu">t</span>(params5))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>           [,1]
-[1,] 0.06749713</code></pre>
+[1,] 0.06742108</code></pre>
 </div>
 </div>
 <div class="cell">
@@ -891,10 +891,10 @@ X^{T}y \\
 <span id="cb62-7"><a href="#cb62-7" aria-hidden="true" tabindex="-1"></a><span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>  max_mean min_var max_utility min_rss1 min_rss2
-1    33.27   37.16       28.60    29.23    29.23
-2    37.03   41.11       32.13     0.00     0.00
-3    29.70   21.73       39.27     0.00     0.00
-4     0.00    0.00        0.00    70.77    70.77</code></pre>
+1    33.34   37.60       28.41    29.24    29.24
+2    36.40   40.79       31.35     0.00     0.00
+3    30.25   21.61       40.24     0.00     0.00
+4     0.00    0.00        0.00    70.76    70.76</code></pre>
 </div>
 </div>
 

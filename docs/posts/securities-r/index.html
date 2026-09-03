@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Jason Foster">
-<meta name="dcterms.date" content="2026-08-03">
+<meta name="dcterms.date" content="2026-09-01">
 
 <title>Securities – jasonjfoster.github.io</title>
 <style>
@@ -193,7 +193,7 @@ window.Quarto = {
       <div>
       <div class="quarto-title-meta-heading">Published</div>
       <div class="quarto-title-meta-contents">
-        <p class="date">August 3, 2026</p>
+        <p class="date">September 1, 2026</p>
       </div>
     </div>
     
@@ -568,7 +568,7 @@ P(y+\Delta y)-P(y)&amp;\approx{\frac{P'(y)}{1!}}\Delta y+{\frac{P''(y)}{2!}}(\De
 &amp;\approx -D\Delta y +{\frac{C}{2!}}(\Delta y)^{2}
 \end{aligned}
 \]</span></p>
-<p>Total return also includes income, i.e.&nbsp;the yield earned over the elapsed time <span class="math inline">\(y\Delta t\)</span>, in addition to the price change:</p>
+<p>Total return includes income, i.e.&nbsp;the yield earned over the elapsed time <span class="math inline">\(y\Delta t\)</span>, in addition to the price change:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>pnl_bond <span class="ot">&lt;-</span> <span class="cf">function</span>(duration, convexity, dy, y, t) {</span>
 <span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -885,11 +885,11 @@ S_{k}(t_{i+1})&amp;=S_{k}(t_{i})\exp\left(\sqrt{t_{i+1}-t_{i}}\sum_{j=1}^{d}{A_{
 <span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">"theoretical"</span> <span class="ot">=</span> <span class="fu">colMeans</span>(<span class="fu">do.call</span>(rbind, mu_ls))</span>
 <span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>                empirical   theoretical
-SP500         0.083797737  0.0842262888
-DTWEXAFEGS   -0.002853115 -0.0025532743
-DGS10         0.001226456  0.0012903087
-BAMLH0A0HYM2  0.000911980  0.0007632458</code></pre>
+<pre><code>                 empirical  theoretical
+SP500         0.0832271871  0.084314523
+DTWEXAFEGS   -0.0029064058 -0.002967631
+DGS10         0.0011808418  0.001183126
+BAMLH0A0HYM2  0.0009613933  0.000976934</code></pre>
 </div>
 </div>
 <div class="cell">
@@ -898,11 +898,11 @@ BAMLH0A0HYM2  0.000911980  0.0007632458</code></pre>
 <span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">"theoretical"</span> <span class="ot">=</span> <span class="fu">colMeans</span>(<span class="fu">do.call</span>(rbind, sigma_ls))</span>
 <span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>              empirical theoretical
-SP500        0.19210596 0.191885586
-DTWEXAFEGS   0.06906622 0.068991063
-DGS10        0.00892031 0.008911018
-BAMLH0A0HYM2 0.01726673 0.017255263</code></pre>
+<pre><code>               empirical theoretical
+SP500        0.191850282 0.191531042
+DTWEXAFEGS   0.068876784 0.068821245
+DGS10        0.008915069 0.008909773
+BAMLH0A0HYM2 0.017241720 0.017225020</code></pre>
 </div>
 </div>
 </section>
@@ -977,8 +977,8 @@ x_{n+1}=x_{n}-{\frac{f(x_{n})}{f'(x_{n})}}
 <div class="cell">
 <div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a><span class="fu">implied_vol_newton</span>(params1, type, S, K, r, q, tau)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>         SP500
-[1,] 0.1356155</code></pre>
+<pre><code>        SP500
+[1,] 0.135185</code></pre>
 </div>
 </div>
 </section>
@@ -1087,7 +1087,7 @@ x_{n+1}=x_{n}-{\frac{f(x_{n})}{f'(x_{n})}}
 <div class="cell">
 <div class="sourceCode cell-code" id="cb54"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a><span class="fu">implied_vol_optim</span>(start1, type, S, K, r, q, tau, target1)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 0.1356155</code></pre>
+<pre><code>[1] 0.135185</code></pre>
 </div>
 </div>
 </section>

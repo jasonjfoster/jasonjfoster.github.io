@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Jason Foster">
-<meta name="dcterms.date" content="2026-08-07">
+<meta name="dcterms.date" content="2026-09-01">
 
 <title>Eigen – jasonjfoster.github.io</title>
 <style>
@@ -193,7 +193,7 @@ window.Quarto = {
       <div>
       <div class="quarto-title-meta-heading">Published</div>
       <div class="quarto-title-meta-contents">
-        <p class="date">August 7, 2026</p>
+        <p class="date">September 1, 2026</p>
       </div>
     </div>
     
@@ -270,14 +270,14 @@ window.Quarto = {
 <div class="cell">
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>eigen_decomp(overlap_df, comps) <span class="op">*</span> scale[<span class="st">"periods"</span>] <span class="op">*</span> scale[<span class="st">"overlap"</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>array([[ 3.50481374e-02, -5.10731923e-03, -3.37330735e-04,
-         2.57361865e-03],
-       [-5.10731923e-03,  7.44253809e-04,  4.91568419e-05,
-        -3.75035394e-04],
-       [-3.37330735e-04,  4.91568419e-05,  3.24673529e-06,
-        -2.47705223e-05],
-       [ 2.57361865e-03, -3.75035394e-04, -2.47705223e-05,
-         1.88983308e-04]])</code></pre>
+<pre><code>array([[ 3.49713138e-02, -5.08897635e-03, -3.36145850e-04,
+         2.56724775e-03],
+       [-5.08897635e-03,  7.40540674e-04,  4.89154708e-05,
+        -3.73582278e-04],
+       [-3.36145850e-04,  4.89154708e-05,  3.23104910e-06,
+        -2.46765014e-05],
+       [ 2.56724775e-03, -3.73582278e-04, -2.46765014e-05,
+         1.88461922e-04]])</code></pre>
 </div>
 </div>
 <div class="cell">
@@ -305,13 +305,13 @@ window.Quarto = {
 <div class="cell">
 <div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>variance_explained(overlap_df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>array([0.8739186 , 0.99001187, 0.99819449, 1.        ])</code></pre>
+<pre><code>array([0.87387969, 0.99001254, 0.99819422, 1.        ])</code></pre>
 </div>
 </div>
 </section>
 <section id="similarity" class="level1">
 <h1>Similarity</h1>
-<p>Also, a challenge of rolling PCA is to try to match the eigenvectors: may need to change the sign and order.</p>
+<p>Also, a challenge of rolling PCA is to match the eigenvectors: the sign can flip and the order can change between windows.</p>
 <p><span class="math display">\[
 \begin{aligned}
 \text{similarity}=\frac{\mathbf{v}_{t}\cdot\mathbf{v}_{t-1}}{\|\mathbf{v}_{t}\|\|\mathbf{v}_{t-1}\|}

@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Jason Foster">
-<meta name="dcterms.date" content="2026-08-04">
+<meta name="dcterms.date" content="2026-09-01">
 
 <title>Eigen – jasonjfoster.github.io</title>
 <style>
@@ -193,7 +193,7 @@ window.Quarto = {
       <div>
       <div class="quarto-title-meta-heading">Published</div>
       <div class="quarto-title-meta-contents">
-        <p class="date">August 4, 2026</p>
+        <p class="date">September 1, 2026</p>
       </div>
     </div>
     
@@ -259,10 +259,10 @@ window.Quarto = {
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">eigen_decomp</span>(overlap_xts, comps) <span class="sc">*</span> scale[[<span class="st">"periods"</span>]] <span class="sc">*</span> scale[[<span class="st">"overlap"</span>]]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>              [,1]          [,2]          [,3]          [,4]
-[1,]  0.0350481374 -5.107319e-03 -3.373307e-04  2.573619e-03
-[2,] -0.0051073192  7.442538e-04  4.915684e-05 -3.750354e-04
-[3,] -0.0003373307  4.915684e-05  3.246735e-06 -2.477052e-05
-[4,]  0.0025736187 -3.750354e-04 -2.477052e-05  1.889833e-04</code></pre>
+[1,]  0.0349713138 -5.088976e-03 -3.361458e-04  0.0025672477
+[2,] -0.0050889764  7.405407e-04  4.891547e-05 -0.0003735823
+[3,] -0.0003361458  4.891547e-05  3.231049e-06 -0.0000246765
+[4,]  0.0025672477 -3.735823e-04 -2.467650e-05  0.0001884619</code></pre>
 </div>
 </div>
 <div class="cell">
@@ -292,13 +292,13 @@ window.Quarto = {
 <div class="cell">
 <div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">variance_explained</span>(overlap_xts)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 0.8739186 0.9900119 0.9981945 1.0000000</code></pre>
+<pre><code>[1] 0.8738797 0.9900125 0.9981942 1.0000000</code></pre>
 </div>
 </div>
 </section>
 <section id="similarity" class="level1">
 <h1>Similarity</h1>
-<p>Also, a challenge of rolling PCA is to try to match the eigenvectors: may need to change the sign and order.</p>
+<p>Also, a challenge of rolling PCA is to match the eigenvectors: the sign can flip and the order can change between windows.</p>
 <p><span class="math display">\[
 \begin{aligned}
 \text{similarity}=\frac{\mathbf{v}_{t}\cdot\mathbf{v}_{t-1}}{\|\mathbf{v}_{t}\|\|\mathbf{v}_{t-1}\|}
