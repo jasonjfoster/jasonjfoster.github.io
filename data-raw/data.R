@@ -1,3 +1,5 @@
+# regenerate the R data sets in data/ from the cached CSV levels in data-raw/
+
 data_h0a0 <- read.csv("data-raw/h0a0.csv")
 save(data_h0a0, file = "data/data_h0a0.rda")
 

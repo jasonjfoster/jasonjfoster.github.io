@@ -1,9 +1,11 @@
 # update cached levels with the latest FRED observations (run then render)
 
 h0a0_df <- read.csv("data-raw/h0a0.csv")
-h0a0_xts <- quantmod::getSymbols("BAMLH0A0HYM2", src = "FRED", auto.assign = FALSE)
+h0a0_xts <- quantmod::getSymbols("BAMLH0A0HYM2", src = "FRED",
+                                 auto.assign = FALSE)
+# convert percent to bps
 h0a0_new <- data.frame(date = format(zoo::index(h0a0_xts)),
-                       oas = round(as.numeric(h0a0_xts) * 100, 2)) # convert percent to bps
+                       oas = round(as.numeric(h0a0_xts) * 100, 2))
 h0a0_new <- na.omit(h0a0_new)
 h0a0_df <- rbind(h0a0_df[h0a0_df[["date"]] < min(h0a0_new[["date"]]), ],
                  h0a0_new,
